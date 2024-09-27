@@ -1,0 +1,215 @@
+@extends('adminlte::page')
+    
+@section('content_header')
+
+{{-- @can('admin.profiles.create') --}}
+<a class="btn btn-crear btn-sm float-right" href="{{route('admin.clientesauditorias.create')}}">Crear cliente</a>
+{{-- @endcan --}}
+<h1>CLIENTES AUDITORIAS</h1>
+@stop
+
+@section('content')
+@if (session('info'))
+<div id="alert-info" class="alert alert-success">
+    <strong>{{ session('info') }}</strong>
+</div>
+<script>
+    setTimeout(function() {
+        $('#alert-info').fadeOut('fast');
+    }, 5000);
+</script>
+@endif
+<div class="card">
+    <div class="card-body">
+        <nav class="navbar navbar-expand-lg float-right">
+            <div class="container-fluid">
+                <div class="d-flex flex-wrap align-items-center">
+                    <form action="{{ route('ruta.para.mostrar.todos2') }}" method="get" class="mr-2 mb-2 mb-lg-0" style="max-width: calc(100% - 250px);"> <!-- ajusta el valor máximo según el ancho de tu card -->
+                        <input type="hidden" name="mostrar_todos2" value="1">
+                        <button type="submit" class="btn btn-mostrartodo">Mostrar Todo</button>
+                    </form>
+            
+                    <form action="{{ route('buscar.clientes') }}" method="get" class="form-inline">
+                        <div class="flex-grow-1">
+                            <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="Cliente  /  CI  /  Ciudad" aria-label="Search">
+                        </div>
+                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit" disabled>Buscar</button>
+                    </form>
+                </div>
+            </div>
+        </nav>
+
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nombre completo</th>
+                        <th>CI</th>
+                        <th>Fecha de nac.</th>
+                        <th>Edad</th>
+                        <th>Celular</th>
+                        <th>Género</th>
+                        <th>Ciudad</th>
+                        <th>Estado civ.</th>
+                        <th>Ocup./Prof.</th>
+                        <th colspan="3"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($clienteauditorias as $clienteauditoria)
+                    <tr>
+                        <td>{{$clienteauditoria->nombrecompleto}}</td>
+                        <td>{{$clienteauditoria->ci}}</td>
+                        <td>{{$clienteauditoria->fechanacimiento}}</td>
+                        <td>{{$clienteauditoria->edad}}</td>
+                        <td>{{$clienteauditoria->telefono}}</td>
+                        <td>{{$clienteauditoria->genero}}</td>
+                        <td>{{$clienteauditoria->ciudad}}</td>
+                        <td>{{$clienteauditoria->estadocivil}}</td>
+                        <td>{{$clienteauditoria->ocupacionprofesion}}</td>
+                        <td width="10px">
+                            {{-- @can('admin.clientes.index') --}}
+                            <abbr title="Formulario">
+                                <a class="btn btn-sm btn-outline-success fas fa-window-restore" href="{{route('admin.clientesauditorias.formulario', $clienteauditoria)}}" ></a>
+                                </abbr>
+                            {{-- @endcan --}}
+                        </td>
+                        <td width="10px">
+                            {{-- @can('admin.empresas.edit') --}}
+                            {{-- <abbr title="Crear bateria">
+                                <a class="btn btn-sm fas fa-edit btn-bateria" href="{{route('admin.clientesbancos.create2', $clientebanco)}}" ></a>
+                            </abbr> --}}
+                            {{--  @endcan --}}
+                        </td>
+                        <td width="10px">
+                            {{-- @can('admin.empresas.edit') --}}
+                            {{-- <abbr title="Programar">
+                                <a class="btn btn-sm fas fa-edit btn-programar" href="{{route('admin.clientesbancos.create4', $clientebanco)}}" ></a>
+                            </abbr> --}}
+                            {{--  @endcan --}}
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+@stop
+
+@section('css')
+<link rel="styleheet" href="/css/admin_custom.css">
+<style>
+    h1, th {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 900;
+    }
+    .btn-crear {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 10px 20px;
+    }
+    .btn-crear:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
+    .btn-buscar { 
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+    }
+    .btn-buscar:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }  
+    .btn-mostrartodo { 
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+    }
+    .btn-mostrartodo:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    } 
+    .btn-bateria {
+                background-color:  #ffffff;
+                color: #0400ff;
+                border-color: #0400ff;
+                border-radius: 5px;
+            }
+        .btn-bateria:hover {
+                background-color: #0400ff;
+                color: #ffffff;
+            }
+            .btn-programar {
+                background-color:  #ffffff;
+                color: #31bc41;
+                border-color: #31bc41;
+                border-radius: 5px;
+            }
+        .btn-programar:hover {
+                background-color: #31bc41;
+                color: #ffffff;
+            }
+    
+</style>
+@stop
+
+@section('js')
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$('.dropify').dropify();
+</script>
+    @if (session('eliminar')=='ok')
+    <script>
+        Swal.fire(
+      '¡Eliminado!',
+      'El perfil se eliminó con éxito',
+      'success')
+    </script>
+    @endif
+
+<script>
+    $('.formulario-eliminar').submit(function(e){
+        e.preventDefault();
+        Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Este perfil se eliminará definitivamente",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '¡Si, eliminar!',
+        cancelButtonText: 'Cancelar'
+        }).then((result) => {
+        if (result.isConfirmed) {
+            this.submit();
+        }
+        }) 
+    });
+</script>
+<script>
+    $(document).ready(function() {
+        $('input[name="buscarpor"]').on('keyup', function() {
+            var query = $(this).val();
+            var botonBuscar = $('#btn-buscar');
+            if (query.trim() === '') {
+                botonBuscar.prop('disabled', true);
+            } else {
+                botonBuscar.prop('disabled', false);
+            }
+        });
+    });
+</script>
+
+@endsection
