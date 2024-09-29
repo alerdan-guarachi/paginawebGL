@@ -28,7 +28,10 @@ use App\Http\Controllers\Admin\AdministrarProgramacionController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\ControlProgController;
 
-Route::get('/', function () {return view('welcome');});
+Route::get('/', function () {
+    return redirect('/welcome');
+});
+
 Route::get('/welcome', [App\Http\Controllers\PaginawebController::class, 'welcome'])->name('welcome');
 Route::get('/asesoramientolegal', [App\Http\Controllers\PaginawebController::class, 'asesoramientolegal'])->name('asesoramientolegal');
 Route::get('/contact', [App\Http\Controllers\PaginawebController::class, 'contact'])->name('contact');
