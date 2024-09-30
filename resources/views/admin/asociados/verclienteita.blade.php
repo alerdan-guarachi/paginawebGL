@@ -278,9 +278,9 @@
 
                         {{-- @can('admin.asociados.editarclienteita') --}}
                         <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                            <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR TRÁMITE">
+                            <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO">
                                 <i class="fas fa-atlas"></i>
-                                <strong>TRÁMITES</strong>
+                                <strong>SERVICIOS</strong>
                             </a>
                         </div>
                         {{-- @endcan --}}
@@ -1450,4 +1450,13 @@
         vertical-align: middle;
     }
 </style>
+
+<script>
+    @if(session('descargar_pdf'))
+        // Si la variable de sesión "descargar_pdf" está presente, realizar la descarga del PDF automáticamente
+        window.onload = function() {
+            window.location.href = "{{ route('admin.asociados.generaretiquetaclienteita', session('descargar_pdf')) }}";
+        };
+    @endif
+</script>
 @stop
