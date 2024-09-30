@@ -28,7 +28,10 @@ use App\Http\Controllers\Admin\AdministrarProgramacionController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\ControlProgController;
 
-Route::get('/', function () {return view('welcome');});
+Route::get('/', function () {
+    return redirect('/welcome');
+});
+
 Route::get('/welcome', [App\Http\Controllers\PaginawebController::class, 'welcome'])->name('welcome');
 Route::get('/asesoramientolegal', [App\Http\Controllers\PaginawebController::class, 'asesoramientolegal'])->name('asesoramientolegal');
 Route::get('/contact', [App\Http\Controllers\PaginawebController::class, 'contact'])->name('contact');
@@ -168,6 +171,7 @@ Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\
         Route::put('asociados/actualizarclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@actualizarclienteita')->name('admin.asociados.actualizarclienteita');
     //ASIGNAR TRAMITE CLIENTE ITA
         Route::get('asociados/listadotramiteclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@listadotramiteclienteita')->name('admin.asociados.listadotramiteclienteita');
+        Route::post('asociados/asignar-fechaita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@asignarFecha_ITA')->name('admin.asociados.asignarFecha_ITA');
         Route::get('asociados/asignartramiteclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@asignartramiteclienteita')->name('admin.asociados.asignartramiteclienteita');
         Route::post('asociados/guardartramiteclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardartramiteclienteita')->name('admin.asociados.guardartramiteclienteita');
     //CREAR BATERIA CLIENTE ITA
