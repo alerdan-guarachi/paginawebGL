@@ -21,26 +21,22 @@
         <tr>
             <th>ID CLIENTE</th>
             <th>NOMBRE</th>
-            <th>ENT. GESTOR SALUD</th>
             <th>TRAMITE</th>
         </tr>
         <tr>
             <td>{{$clienteauditoria->id}}</td>
             <td>{{$clienteauditoria->nombrecompleto}}</td>
-            <td>{{$clienteauditoria->entgestorsalud}}</td>
             <td>AUDITORÍA MÉDICA</td>
         </tr>
         <tr>
             <th>CIUDAD</th>
             <th>CI</th>
             <th>CELULAR</th>
-            <th>MOTIVO DE CONSULTA</th>
         </tr>
         <tr>
             <td>{{$clienteauditoria->lugarresidencia}}</td>
             <td>{{$clienteauditoria->ci}}</td>
             <td>{{$clienteauditoria->celular}}</td>
-            <td>{{$clienteauditoria->motivoconsulta}}</td>
         </tr>
     </table>
 </body>

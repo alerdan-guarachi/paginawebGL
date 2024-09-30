@@ -24,7 +24,7 @@
                 {!! Form::hidden('users_id', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                 <div class="row">
-                    <div class="col-lg-6">
+                    <div class="col-lg-12">
                         <div class="form-group">
                             {!! Form::label('sucursal', 'Sucursal:') !!}
                             {!! Form::select('sucursal', $suc, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -35,7 +35,7 @@
                             @enderror
                         </div>
                     </div>
-                        <div class="col-lg-6">
+                    {{-- <div class="col-lg-6">
                         <div class="form-group">
                             {!! Form::label('tipocliente', 'Tipo cliente:') !!}
                             {!! Form::select('tipocliente', $tipocliente, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -45,7 +45,7 @@
                                 </small>
                             @enderror
                         </div>
-                    </div>
+                    </div> --}}
                 </div>
                 <div class="row">
                     <div class="col-lg-3">

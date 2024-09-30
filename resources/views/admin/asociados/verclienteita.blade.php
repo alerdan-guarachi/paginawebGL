@@ -276,17 +276,24 @@
                         </div>
                         @endcan
 
-                        {{-- @can('admin.asociados.editarclienteita') --}}
-                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                            <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR TRÁMITE">
-                                <i class="fas fa-atlas"></i>
-                                <strong>TRÁMITES</strong>
-                            </a>
-                        </div>
-                        {{-- @endcan --}}
+                        @if ($tieneContactos)
+                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR TRÁMITE">
+                                    <i class="fas fa-atlas"></i>
+                                    <strong>TRÁMITES</strong>
+                                </a>
+                            </div>
+                        @else
+                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="#" class="btn btn-asignartramite btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
+                                    <i class="fas fa-atlas"></i>
+                                    <strong>TRÁMITES</strong>
+                                </a>
+                            </div>
+                        @endif
 
                         @can('admin.asociados.generarchecklistclienteita')
-                            @if ($tieneContactos)
+                            @if ($tieneTramites)
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('admin.asociados.generarchecklistclienteita', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                     <i class="fas fa-tasks"></i>
@@ -302,23 +309,6 @@
                             </div>
                             @endif
                         @endcan
-                        {{-- @can('admin.asociados.generarchecklistclienteita')
-                            @if ($tieneRequisitos)
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.subirdocrequisitos', $cliente) }}" class="btn btn-subirrequisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS">
-                                    <i class="fas fa-share-square"></i>
-                                    <strong>SUBIR REQ.</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-subirrequisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
-                                    <i class="fas fa-share-square"></i>
-                                    <strong>SUBIR REQ.</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan --}}
                     </div>
                 </div>
                 
@@ -492,12 +482,21 @@
                     <div class="row text-center">
                         @can('admin.asociados.generarchecklistclienteita')
                             @if ($tieneContactos)
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.generarchecklistclienteitaaudi', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
-                                    <i class="fas fa-tasks"></i>
-                                    <strong>REQUISITOS</strong>
-                                </a>
-                            </div>
+                                @if (!$tienerequisitosauditoria)
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.generarchecklistclienteitaaudi', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>REQUISITOS</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.subirdocrequisitosaudi', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>REQUISITOS</strong>
+                                    </a>
+                                </div>
+                                @endif
                             @else
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
@@ -508,7 +507,7 @@
                             @endif
                         @endcan
                         @can('admin.asociados.creardocumentacionclienteita')
-                            @if ($tieneProgramacionatentido)
+                            @if ($tienerequisitosauditoria)
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
                                     <i class="fas fa-list-alt"></i>
@@ -517,7 +516,7 @@
                             </div>
                             @else
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-subirdocumento btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                <a href="#" class="btn btn-subirdocumento2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
                                     <i class="fas fa-list-alt"></i>
                                     <strong>INFORMES</strong>
                                 </a>
@@ -565,7 +564,7 @@
                             @endif
                         @endcan
                         @can('admin.asociados.creardocumentacionclienteita')
-                            @if ($tieneProgramacionatentido)
+                            @if ($tienerequisitosapelacion)
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
                                     <i class="fas fa-list-alt"></i>
@@ -622,7 +621,7 @@
                             @endif
                         @endcan
                         @can('admin.asociados.creardocumentacionclienteita')
-                            @if ($tieneProgramacionatentido)
+                            @if ($tienerequisitossegundasolicitud)
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
                                     <i class="fas fa-list-alt"></i>

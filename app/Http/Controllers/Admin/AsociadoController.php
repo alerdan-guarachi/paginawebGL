@@ -25,6 +25,7 @@ use App\Models\Cliente;
 use App\Models\Aseguradora;
 use App\Models\Contactosubcliente;
 use App\Models\Requisitosubcliente;
+use App\Models\Requisitosclientesauditoria;
 use App\Models\Afp;
 use App\Models\Bateriasubcliente;
 use App\Models\Estadoprogramacionsubcliente;
@@ -314,6 +315,12 @@ class AsociadoController extends Controller
         $tieneCotizacionaprobada = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)->exists();
         $tieneProgramacion = Programacionsubcliente::where('clienteitaid', $cliente->id)->exists();
         $tieneProgramacionatentido = Estadoprogramacionsubcliente::where('clienteitaid', $cliente->id)->exists();
+        $tienerequisitosauditoria = Requisitosclientesauditoria::where('clienteitaid', $cliente->id)->exists();
+
+        $tienerequisitosapelacion = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
+        $tienerequisitossegundasolicitud = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
+
+        $tieneTramites = Tramitesubcliente::where('clienteitaid', $cliente->id)->exists();
         $cartaconsentimientoExistente = DocumentacionSubcliente::where('clienteitaid', $cliente->id) 
             ->where('accion', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
             ->whereNotNull('document')
@@ -363,7 +370,7 @@ class AsociadoController extends Controller
             $accionesPorFecha[$fecha][] = $accion;
         }
 
-        return view('admin.asociados.verclienteita', compact('tieneApelacion','tieneSegundasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion'));
+        return view('admin.asociados.verclienteita', compact('tienerequisitosapelacion','tienerequisitossegundasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion'));
     }
     public function editarclienteita(Cliente $cliente)
     {
@@ -2495,8 +2502,10 @@ class AsociadoController extends Controller
         }
     public function generarchecklistclienteita(Cliente $cliente) 
         {
-            $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            $tieneRequisitos = Requisitosubcliente::where('clienteitaid', $cliente->id)
                 ->where('servicio', 'INVALIDEZ')->exists();
+            $tieneInvalidez = Tramitesubcliente::where('clienteitaid', $cliente->id)
+                ->where('tramite', 'INVALIDEZ')->exists();
             $estadoLaboral = strtolower($cliente->estadolaboral);
             $numHijosMenores = $cliente->numhijosmenores;
             $estadoCivil = strtolower($cliente->estadocivil);
@@ -2516,7 +2525,7 @@ class AsociadoController extends Controller
                 'estadoLaboral',
                 'numHijosMenores',  
                 'estadoCivil', 
-                'registroExistente','rolusuario','registroaprobadoExistente','servicio1'
+                'registroExistente','rolusuario','registroaprobadoExistente','servicio1','tieneInvalidez'
             ));
         }
     public function descargarchecklistclienteita(Request $request, Cliente $cliente)
@@ -2549,7 +2558,7 @@ class AsociadoController extends Controller
                 'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
                 'cdivorcio' => 'CERTIFICADO DIVORCIO',
                 'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
-                'recordservicios' => 'RECORD SERVICIOS',
+                
                 
             ];
             $nombreDocumentos2 = [
@@ -2559,7 +2568,8 @@ class AsociadoController extends Controller
                 'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
                 'actdatos' => 'ACTUALIZACIÓN DATOS',
                 'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
-                
+                'recordservicios' => 'RECORD SERVICIOS',
+                'infomedicasalud' => 'INFORMACION MEDICA',
             ];
 
             foreach ($documentosSeleccionados as $documento) {
@@ -2614,9 +2624,7 @@ class AsociadoController extends Controller
                     case 'cdefuncion':
                         $requisito->cdefuncion = $valorDocumento;
                         break;
-                    case 'recordservicios':
-                        $requisito->recordservicios = $valorDocumento;
-                        break;
+                    
                     default:
                         break;
                 }
@@ -2644,6 +2652,12 @@ class AsociadoController extends Controller
                     case 'resolinvhijos':
                         $requisito->resolinvhijos = $valorDocumento;
                         break;
+                    case 'recordservicios':
+                        $requisito->recordservicios = $valorDocumento;
+                        break;
+                    case 'infomedicasalud':
+                        $requisito->infomedicasalud = $valorDocumento;
+                        break;
                     default:
                         break;
                 }
@@ -2654,7 +2668,7 @@ class AsociadoController extends Controller
             $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteita', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
             $pdfName = 'Requisitos_Invalidez_' . $cliente->nombrecompleto . '.pdf';
             return $pdf->download($pdfName);
-        }
+        } 
     public function subirdocrequisitos(Cliente $cliente)
         {
             $clienteitaid = $cliente->id; 
@@ -2798,13 +2812,14 @@ class AsociadoController extends Controller
                              ->with('info', 'El documento se subió con éxito');
         }
 
+        
     public function generarchecklistclienteitaaudi(Cliente $cliente) 
         {
-            $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-                ->where('servicio', 'AUDITORIA MEDICA')->exists();
+            $tieneRequisitos = Requisitosclientesauditoria::where('clienteitaid', $cliente->id)->exists();
             $estadoLaboral = strtolower($cliente->estadolaboral);
             $numHijosMenores = $cliente->numhijosmenores;
             $estadoCivil = strtolower($cliente->estadocivil);
+            $bancos = Banco::orderBy('nombrebanco')->pluck('nombrebanco', 'nombrebanco');
 
             $tieneauditoriamedica = Tramitesubcliente::where('clienteitaid', $cliente->id)
                 ->where('tramite', 'AUDITORIA MEDICA')->exists();
@@ -2824,107 +2839,149 @@ class AsociadoController extends Controller
                 'estadoLaboral',
                 'numHijosMenores',  
                 'estadoCivil', 
-                'registroExistente','rolusuario','registroaprobadoExistente','tieneauditoriamedica'
+                'registroExistente','rolusuario','registroaprobadoExistente','tieneauditoriamedica','bancos'
             ));
         }
-    public function descargarchecklistclienteitaaudi(Request $request, Cliente $cliente)
+    public function descargarchecklistclienteitaaudi(Request $request, Cliente $cliente)   
         {
             $usuarioAutenticado = Auth::user();
-            $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
-
-            $requisito = new RequisitoSubCliente();
-            $requisito->clienteitaid = $cliente->id;
-            $requisito->clienteitanombre = $cliente->nombrecompleto;
-            $requisito->usuarioid = $usuarioAutenticado->id;
-            $requisito->usuarioregistro = $usuarioAutenticado->name;
-            $requisito->servicio = 'AUDITORIA MEDICA';
-
-            $nombreDocumentos = [
-                'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
-                'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
-                'polizasgen' => 'POLIZAS GENERALES',
-                'declasalud' => 'DECLARACION DE SALUD',
-                'polizaseguro' => 'POLIZA DE SEGURO DE DESGRAVAMEN',
-                
-            ];
-
-            foreach ($documentosSeleccionados as $documento) {
-                $nombreCompleto = isset($nombreDocumentos[$documento]) ? $nombreDocumentos[$documento] : $documento;
-            $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
-                switch ($documento) {
-                    case 'ciasegurado':
-                        $requisito->ciasegurado = $valorDocumento;
-                        break;
-                    case 'cnacasegurado':
-                        $requisito->cnacasegurado = $valorDocumento;
-                        break;
-                    case 'polizasgen':
-                        $requisito->polizasgen = $valorDocumento;
-                        break;
-                    case 'declasalud':
-                        $requisito->declasalud = $valorDocumento;
-                        break;
-                    case 'polizaseguro':
-                        $requisito->polizaseguro = $valorDocumento;
-                        break;
-                    default:
-                        break;
+            
+            // Guardar requisitos en la base de datos
+            $requisito1 = new Requisitosclientesauditoria();
+            $requisito1->clienteitaid = $cliente->id;
+            $requisito1->clienteitanombre = $cliente->nombrecompleto;
+            $requisito1->usuarioid = $usuarioAutenticado->id;
+            $requisito1->usuarioregistro = $usuarioAutenticado->name;
+            $requisito1->ciasegurado = 'PENDIENTE';
+            $requisito1->cnacasegurado = 'PENDIENTE';
+            $requisito1->save();
+        
+            $numPolizas = $request->input('numPolizas');
+            for ($i = 1; $i <= $numPolizas; $i++) {
+                $banco = $request->input('banco' . $i);
+        
+                if (!empty($banco)) { 
+                    $requisitoPoliza = new Requisitosclientesauditoria();
+                    $requisitoPoliza->clienteitaid = $cliente->id;
+                    $requisitoPoliza->clienteitanombre = $cliente->nombrecompleto;
+                    $requisitoPoliza->usuarioid = $usuarioAutenticado->id;
+                    $requisitoPoliza->usuarioregistro = $usuarioAutenticado->name;
+                    $requisitoPoliza->banco = $banco;
+                    $requisitoPoliza->nropolizageneral = $request->input('nropolizageneral' . $i);
+                    $requisitoPoliza->polizageneral = $request->input('polizageneral' . $i) ? 'PENDIENTE' : 'NO APLICA';
+                    $requisitoPoliza->declasalud = $request->input('declasalud' . $i) ? 'PENDIENTE' : 'NO APLICA';
+                    $requisitoPoliza->nropolizadesgravamen = $request->input('nropolizadesgravamen' . $i);
+                    $requisitoPoliza->polizasegurodesgravamen = $request->input('polizasegurodesgravamen' . $i) ? 'PENDIENTE' : 'NO APLICA';
+                    $requisitoPoliza->save(); 
                 }
             }
-
-            $requisito->save();
-
-            $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteitaaudi', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos'));
+        
+            // Pasar los datos a la vista del PDF
+            $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteitaaudi', compact('cliente', 'numPolizas', 'request'));
             $pdfName = 'Requisitos_AuditoriaMedica_' . $cliente->nombrecompleto . '.pdf';
             return $pdf->download($pdfName);
         }
-    public function subirdocrequisitosaudi(Cliente $cliente)
-        {
-            $clienteitaid = $cliente->id; 
-            $userRole = auth()->user()->getRoleNames()->first(); 
-            $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
-                ->where('servicio', 'AUDITORIA MEDICA')->first();
-            $ciaseguradoPendiente = $requisitosCliente ? $requisitosCliente->ciasegurado === 'PENDIENTE' : false;
-            $cnacaseguradoPendiente = $requisitosCliente ? $requisitosCliente->cnacasegurado === 'PENDIENTE' : false;
-            $polizasgenPendiente = $requisitosCliente ? $requisitosCliente->polizasgen === 'PENDIENTE' : false;
-            $declasaludPendiente = $requisitosCliente ? $requisitosCliente->declasalud === 'PENDIENTE' : false;
-            $polizaseguroPendiente = $requisitosCliente ? $requisitosCliente->polizaseguro === 'PENDIENTE' : false;
-            
-            $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-                ->where('servicio', 'AUDITORIA MEDICA')->firstOrFail();
-            $ciaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->ciasegurado, '.pdf') !== false ? true:false;
-            $cnacaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->cnacasegurado, '.pdf') !== false ? true:false;
-            $polizasgenSubido = $requisitosCliente && strpos($requisitosCliente->polizasgen, '.pdf') !== false ? true:false;
-            $declasaludSubido = $requisitosCliente && strpos($requisitosCliente->declasalud, '.pdf') !== false ? true:false;
-            $polizaseguroSubido = $requisitosCliente && strpos($requisitosCliente->polizaseguro, '.pdf') !== false ? true:false;
-            
-            return view('admin.asociados.subirdocrequisitosaudi', compact('cliente','cnacaseguradoPendiente','ciaseguradoPendiente','polizasgenPendiente','declasaludPendiente','polizaseguroPendiente'
-            , 'requisito', 'userRole', 'cnacaseguradoSubido', 'ciaseguradoSubido', 'polizasgenSubido', 'declasaludSubido', 'polizaseguroSubido'));
-        }
-    public function guardardocrequisitosaudi(Request $request, Cliente $cliente)
-        {
-            $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-                ->where('servicio', 'AUDITORIA MEDICA')->firstOrFail();
-    
-            $request->validate([
-                'cnacasegurado' => 'nullable|mimes:pdf',
-                'ciasegurado' => 'nullable|mimes:pdf',
-                'polizasgen' => 'nullable|mimes:pdf',
-                'declasalud' => 'nullable|mimes:pdf',
-                'polizaseguro' => 'nullable|mimes:pdf',
-            ]);
+    public function subirdocrequisitosaudi(Cliente $cliente) 
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $requisitosCliente = Requisitosclientesauditoria::where('clienteitaid', $clienteitaid)->first();
+        $requisitosubido = RequisitoSubCliente::where('clienteitaid', $cliente->id)->firstOrFail();
 
-            $camposArchivos = [
-                'cnacasegurado', 'ciasegurado', 'polizasgen', 'declasalud', 'polizaseguro'
-            ];
 
-            foreach ($camposArchivos as $campo) {
-                $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        $ciaseguradoPendiente = $requisitosCliente ? $requisitosCliente->ciasegurado === 'PENDIENTE' : false;
+        $cnacaseguradoPendiente = $requisitosCliente ? $requisitosCliente->cnacasegurado === 'PENDIENTE' : false;
+        $polizasgenPendiente = $requisitosCliente ? $requisitosCliente->polizageneral === 'PENDIENTE' : false;
+        $declasaludPendiente = $requisitosCliente ? $requisitosCliente->declasalud === 'PENDIENTE' : false;
+        $polizaseguroPendiente = $requisitosCliente ? $requisitosCliente->polizasegurodesgravamen === 'PENDIENTE' : false;
+        
+        $ciaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->ciasegurado, '.pdf') !== false ? true : false;
+        $cnacaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->cnacasegurado, '.pdf') !== false ? true : false;
+        $polizasgenSubido = $requisitosCliente && strpos($requisitosCliente->polizageneral, '.pdf') !== false ? true : false;
+        $declasaludSubido = $requisitosCliente && strpos($requisitosCliente->declasalud, '.pdf') !== false ? true : false;
+        $polizaseguroSubido = $requisitosCliente && strpos($requisitosCliente->polizasegurodesgravamen, '.pdf') !== false ? true : false;
+
+        $requisitosClientepolizas = Requisitosclientesauditoria::where('clienteitaid', $clienteitaid)->wherenotNull('banco')->get();
+
+        return view('admin.asociados.subirdocrequisitosaudi', compact( 'requisitosubido','requisitosClientepolizas','cliente', 'requisitosCliente', 'cnacaseguradoPendiente', 'ciaseguradoPendiente', 'polizasgenPendiente', 'declasaludPendiente', 'polizaseguroPendiente', 'userRole', 'cnacaseguradoSubido', 'ciaseguradoSubido', 'polizasgenSubido', 'declasaludSubido', 'polizaseguroSubido'));
+    }
+
+    public function guardardocrequisitosaudi(Request $request, Cliente $cliente) 
+    {
+        // Validar archivos y campos adicionales
+        $request->validate([
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'polizageneral.*' => 'nullable|mimes:pdf', // Cambiado para manejar múltiples archivos
+            'declasalud.*' => 'nullable|mimes:pdf', // Cambiado para manejar múltiples archivos
+            'polizasegurodesgravamen.*' => 'nullable|mimes:pdf', // Cambiado para manejar múltiples archivos
+            'nropolizageneral.*' => 'nullable|string', // Validación para el número de póliza general
+            'nropolizadesgravamen.*' => 'nullable|string', // Validación para el número de póliza de desgravamen
+        ]);
+
+        // Lista de campos a procesar
+        $camposArchivos = ['cnacasegurado', 'ciasegurado', 'polizageneral', 'declasalud', 'polizasegurodesgravamen'];
+        $nroPolizas = ['nropolizageneral', 'nropolizadesgravamen'];
+
+        // Manejo de archivos
+        foreach ($camposArchivos as $campo) {
+            if ($request->hasFile($campo)) {
+                foreach ($request->file($campo) as $id => $file) {
+                    $requisito = Requisitosclientesauditoria::find($id);
+                    if ($requisito) {
+                        $this->manejarArchivopolizas($request, $campo, $requisito);
+                    }
+                }
             }
-
-            return redirect()->route('admin.asociados.subirdocrequisitosaudi', $cliente)
-                             ->with('info', 'El documento se subió con éxito');
         }
+
+        // Manejo de números de póliza
+        foreach ($nroPolizas as $nroPoliza) {
+            if ($request->has($nroPoliza)) {
+                foreach ($request->input($nroPoliza) as $id => $nro) {
+                    $requisito = Requisitosclientesauditoria::find($id);
+                    if ($requisito) {
+                        // Actualizar el número de póliza correspondiente
+                        $requisito->update([$nroPoliza => $nro]);
+                    }
+                }
+            }
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosaudi', $cliente)->with('info', 'Los documentos y números de póliza se subieron con éxito');
+    }
+
+    protected function manejarArchivopolizas(Request $request, string $campo, $requisito)
+    {
+        if ($request->hasFile($campo)) {
+            // Obtén los archivos de la solicitud
+            $files = $request->file($campo);
+
+            // Itera sobre cada archivo
+            foreach ($files as $file) {
+                // Asegúrate de que $file sea un objeto UploadedFile
+                if ($file instanceof \Illuminate\Http\UploadedFile) {
+                    $carpetaCliente = public_path("/requisitosclientesita/{$requisito->clienteitaid}");
+
+                    // Crear la carpeta si no existe
+                    if (!file_exists($carpetaCliente)) {
+                        mkdir($carpetaCliente, 0755, true);
+                    }
+
+                    // Generar un nombre único para el archivo
+                    $archivo = time() . '_' . $file->getClientOriginalName();
+
+                    // Mover el archivo a la carpeta
+                    $file->move($carpetaCliente, $archivo);
+
+                    // Actualizar el modelo para el requisito específico
+                    $requisito->update([$campo => $archivo]);
+                }
+            }
+        }
+    }
+
+
 
     public function generarchecklistclienteitaapelacion(Cliente $cliente) 
         {

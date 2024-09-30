@@ -31,11 +31,11 @@
 
             <div class="col-md-4">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">DOCUMENTACIÓN A PRESENTAR</h4>
-                {{-- <div class="form-group">
+                <div class="form-group">
                     <input type="hidden" name="poder_estado" id="poder_estado">
                     <input type="checkbox" name="poder" value="poder" id="poder" checked disabled>
                     <label for="poder">PODER</label>
-                </div> --}}
+                </div>
                 @if (strtolower($estadoLaboral) === 'activo')
                 <div class="form-group">
                     <input type="checkbox" name="avcci" value="avcci" id="avcci" checked>
@@ -132,10 +132,10 @@
                     <input type="checkbox" name="anteriordictamen" value="anteriordictamen" id="anteriordictamen">
                     <label for="anteriordictamen" style="min-height: 20px;">ANTERIOR DICTAMEN O RESOLUCION</label>
                 </div>
-                <div class="form-group">
+                {{-- <div class="form-group">
                     <input type="checkbox" name="poderciapoderado" value="poderciapoderado" id="poderciapoderado">
                     <label for="poderciapoderado" style="min-height: 20px;">PODER Y CARNET IDENTIDAD APODERADO</label>
-                </div>
+                </div> --}}
                 
                 <div class="form-group"> 
                     <input type="checkbox" name="denfaccidente" value="denfaccidente" id="denfaccidente">
@@ -145,10 +145,10 @@
                     <input type="checkbox" name="resolinvhijos" value="resolinvhijos" id="resolinvhijos">
                     <label for="resolinvhijos" class="color-toggle">RESOLUCIÓN INVALIDEZ DE HIJOS < 25</label>
                 </div>
-                <div class="form-group">
+                {{-- <div class="form-group">
                     <input type="checkbox" name="poderciapoderado" value="poderciapoderado" id="poderciapoderado">
                     <label for="poderciapoderado" class="color-toggle">PODER Y CARNET IDENTIDAD APODERADO</label>
-                </div>
+                </div> --}}
                 
                 <script>
                     document.querySelectorAll('.color-toggle').forEach(label => {

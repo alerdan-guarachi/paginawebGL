@@ -7,164 +7,201 @@
 <h3>{{$cliente->nombrecompleto}}</h3>
 @stop
 
-@section('content')
-    <form id="pdfForm" action="{{ route('admin.asociados.descargarchecklistclienteitaaudi', $cliente) }}" method="POST" style="display: none;">
-        @csrf
-        <input type="hidden" name="documentosSeleccionados" id="documentosSeleccionadosInput">
-        <input type="hidden" name="documentosSeleccionados2" id="documentosSeleccionados2Input">
-    </form>
-</div>
+@section('content') 
+<form id="pdfForm" action="{{ route('admin.asociados.descargarchecklistclienteitaaudi', $cliente) }}" method="POST">
+    @csrf
+    <input type="hidden" name="documentosSeleccionados" id="documentosSeleccionadosInput">
+    <input type="hidden" name="documentosSeleccionados2" id="documentosSeleccionados2Input">
 
-@if (session('info'))
-    <div id="alert-info" class="alert alert-success">
-        <strong>{{ session('info') }}</strong>
-    </div>
-    <script>
-        setTimeout(function() {
-            $('#alert-info').fadeOut('fast');
-        }, 5000);
-    </script>
-@endif
-<div class="card"> 
-    <div class="card-body">
-        <div class="row">
-
-            @if ($tieneauditoriamedica)
-            <div class="col-md-4">
-                <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">DOCUMENTACIÓN A PRESENTAR</h4>
-                {{-- <div class="form-group">
-                    <input type="hidden" name="poder_estado" id="poder_estado">
-                    <input type="checkbox" name="poder" value="poder" id="poder" checked disabled>
-                    <label for="poder">PODER</label>
-                </div> --}}
-                <div class="form-group">
-                    <input type="checkbox" name="ciasegurado" value="ciasegurado" id="ciasegurado" checked>
-                    <label for="ciasegurado">CARNET IDENTIDAD</label>
+    <div class="card col-lg-12"> 
+        <div class="card-body">
+            <div class="row">
+                @if ($tieneauditoriamedica)
+                <div class="col-md-12">
+                    <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">DOCUMENTACIÓN A PRESENTAR</h4>
+                    <div class="form-group">
+                        <input type="checkbox" name="ciasegurado" value="ciasegurado" id="ciasegurado" checked>
+                        <label for="ciasegurado">CARNET IDENTIDAD</label>
+                    </div>
+                    <div class="form-group">
+                        <input type="checkbox" name="cnacasegurado" value="cnacasegurado" id="cnacasegurado" checked>
+                        <label for="cnacasegurado" style="min-height: 20px;">CERTIFICADO NACIMIENTO ASEGURADO</label>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <input type="checkbox" name="cnacasegurado" value="cnacasegurado" id="cnacasegurado" checked>
-                    <label for="cnacasegurado" style="min-height: 20px;">CERTIFICADO NACIMIENTO ASEGURADO</label>
+                <div class="col-lg-12">
+                    <h4 style="font-weight: 600; color: #94c93b; margin-right: 20px;">PÓLIZAS</h4>
+                    <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                        <label for="numPolizas" style="margin-right: 10px;">NÚMERO DE PÓLIZAS:</label>
+                        <select id="numPolizas" name="numPolizas" onchange="generarFormulario()">
+                            <option value=""></option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                        </select>
+                    </div>
+                    <div id="formContainer"></div>
                 </div>
-                <div class="form-group">
-                    <input type="checkbox" name="polizasgen" value="polizasgen" id="polizasgen" checked>
-                    <label for="polizasgen" style="min-height: 20px;">POLIZAS GENERALES</label>
-                </div>
-
-                <div class="form-group">
-                    <input type="checkbox" name="declasalud" value="declasalud" id="declasalud" checked>
-                    <label for="declasalud" style="min-height: 20px;">DECLARACION DE SALUD</label>
-                </div>
-                <div class="form-group">
-                    <input type="checkbox" name="polizaseguro" value="polizaseguro" id="polizaseguro" checked>
-                    <label for="polizaseguro" style="min-height: 20px;">POLIZA DE SEGURO DE DESGRAVAMEN</label>
-                </div>
+                @endif
             </div>
+            @if (!$tieneRequisitos)
+            <button type="button" onclick="generatePDF()" class="btn-crear">GENERAR CHECK LIST</button>
             @endif
         </div>
-        @if (!$tieneRequisitos)
-        <button onclick="generatePDF(), generatePDF2()" class="btn-crear">GENERAR CHECK LIST</button>
-        @endif
-        <script>
-            function generatePDF() {
-                var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-                var documentosSeleccionados = [];
-                checkboxes.forEach(function(checkbox) {
-                    if (checkbox.checked) {
-                        documentosSeleccionados.push(checkbox.value);
-                    }
-                });
-                document.getElementById('documentosSeleccionadosInput').value = JSON.stringify(documentosSeleccionados);
-                document.getElementById('pdfForm').submit();
-            }
-
-            function generatePDF2() {
-                var checkboxes = document.querySelectorAll('input[type="checkbox"]');
-                var documentosSeleccionados2 = [];
-                checkboxes.forEach(function(checkbox) {
-                    if (checkbox.checked) {
-                        documentosSeleccionados2.push(checkbox.value);
-                    }
-                });
-                document.getElementById('documentosSeleccionados2Input').value = JSON.stringify(documentosSeleccionados2);
-                document.getElementById('pdfForm').submit();
-            }
-        </script>
     </div>
-</div>
-{{-- <div class="card"> 
-    <div class="card-body">
-        <div class="row"> 
-            <div class="col-lg-12">
-                <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">ATENCIÓN MÉDICA</h4>
-                @if (!$registroExistente && !$registroaprobadoExistente)
-                    <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'generar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                            {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
-                            {!! Form::submit('DERIVAR A MEDICINA LABORAL', ['class' => 'btn btn-derivar']) !!}
-                        {!! Form::close() !!}
-                    </div>
+</form>
 
-                    <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                            {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
+<script>
+    function generarFormulario() {
+        var cantidad = document.getElementById('numPolizas').value;
+        var contenedor = document.getElementById('formContainer');
+        contenedor.innerHTML = ''; // Limpiar contenedor
 
-                            {!! Form::submit('APROBAR INICIAR BATERIA', [
-                                'class' => 'btn btn-aprobarbateria', 
-                                'hidden' => !($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
-                            ]) !!}
-                        {!! Form::close() !!}
-                    </div>
-                @elseif ($registroExistente)
-                    <p></p>
-                @elseif ($registroaprobadoExistente)
-                    <p>APROBADO PARA CREAR BATERÍA</p>
-                @endif
+        for (var i = 1; i <= cantidad; i++) {
+            var group = document.createElement('div');
+            group.className = 'poliza-group';
 
-            </div>
-        </div>
+            var bancoItem = document.createElement('div');
+            bancoItem.className = 'form-item';
+            var bancoLabel = document.createElement('label');
+            bancoLabel.innerHTML = 'BANCO ' + i;
+            var bancoSelect = document.createElement('select');
+            bancoSelect.name = 'banco' + i;
+            bancoSelect.innerHTML = `<option value=""></option>
+                                     @foreach($bancos as $id => $nombrebanco)
+                                         <option value="{{ $id }}">{{ $nombrebanco }}</option>
+                                     @endforeach`;
+            bancoItem.appendChild(bancoLabel);
+            bancoItem.appendChild(bancoSelect);
 
-        @if ($registroExistente && is_object($registroExistente))
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="form-group">
-                        @if ($registroExistente->document)
-                            <label>Consentimiento informado para evaluación inicial:</label>
-                            <a href="{{ asset('cotizacionesaprobadasita/' . $cliente->id . '/' . $registroExistente->document) }}" class="btn btn-crear" target="_blank">Ver Consentimiento</a>
-                        @else
-                            <label>Consentimiento informado para evaluación inicial:</label>
-                            {!! Form::open(['route' => 'guardar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                                {!! Form::hidden('clienteitaid', $cliente->id) !!}
-                                {!! Form::hidden('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS') !!}
-                                {!! Form::file('pdf_file', ['class' => 'dropify', 'data-height' => '150']) !!}
-                                <div class="mt-3">
-                                    {!! Form::submit('Guardar consentimiento', ['class' => 'btn btn-crear']) !!}
-                                </div>
-                            {!! Form::close() !!}
-                        @endif
-                    </div>
-                </div>
-            </div>
-        @endif
-    </div>
-</div> --}}
+            var polizaNumItem = document.createElement('div');
+            polizaNumItem.className = 'form-item';
+            var polizaNumLabel = document.createElement('label');
+            polizaNumLabel.innerHTML = 'Nro. PÓLIZA GENERAL ' + i;
+            var polizaNumInput = document.createElement('input');
+            polizaNumInput.type = 'text';
+            polizaNumInput.name = 'nropolizageneral' + i;
+            polizaNumItem.appendChild(polizaNumLabel);
+            polizaNumItem.appendChild(polizaNumInput);
 
+            var polizaGenItem = document.createElement('div');
+            polizaGenItem.className = 'form-item';
+            var polizaGenLabel = document.createElement('label');
+            var polizaGenInput = document.createElement('input');
+            polizaGenInput.type = 'checkbox';
+            polizaGenInput.name = 'polizageneral' + i;
+            polizaGenLabel.innerHTML = 'PÓLIZA GENERAL';
+            polizaGenInput.checked = true;
+            polizaGenItem.appendChild(polizaGenLabel);
+            polizaGenItem.appendChild(polizaGenInput);
 
+            var saludItem = document.createElement('div');
+            saludItem.className = 'form-item';
+            var saludLabel = document.createElement('label');
+            var saludInput = document.createElement('input');
+            saludInput.type = 'checkbox';
+            saludInput.name = 'declasalud' + i;
+            saludLabel.innerHTML = 'DECLARACIÓN DE SALUD';
+            saludInput.checked = true;
+            saludItem.appendChild(saludLabel);
+            saludItem.appendChild(saludInput);
+
+            var polizaDesgraItem = document.createElement('div');
+            polizaDesgraItem.className = 'form-item';
+            var polizaDesgraLabel = document.createElement('label');
+            polizaDesgraLabel.innerHTML = 'Nro. PÓLIZA DESGRAVAMEN ' + i;
+            var polizaDesgraInput = document.createElement('input');
+            polizaDesgraInput.type = 'text';
+            polizaDesgraInput.name = 'nropolizadesgravamen' + i;
+            polizaDesgraItem.appendChild(polizaDesgraLabel);
+            polizaDesgraItem.appendChild(polizaDesgraInput);
+
+            var polizaSegDesgraItem = document.createElement('div');
+            polizaSegDesgraItem.className = 'form-item';
+            var polizaSegDesgraLabel = document.createElement('label');
+            var polizaSegDesgraInput = document.createElement('input');
+            polizaSegDesgraInput.type = 'checkbox';
+            polizaSegDesgraInput.name = 'polizasegurodesgravamen' + i;
+            polizaSegDesgraLabel.innerHTML = 'PÓLIZA SEGURO DESGRAVAMEN';
+            polizaSegDesgraInput.checked = true;
+            polizaSegDesgraItem.appendChild(polizaSegDesgraLabel);
+            polizaSegDesgraItem.appendChild(polizaSegDesgraInput);
+            
+            group.appendChild(bancoItem);
+            group.appendChild(polizaNumItem);
+            group.appendChild(polizaGenItem);
+            group.appendChild(saludItem);
+            group.appendChild(polizaDesgraItem);
+            group.appendChild(polizaSegDesgraItem);
+            contenedor.appendChild(group);
+        }
+    }
+
+    function generatePDF() {
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        var documentosSeleccionados = [];
+        checkboxes.forEach(function(checkbox) {
+            if (checkbox.checked) {
+                documentosSeleccionados.push(checkbox.value);
+            }
+        });
+        document.getElementById('documentosSeleccionadosInput').value = JSON.stringify(documentosSeleccionados);
+        document.getElementById('pdfForm').submit();
+    }
+</script>
 @stop
+
+
 @section('css')
+<style>
+    /* Estilos para alinear horizontalmente los elementos */
+    .poliza-group {
+        display: flex;
+        justify-content: center;
+        gap: 20px; /* Separación entre grupos de elementos */
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    /* Para centrar el título sobre cada input o checkbox */
+    .form-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .form-item label {
+        margin-bottom: 5px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .form-item select,
+    .form-item input[type="text"],
+    .form-item input[type="checkbox"] {
+        width: 150px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    button {
+        margin-top: 20px;
+    }
+</style>
 <style>
     .color-toggle {
         min-height: 20px;
-        color: red; /* Color inicial del texto */
-        cursor: pointer; /* Cambia el cursor al pasar por encima para indicar que es clickeable */
+        color: red;
+        cursor: pointer;
     }
     .color-toggle.black {
-        color: black; /* Color del texto al hacer doble clic */
+        color: black;
     }
     h5 {
         color:#94c93b; 
@@ -182,7 +219,7 @@
         margin-right: 5px;
         }
     input[type="checkbox"]:checked {
-        background-color: green; /* Cambia el color de fondo a verde cuando el checkbox está marcado */
+        background-color: green;
     }
     h1{
         color:#94c93b; 
@@ -251,89 +288,3 @@
     }
 </style>
 @stop
-
-
-{{-- @extends('adminlte::page')
-
-@section('content_header')
-<h1>Check List</h1>
-@stop
-
-@section('content')
-<body>
-    <table>
-        <caption>DOCUMENTACIÓN A PRESENTAR</caption>
-        <tr>
-            <th>PODER</th>
-            <th>AVC/CARNET ASEGURADO</th>
-            <th>CERTIFICADO NACIMIENTO ASEGURADO</th>
-            <th>CARNET IDENTIDAD ASEGURADO</th>
-            <th>CERTIFICADO DE MATRIMONIO</th>
-            <th>CERTIFICADO NACIMIENTO CONYUGE</th>
-            <th>CARNET IDENTIDAD CONYUGE</th>
-            <th>CERTIFICADO NACIMIENTO HIJOS &lt; 25</th>
-            <th>CARNET IDENTIDAD HIJOS &lt; 25</th>
-            <th>DENUNCIA ENFERMEDAD ACCIDENTE</th>
-            <th>CROQUIS DE DOMICILIO</th>
-            <th>CONTRATO</th>
-        </tr>
-        <tr id="documentos">
-            <td><input type="checkbox" name="documentos[]" value="poder"></td>
-            <td><input type="checkbox" name="documentos[]" value="avc"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_nacimiento_asegurado"></td>
-            <td><input type="checkbox" name="documentos[]" value="carnet_identidad_asegurado"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_matrimonio"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_nacimiento_conyuge"></td>
-            <td><input type="checkbox" name="documentos[]" value="carnet_identidad_conyuge"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_nacimiento_hijos"></td>
-            <td><input type="checkbox" name="documentos[]" value="carnet_identidad_hijos"></td>
-            <td><input type="checkbox" name="documentos[]" value="denuncia_enfermedad_accidente"></td>
-            <td><input type="checkbox" name="documentos[]" value="croquis_domicilio"></td>
-            <td><input type="checkbox" name="documentos[]" value="contrato"></td>
-        </tr>
-    </table>
-    <form id="pdfForm" action="{{ route('admin.clientes.print2', $cliente) }}" method="POST" style="display: none;">
-        @csrf
-        <input type="hidden" name="documentosSeleccionados" id="documentosSeleccionadosInput">
-    </form>
-    
-    <button onclick="generatePDF()">Generar PDF</button>
-
-    <script>
-        function generatePDF() {
-            var checkboxes = document.querySelectorAll('#documentos input[type="checkbox"]');
-            var documentosSeleccionados = [];
-            checkboxes.forEach(function(checkbox) {
-                if (checkbox.checked) {
-                    documentosSeleccionados.push(checkbox.value);
-                }
-            });
-            document.getElementById('documentosSeleccionadosInput').value = JSON.stringify(documentosSeleccionados);
-            // Ahora envía el formulario
-            document.getElementById('pdfForm').submit();
-        }
-    </script>
-    
-</body>
-</html>
-@endsection
-@section('css')
-<style>
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    th, td {
-        border: 1px solid black;
-        padding: 8px;
-        text-align: center;
-    }
-    caption {
-        caption-side: top;
-        text-align: center;
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 20px;
-    }
-</style>
-@stop --}}

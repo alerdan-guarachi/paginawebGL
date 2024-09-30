@@ -3,7 +3,7 @@
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#requisitosModal">VER REQUISITOS</a>
-<h5>SUBIR DOCUMENTACIÓN DE REQUISITOS DE:</h5>
+<h5>REQUISITOS DE AUDITORIA MÉDICA:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
 @stop
 
@@ -41,47 +41,70 @@
                 </div>
                 <div class="row">
                     @if($cnacaseguradoPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('cnacasegurado', 'CERTIFICADO NACIMIENTO ASEGURADO:') !!}
-                        {!! Form::file('cnacasegurado', ['class' => 'form-control-file dropify']) !!}
-                    </div>
+                        <div class="form-group col-lg-6">
+                            {!! Form::label('cnacasegurado', 'CERTIFICADO NACIMIENTO ASEGURADO:') !!}
+                            {!! Form::file('cnacasegurado', ['class' => 'form-control-file dropify']) !!}
+                        </div>
                     @endif
                     @if($ciaseguradoPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('ciasegurado', 'CARNET IDENTIDAD ASEGURADO:') !!}
-                        {!! Form::file('ciasegurado', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($polizasgenPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('polizasgen', 'POLIZAS GENERALES:') !!}
-                        {!! Form::file('polizasgen', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($declasaludPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('declasalud', 'DECLARACION DE SALUD:') !!}
-                        {!! Form::file('declasalud', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($polizaseguroPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('polizaseguro', 'POLIZA DE SEGURO DE DESGRAVAMEN:') !!}
-                        {!! Form::file('polizaseguro', ['class' => 'form-control-file dropify']) !!}
-                    </div>
+                        <div class="form-group col-lg-6">
+                            {!! Form::label('ciasegurado', 'CARNET IDENTIDAD ASEGURADO:') !!}
+                            {!! Form::file('ciasegurado', ['class' => 'form-control-file dropify']) !!}
+                        </div>
                     @endif
                 </div>
 
+                @foreach($requisitosClientepolizas as $requisito)
+                    @if($requisito->polizageneral === 'PENDIENTE' || $requisito->declasalud === 'PENDIENTE' || $requisito->polizasegurodesgravamen === 'PENDIENTE')
+                        <h5>{{ $requisito->banco }}</h5>
+                        <div class="row">
+                            {!! Form::hidden('id', $requisito->id) !!}
+                
+                            @if($requisito->polizageneral === 'PENDIENTE')
+                                <div class="form-group col-lg-4">
+                                    {!! Form::label('polizageneral', 'POLIZAS GENERALES:') !!}
+                                    @if($requisito->nropolizageneral)
+                                        <p>(Nro: {{ $requisito->nropolizageneral }})</p>
+                                    @else
+                                        {!! Form::text('nropolizageneral['.$requisito->id.']', null, ['class' => 'form-control', 'placeholder' => 'Ingrese Nro Póliza General']) !!}
+                                    @endif
+                                    {!! Form::file('polizageneral['.$requisito->id.']', ['class' => 'form-control-file dropify']) !!}
+                                </div>
+                            @endif
+                
+                            @if($requisito->declasalud === 'PENDIENTE')
+                                <div class="form-group col-lg-4">
+                                    {!! Form::label('declasalud', 'DECLARACION DE SALUD:') !!}
+                                    <p>Requerido:</p>
+                                    {!! Form::file('declasalud['.$requisito->id.']', ['class' => 'form-control-file dropify']) !!}
+                                </div>
+                            @endif
+                
+                            @if($requisito->polizasegurodesgravamen === 'PENDIENTE')
+                                <div class="form-group col-lg-4">
+                                    {!! Form::label('polizasegurodesgravamen', 'POLIZA DE SEGURO DE DESGRAVAMEN:') !!}
+                                    @if($requisito->nropolizadesgravamen)
+                                        <p>(Nro: {{ $requisito->nropolizadesgravamen }})</p>
+                                    @else
+                                        {!! Form::text('nropolizadesgravamen['.$requisito->id.']', null, ['class' => 'form-control', 'placeholder' => 'Ingrese Nro Póliza Desgravamen']) !!}
+                                    @endif
+                                    {!! Form::file('polizasegurodesgravamen['.$requisito->id.']', ['class' => 'form-control-file dropify']) !!}
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                @endforeach
+
                 <div class="modal fade" id="requisitosModal" tabindex="-1" aria-labelledby="requisitosModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
+                    <div class="modal-dialog modal-xl">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h3 class="modal-title" id="requisitosModalLabel">LISTA DE DOCUMENTOS DE REQUISITOS</h3>
+                                <h3 class="modal-title" id="requisitosModalLabel">REQUISITOS DE AUDITORÍA MÉDICA</h3>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body"> 
                                 <table class="table">
                                     <thead>
                                         <tr> 
@@ -90,75 +113,84 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-
-                                        @if (!is_null($requisito->cnacasegurado))
+                                        @if (!is_null($requisitosubido->cnacasegurado))
                                         <tr>
                                             <td>CERTIFICADO NACIMIENTO ASEGURADO</td>
                                             <td>
                                                 @if ($cnacaseguradoSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->cnacasegurado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
+                                                    <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisitosubido->cnacasegurado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
+                                                @elseif($requisitosubido->cnacasegurado === 'PENDIENTE')
+                                                    <div class="pendiente">PENDIENTE</div>
                                                 @else
-                                                <div class="pendiente">PENDIENTE</div>
+                                                    <div class="pendiente">PENDIENTE</div>
                                                 @endif
                                             </td>
                                         </tr>
                                         @endif
-                                        
-                                        @if (!is_null($requisito->ciasegurado))
+                                        @if (!is_null($requisitosubido->ciasegurado))
                                         <tr>
                                             <td>CARNET IDENTIDAD ASEGURADO</td>
                                             <td>
                                                 @if ($ciaseguradoSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->ciasegurado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
+                                                    <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisitosubido->ciasegurado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
+                                                @elseif($requisitosubido->ciasegurado === 'PENDIENTE')
+                                                    <div class="pendiente">PENDIENTE</div>
                                                 @else
-                                                <div class="pendiente">PENDIENTE</div>
+                                                    <div class="pendiente">PENDIENTE</div>
                                                 @endif
                                             </td>
                                         </tr>
                                         @endif
-
-                                        @if (!is_null($requisito->polizasgen))
+                                    </tbody>
+                                </table>
+                                
+                                <table class="table">
+                                    <thead>
+                                        <tr> 
+                                            <th>Banco</th>
+                                            <th>Nro. Póliza General</th>
+                                            <th>Póliza General</th>
+                                            <th>Declaración Salud</th>
+                                            <th>Nro. Póliza Desgravamen</th>
+                                            <th>Poliza seguro desgravamen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($requisitosClientepolizas as $requisito)
                                         <tr>
-                                            <td>POLIZAS GENERALES</td>
+                                            <td>{{ $requisito->banco }}</td>
+                                            <td>{{ $requisito->nropolizageneral ?? '' }}</td>
                                             <td>
-                                                @if ($polizasgenSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->polizasgen}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
+                                                @if ($requisito->polizageneral === 'PENDIENTE')
+                                                    <div class="pendiente">PENDIENTE</div>
                                                 @else
-                                                <div class="pendiente">PENDIENTE</div>
+                                                    <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->polizageneral}") }}" target="_blank" class="verdoc">VER DOC.</a>
+                                                @endif
+                                            </td>
+                                            <td> 
+                                                @if ($requisito->declasalud === 'PENDIENTE')
+                                                    <div class="pendiente">PENDIENTE</div>
+                                                @elseif ($requisito->declasalud === 'NO APLICA')
+                                                    <div class="noaplica">NO APLICA</div>
+                                                @else
+                                                    <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->declasalud}") }}" target="_blank" class="verdoc">VER DOC.</a>
+                                                @endif
+                                            </td>
+                                            
+                                            <td>{{ $requisito->nropolizadesgravamen ?? '' }}</td>
+                                            <td>
+                                                @if ($requisito->polizasegurodesgravamen === 'PENDIENTE')
+                                                    <div class="pendiente">PENDIENTE</div>
+                                                @else
+                                                    <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->polizasegurodesgravamen}") }}" target="_blank" class="verdoc">VER DOC.</a> 
                                                 @endif
                                             </td>
                                         </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->declasalud))
-                                        <tr>
-                                            <td>DECLARACION DE SALUD</td>
-                                            <td>
-                                                @if ($declasaludSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->declasalud}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->polizaseguro))
-                                        <tr>
-                                            <td>POLIZA DE SEGURO DE DESGRAVAMEN</td>
-                                            <td>
-                                                @if ($polizaseguroSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->polizaseguro}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
+                            
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
                             </div>
@@ -256,6 +288,11 @@
     }
     .pendiente {
         color:#ff0000; 
+        font-family: "Segoe UI";
+        font-weight: 700;
+    }
+    .noaplica {
+        color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 700;
     }

@@ -31,11 +31,11 @@
 
             <div class="col-md-4">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">DOCUMENTACIÓN A PRESENTAR</h4>
-                {{-- <div class="form-group">
+                <div class="form-group">
                     <input type="hidden" name="poder_estado" id="poder_estado">
                     <input type="checkbox" name="poder" value="poder" id="poder" checked disabled>
                     <label for="poder">PODER</label>
-                </div> --}}
+                </div>
                 @if (strtolower($estadoLaboral) === 'activo')
                 <div class="form-group">
                     <input type="checkbox" name="avcci" value="avcci" id="avcci" checked>
@@ -58,10 +58,7 @@
                     <input type="checkbox" name="dictamencalentenc" value="dictamencalentenc" id="dictamencalentenc" checked disabled>
                     <label for="dictamencalentenc" style="min-height: 20px;">DICTAMEN CALIFICACION ENTIDAD ENCARGADA</label>
                 </div>
-                <div class="form-group">
-                    <input type="checkbox" name="egestora" value="egestora" id="egestora">
-                    <label for="egestora" style="min-height: 20px;">EXTRACTO DE GESTORA</label>
-                </div>
+                
             </div>
             <div class="col-md-4" style="margin-top: 47px;">
                 @if (strtolower($estadoCivil) === 'casad@')
@@ -128,6 +125,10 @@
             </div>
             <div class="col-md-4">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">DOCUMENTACIÓN ADICIONAL</h4>
+                <div class="form-group">
+                    <input type="checkbox" name="egestora" value="egestora" id="egestora" checked disabled>
+                    <label for="egestora" style="min-height: 20px;">EXTRACTO DE GESTORA</label>
+                </div>
                 <div class="form-group">
                     <input type="checkbox" name="infomedicasalud" value="infomedicasalud" id="infomedicasalud" checked disabled>
                     <label for="infomedicasalud" style="min-height: 20px;">INFORMACIÓN MÉDICA</label>

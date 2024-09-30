@@ -3,8 +3,10 @@
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
 <a class="btn btn-sm float-right btn-subirrequisitos" href="{{ route('admin.asociados.subirdocrequisitos', $cliente) }}">SUBIR REQUISITOS</a>
-<h5>REQUISITOS DE:</h5>
+@if ($tieneInvalidez)
+<h5>REQUISITOS DE INVALIDEZ:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
+@endif
 @stop
 
 @section('content')
@@ -28,7 +30,7 @@
 <div class="card"> 
     <div class="card-body">
         <div class="row">
-            @if (strtolower($servicio1) === 'invalidez')
+            @if ($tieneInvalidez)
             <div class="col-md-4">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">DOCUMENTACIÓN A PRESENTAR</h4>
                 <div class="form-group">
@@ -59,10 +61,7 @@
                     <input type="checkbox" name="contrato" value="contrato" id="contrato" checked disabled>
                     <label for="contrato" style="min-height: 20px;">CONTRATO</label>
                 </div>
-                <div class="form-group">
-                    <input type="checkbox" name="recordservicios" value="recordservicios" id="recordservicios">
-                    <label for="recordservicios" style="min-height: 20px;">RECORD SERVICIOS</label>
-                </div>
+                
             </div>
             <div class="col-md-4" style="margin-top: 47px;">
                 @if (strtolower($estadoCivil) === 'casad@')
@@ -145,6 +144,14 @@
                     <input type="checkbox" name="egestora" value="egestora" id="egestora" checked disabled>
                     <label for="egestora" style="min-height: 20px;">EXTRACTO DE GESTORA</label>
                 </div>
+                <div class="form-group">
+                    <input type="checkbox" name="recordservicios" value="recordservicios" id="recordservicios">
+                    <label for="recordservicios" style="min-height: 20px;">RECORD SERVICIOS</label>
+                </div>
+                <div class="form-group">
+                    <input type="checkbox" name="infomedicasalud" value="infomedicasalud" id="infomedicasalud">
+                    <label for="infomedicasalud" style="min-height: 20px;">INFORMACIÓN MÉDICA</label>
+                </div>
                 <div class="form-group"> 
                     <input type="checkbox" name="denfaccidente" value="denfaccidente" id="denfaccidente" checked>
                     <label for="denfaccidente" class="color-toggle">DENUNCIA ENFERMEDAD ACCIDENTE</label>
@@ -157,7 +164,7 @@
                     <input type="checkbox" name="resolinvhijos" value="resolinvhijos" id="resolinvhijos" checked>
                     <label for="resolinvhijos" class="color-toggle">RESOLUCIÓN INVALIDEZ DE HIJOS < 25</label>
                 </div>
-            
+                
                 <script>
                     document.querySelectorAll('.color-toggle').forEach(label => {
                         label.addEventListener('dblclick', () => {
