@@ -75,7 +75,8 @@
                             </div>
                         </div>
                     @else
-                        @if (isset($usuarioId) && $usuarioId != 'general' && empty($finalDataPorTablaUsuario))
+                        @if (isset($usuarioId) && $usuarioId != 'general')
+                            <!-- Nueva condición para evitar tratar "general" como usuario -->
                             <p>No hay datos que mostrar para este usuario.</p>
                         @endif
                     @endif
@@ -267,7 +268,7 @@
                         data: {
                             labels: @json($diasEnOrden), // Días de la semana en orden
                             datasets: [{
-                                label: 'Registros de {{ $apodosTablas[$tabla] }}',
+                                label: 'Registros de {{ $tabla }}',
                                 data: @json($data->values()), // Asegurarse de que está en formato de lista
                                 backgroundColor: randomColor + '33', // Color con transparencia
                                 borderColor: randomColor,
@@ -327,17 +328,17 @@
         function handleUserSelection() {
             // Verificamos si el usuario seleccionado es "general"
             var selectedValue = document.getElementById('usuarioSelect').value;
-            if (selectedValue !== previousUserSelection) { // Solo cambia la lógica, pero no envía el formulario
+            if (selectedValue !== previousUserSelection) { // Solo enviamos el formulario si se selecciona un nuevo usuario
                 previousUserSelection = selectedValue;
 
                 if (selectedValue === 'general') {
                     document.getElementById('usuarios-tab').classList.add('disabled'); // Bloquea la pestaña de usuarios
                 } else {
                     document.getElementById('usuarios-tab').classList.remove(
-                        'disabled'); // Desbloquea la pestaña de usuarios
+                    'disabled'); // Desbloquea la pestaña de usuarios
                 }
 
-                // No enviamos el formulario automáticamente
+                document.forms[0].submit(); // Envía el formulario
             }
         }
     </script>

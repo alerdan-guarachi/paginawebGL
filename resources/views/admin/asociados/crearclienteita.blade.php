@@ -27,7 +27,7 @@
                     <div class="col-lg-12">
                         <div class="form-group">
                             {!! Form::label('sucursal', 'Sucursal:') !!}
-                            {!! Form::select('sucursal', $suc, null, ['class' => 'form-control sucursal-select', 'placeholder' => '']) !!}
+                            {!! Form::select('sucursal', $suc, null, ['class' => 'form-control', 'placeholder' => '']) !!}
                             @error('sucursal')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
@@ -37,13 +37,13 @@
                     </div>
                     {{-- <div class="col-lg-6">
                         <div class="form-group">
-                            {{-- {!! Form::label('tipocliente', 'Tipo cliente:') !!} --}}
-                            {{-- {!! Form::select('tipocliente', $tipocliente, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                            {!! Form::label('tipocliente', 'Tipo cliente:') !!}
+                            {!! Form::select('tipocliente', $tipocliente, null, ['class' => 'form-control', 'placeholder' => '']) !!}
                             @error('tipocliente')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
                                 </small>
-                            @enderror --}}
+                            @enderror
                         </div>
                     </div> --}}
                 </div>
@@ -820,10 +820,6 @@ $('.dropify').dropify();
         background-color: #2926e2;
         color: #ffffff;
     }
-
-    .sucursal-select {
-    width: 130px;
-}
 </style>
 
 @stop
