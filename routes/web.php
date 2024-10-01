@@ -449,3 +449,4 @@ use App\Http\Controllers\Admin\QrController;
 
 Route::post('/generar-qr', [FormularioController::class, 'generarQR'])->name('generar.qr');
 
+Route::post('asociados/asignar-fechaita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@asignarFecha_ITA')->name('admin.asociados.asignarFecha_ITA');

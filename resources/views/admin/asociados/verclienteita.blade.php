@@ -278,16 +278,16 @@
 
                         @if ($tieneContactos)
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR TRÁMITE">
+                                <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO">
                                     <i class="fas fa-atlas"></i>
-                                    <strong>TRÁMITES</strong>
+                                    <strong>SERVICIOS</strong>
                                 </a>
                             </div>
                         @else
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-asignartramite btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
+                                <a href="#" class="btn btn-asignartramite btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO" aria-disabled="true">
                                     <i class="fas fa-atlas"></i>
-                                    <strong>TRÁMITES</strong>
+                                    <strong>SERVICIOS</strong>
                                 </a>
                             </div>
                         @endif

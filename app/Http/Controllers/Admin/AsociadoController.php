@@ -533,7 +533,7 @@ class AsociadoController extends Controller
 
         $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionnombre', $accionesCliente)
         ->where('clienteitanombre', $nombreCliente)
-        ->whereIn('fechabateria', $fechasEnEstadoCotizacionSubCliente)
+        /* ->whereIn('fechabateria', $fechasEnEstadoCotizacionSubCliente) */
         ->distinct()
         ->pluck('fechabateria', 'accionnombre');
 
@@ -544,6 +544,7 @@ class AsociadoController extends Controller
 
         return view('admin.asociados.listadotramiteclienteita', compact('ciudades', 'tramitesubclientes', 'cliente', 'asociado', /* 'apoderados', */ 'tramites'/* , 'apoderadoSiguiente' */, 'accionesPorFecha'));
     }
+    
     public function guardartramiteclienteita(StoreTramitesubclienteRequest $request)
     {
         $clienteID = $request->input('clienteitaid');
@@ -559,6 +560,25 @@ class AsociadoController extends Controller
 
         
         return redirect()->route('admin.asociados.listadotramiteclienteita', ['cliente' => $cliente])->with('info', 'El trámite se creó con éxito');
+    }
+    public function asignarFecha_ITA(Request $request, $clienteId)
+    {
+        // Validar que se haya seleccionado una fecha de batería
+        $request->validate([
+            'fechabateria' => 'required'
+        ], [
+            'fechabateria.required' => 'Debe seleccionar una fecha de batería.'
+        ]);
+
+        // Encuentra el trámite del cliente por su ID
+        $clienteTramite = Tramitesubcliente::find($clienteId);
+
+        // Asignar la nueva fecha de batería
+        $clienteTramite->fechabateria = $request->input('fechabateria');
+        $clienteTramite->save();
+
+        // Redirigir a la misma URL donde estaba el usuario
+        return back()->with('info', 'Fecha asignada correctamente.');
     }
 //
 //CREAR BATERIA CLIENTE ITA 
@@ -2886,8 +2906,6 @@ class AsociadoController extends Controller
         $clienteitaid = $cliente->id; 
         $userRole = auth()->user()->getRoleNames()->first(); 
         $requisitosCliente = Requisitosclientesauditoria::where('clienteitaid', $clienteitaid)->first();
-        $requisitosubido = RequisitoSubCliente::where('clienteitaid', $cliente->id)->firstOrFail();
-
 
         $ciaseguradoPendiente = $requisitosCliente ? $requisitosCliente->ciasegurado === 'PENDIENTE' : false;
         $cnacaseguradoPendiente = $requisitosCliente ? $requisitosCliente->cnacasegurado === 'PENDIENTE' : false;
@@ -2895,6 +2913,7 @@ class AsociadoController extends Controller
         $declasaludPendiente = $requisitosCliente ? $requisitosCliente->declasalud === 'PENDIENTE' : false;
         $polizaseguroPendiente = $requisitosCliente ? $requisitosCliente->polizasegurodesgravamen === 'PENDIENTE' : false;
         
+        $requisitosubido = RequisitoSubCliente::where('clienteitaid', $cliente->id)->firstOrFail();
         $ciaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->ciasegurado, '.pdf') !== false ? true : false;
         $cnacaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->cnacasegurado, '.pdf') !== false ? true : false;
         $polizasgenSubido = $requisitosCliente && strpos($requisitosCliente->polizageneral, '.pdf') !== false ? true : false;
@@ -2912,16 +2931,27 @@ class AsociadoController extends Controller
         $request->validate([
             'cnacasegurado' => 'nullable|mimes:pdf',
             'ciasegurado' => 'nullable|mimes:pdf',
-            'polizageneral.*' => 'nullable|mimes:pdf', // Cambiado para manejar múltiples archivos
-            'declasalud.*' => 'nullable|mimes:pdf', // Cambiado para manejar múltiples archivos
-            'polizasegurodesgravamen.*' => 'nullable|mimes:pdf', // Cambiado para manejar múltiples archivos
-            'nropolizageneral.*' => 'nullable|string', // Validación para el número de póliza general
-            'nropolizadesgravamen.*' => 'nullable|string', // Validación para el número de póliza de desgravamen
+            'polizageneral.*' => 'nullable|mimes:pdf',
+            'declasalud.*' => 'nullable|mimes:pdf',
+            'polizasegurodesgravamen.*' => 'nullable|mimes:pdf',
+            'nropolizageneral.*' => 'nullable|string',
+            'nropolizadesgravamen.*' => 'nullable|string',
         ]);
 
         // Lista de campos a procesar
         $camposArchivos = ['cnacasegurado', 'ciasegurado', 'polizageneral', 'declasalud', 'polizasegurodesgravamen'];
         $nroPolizas = ['nropolizageneral', 'nropolizadesgravamen'];
+
+
+
+        $requisito = Requisitosclientesauditoria::where('clienteitaid', $cliente->id)->first();
+        $camposArchivos3 = [
+            'cnacasegurado', 'ciasegurado'
+        ];
+
+        foreach ($camposArchivos3 as $campo) {
+            $this->manejarArchivo3($request, $campo, $requisito, $cliente->id);
+        }
 
         // Manejo de archivos
         foreach ($camposArchivos as $campo) {
@@ -2980,7 +3010,27 @@ class AsociadoController extends Controller
             }
         }
     }
+    protected function manejarArchivo3(Request $request, $campo, $requisito, $clienteId)
+    {
+        if ($request->hasFile($campo)) {
+            $file = $request->file($campo);
+            $carpetaCliente = public_path("/requisitosclientesita/{$clienteId}");
 
+            // Crear la carpeta si no existe
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+
+            // Generar un nombre único para el archivo
+            $archivo = time() . '_' . $file->getClientOriginalName();
+
+            // Mover el archivo a la carpeta
+            $file->move($carpetaCliente, $archivo);
+
+            // Actualizar el modelo
+            $requisito->update([$campo => $archivo]);
+        }
+    }
 
 
     public function generarchecklistclienteitaapelacion(Cliente $cliente) 
