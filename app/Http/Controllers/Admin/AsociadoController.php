@@ -282,7 +282,7 @@ class AsociadoController extends Controller
         }
         $cliente = Cliente::create($clienteData);
 
-        return redirect()->route('admin.asociados.listadoclienteita', 6)->with('info', 'El cliente se creó con éxito');
+        return redirect()->route('admin.asociados.verclienteita', $cliente->id)->with('info', 'El cliente se creó con éxito');
     }
     public function listadoclienteita(Request $request, Asociado $asociado)
     {
@@ -307,7 +307,8 @@ class AsociadoController extends Controller
     {
         $requisitosubclientes = ProveedorInformefinal::where('clienteitaid', $cliente->id)->get();
 
-        $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
+        $proveedores = Proveedor::where('id', 3)->get(['id', 'proveedor', 'celular']);
+
 
         $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
         $tieneBateria = Bateriasubcliente::where('clienteitaid', $cliente->id)->exists();
@@ -544,7 +545,6 @@ class AsociadoController extends Controller
 
         return view('admin.asociados.listadotramiteclienteita', compact('ciudades', 'tramitesubclientes', 'cliente', 'asociado', /* 'apoderados', */ 'tramites'/* , 'apoderadoSiguiente' */, 'accionesPorFecha'));
     }
-    
     public function guardartramiteclienteita(StoreTramitesubclienteRequest $request)
     {
         $clienteID = $request->input('clienteitaid');
@@ -558,7 +558,29 @@ class AsociadoController extends Controller
         $clienteData['estado'] = $request->input('estado'); 
         $tramitesubcliente = Tramitesubcliente::create($clienteData);
 
-        
+        // Verifica el tipo de servicio seleccionado
+        if ($request->input('tramite') == 'INVALIDEZ') {
+            // Genera el PDF para la vista de invalidez
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteita', compact('cliente'));
+            $pdfName = 'Etiqueta_Invalidez_' . $cliente->nombrecompleto . '.pdf';
+        } elseif ($request->input('tramite') == 'AUDITORIA MEDICA') {
+            // Genera el PDF para la vista de auditoría médica
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitaauditoria', compact('cliente'));
+            $pdfName = 'Etiqueta_Auditoria_' . $cliente->nombrecompleto . '.pdf';
+        } elseif ($request->input('tramite') == 'APELACION') {
+            // Genera el PDF para la vista de auditoría médica
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitaapelacion', compact('cliente'));
+            $pdfName = 'Etiqueta_Apelacion_' . $cliente->nombrecompleto . '.pdf';
+        } elseif ($request->input('tramite') == 'SEGUNDA SOLICITUD') {
+            // Genera el PDF para la vista de auditoría médica
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitasegundasolicitud', compact('cliente'));
+            $pdfName = 'Etiqueta_SegundaSolicitud_' . $cliente->nombrecompleto . '.pdf';
+        } else {
+            return redirect()->back()->with('error', 'Servicio no válido');
+        }
+
+        return $pdf->download($pdfName);
+
         return redirect()->route('admin.asociados.listadotramiteclienteita', ['cliente' => $cliente])->with('info', 'El trámite se creó con éxito');
     }
     public function asignarFecha_ITA(Request $request, $clienteId)
@@ -840,7 +862,7 @@ class AsociadoController extends Controller
             $areasSeleccionadas = [];
         }
     
-        $fechas = BateriaSubCliente::where('clienteitaid', $cliente->id)
+        $fechas = Tramitesubcliente::where('clienteitaid', $cliente->id)
                                     ->pluck('fechabateria')
                                     ->unique();
                                     
@@ -3831,18 +3853,34 @@ class AsociadoController extends Controller
         $usuarioId = auth()->user()->id;
         $usuarioRegistro = auth()->user()->name;
 
-        // Buscar el nombre del proveedor basado en el ID seleccionado
         $proveedorAsignado = Proveedor::findOrFail($request->proveedorasignado)->proveedor;
 
-        // Crear el registro en ProveedorInformefinal utilizando el nombre del proveedor
         ProveedorInformefinal::create([
             'fechabateria' => $request->fechabateria,
-            'proveedorasignado' => $proveedorAsignado, // Guardar el nombre del proveedor en lugar del ID
+            'proveedorasignado' => $proveedorAsignado,
             'celularproveedor' => $request->celularproveedor,
             'clienteitaid' => $cliente->id,
             'clienteitanombre' => $cliente->nombrecompleto,
             'usuarioid' => $usuarioId,
             'usuarioregistro' => $usuarioRegistro,
+        ]);
+
+        // Crear el registro en BateriaSubCliente
+        BateriaSubCliente::create([
+            'fechabateria' => $request->fechabateria,
+            'clienteitaid' => $cliente->id,
+            'clienteitanombre' => $cliente->nombrecompleto,
+            'usuarioid' => $usuarioId,
+            'usuarioregistro' => $usuarioRegistro,
+            'tipoarea' => 'INFORME FINAL',
+            'areanombre' => 'INFORME FINAL',
+            'accionnombre' => 'INFORME FINAL',
+            'precio' => '2100',
+            'preciocompra' => '250',
+            'proveedorasignado' => 'AGUIRRE VASQUEZ MARIA RENEE',
+            'servicio' => 'INTERNO',
+            'accionid' => '1081',
+
         ]);
 
         return redirect()->route('admin.asociados.verclienteita', $cliente)->with('info', 'Proveedor asignado exitosamente.');

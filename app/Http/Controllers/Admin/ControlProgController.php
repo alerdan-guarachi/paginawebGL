@@ -133,6 +133,21 @@ class ControlProgController extends Controller
             'bateriaproveedores',
         ];
 
+        // Apodos de las tablas para los gráficos individuales por usuario
+        $apodosTablas = [
+            'clientes' => 'Clientes',
+            'contactosubclientes' => 'Contactos Clientes',
+            'tramitessubclientes' => 'Trámites Clientes',
+            'requisitosubclientes' => 'Requisitos Clientes',
+            'bateriasubclientes' => 'Batería Clientes',
+            'estadocotizacionsubclientes' => 'Estado Cotización Clientes',
+            'programacionsubclientes' => 'Programación Clientes',
+            'estadoprogramacionsubclientes' => 'Estado Programación Clientes',
+            'documentacionsubclientes' => 'Documentación Clientes',
+            'aprobacioninformesfinales' => 'Aprobación Informes Finales',
+            'bateriaproveedores' => 'Batería Proveedores',
+        ];
+
         // Almacenamiento temporal de los resultados por tabla
         $dataPorTabla = [];
 
@@ -165,6 +180,11 @@ class ControlProgController extends Controller
                 // Sumar el total de registros para cada día en la tabla correspondiente
                 $dataPorTabla[$tabla][$dia] = isset($dataPorTabla[$tabla][$dia]) ? $dataPorTabla[$tabla][$dia] + $total : $total;
             }
+        }
+
+        // Verificar si se seleccionó "general"
+        if ($usuarioId == 'general') {
+            return $this->index(); // Cargar la gráfica general sin mostrar mensajes
         }
 
         // Si no se encontraron registros para el usuario seleccionado
@@ -203,7 +223,7 @@ class ControlProgController extends Controller
         $totalRegistros = collect($finalDataPorTablaUsuario)->flatten()->sum();
 
         if ($totalRegistros === 0) {
-            return redirect()->route('admin.controlprogramacion.index')->with('info', 'Este usuario tiene datos registrados, pero no ha tenido actividad que mostrar en el gráfico.');
+            return redirect()->route('admin.controlprogramacion.index')->with('info', 'Este usuario no tiene datos registrados');
         }
 
         // Inicializar datasetUsuario como una colección vacía para evitar errores en la vista
@@ -214,7 +234,7 @@ class ControlProgController extends Controller
 
         //dd($finalDataPorTablaUsuario); // Verificar si los datos están correctamente formateados
 
-        return view('admin.controlprogramacion.index', compact('finalDataPorTablaUsuario', 'diasEnOrden', 'usuarios', 'usuarioId', 'datasetUsuario', 'finalDataGeneral'));
+        return view('admin.controlprogramacion.index', compact('finalDataPorTablaUsuario', 'diasEnOrden', 'usuarios', 'usuarioId', 'datasetUsuario', 'finalDataGeneral', 'apodosTablas'));
     }
 
     /**

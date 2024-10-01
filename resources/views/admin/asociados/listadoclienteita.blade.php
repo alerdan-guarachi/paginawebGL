@@ -39,7 +39,7 @@
                 <tr>
                     <th>ID</th>
                     <th>Nombres y Apellidos</th>
-                    <th>Tipo de cliente</th>
+                    {{-- <th>Tipo de cliente</th> --}}
                     <th>CI</th>
                     <th>Edad</th>
                     <th>Sucursal</th>
@@ -51,7 +51,7 @@
                     <tr>
                         <td class="align-middle">{{$cliente->id}}</td>
                         <td class="align-middle">{{$cliente->nombrecompleto}}</td>
-                        <td class="align-middle">{{$cliente->tipocliente}}</td>
+                        {{-- <td class="align-middle">{{$cliente->tipocliente}}</td> --}}
                         <td class="align-middle">{{$cliente->ci}}</td>
                         <td class="align-middle">{{$cliente->edad}}</td>
                         <td class="align-middle">{{$cliente->sucursal}}</td>
