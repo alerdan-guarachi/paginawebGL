@@ -160,11 +160,12 @@
                     <input type="checkbox" name="actdatos" value="actdatos" id="actdatos" checked>
                     <label for="actdatos" class="color-toggle">ACTUALIZACIÓN DE DATOS</label>
                 </div>
+                @if ($numHijosMenores > 0 || $numHijosMenores === null)
                 <div class="form-group">
                     <input type="checkbox" name="resolinvhijos" value="resolinvhijos" id="resolinvhijos" checked>
                     <label for="resolinvhijos" class="color-toggle">RESOLUCIÓN INVALIDEZ DE HIJOS < 25</label>
                 </div>
-                
+                @endif
                 <script>
                     document.querySelectorAll('.color-toggle').forEach(label => {
                         label.addEventListener('dblclick', () => {
@@ -217,11 +218,12 @@
                             {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
                             {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
                             {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
+                            {!! Form::hidden('ci', $cliente->ci, ['class' => 'form-control']) !!}
                             {!! Form::submit('DERIVAR A MEDICINA LABORAL', ['class' => 'btn btn-derivar']) !!}
                         {!! Form::close() !!}
                     </div>
 
-                    <div class="form-group" style="display: flex; gap: 5px;">
+                    {{-- <div class="form-group" style="display: flex; gap: 5px;">
                         {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
                             {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
                             {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
@@ -233,7 +235,7 @@
                                 'hidden' => !($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
                             ]) !!}
                         {!! Form::close() !!}
-                    </div>
+                    </div> --}}
                 @elseif ($registroExistente)
                     <p></p>
                 @elseif ($registroaprobadoExistente)

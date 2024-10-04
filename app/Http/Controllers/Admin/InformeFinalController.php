@@ -593,7 +593,7 @@ class InformeFinalController extends Controller
                     'created_at' => $item->created_at,
                     'fechaatencionprogramacion' => $fechaAtencion,
                     'fechadocumento' => $documentacion ? $documentacion->created_at : null,
-                    'creacionbateria' => $createdfechabateria,
+                    'creacionbateria' => $createdatbateria,
                     'poder' => $poder,
                     'numeropoder' => $numeropoder,
                     'avcci' => $avcci,
@@ -625,7 +625,6 @@ class InformeFinalController extends Controller
                 'historiamedica' => $historiamedicaclienteita,
                 'motivoabandono' => $motivoabandono,
                 'estadoGeneral' => $estadoGeneral,
-                'usuarioregistro' => $usuarioregistro,
                 'usuarioregistro' => $usuarioregistro,
             ];
         }

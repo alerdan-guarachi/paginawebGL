@@ -249,30 +249,24 @@
     function actualizarAcciones() {
         var fechaSeleccionada = $('#fecha_bateria').val();
         var accionesDisponibles = $('#accion');
-        accionesDisponibles.empty(); // Limpiar opciones anteriores
+        accionesDisponibles.empty();
 
-        var accionesPorFecha = @json($accionesPorFecha); // Obtenemos acciones por fecha
-        var accionesRegistradas = @json($estadoMapeado); // Aquí se mapean las acciones registradas con sus fechas
+        var accionesPorFecha = @json($accionesPorFecha);
+        var accionesRegistradas = @json($estadoMapeado);
 
-        // Opción vacía
         accionesDisponibles.append(new Option('', '', false, true));
 
-        // Obtener las acciones para la fecha seleccionada
         var accionesFechaSeleccionada = accionesPorFecha[fechaSeleccionada] || [];
 
-        // Filtrar las acciones que no están registradas para esta fecha
         var accionesNoRegistradas = accionesFechaSeleccionada.filter(function(accion) {
             return !accionesRegistradas[accion] || !accionesRegistradas[accion][fechaSeleccionada];
         });
 
-        // Añadir las acciones no registradas al select
         accionesNoRegistradas.forEach(function(accion) {
             accionesDisponibles.append(new Option(accion, accion));
         });
 
-        // Mostrar el select de acciones si hay opciones disponibles
         document.getElementById('acciones_select').style.display = accionesNoRegistradas.length > 0 ? 'block' : 'none';
-
         
     }
 </script>

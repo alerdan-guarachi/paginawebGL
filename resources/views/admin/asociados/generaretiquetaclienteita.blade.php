@@ -28,7 +28,7 @@
             <td>{{$cliente->id}}</td>
             <td>{{$cliente->nombres}} {{$cliente->apepaterno}} {{$cliente->apematerno}}</td>
             <td>{{$cliente->empresa}}</td>
-            <td>{{$cliente->tipocliente}}</td>
+            <td>INVALIDEZ</td>
         </tr>
         <tr>
             <th>CIUDAD</th>

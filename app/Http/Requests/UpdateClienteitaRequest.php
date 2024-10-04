@@ -67,7 +67,7 @@ class UpdateClienteitaRequest extends FormRequest
             'usuarioultimaactualizacion' => '',
             'sucursal' => 'required|max:45',
             'fechavencci' => 'required',
-            'tipocliente' => 'required',
+            'tipocliente' => '',
         ]; 
         return $rules;
     }

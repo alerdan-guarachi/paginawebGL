@@ -32,8 +32,8 @@ class StoreTramitesubclienteRequest extends FormRequest
         $rules = [
             'id' => '',
         'tramite' => 'max:255',
-        'clienteitaid' => 'required|max:45',
-        'clienteitanombre' => 'required|max:45',
+        'clienteitaid' => 'max:45',
+        'clienteitanombre' => 'max:45',
         'apoderadoasignado' => 'max:255',
         'usuarioinicial' => 'max:255',
         'usuariofinal' => 'max:45',
@@ -43,6 +43,8 @@ class StoreTramitesubclienteRequest extends FormRequest
         'usuarioid' => 'max:45',
         'usuarioregistro' => 'max:90',
         'fechabateria' => '',
+        'clienteauditoriaid' => '',
+        'clienteauditorianombre' => '',
         ]; 
         return $rules;
     }

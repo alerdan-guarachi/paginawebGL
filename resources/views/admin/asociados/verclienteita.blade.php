@@ -5,11 +5,9 @@
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.listadoclienteita', ['asociado' => 6]) }}">REGRESAR</a>
 <a class="btn btn-sm float-right btn-acciones" data-toggle="modal" data-target="#ventanaModal">ACCIONES DEL CLIENTE</a>
-{{-- <a class="btn btn-sm float-right btn-generaretiqueta"href="{{ route('admin.asociados.generaretiquetaclienteita', $cliente) }}" data-toggle="tooltip" data-placement="top">GENERAR ETIQUETA</a> --}}
 @if ($tieneAuditoriaMedica || $tieneApelacion || $tieneSegundasolicitud)
     <a class="btn btn-sm float-right btn-auditoriamedica" data-toggle="modal" data-target="#ventanaModalauditoriamedica">SERVICIOS ADICIONALES</a>
 @endif
-
 
 <h5>DATOS DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
@@ -27,6 +25,7 @@
     </script>
 @endif
 
+{{-- VER DATOS DEL CLIENTE --}}
 <div class="container col-lg-12">
     <div class="card">
         <div class="card-body">
@@ -162,11 +161,7 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <table style="width: 100%;">
-                                            <tbody>
-                                                {{-- <tr> 
-                                                    <th>Servicio</th>
-                                                    <td>{{$cliente->tipocliente}} @if ($tieneAuditoriaMedica) - AUDITORIA MEDICA @endif</td>
-                                                </tr>            --}}                                     
+                                            <tbody>                                 
                                                 <tr>
                                                     <th>NUA/CUA</th>
                                                     <td>{{$cliente->nuacua}}</td>
@@ -761,52 +756,6 @@
 </div>
 
 {{-- VER HISTORIA MEDICA --}}
-{{-- <div class="modal fade modal-custom-height" id="historialMedicoModal" tabindex="-1" aria-labelledby="historialMedicoModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="titulo">
-          <h5 class="modal-title" id="historialMedicoModalLabel">HISTORIA MÉDICA DE</h5>
-          <h3>{{$cliente->nombrecompleto}}</h3>
-        </div>
-        {!! Form::model($cliente, ['route' => ['admin.asociados.guardarhistoriamedica', $cliente], 'method' => 'POST', 'files' => true]) !!}
-        {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-        {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-
-        @if($documentacion)
-        <div class="modal-body text-center">
-            <!-- Visor PDF -->
-            <iframe class="pdf-preview" src="{{ asset('/historiamedica/' . $documentacion->clienteitaid . '/' . $documentacion->document) }}" type="application/pdf"></iframe>
-            <!-- Botón para ver el documento completo -->
-            <a href="{{ asset('/historiamedica/' . $documentacion->clienteitaid . '/' . $documentacion->document) }}" class="btn btn-verhistoriamedica" target="_blank">
-              <strong>VER HIST. MED.</strong>
-            </a>
-            <a href="{{ route('ver.documento', $documentacion->id) }}" class="btn btn-verhistoriamedica" target="_blank">
-                <strong>VER HIST. MED.</strong>
-              </a>
-              
-          </div>
-        @else
-          <div class="modal-body" style="margin-top: 50px;">
-            <div class="mb-3">
-              {!! Form::label('file', 'Documento:', ['class' => 'form-label']) !!}
-              <input type="file" name="archivo" id="archivo" class="dropify" />
-              @error('archivo')
-                <div class="text-danger">
-                  <i class="fas fa-exclamation-circle"></i> {{$message}}
-                </div>
-              @enderror
-            </div>
-            <input type="text" class="form-control" id="accion" name="accion" value="HISTORIA MÉDICA" hidden>
-          </div>
-          <div class="modal-footer" style="margin-top: 50px;">
-            <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">Cerrar</button>
-            <button type="submit" class="btn btn-si">Subir Doc.</button>
-          </div>
-        @endif
-        {!! Form::close() !!}
-      </div>
-    </div>
-</div> --}}
 <div class="modal fade modal-custom-height" id="historialMedicoModal" tabindex="-1" aria-labelledby="historialMedicoModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

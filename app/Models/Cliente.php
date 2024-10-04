@@ -48,7 +48,7 @@ class Cliente extends Model
         'usuarioultimaactualizacion' => 'required',
         'sucursal' => 'required',
         'fechavencci' => 'required',
-        'tipocliente' => 'required',
+        'tipocliente' => '',
     ]; 
 
     protected $fillable = [

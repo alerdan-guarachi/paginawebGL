@@ -292,6 +292,10 @@ Route::post('asociados/guardarproveedorinformefinal/{cliente}', 'App\Http\Contro
         Route::get('asociados/verclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@verclienteauditoria')->name('admin.asociados.verclienteauditoria');
         Route::get('asociados/editarclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@editarclienteauditoria')->name('admin.asociados.editarclienteauditoria');
         Route::put('asociados/actualizarclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@actualizarclienteauditoria')->name('admin.asociados.actualizarclienteauditoria');
+    //ASIGNAR TRAMITE CLIENTE AUDITORIA
+        Route::get('asociados/listadotramiteclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@listadotramiteclienteauditoria')->name('admin.asociados.listadotramiteclienteauditoria');
+        Route::get('asociados/asignartramiteclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@asignartramiteclienteauditoria')->name('admin.asociados.asignartramiteclienteauditoria');
+        Route::post('asociados/guardartramiteclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardartramiteclienteauditoria')->name('admin.asociados.guardartramiteclienteauditoria');
     //CREAR BATERIA CLIENTE AUDITORIA
         Route::get('asociados/crearbateriaclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@crearbateriaclienteauditoria')->name('admin.asociados.crearbateriaclienteauditoria');
         Route::post('asociados/guardarbateriaclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardarbateriaclienteauditoria')->name('admin.asociados.guardarbateriaclienteauditoria');

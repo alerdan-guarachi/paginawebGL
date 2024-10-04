@@ -57,7 +57,7 @@ class StoreClienteRequest extends FormRequest
             'paisresidencia' => 'required|max:45',
             'departamentoresidencia' => 'required|max:45',
             'ciudadresidencia' => 'required|max:45',
-            'aseguradora' => 'nullable',
+            'aseguradora' => 'required',
             'referenciador' => 'required',
             'afp' => '',
             'numhijosmenores' => 'required',

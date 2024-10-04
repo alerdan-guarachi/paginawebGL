@@ -648,7 +648,7 @@
                     color: #dc3545;
                 }
             </style>
-            {!! Form::submit('Crear perfil', ['class' => 'btn btn-crear']) !!}
+            {!! Form::submit('CREAR CLIENTE', ['class' => 'btn btn-crear']) !!}
             {!! Form::close() !!}
         </div>
     </div>

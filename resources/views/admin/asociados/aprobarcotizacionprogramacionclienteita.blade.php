@@ -10,6 +10,7 @@
     {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
     {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
     {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
+    {!! Form::hidden('ci', $cliente->ci, ['class' => 'form-control']) !!}
 {!! Form::close() !!}
 
 <h5>APROBAR COTIZACIÓN DE PROGRAMACIÓN DE:</h5>
@@ -270,13 +271,13 @@
                         <label for="archivo">Nueva cotización:</label>
                         <input type="file" class="form-control-file dropify" name="archivo" id="archivo" accept="application/pdf" required>
                     </div>
-                    
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-crear">Actualizar cotización</button>
+                        <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                    </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-crear">Actualizar cotización</button>
-                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-            </div>
+            
         </div>
     </div>
 </div>

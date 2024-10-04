@@ -3,7 +3,7 @@
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
 <a class="btn btn-sm float-right btn-aprobarcotizacion" href="{{ route('admin.asociados.aprobarcotizacionprogramacionclienteita', $cliente) }}">APROBAR COTIZACION</a>
-<a class="btn btn-sm float-right btn-crear" href="{{ route('admin.asociados.generarpdfcotizacionclienteita', [
+<a class="btn btn-sm float-right btn-crear" href="{{ route('admin.asociados.generarpdfcotizacionclienteita', [ 
     'cliente' => $cliente->id,
     'buscarporfecha' => $fechaSeleccionada,
     'buscarporservicio' => $servicioSeleccionado,
@@ -11,7 +11,20 @@
     'total' => $total
 ]) }}" onclick="confirmarGeneracionPdf(event)">GENERAR PDF</a>
 
-<!-- SweetAlert2 CSS -->
+<script>
+    function confirmarGeneracionPdf(event) {
+        event.preventDefault();
+
+        const confirmacion = confirm("Posteriormente también debe generar el consentimiento informado para la realización de evaluaciones y estudios médicos adicionales.");
+        if (confirmacion) {
+
+            window.location.href = event.target.href;
+        }
+    }
+</script>
+    
+
+{{-- <!-- SweetAlert2 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 <!-- SweetAlert2 JS -->
@@ -45,7 +58,7 @@
             }
         });
     }
-</script>
+</script> --}}
 <style>
     .btn-entendido {
         background-color: #6acf81; /* Verde */
@@ -60,13 +73,13 @@
 
 
 
-{!! Form::open(['route' => 'generar.pdf.consentimientoinformado', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+{{-- {!! Form::open(['route' => 'generar.pdf.consentimientoinformado', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
     <a class="btn btn-consentimientoinformado btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">CONS. INFORMADO</a>
     {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
     {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
     {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
     {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
-{!! Form::close() !!}
+{!! Form::close() !!} --}}
 
 <h5>COTIZACIÓN DE PROGRAMACIÓN DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>

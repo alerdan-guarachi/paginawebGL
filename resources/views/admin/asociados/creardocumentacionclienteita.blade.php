@@ -28,7 +28,7 @@
                 {!! Form::model($cliente, ['route' => ['admin.asociados.guardardocumentacionclienteita', $cliente], 'method' => 'POST', 'files' => true]) !!}
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                {!! Form::hidden('clienteitaid', $id) !!}
+                {!! Form::hidden('clienteitaid', $cliente->id) !!}
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="form-group" hidden>

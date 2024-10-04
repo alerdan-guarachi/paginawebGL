@@ -58,7 +58,7 @@
             border: 1px solid black;
             padding: 8px;
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         /* Ajuste específico para las celdas de letras (E, I, S, R) */
@@ -70,8 +70,8 @@
 
         /* Celdas para marcar debajo */
         td.marcado {
-            height: 22px;
-            padding: 12px;
+            height: 12px;
+            padding: 7px;
         }
 
         /* Limpiar el float después de la tabla de Evaluaciones Médicas Técnicas */
@@ -84,7 +84,7 @@
 <body>
 
     <!-- Evaluaciones Médicas Técnicas (ocupa solo el 50% de la página) -->
-    <div class="titulo-evaluaciones">
+    {{-- <div class="titulo-evaluaciones">
         <h2>{{ $tituloEvaluaciones }}</h2>
     </div>
     <div class="table-container-left">
@@ -111,8 +111,41 @@
                 </tr>
             </tbody>
         </table>
-    </div>
+    </div> --}}
 
+    @if ($evaluacionesAsociados->isNotEmpty())
+        <div class="titulo-evaluaciones">
+            <h2>{{ $tituloEvaluaciones }}</h2>
+        </div>
+        @foreach ($evaluacionesAsociados as $evaluacionesFila)
+            <div class="table-container-left">
+                <table>
+                    <thead>
+                        <tr>
+                            @foreach ($evaluacionesFila as $evaluacion)
+                                <th colspan="2">{{ $evaluacion }}</th>
+                            @endforeach
+                        </tr>
+                        <tr>
+                            @foreach ($evaluacionesFila as $evaluacion)
+                                <th class="letras">E</th>
+                                <th class="letras">I</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            @foreach ($evaluacionesFila as $evaluacion)
+                                <td class="marcado"></td> <!-- Columna S -->
+                                <td class="marcado"></td> <!-- Columna I -->
+                            @endforeach
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        @endforeach
+    @endif
+    
     <div class="clearfix"></div> <!-- Limpiar el float -->
 
     <!-- Solicitud de Interconsultas (Especialidades) -->

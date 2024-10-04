@@ -74,7 +74,6 @@ class AsociadoController extends Controller
     public function __construct() { 
         $this->middleware ('can:admin.asociados.index')->only('index');
     }
-
     public function index(Request $request)
     {
         $nombreasociado = $request->get('buscarpor');
@@ -552,36 +551,40 @@ class AsociadoController extends Controller
 
         $clienteData = $request->all();
         $clienteData['clienteitanombre'] = $cliente->nombrecompleto;
-        $clienteData['apoderado'] = $request->input('apoderado'); 
+        $clienteData['apoderado'] = $request->input('apoderado');
         $clienteData['usuarioid'] = $request->usuarioid;
         $clienteData['usuarioregistro'] = $request->usuarioregistro;
-        $clienteData['estado'] = $request->input('estado'); 
+        $clienteData['estado'] = $request->input('estado');
         $tramitesubcliente = Tramitesubcliente::create($clienteData);
 
-        // Verifica el tipo de servicio seleccionado
-        if ($request->input('tramite') == 'INVALIDEZ') {
-            // Genera el PDF para la vista de invalidez
-            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteita', compact('cliente'));
+        // Obtener el trámite seleccionado
+        $tramite = $request->input('tramite');
+
+        // Verificar el trámite y generar el PDF
+        if ($tramite == 'INVALIDEZ') {
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteita', compact('cliente', 'tramite'));
             $pdfName = 'Etiqueta_Invalidez_' . $cliente->nombrecompleto . '.pdf';
-        } elseif ($request->input('tramite') == 'AUDITORIA MEDICA') {
-            // Genera el PDF para la vista de auditoría médica
-            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitaauditoria', compact('cliente'));
+        } elseif ($tramite == 'AUDITORIA MEDICA') {
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitaauditoria', compact('cliente', 'tramite'));
             $pdfName = 'Etiqueta_Auditoria_' . $cliente->nombrecompleto . '.pdf';
-        } elseif ($request->input('tramite') == 'APELACION') {
-            // Genera el PDF para la vista de auditoría médica
-            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitaapelacion', compact('cliente'));
+        } elseif ($tramite == 'APELACION') {
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitaapelacion', compact('cliente', 'tramite'));
             $pdfName = 'Etiqueta_Apelacion_' . $cliente->nombrecompleto . '.pdf';
-        } elseif ($request->input('tramite') == 'SEGUNDA SOLICITUD') {
-            // Genera el PDF para la vista de auditoría médica
-            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitasegundasolicitud', compact('cliente'));
+        } elseif ($tramite == 'SEGUNDA SOLICITUD') {
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitasegundasolicitud', compact('cliente', 'tramite'));
             $pdfName = 'Etiqueta_SegundaSolicitud_' . $cliente->nombrecompleto . '.pdf';
         } else {
-            return redirect()->back()->with('error', 'Servicio no válido');
+            return response()->json(['error' => 'Servicio no válido'], 400);
         }
 
-        return $pdf->download($pdfName);
+        // Guarda el PDF directamente en la carpeta 'public'
+        $pdf->save(public_path($pdfName));
 
-        return redirect()->route('admin.asociados.listadotramiteclienteita', ['cliente' => $cliente])->with('info', 'El trámite se creó con éxito');
+        // Retorna la URL directamente desde 'public'
+        return response()->json([
+            'pdf_url' => asset($pdfName), // Se asume que el archivo está en 'public'
+            'redirect_url' => route('admin.asociados.listadotramiteclienteita', $cliente->id)
+        ]);
     }
     public function asignarFecha_ITA(Request $request, $clienteId)
     {
@@ -675,6 +678,171 @@ class AsociadoController extends Controller
         }
         return redirect()->route('admin.asociados.crearbateriaclienteita', ['cliente' => $cliente])->with('info', 'La batería se creó con éxito');
     } */
+    public function crearbateriaclienteita(Cliente $cliente)
+    {
+        $sucursalCliente = $cliente->sucursal;
+        $rolusuario = auth()->user()->getRoleNames()->first(); 
+        $areas = Area::orderBy('nombrearea', 'asc')
+                    ->where('idtipoarea', 2)
+                    ->pluck('nombrearea', 'id');
+
+        $accionesPorArea = [];
+        foreach ($areas as $id => $nombreArea) {
+            $accionesPorArea[$id] = Bateriaproveedor::where('areasid', $id)
+                ->where('sucursal', $sucursalCliente)
+                ->where('estado', 'ACTIVO')
+                ->where('asociado', 'CLIENTES ITA')
+                ->orderBy('accion', 'asc')
+                ->get(['id', 'accion', 'proveedor', 'precio']);
+        }
+
+        $areas2 = Bateriaproveedor::orderBy('area', 'asc')
+            ->where('tipoid', 1)
+            ->where('estado', 'ACTIVO')
+            ->where('sucursal', $sucursalCliente)
+            ->where('asociado', 'CLIENTES ITA')
+            ->get(['area', 'id', 'proveedor', 'precio']);
+
+        $estadoproveedor = [
+            'ACTIVO' => 'ACTIVO',
+            'INACTIVO' => 'INACTIVO',
+        ];
+        $departamentos = Departamento::orderBy('departamento')->pluck('departamento', 'id');
+        $id = $cliente->nombrecompleto ? Cliente::where('nombrecompleto', $cliente->nombrecompleto)->value('id') : null;
+
+        $nombreCliente = $cliente->nombrecompleto; 
+        $idCliente = $cliente->id; 
+
+        $accionesCliente = BateriaSubCliente::where('clienteitaid', $idCliente)
+            ->pluck('accionid')
+            ->toArray();
+
+        $fechasbateriasSubCliente = BateriaSubCliente::where('clienteitaid', $idCliente)
+            ->distinct()
+            ->pluck('fechabateria');
+
+        $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionid', $accionesCliente)
+            ->where('clienteitaid', $idCliente)
+            ->whereIn('fechabateria', $fechasbateriasSubCliente)
+            ->distinct()
+            ->pluck('fechabateria', 'accionid');
+
+        $accionesNombres = BateriaSubCliente::whereIn('accionid', $accionesCliente)
+            ->pluck('accionnombre', 'accionid')
+            ->toArray();
+
+        $accionesPorFecha = [];
+        foreach ($fechasBateriaPorAccion as $accionid => $fecha) {
+
+            /* $proveedor = BateriaProveedor::where('ID', $accionid)->value('proveedor'); */
+            /* $precio = BateriaProveedor::where('ID', $accionid)->value('precio'); */
+            $idbateirasubcliente = Bateriasubcliente::where('accionid', $accionid)->where('clienteitaid', $idCliente)->value('id');
+
+            $precioaccion = Bateriasubcliente::where('accionid', $accionid)->where('clienteitaid', $idCliente)->value('precio');
+            $informeaccion = Bateriasubcliente::where('accionid', $accionid)->where('clienteitaid', $idCliente)->value('informe');
+            $proveedorbateria = Bateriasubcliente::where('accionid', $accionid)->where('clienteitaid', $idCliente)->value('proveedorasignado');
+
+            $accionNombre = $accionesNombres[$accionid] ?? 'Desconocida';
+
+            $accionesPorFecha[$fecha][] = [
+                'id' => $idbateirasubcliente,
+                'accion' => $accionNombre,
+                'proveedor' => $proveedorbateria,
+                'precio' => $precioaccion,
+                'informe' => $informeaccion
+            ];
+        }
+            
+        return view('admin.asociados.crearbateriaclienteita', compact(
+            'accionesPorFecha',
+            'fechasBateriaPorAccion',
+            'departamentos',
+            'estadoproveedor',
+            'areas',
+            'accionesPorArea',
+            'cliente',
+            'id',
+            'accionesCliente',
+            'areas2','rolusuario'
+        ));
+    }
+    public function generarPDFCliente(Request $request, $clienteId) 
+    {
+        // Obtener el cliente
+        $cliente = Cliente::find($clienteId);
+
+        // Validar que la fecha esté presente
+        $fechaSeleccionada = $request->input('fecha');
+        if (!$fechaSeleccionada) {
+            return response()->json(['error' => 'No se seleccionó ninguna fecha.'], 400);
+        }
+
+        // Filtrar los registros asociados al cliente ITA según la fecha seleccionada
+        $bateriasEvaluaciones = BateriaSubCliente::where('clienteitaid', $clienteId)
+            ->whereDate('fechabateria', $fechaSeleccionada)
+            ->where('tipoarea', 'ESPECIALIDAD')
+            ->whereIn('areanombre', ['PSIQUIATRIA', 'PSICOLOGIA', 'FISIOTERAPIA', 'TRABAJO SOCIAL'])
+            ->pluck('areanombre')
+            ->unique();
+
+        // Filtrar los registros asociados al cliente ITA según la fecha seleccionada
+        $bateriasEspecialidades = BateriaSubCliente::where('clienteitaid', $clienteId)
+            ->whereDate('fechabateria', $fechaSeleccionada)
+            ->where('tipoarea', 'ESPECIALIDAD')
+            ->whereNotIn('areanombre', ['PSIQUIATRIA', 'PSICOLOGIA', 'FISIOTERAPIA', 'TRABAJO SOCIAL', 'INFORME FINAL'])
+            ->pluck('areanombre')
+            ->unique();
+
+
+        $bateriasEstudios = BateriaSubCliente::where('clienteitaid', $clienteId)
+            ->whereDate('fechabateria', $fechaSeleccionada)
+            ->where('tipoarea', 'ESTUDIO')
+            ->pluck('areanombre')
+            ->unique();
+
+        // Definir los estudios que siempre deben aparecer en "EVALUACIONES MEDICAS TÉCNICAS"
+        $tituloEvaluaciones = 'EVALUACIONES MEDICAS TÉCNICAS';
+        $estudiosFijos = ['TRABAJO SOCIAL', 'FISIOTERAPIA Y KINESIOLOGIA', 'PSICOLOGIA', 'PSIQUIATRA'];
+
+        // Definir los títulos de las otras secciones
+        $tituloEspecialidades = 'SOLICITUD DE INTERCONSULTAS';
+        $tituloComplementarios = 'SOLICITUD DE ESTUDIOS COMPLEMENTARIOS';
+
+        // Dividimos los resultados en grupos de 9
+        $especialidadesPorFilas = $bateriasEspecialidades->chunk(9);
+        $estudiosPorFilas = $bateriasEstudios->chunk(9);
+        $evaluacionesPorFilas = $bateriasEvaluaciones->chunk(9);
+
+        // Crear el PDF
+        $pdf = PDF::loadView('admin.asociados.pdf.checklistcliente', [
+            'cliente' => $cliente,
+            'fechaSeleccionada' => $fechaSeleccionada,
+            'tituloEvaluaciones' => $tituloEvaluaciones,
+            'estudiosFijos' => $estudiosFijos,
+            'especialidadesAsociadas' => $especialidadesPorFilas,
+            'estudiosAsociados' => $estudiosPorFilas,
+            'evaluacionesAsociados' => $evaluacionesPorFilas,
+            'tituloEspecialidades' => $tituloEspecialidades,
+            'tituloComplementarios' => $tituloComplementarios,
+        ]);
+
+        // Generar el archivo PDF y retornarlo como descarga
+        $fileName = 'checklist_' . $cliente->nombrecompleto . '_' . time() . '.pdf';
+        return $pdf->download($fileName);
+    }
+    public function eliminarPDF(Request $request)
+    {
+        // Obtener la ruta del archivo desde la solicitud
+        $filePath = $request->input('filePath');
+
+        // Verificar si el archivo existe y eliminarlo
+        if (File::exists($filePath)) {
+            File::delete($filePath); // Eliminar el archivo
+            return response()->json(['status' => 'Archivo eliminado correctamente']);
+        } else {
+            return response()->json(['status' => 'Archivo no encontrado'], 404);
+        }
+    }
     public function guardarbateriaclienteita(StoreBateriasubclienteRequest $request)
     {
         $clienteID = $request->input('clienteitaid');
@@ -736,7 +904,6 @@ class AsociadoController extends Controller
                     }
                     $clienteitaData['fechabateria'] = $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada;
                     $clienteitaData['informe'] = $informe;
-                    $clienteitaData['servicio'] = $servicio;
                     $clienteitaData['usuarioid'] = $usuarioID;
                     $clienteitaData['usuarioregistro'] = $usuarioNombre;
                     $clienteitaData['fechainforme'] = $fechainforme;
@@ -867,11 +1034,11 @@ class AsociadoController extends Controller
                                     ->unique();
                                     
         $areasPorFecha = BateriaSubCliente::where('clienteitaid', $cliente->id)
-                                           ->get()
-                                           ->groupBy('fechabateria')
-                                           ->map(function ($items) {
-                                               return $items->pluck('areanombre')->unique()->values();
-                                           });
+                                    ->get()
+                                    ->groupBy('fechabateria')
+                                    ->map(function ($items) {
+                                        return $items->pluck('areanombre')->unique()->values();
+                                    });
         
     
         $bateriasubclientes = collect();
@@ -1529,15 +1696,15 @@ class AsociadoController extends Controller
         }
         
 
-    $documentosRegistradosPorFecha = Documentacionsubcliente::where('clienteitanombre', $nombreCliente)
-        ->get(['accion', 'fechabateria'])
-        ->groupBy('fechabateria');
+        $documentosRegistradosPorFecha = Documentacionsubcliente::where('clienteitanombre', $nombreCliente)
+            ->get(['accion', 'fechabateria'])
+            ->groupBy('fechabateria');
 
-    $accionesPorFecha2 = Programacionsubcliente::where('clienteitanombre', $nombreCliente)
-        ->get(['accionnombre', 'fechabateria'])
-        ->groupBy('fechabateria');
+        $accionesPorFecha2 = Programacionsubcliente::where('clienteitanombre', $nombreCliente)
+            ->get(['accionnombre', 'fechabateria'])
+            ->groupBy('fechabateria');
 
-    $accionesConEstadoPorFecha = [];
+        $accionesConEstadoPorFecha = [];
         foreach ($accionesPorFecha as $fecha => $acciones) {
             foreach ($acciones as $accion) {
                 $registrado = isset($documentosRegistradosPorFecha[$fecha]) && 
@@ -1620,10 +1787,12 @@ class AsociadoController extends Controller
         $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
         $accion = $request->input('accion');
         $nombrecliente = $request->input('nombrecompleto');
+        $idcliente = $request->input('clienteitaid');
         $documentacioncliente = Documentacionsubcliente::create(
             $request->except('accion') + [
                 'document' => $archivo_name,
                 'accion' => $accion,
+                'clienteitaid' => $idcliente,
                 'clienteitanombre' => $nombrecliente,
                 'image' => $image_name,
                 'image2' => $image_name2
@@ -2517,7 +2686,7 @@ class AsociadoController extends Controller
         return redirect()->route('admin.asociados.vercontactoclienteita', ['cliente' => $cliente])->with('info', 'El contacto se creó con éxito');
     }
 //
-//ETIQUETAS Y REQUISITOS CLIENTE ITA
+//ETIQUETAS CLIENTE ITA
     public function generaretiquetaclienteita(Request $request, Cliente $cliente)
         {
             $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteita', compact('cliente'));
@@ -2542,6 +2711,8 @@ class AsociadoController extends Controller
             $pdfName = 'Etiqueta_SegundaSolicitud_' . $cliente->nombrecompleto . '.pdf';
             return $pdf->download($pdfName);
         }
+//
+//REQUISITOS CLIENTE ITA
     public function generarchecklistclienteita(Cliente $cliente) 
         {
             $tieneRequisitos = Requisitosubcliente::where('clienteitaid', $cliente->id)
@@ -3681,14 +3852,14 @@ class AsociadoController extends Controller
             return redirect()->route('admin.asociados.subirdocrequisitossegsolicitud', $cliente)
                              ->with('info', 'El documento se subió con éxito');
         }
-
-
     public function generarPDFconsentimiento(Request $request)
         {
             // Obtener los datos del cliente desde el request
             $nombres = $request->input('nombres');
             $apellidoPaterno = $request->input('apepaterno');
             $apellidoMaterno = $request->input('apematerno');
+            $ci = $request->input('ci');
+            $fechahoy = date('Y-m-d'); 
             $clienteitaId = $request->input('clienteitaid');
 
             // Generar el nombre del archivo PDF
@@ -3719,7 +3890,7 @@ class AsociadoController extends Controller
                 'areanombre' => 'MEDICINA LABORAL',
                 'accionnombre' => 'MEDICINA LABORAL',
                 'precio' => '450.00',
-                'informe' => 'NO TIENE',
+                'informe' => 'NO TIENE INFORME',
                 'preciocompra' => '100',
                 'proveedorasignado' => 'AGUIRRE VASQUEZ MARIA RENEE',
                 'accionid' => '6',
@@ -3734,6 +3905,8 @@ class AsociadoController extends Controller
                 'nombres' => $nombres,
                 'apellidoPaterno' => $apellidoPaterno,
                 'apellidoMaterno' => $apellidoMaterno,
+                'ci' => $ci,
+                'fechahoy' => $fechahoy,
             ];
 
             // Cargar la vista para el PDF
@@ -3808,6 +3981,8 @@ class AsociadoController extends Controller
             $apellidoPaterno = $request->input('apepaterno');
             $apellidoMaterno = $request->input('apematerno');
             $clienteitaId = $request->input('clienteitaid');
+            $ci = $request->input('ci');
+            $fechahoy = date('Y-m-d'); 
 
             // Generar el nombre del archivo PDF
             $nombreArchivo = "Consentimiento_Informado_Evaluaciones_Estudios {$nombres} {$apellidoPaterno} {$apellidoMaterno}.pdf";
@@ -3833,6 +4008,8 @@ class AsociadoController extends Controller
                 'nombres' => $nombres,
                 'apellidoPaterno' => $apellidoPaterno,
                 'apellidoMaterno' => $apellidoMaterno,
+                'ci' => $ci,
+                'fechahoy' => $fechahoy,
             ];
 
             // Cargar la vista para el PDF
@@ -4495,21 +4672,21 @@ class AsociadoController extends Controller
             $banco1 = Banco::findOrFail($idBanco1);
             $bancoNombre1 = $banco1->nombrebanco;
         } else {
-            $bancoNombre1 = "NO APLICA";
+            $bancoNombre1 = "";
         }
         $idBanco2 = $request->input('banco2');
         if ($idBanco2) {
             $banco2 = Banco::findOrFail($idBanco2);
             $bancoNombre2 = $banco2->nombrebanco;
         } else {
-            $bancoNombre2 = "NO APLICA";
+            $bancoNombre2 = "";
         }
         $idBanco3 = $request->input('banco3');
         if ($idBanco3) {
             $banco3 = Banco::findOrFail($idBanco3);
             $bancoNombre3 = $banco3->nombrebanco;
         } else {
-            $bancoNombre3 = "NO APLICA";
+            $bancoNombre3 = "";
         }
 
         $clienteData = $request->all();
@@ -4521,7 +4698,7 @@ class AsociadoController extends Controller
 
         $clienteauditoria = ClienteAuditoria::create($clienteData);
 
-        return redirect()->route('admin.asociados.listadoclienteauditoria', 2)->with('info', 'El cliente se creó con exito');
+        return redirect()->route('admin.asociados.verclienteauditoria', $clienteauditoria->id)->with('info', 'El cliente se creó con exito');
     }
     public function listadoclienteauditoria(Request $request, Asociado $asociado)
     {
@@ -4543,8 +4720,21 @@ class AsociadoController extends Controller
     public function verclienteauditoria(ClienteAuditoria $clienteauditoria)
     {
         $tieneRequisitos = RequisitoSubCliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
-        
-        return view('admin.asociados.verclienteauditoria', compact('clienteauditoria','tieneRequisitos'));
+        $tieneContactos = ContactoSubCliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tieneTramites = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tieneRequisitos = RequisitoSubCliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tieneBateria = Bateriasubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tieneProgramacion = Programacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tieneProgramacionatentido = Estadoprogramacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $cartaconsentimientoExistente = DocumentacionSubcliente::where('clienteauditoriaid', $clienteauditoria->id) 
+                    ->where('accion', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+                    ->whereNotNull('document')
+                    ->first();
+        $bateriaaprobadaExistente = DocumentacionSubcliente::where('clienteauditoriaid', $clienteauditoria->id) 
+                    ->where('accion', 'APROBADO PARA INICIAR A CREAR BATERIA')
+                    ->first();
+        return view('admin.asociados.verclienteauditoria', compact('tieneRequisitos','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
+        'tieneContactos','tieneTramites','clienteauditoria','tieneRequisitos','tieneProgramacion','tieneProgramacionatentido'));
     }
     public function editarclienteauditoria(ClienteAuditoria $clienteauditoria)
     {
@@ -4589,6 +4779,110 @@ class AsociadoController extends Controller
         $clienteauditoria->update($clienteData);
 
         return redirect()->route('admin.asociados.verclienteauditoria', $clienteauditoria)->with('info', 'El cliente se actualizó con éxito');
+    }
+//
+//ASIGNAR TRAMITE
+    public function listadotramiteclienteauditoria(Asociado $asociado, ClienteAuditoria $clienteauditoria)
+    {
+        $idclienteauditoria = $clienteauditoria->id;
+        $tramitesubclientes = Tramitesubcliente::where('clienteauditoriaid', $idclienteauditoria)
+                                    ->simplePaginate(10000);
+
+        $tramites = [
+            'AUDITORIA MEDICA' => 'AUDITORIA MEDICA',
+        ];
+
+        $ciudades = [
+            'COCHABAMBA' => 'COCHABAMBA',
+            'SANTA CRUZ' => 'SANTA CRUZ',
+        ];
+
+        $sucursalCliente = $clienteauditoria->sucursal;
+
+        $accionesCliente = BateriaSubCliente::where('clienteauditoriaid', $idclienteauditoria)
+            ->whereIn('accionnombre', function ($query) use ($sucursalCliente) {
+                $query->select('accionnombre')->from('clientes')->where('sucursal', $sucursalCliente);
+            })
+            ->pluck('accionnombre')
+            ->unique();
+
+        $fechasEnEstadoCotizacionSubCliente = EstadoCotizacionSubCliente::where('clienteauditoriaid', $idclienteauditoria)
+        ->distinct()
+        ->pluck('fechabateria');
+
+        $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionnombre', $accionesCliente)
+        ->where('clienteauditoriaid', $idclienteauditoria)
+        /* ->whereIn('fechabateria', $fechasEnEstadoCotizacionSubCliente) */
+        ->distinct()
+        ->pluck('fechabateria', 'accionnombre');
+
+        $accionesPorFecha = [];
+        foreach ($fechasBateriaPorAccion as $accion => $fecha) {
+        $accionesPorFecha[$fecha][] = $accion;
+        }
+
+        return view('admin.asociados.listadotramiteclienteauditoria', compact('ciudades', 'tramitesubclientes', 'clienteauditoria', 'asociado', 'tramites', 'accionesPorFecha'));
+    }
+    public function guardartramiteclienteauditoria(StoreTramitesubclienteRequest $request)
+    {
+        $clienteID = $request->input('clienteauditoriaid');
+        $clienteauditoria = ClienteAuditoria::findOrFail($clienteID);
+
+        $clienteData = $request->all();
+        $clienteData['clienteauditorianombre'] = $clienteauditoria->nombrecompleto;
+        $clienteData['apoderado'] = $request->input('apoderado');
+        $clienteData['usuarioid'] = $request->usuarioid;
+        $clienteData['usuarioregistro'] = $request->usuarioregistro;
+        $clienteData['estado'] = $request->input('estado');
+        $tramitesubcliente = Tramitesubcliente::create($clienteData);
+
+        // Obtener el trámite seleccionado
+        $tramite = $request->input('tramite');
+
+        // Verificar el trámite y generar el PDF
+        if ($tramite == 'INVALIDEZ') {
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteauditoria', compact('clienteauditoria', 'tramite'));
+            $pdfName = 'Etiqueta_Invalidez_' . $clienteauditoria->nombrecompleto . '.pdf';
+        } elseif ($tramite == 'AUDITORIA MEDICA') {
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteauditoria', compact('clienteauditoria', 'tramite'));
+            $pdfName = 'Etiqueta_Auditoria_' . $clienteauditoria->nombrecompleto . '.pdf';
+        } elseif ($tramite == 'APELACION') {
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteauditoria', compact('clienteauditoria', 'tramite'));
+            $pdfName = 'Etiqueta_Apelacion_' . $clienteauditoria->nombrecompleto . '.pdf';
+        } elseif ($tramite == 'SEGUNDA SOLICITUD') {
+            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteauditoria', compact('clienteauditoria', 'tramite'));
+            $pdfName = 'Etiqueta_SegundaSolicitud_' . $clienteauditoria->nombrecompleto . '.pdf';
+        } else {
+            return response()->json(['error' => 'Servicio no válido'], 400);
+        }
+
+        // Guarda el PDF temporalmente
+        $pdf->save(storage_path('app/public/' . $pdfName));
+
+        // Retorna la ruta para manejar la descarga en el frontend
+        return response()->json([
+            'pdf_url' => asset('storage/' . $pdfName),
+            'redirect_url' => route('admin.asociados.listadotramiteclienteauditoria', $clienteauditoria->id)
+        ]);
+    }
+    public function asignarFecha_AUDITORIA(Request $request, $clienteId)
+    {
+        // Validar que se haya seleccionado una fecha de batería
+        $request->validate([
+            'fechabateria' => 'required'
+        ], [
+            'fechabateria.required' => 'Debe seleccionar una fecha de batería.'
+        ]);
+
+        // Encuentra el trámite del cliente por su ID
+        $clienteTramite = Tramitesubcliente::find($clienteId);
+
+        // Asignar la nueva fecha de batería
+        $clienteTramite->fechabateria = $request->input('fechabateria');
+        $clienteTramite->save();
+
+        // Redirigir a la misma URL donde estaba el usuario
+        return back()->with('info', 'Fecha asignada correctamente.');
     }
 //
 //CREAR BATERIA CLIENTE AUDITORIA
@@ -5783,7 +6077,7 @@ class AsociadoController extends Controller
         $clienteData = $request->all();
         $clienteData['clienteauditorianombre'] = $clienteauditoria->nombrecompleto;
         $contacto = Contactosubcliente::create($clienteData);
-        return redirect()->route('admin.asociados.crearcontactoclienteauditoria', ['clienteauditoria' => $clienteauditoria])->with('info', 'El contacto se creó con éxito');
+        return redirect()->route('admin.asociados.vercontactoclienteauditoria', ['clienteauditoria' => $clienteauditoria])->with('info', 'El contacto se creó con éxito');
     }
 //
 //ETIQUETAS Y REQUISITOS CLIENTE AUDITORIA
@@ -5795,9 +6089,32 @@ class AsociadoController extends Controller
         }
     public function generarchecklistclienteauditoria(ClienteAuditoria $clienteauditoria)
         {
-            $tieneRequisitos = RequisitoSubCliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+            $tieneRequisitos = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+            $estadoLaboral = strtolower($clienteauditoria->estadolaboral);
+            $numHijosMenores = $clienteauditoria->numhijosmenores;
+            $estadoCivil = strtolower($clienteauditoria->estadocivil);
+            $bancos = Banco::orderBy('nombrebanco')->pluck('nombrebanco', 'nombrebanco');
 
-            return view('admin.asociados.generarchecklistclienteauditoria ', compact('clienteauditoria','tieneRequisitos'));
+            $tieneauditoriamedica = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+                ->where('tramite', 'AUDITORIA MEDICA')->exists();
+
+            $rolusuario = auth()->user()->getRoleNames()->first(); 
+
+            $registroExistente = Estadocotizacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+                ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+                ->first();
+            $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+                ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+                ->first();
+        
+            return view('admin.asociados.generarchecklistclienteauditoria', compact(
+                'clienteauditoria', 
+                'tieneRequisitos', 
+                'estadoLaboral',
+                'numHijosMenores',  
+                'estadoCivil', 
+                'registroExistente','rolusuario','registroaprobadoExistente','tieneauditoriamedica','bancos'
+            ));
         }
     public function descargarchecklistclienteauditoria(Request $request, ClienteAuditoria $clienteauditoria)
         {
@@ -5877,6 +6194,7 @@ class AsociadoController extends Controller
             return $pdf->download($pdfName);
         } 
 //
+
 
 
 //CLIENTES BANCOS
@@ -6937,153 +7255,7 @@ class AsociadoController extends Controller
 //
 
 
-public function crearbateriaclienteita(Cliente $cliente)
-    {
-        $sucursalCliente = $cliente->sucursal;
-        $rolusuario = auth()->user()->getRoleNames()->first(); 
-        $areas = Area::orderBy('nombrearea', 'asc')
-                    ->where('idtipoarea', 2)
-                    ->pluck('nombrearea', 'id');
 
-        $accionesPorArea = [];
-        foreach ($areas as $id => $nombreArea) {
-            $accionesPorArea[$id] = Bateriaproveedor::where('areasid', $id)
-                ->where('sucursal', $sucursalCliente)
-                ->where('estado', 'ACTIVO')
-                ->where('asociado', 'CLIENTES ITA')
-                ->orderBy('accion', 'asc')
-                ->get(['id', 'accion', 'proveedor', 'precio']);
-        }
-
-        $areas2 = Bateriaproveedor::orderBy('area', 'asc')
-            ->where('tipoid', 1)
-            ->where('estado', 'ACTIVO')
-            ->where('sucursal', $sucursalCliente)
-            ->where('asociado', 'CLIENTES ITA')
-            ->get(['area', 'id', 'proveedor', 'precio']);
-
-        $estadoproveedor = [
-            'ACTIVO' => 'ACTIVO',
-            'INACTIVO' => 'INACTIVO',
-        ];
-        $departamentos = Departamento::orderBy('departamento')->pluck('departamento', 'id');
-        $id = $cliente->nombrecompleto ? Cliente::where('nombrecompleto', $cliente->nombrecompleto)->value('id') : null;
-
-        $nombreCliente = $cliente->nombrecompleto; 
-
-        $accionesCliente = BateriaSubCliente::where('clienteitanombre', $nombreCliente)
-            ->pluck('accionid')
-            ->toArray();
-
-        $fechasbateriasSubCliente = BateriaSubCliente::where('clienteitanombre', $nombreCliente)
-            ->distinct()
-            ->pluck('fechabateria');
-
-        $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionid', $accionesCliente)
-            ->where('clienteitanombre', $nombreCliente)
-            ->whereIn('fechabateria', $fechasbateriasSubCliente)
-            ->distinct()
-            ->pluck('fechabateria', 'accionid');
-
-        $accionesNombres = BateriaSubCliente::whereIn('accionid', $accionesCliente)
-            ->pluck('accionnombre', 'accionid')
-            ->toArray();
-
-        $accionesPorFecha = [];
-        foreach ($fechasBateriaPorAccion as $accionid => $fecha) {
-
-            $proveedor = BateriaProveedor::where('ID', $accionid)->value('proveedor');
-            $precio = BateriaProveedor::where('ID', $accionid)->value('precio');
-            $idbateirasubcliente = Bateriasubcliente::where('accionid', $accionid)->value('id');
-            $accionNombre = $accionesNombres[$accionid] ?? 'Desconocida';
-
-            $accionesPorFecha[$fecha][] = [
-                'id' => $idbateirasubcliente,
-                'accion' => $accionNombre,
-                'proveedor' => $proveedor,
-                'precio' => $precio
-            ];
-        }
-            
-        return view('admin.asociados.crearbateriaclienteita', compact(
-            'accionesPorFecha',
-            'fechasBateriaPorAccion',
-            'departamentos',
-            'estadoproveedor',
-            'areas',
-            'accionesPorArea',
-            'cliente',
-            'id',
-            'accionesCliente',
-            'areas2','rolusuario'
-        ));
-    }
-    public function generarPDFCliente(Request $request, $clienteId) 
-    {
-        // Obtener el cliente
-        $cliente = Cliente::find($clienteId);
-
-        // Validar que la fecha esté presente
-        $fechaSeleccionada = $request->input('fecha');
-        if (!$fechaSeleccionada) {
-            return response()->json(['error' => 'No se seleccionó ninguna fecha.'], 400);
-        }
-
-        // Filtrar los registros asociados al cliente ITA según la fecha seleccionada
-        $bateriasEspecialidades = BateriaSubCliente::where('clienteitaid', $clienteId)
-            ->whereDate('fechabateria', $fechaSeleccionada)
-            ->where('tipoarea', 'ESPECIALIDAD')
-            ->pluck('areanombre')
-            ->unique();
-
-        $bateriasEstudios = BateriaSubCliente::where('clienteitaid', $clienteId)
-            ->whereDate('fechabateria', $fechaSeleccionada)
-            ->where('tipoarea', 'ESTUDIO')
-            ->pluck('areanombre')
-            ->unique();
-
-        // Definir los estudios que siempre deben aparecer en "EVALUACIONES MEDICAS TÉCNICAS"
-        $tituloEvaluaciones = 'EVALUACIONES MEDICAS TÉCNICAS';
-        $estudiosFijos = ['TRABAJO SOCIAL', 'FISIOTERAPIA Y KINESIOLOGIA', 'PSICOLOGIA', 'PSIQUIATRA'];
-
-        // Definir los títulos de las otras secciones
-        $tituloEspecialidades = 'SOLICITUD DE INTERCONSULTAS';
-        $tituloComplementarios = 'SOLICITUD DE ESTUDIOS COMPLEMENTARIOS';
-
-        // Dividimos los resultados en grupos de 9
-        $especialidadesPorFilas = $bateriasEspecialidades->chunk(9);
-        $estudiosPorFilas = $bateriasEstudios->chunk(9);
-
-        // Crear el PDF
-        $pdf = PDF::loadView('admin.asociados.pdf.checklistcliente', [
-            'cliente' => $cliente,
-            'fechaSeleccionada' => $fechaSeleccionada,
-            'tituloEvaluaciones' => $tituloEvaluaciones,
-            'estudiosFijos' => $estudiosFijos,
-            'especialidadesAsociadas' => $especialidadesPorFilas,
-            'estudiosAsociados' => $estudiosPorFilas,
-            'tituloEspecialidades' => $tituloEspecialidades,
-            'tituloComplementarios' => $tituloComplementarios,
-        ]);
-
-        // Generar el archivo PDF y retornarlo como descarga
-        $fileName = 'checklist_' . $cliente->nombrecompleto . '_' . time() . '.pdf';
-        return $pdf->download($fileName);
-    }
-
-    public function eliminarPDF(Request $request)
-    {
-        // Obtener la ruta del archivo desde la solicitud
-        $filePath = $request->input('filePath');
-
-        // Verificar si el archivo existe y eliminarlo
-        if (File::exists($filePath)) {
-            File::delete($filePath); // Eliminar el archivo
-            return response()->json(['status' => 'Archivo eliminado correctamente']);
-        } else {
-            return response()->json(['status' => 'Archivo no encontrado'], 404);
-        }
-    }
 
 
 

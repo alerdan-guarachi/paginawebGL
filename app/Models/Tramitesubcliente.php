@@ -26,6 +26,8 @@ class Tramitesubcliente extends Model
         'usuarioid' => 'max:45',
         'usuarioregistro' => 'max:90',
         'fechabateria' => '',
+        'clienteauditoriaid' => '',
+        'clienteauditorianombre' => '',
     ]; 
 
     protected $fillable = [
@@ -42,6 +44,8 @@ class Tramitesubcliente extends Model
         'usuarioid',
         'usuarioregistro',
         'fechabateria',
+        'clienteauditoriaid',
+        'clienteauditorianombre',
     ];
 
     public function areaaccion()

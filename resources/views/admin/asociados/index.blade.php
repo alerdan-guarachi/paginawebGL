@@ -155,7 +155,7 @@
                         </tr>
                     @endforeach
                 </tbody>
-                <thead>
+                {{-- <thead>
                     <tr>
                         <th>Asociados</th>
                         <th colspan="2"></th>
@@ -165,7 +165,7 @@
                     @foreach ($asociados as $asociado)
                         <tr>
                             <td>{{$asociado->asociado}}</td>
-                            {{-- @can('admin.asociados.crearclientebanco') --}}
+                            @can('admin.asociados.crearclientebanco')
                             <td width="10px">
                                 <abbr title="Ver Batería">
                                     <a class="btn btn-sm btn-crearbateria" href="{{ route('admin.asociados.verbateriasbanco', $asociado) }}">
@@ -173,7 +173,7 @@
                                     </a>
                                 </abbr>
                             </td>
-                            {{-- @endcan --}}
+                            @endcan
                             @can('admin.asociados.listadoclientebanco')
                             <td width="10px">
                                 <abbr title="Lista de clientes">
@@ -183,7 +183,7 @@
                                 </abbr>
                             </td>    
                             @endcan
-                            {{-- @can('admin.asociados.documentacionmultipleclienteita') --}}
+                            @can('admin.asociados.documentacionmultipleclienteita')
                             <td width="10px">
                                 <abbr title="Lista de clientes">
                                     <a class="btn btn-sm btn-documentacionmultiple" href="{{ route('admin.asociados.documentacionmultipleclientebanco', $asociado) }}">
@@ -191,10 +191,10 @@
                                     </a>   
                                 </abbr>
                             </td>    
-                            {{-- @endcan --}}
+                            @endcan
                         </tr>
                     @endforeach
-                </tbody>
+                </tbody> --}}
             </table>
         </div>
     </div>

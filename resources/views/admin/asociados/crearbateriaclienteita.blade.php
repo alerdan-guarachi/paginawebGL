@@ -96,6 +96,7 @@
                                                 <tr>
                                                     <th>ID</th>
                                                     <th>Acción</th>
+                                                    <th>Informe</th>
                                                     <th>Proveedor</th>
                                                     @if(!auth()->user()->hasRole('PROVEEDOR'))
                                                         <th>Precio</th>
@@ -155,44 +156,44 @@
                                          link.click();
                                      })
                                      .catch(error => console.error('Error:', error));
-                                 }
+                                    }
                                  
-                                 // Asociar el evento de clic al botón "Generar PDF"
-                                 document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
-                                     e.preventDefault();
-                                 
-                                     var fechaSeleccionada = document.getElementById('ver-pdf-btn').getAttribute('data-fecha');
-                                     var clienteId = @json($cliente->id); // Asegúrate de que tienes acceso a esta variable
-                                     var url = '{{ route('admin.asociados.generarpdfcliente', ':clienteId') }}';
-                                     url = url.replace(':clienteId', clienteId);
-                                 
-                                     // Realizar la solicitud AJAX para obtener el enlace del PDF
-                                     fetch(url, {
-                                         method: 'POST',
-                                         headers: {
-                                             'Content-Type': 'application/json',
-                                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                         },
-                                         body: JSON.stringify({
-                                             fecha: fechaSeleccionada
-                                         })
-                                     })
-                                     .then(response => {
-                                         if (!response.ok) {
-                                             throw new Error('Error en la respuesta del servidor.');
-                                         }
-                                         return response.blob();  // Obtener el PDF como un blob
-                                     })
-                                     .then(blob => {
-                                         // Crear un enlace para descargar el archivo
-                                         var link = document.createElement('a');
-                                         link.href = window.URL.createObjectURL(blob);
-                                         link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
-                                         link.click();
-                                     })
-                                     .catch(error => console.error('Error:', error));
-                                 });
-                                 </script>
+                                    // Asociar el evento de clic al botón "Generar PDF"
+                                    document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                    
+                                        var fechaSeleccionada = document.getElementById('ver-pdf-btn').getAttribute('data-fecha');
+                                        var clienteId = @json($cliente->id); // Asegúrate de que tienes acceso a esta variable
+                                        var url = '{{ route('admin.asociados.generarpdfcliente', ':clienteId') }}';
+                                        url = url.replace(':clienteId', clienteId);
+                                    
+                                        // Realizar la solicitud AJAX para obtener el enlace del PDF
+                                        fetch(url, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                            },
+                                            body: JSON.stringify({
+                                                fecha: fechaSeleccionada
+                                            })
+                                        })
+                                        .then(response => {
+                                            if (!response.ok) {
+                                                throw new Error('Error en la respuesta del servidor.');
+                                            }
+                                            return response.blob();  // Obtener el PDF como un blob
+                                        })
+                                        .then(blob => {
+                                            // Crear un enlace para descargar el archivo
+                                            var link = document.createElement('a');
+                                            link.href = window.URL.createObjectURL(blob);
+                                            link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
+                                            link.click();
+                                        })
+                                        .catch(error => console.error('Error:', error));
+                                    });
+                                </script>
                                 
                             </div>
                         </div>
@@ -220,6 +221,7 @@
                                             row.innerHTML = `
                                                 <td>${item.id}</td>
                                                 <td>${item.accion}</td>
+                                                <td>${item.informe}</td>
                                                 <td>${item.proveedor}</td>
                                                 <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
                                             `;

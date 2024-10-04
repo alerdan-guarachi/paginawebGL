@@ -126,10 +126,10 @@
             Firma del Paciente: 
         </div>
         <div class="tipo8">
-            C.I.
+            C.I: {{$ci}}
         </div>
         <div class="tipo8">
-            Fecha: __________________________
+            Fecha: {{$fechahoy}}
         </div>
         <div class="container">
             <div class="rectangle"></div>

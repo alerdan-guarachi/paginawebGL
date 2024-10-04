@@ -21,26 +21,22 @@
         <tr>
             <th>ID CLIENTE</th>
             <th>NOMBRE</th>
-            <th>EMPRESA</th>
             <th>TRAMITE</th>
         </tr>
         <tr>
             <td>{{$cliente->id}}</td>
             <td>{{$cliente->nombres}} {{$cliente->apepaterno}} {{$cliente->apematerno}}</td>
-            <td>{{$cliente->empresa}}</td>
             <td>AUDITORIA MEDICA</td>
         </tr>
         <tr>
             <th>CIUDAD</th>
             <th>CI</th>
             <th>CELULAR</th>
-            <th>ASEGURADORA</th>
         </tr>
         <tr>
             <td>{{$cliente->ciudadresidencia}}</td>
             <td>{{$cliente->ci}} {{$cliente->ciexp}}</td>
             <td>{{$cliente->celular}}</td>
-            <td>{{$cliente->aseguradora}}</td>
         </tr>
     </table>
 </body>

@@ -51,58 +51,61 @@
                                     @if ($tramitesubcliente->fechabateria)
                                         {{ $tramitesubcliente->fechabateria }}
                                     @else
-                                    @if (!$tramitesubcliente->fechabateria)
-                                    <a class="btn btn-sm btn-asignartramite" data-toggle="modal"
-                                        data-target="#modalasignarfecha-{{ $tramitesubcliente->id }}">
-                                        ASIGNAR FECHA
-                                    </a>
+                                        @if (!$tramitesubcliente->fechabateria)
+                                            <a class="btn btn-sm btn-asignartramite" data-toggle="modal"
+                                                data-target="#modalasignarfecha-{{ $tramitesubcliente->id }}">
+                                                ASIGNAR FECHA
+                                            </a>
 
-                                    <!-- Modal de asignar fecha para cada trámite sin fecha asignada -->
-                                    <div class="modal fade" id="modalasignarfecha-{{ $tramitesubcliente->id }}"
-                                        tabindex="-1" role="dialog"
-                                        aria-labelledby="modalasignarfechaLabel-{{ $tramitesubcliente->id }}"
-                                        aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title titulomodal"
-                                                        id="modalasignarfechaLabel-{{ $tramitesubcliente->id }}">
-                                                        ASIGNAR FECHA</h5>
-                                                    <button type="button" class="close" data-dismiss="modal"
-                                                        aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form
-                                                        action="{{ route('admin.asociados.asignarFecha_ITA', $tramitesubcliente->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        <div class="col-lg-12">
-                                                            <div class="form-group text-left">
-                                                                {!! Form::label('fechabateria', 'Fecha de batería') !!}
-                                                                <select id="select-fechas" name="fechabateria"
-                                                                    class="form-control @error('fechabateria') is-invalid @enderror">
-                                                                    <option value="" disabled selected></option>
-                                                                    @foreach ($accionesPorFecha as $fecha => $acciones)
-                                                                        <option value="{{ $fecha }}"
-                                                                            {{ old('fechabateria') == $fecha ? 'selected' : '' }}>
-                                                                            {{ $fecha }}</option>
-                                                                    @endforeach
-                                                                </select>
-                                                                @error('fechabateria')
-                                                                    <small class="text-danger">{{ $message }}</small>
-                                                                @enderror
-                                                            </div>
+                                            <!-- Modal de asignar fecha para cada trámite sin fecha asignada -->
+                                            <div class="modal fade" id="modalasignarfecha-{{ $tramitesubcliente->id }}"
+                                                tabindex="-1" role="dialog"
+                                                aria-labelledby="modalasignarfechaLabel-{{ $tramitesubcliente->id }}"
+                                                aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title titulomodal"
+                                                                id="modalasignarfechaLabel-{{ $tramitesubcliente->id }}">
+                                                                ASIGNAR FECHA</h5>
+                                                            <button type="button" class="close" data-dismiss="modal"
+                                                                aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
                                                         </div>
-                                                        <button type="submit" class="btn btn-info d-block mx-auto mb-3"
-                                                            style="width: fit-content;">ASIGNAR FECHA</button>
-                                                    </form>
+                                                        <div class="modal-body">
+                                                            <form
+                                                                action="{{ route('admin.asociados.asignarFecha_ITA', $tramitesubcliente->id) }}"
+                                                                method="POST">
+                                                                @csrf
+                                                                <div class="col-lg-12">
+                                                                    <div class="form-group text-left">
+                                                                        {!! Form::label('fechabateria', 'Fecha de batería') !!}
+                                                                        <select id="select-fechas" name="fechabateria"
+                                                                            class="form-control @error('fechabateria') is-invalid @enderror">
+                                                                            <option value="" disabled selected>
+                                                                            </option>
+                                                                            @foreach ($accionesPorFecha as $fecha => $acciones)
+                                                                                <option value="{{ $fecha }}"
+                                                                                    {{ old('fechabateria') == $fecha ? 'selected' : '' }}>
+                                                                                    {{ $fecha }}</option>
+                                                                            @endforeach
+                                                                        </select>
+                                                                        @error('fechabateria')
+                                                                            <small
+                                                                                class="text-danger">{{ $message }}</small>
+                                                                        @enderror
+                                                                    </div>
+                                                                </div>
+                                                                <button type="submit"
+                                                                    class="btn btn-info d-block mx-auto mb-3"
+                                                                    style="width: fit-content;">ASIGNAR FECHA</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                @endif
+                                        @endif
                                     @endif
                                 </td>
 
@@ -181,7 +184,8 @@
                 </div>
                 <div class="modal-body">
 
-                    <form action="{{ route('admin.asociados.guardartramiteclienteita', $cliente) }}" method="POST"
+                    <form id="form-asignar-tramite"
+                        action="{{ route('admin.asociados.guardartramiteclienteita', $cliente) }}" method="POST"
                         enctype="multipart/form-data">
                         {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                         {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
@@ -454,6 +458,58 @@
                     if (select.value === "") {
                         event.preventDefault(); // Evita que el formulario se envíe
                         alert("Por favor, seleccione una fecha antes de continuar.");
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function() {
+            // Interceptar el envío del formulario por AJAX
+            $('#form-asignar-tramite').on('submit', function(e) {
+                e.preventDefault(); // Evitar que el formulario se envíe de la manera tradicional
+
+                // Enviar el formulario mediante AJAX
+                $.ajax({
+                    url: $(this).attr('action'), // Obtener la URL del action del formulario
+                    type: 'POST',
+                    data: $(this).serialize(), // Serializar los datos del formulario
+                    success: function(response) {
+                        // Si la respuesta incluye el PDF y la URL de redirección
+                        if (response.pdf_url && response.redirect_url) {
+                            // Cerrar el modal
+                            $('#modalasignartramite').modal('hide');
+
+                            // Mostrar mensaje de éxito con SweetAlert
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Servicio guardado y Etiqueta descargada',
+                                text: 'El servicio se ha guardado correctamente.',
+                                timer: 3000, // Mostrar el mensaje durante 3 segundos
+                                showConfirmButton: false
+                            });
+
+                            // Descargar el PDF automáticamente
+                            var link = document.createElement('a');
+                            link.href = response.pdf_url;
+                            link.download =
+                            ''; // Dejar en blanco si no deseas especificar el nombre
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+
+                            // Redirigir a la URL después de un tiempo de espera
+                            setTimeout(function() {
+                                window.location.href = response.redirect_url;
+                            }, 3000); // Ajustar el tiempo de espera si es necesario
+                        } else {
+                            alert(
+                            'Error al generar el PDF.'); // Mostrar alerta en caso de error
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        // Mostrar un mensaje de error en caso de fallo
+                        alert(
+                            'Ocurrió un error al procesar el trámite. Por favor, intenta de nuevo.');
                     }
                 });
             });

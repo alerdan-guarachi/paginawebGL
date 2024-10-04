@@ -322,7 +322,7 @@
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="modalLabel{{ $loop->index }}"><strong>{{ $item['clienteitanombre'] }}</strong> - Cod: {{ \Carbon\Carbon::parse($item['fechabateria'])->format('Ymd') }}</h4>
+                    <h4 class="modal-title" id="modalLabel{{ $loop->index }}"><strong>{{ $item['clienteitanombre'] }}</strong> - Fecha Bateria: {{ \Carbon\Carbon::parse($item['fechabateria'])->format('Y-m-d') }}</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -332,7 +332,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Fecha Bateria</th>
+                                    {{-- <th>Fecha Bateria</th> --}}
                                     <th>Acción</th>
                                     <th>Proveedor</th>
                                     <th>Programación</th>
@@ -343,7 +343,7 @@
                             <tbody>
                                 @foreach ($item['acciones'] as $accion)
                                     <tr>
-                                        <td>{{ $accion['creacionbateria']->format('Y-m-d') }}</td>
+                                        {{-- <td>{{ $accion['creacionbateria']->format('Y-m-d') }}</td> --}}
                                         <td>{{ $accion['accion'] }}</td>
                                         <td>{{ $accion['proveedornombre'] }}</td>
                                         <td>{{ $accion['fechaasignada'] }}</td>   
@@ -397,7 +397,7 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>Fecha Bateria</th>
+                                    {{-- <th>Fecha Bateria</th> --}}
                                     <th>Acción</th>
                                     <th>Proveedor</th>
                                     <th>Programación</th>
@@ -408,7 +408,7 @@
                             <tbody>
                                 @foreach ($item['acciones'] as $accion)
                                     <tr>
-                                        <td>{{ $accion['creacionbateria']->format('Y-m-d') }}</td>
+                                        {{-- <td>{{ $accion['creacionbateria']->format('Y-m-d') }}</td> --}}
                                         <td>{{ $accion['accion'] }}</td>
                                         <td>{{ $accion['proveedornombre'] }}</td>
                                         <td>{{ $accion['fechaasignada'] }}</td>   
