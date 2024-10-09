@@ -733,11 +733,7 @@ class AsociadoController extends Controller
 
         $accionesPorFecha = [];
         foreach ($fechasBateriaPorAccion as $accionid => $fecha) {
-
-            /* $proveedor = BateriaProveedor::where('ID', $accionid)->value('proveedor'); */
-            /* $precio = BateriaProveedor::where('ID', $accionid)->value('precio'); */
             $idbateirasubcliente = Bateriasubcliente::where('accionid', $accionid)->where('clienteitaid', $idCliente)->value('id');
-
             $precioaccion = Bateriasubcliente::where('accionid', $accionid)->where('clienteitaid', $idCliente)->value('precio');
             $informeaccion = Bateriasubcliente::where('accionid', $accionid)->where('clienteitaid', $idCliente)->value('informe');
             $proveedorbateria = Bateriasubcliente::where('accionid', $accionid)->where('clienteitaid', $idCliente)->value('proveedorasignado');

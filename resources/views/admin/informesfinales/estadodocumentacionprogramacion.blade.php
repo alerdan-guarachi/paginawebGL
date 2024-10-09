@@ -502,8 +502,8 @@
                                 $mostrarcnacconyugependiente = $accion['cnacconyuge'] === 'PENDIENTE';
                                 $mostrarciconyuge = !empty($accion['ciconyuge']);
                                 $mostrarciconyugependiente = $accion['ciconyuge'] === 'PENDIENTE';
-                                $mostrarcnachijos = !empty($accion['cnachijos']);
-                                $mostrarcnachijospendiente = $accion['cnachijos'] === 'PENDIENTE';
+                                $mostrarcnacjihos = !empty($accion['cnacjihos']);
+                                $mostrarcnacjihospendiente = $accion['cnacjihos'] === 'PENDIENTE';
                                 $mostrarcihijos = !empty($accion['cihijos']);
                                 $mostrarcihijospendiente = $accion['cihijos'] === 'PENDIENTE';
                                 $mostrardenfaccidente = !empty($accion['denfaccidente']);
@@ -636,14 +636,14 @@
                                     </td>
                                 </tr>
                             @endif
-                            @if ($mostrarcnachijos || $mostrarcnachijospendiente)
+                            @if ($mostrarcnacjihos || $mostrarcnacjihospendiente)
                                 <tr>
                                     <td>CERTIFICADO NACIMIENTO DE HIJOS < 25</td>
                                     <td>
-                                        @if ($mostrarcnachijospendiente)
+                                        @if ($mostrarcnacjihospendiente)
                                             <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnachijos)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnachijos']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a> 
+                                        @elseif ($mostrarcnacjihos)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacjihos']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a> 
                                         @endif
                                     </td>
                                 </tr>

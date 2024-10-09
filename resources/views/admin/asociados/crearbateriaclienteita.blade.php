@@ -35,43 +35,6 @@
                             </small>
                         @enderror
                     </div> 
-                    {{-- <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"> 
-                        <div class="modal-dialog modal-lg" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <strong>Fecha de Bateria:</strong>
-                                    <select id="select-fechas" class="form-control">
-                                        <option value="" disabled selected>Selecciona una fecha</option>
-                                        @foreach($accionesPorFecha as $fecha => $acciones)
-                                            <option value="{{ $fecha }}">{{ $fecha }}</option>
-                                        @endforeach
-                                    </select>
-                                    <div id="acciones-container" class="mt-3">
-                                        <strong>Acciones requeridas:</strong>
-                                        @foreach($accionesPorFecha as $fecha => $acciones)
-                                            <div id="acciones-{{ $fecha }}" class="acciones" style="display: none;">
-                                                @foreach($acciones as $item)
-                                                    <div style="color: black;">
-                                                        &#10003; (ID: {{ $item['id'] }}) {{ $item['accion'] }} 
-                                                        (Proveedor: {{ $item['proveedor'] }}, Precio: {{ $item['precio'] }})
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div> --}}
                     <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-xl" role="document">
                             <div class="modal-content">
@@ -245,40 +208,7 @@
         font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
     }
 </style>
-                         {{-- <script>
-                        document.addEventListener('DOMContentLoaded', function () {
-                            const selectFechas = document.getElementById('select-fechas');
-                            const accionesTable = document.getElementById('acciones-table');
-                            const tbody = accionesTable.querySelector('tbody');
 
-                            const accionesPorFecha = @json($accionesPorFecha);
-                        
-                            selectFechas.addEventListener('change', function () {
-                                const selectedDate = this.value;
-
-                                tbody.innerHTML = '';
-                        
-                                if (selectedDate && accionesPorFecha[selectedDate]) {
-                                    const acciones = accionesPorFecha[selectedDate];
-                                    
-                                    acciones.forEach(item => {
-                                        const row = document.createElement('tr');
-                                        row.innerHTML = `
-                                            <td>${item.id}</td>
-                                            <td>${item.accion}</td>
-                                            <td>${item.proveedor}</td>
-                                            <td>${item.precio}</td>
-                                        `;
-                                        tbody.appendChild(row);
-                                    });
-                                    accionesTable.style.display = 'table';
-                                } else {
-                                    accionesTable.style.display = 'none';
-                                }
-                            });
-                        });
-                    </script> --}}   
-                    
                     <div class="form-group">
                         <strong>Fecha de Batería:</strong>
                         <select id="select-fechas" name="fechabateria" class="form-control">
@@ -378,28 +308,7 @@
                     <div id="reset_button_container" style="margin-bottom: 20px" class=""></div>
                 </div>
                 <div class="col-lg-8">
-                    {{-- @foreach($areas as $id => $nombreArea)
-                        <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
-                            <div class="card" style="max-height: 500px; overflow-y: auto;">
-                                <div class="card-body">
-                                    @php $count = count($accionesPorArea[$id]); @endphp
-                                    @foreach($accionesPorArea[$id] as $accion)
-                                        <div class="form-check">
-                                            {!! Form::checkbox('acciones[]', $accion->id, null, ['class' => 'form-check-input', 'id' => 'accion_'.$accion->id]) !!}
-                                            {!! Form::label('accion_'.$accion->id, $accion->accion . ' - ID: ' . $accion->id . ' - Proveedor: ' . $accion->proveedor . ' - Precio: ' . $accion->precio, ['class' => 'form-check-label']) !!}
-                                        </div>
-                                    @endforeach
-
-                                </div>
-                            </div>
-                            @error('accionnombre')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    @endforeach --}}
-                    @foreach($areas as $id => $nombreArea) 
+                    {{-- @foreach($areas as $id => $nombreArea) 
                         <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
                             <div class="card" style="max-height: 500px; overflow-y: auto;">
                                 <div class="card-body">
@@ -422,21 +331,51 @@
                                 </small>
                             @enderror
                         </div>
-                    @endforeach
+                    @endforeach --}}
+                              
+                    @foreach($areas as $id => $nombreArea)  
+                        <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
+                            <input type="text" id="search_{{ $id }}" placeholder="BUSCAR ESTUDIO" class="form-control" onkeyup="buscarAccion({{ $id }})"> <!-- Input de búsqueda -->
+                            
+                            <div class="card" style="max-height: 500px; overflow-y: auto;">
+                                <div class="card-body">
+                                    @php $count = count($accionesPorArea[$id]); @endphp
+                                    <div class="acciones-container" id="acciones-container-{{ $id }}">
+                                        @foreach($accionesPorArea[$id] as $accion)
+                                            <div class="form-check accion-item">
+                                                {!! Form::checkbox('acciones[]', $accion->id, null, ['class' => 'form-check-input', 'id' => 'accion_'.$accion->id]) !!}
+                                                {!! Form::label('accion_'.$accion->id, $accion->accion . ' - ID: ' . $accion->id . ' - Proveedor: ' . $accion->proveedor, ['class' => 'form-check-label']) !!}
 
-
-                    {{-- <div class="form-group card card-body" id="especialidades_group" style="display: none;">
-                        {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
-                        <div class="row">
-                            @foreach ($areas2 as $area2)
-                                <div class="col-md-12 form-check">
-                                    {!! Form::checkbox('accionnombre[]', $area2->id, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area2->id]) !!}
-                                    {!! Form::label('accionnombre_' . $area2->id, $area2->area . ' - Proveedor: ' . $area2->proveedor . ' - Precio: ' . $area2->precio, ['class' => 'form-check-label']) !!}
+                                                @if(!auth()->user()->hasRole('PROVEEDOR'))
+                                                    <span>- Precio: {{ $accion->precio }}</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
-                            @endforeach
+                            </div>
+                            @error('accionnombre')
+                                <small class="text-danger fas fa-exclamation-circle">{{$message}}</small>
+                            @enderror
                         </div>
-                    </div> --}}
-                    <div class="form-group card card-body" id="especialidades_group" style="display: none;"> 
+                    @endforeach
+                    <script>
+                        function buscarAccion(areaId) {
+                            var query = $('#search_' + areaId).val().toLowerCase();
+                            $('#acciones_' + areaId + ' .accion-item').each(function() { 
+                                var label = $(this).find('label').text().toLowerCase();
+                                
+                                if (label.includes(query)) { 
+                                    $(this).show();
+                                } else {  // Si no incluye, ocultar
+                                    $(this).hide();
+                                }
+                            });
+                        }
+                    </script>
+               
+
+                    {{-- <div class="form-group card card-body" id="especialidades_group" style="display: none;"> 
                         {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
                         <div class="row">
                             @foreach ($areas2 as $area2)
@@ -446,7 +385,35 @@
                                 </div>
                             @endforeach
                         </div>
+                    </div> --}}
+                    <div class="form-group card card-body" id="especialidades_group" style="display: none;">  
+                        {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
+                        <input type="text" id="search_especialidades" placeholder="BUSCAR ESPECIALIDAD" class="form-control" onkeyup="buscarEspecialidad()">
+                        
+                        <div class="row">
+                            @foreach ($areas2 as $area2)
+                                <div class="col-md-12 form-check especialidad-item">
+                                    {!! Form::checkbox('accionnombre[]', $area2->id, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area2->id]) !!}
+                                    {!! Form::label('accionnombre_' . $area2->id, $area2->area . ' - Proveedor: ' . $area2->proveedor . (auth()->user()->hasRole('OPERATIVO') ? '' : ' - Precio: ' . $area2->precio), ['class' => 'form-check-label']) !!}
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
+<script>
+    
+    function buscarEspecialidad() {
+    var query = $('#search_especialidades').val().toLowerCase(); // Toma el valor del input y lo convierte a minúsculas
+    $('.especialidad-item').each(function() {  // Recorre todas las especialidades
+        var label = $(this).find('label').text().toLowerCase();
+        
+        if (label.includes(query)) {  // Si el texto de la especialidad incluye la búsqueda, mostrar
+            $(this).show();
+        } else {  // Si no incluye, ocultar
+            $(this).hide();
+        }
+    });
+}
+</script>                    
                     
                 </div>
             </div>

@@ -564,8 +564,8 @@ class InformeFinalController extends Controller
                 $ciconyuge = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->ciconyuge);})->first()->ciconyuge ?? null;
 
-                $cnachijos = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->cnachijos);})->first()->cnachijos ?? null;
+                $cnacjihos = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->cnacjihos);})->first()->cnacjihos ?? null;
 
                 $cihijos = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->cihijos);})->first()->cihijos ?? null;
@@ -639,7 +639,7 @@ class InformeFinalController extends Controller
                     'cimatrimonio' => $cimatrimonio,
                     'cnacconyuge' => $cnacconyuge,
                     'ciconyuge' => $ciconyuge,
-                    'cnachijos' => $cnachijos,
+                    'cnacjihos' => $cnacjihos,
                     'cihijos' => $cihijos,
                     'denfaccidente' => $denfaccidente,
                     'crodomicilio' => $crodomicilio,
