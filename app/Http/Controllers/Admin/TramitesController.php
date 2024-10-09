@@ -106,39 +106,37 @@ class TramitesController extends Controller
     }
 
     public function asignarapoderadotramiteclienteita(Request $request)
-{
-    // Validar la solicitud
-    $validatedData = $request->validate([
-        'clienteitaid' => 'required',
-        'apoderadoasignado' => 'required',
-        'fechabateria' => 'required|date', // Asegúrate de validar que sea una fecha válida
-    ]);
-
-    // Obtener los valores validados
-    $clienteID = $validatedData['clienteitaid'];
-    $apoderadoAsignado = $validatedData['apoderadoasignado'];
-    $fechaBateria = $validatedData['fechabateria'];
-
-    // Encontrar el registro específico para actualizar
-    $tramitesubcliente = Tramitesubcliente::where('clienteitaid', $clienteID)
-        ->where('fechabateria', $fechaBateria)
-        ->first();
-
-    if ($tramitesubcliente) {
-        // Actualizar el registro
-        $tramitesubcliente->update([
-            'apoderadoasignado' => $apoderadoAsignado,
+    {
+        // Validar la solicitud
+        $validatedData = $request->validate([
+            'clienteitaid' => 'required',
+            'apoderadoasignado' => 'required',
+            'fechabateria' => 'required|date', // Asegúrate de validar que sea una fecha válida
         ]);
-        // Mensaje de éxito
-        return redirect()->route('admin.tramites.index')->with('info', 'Apoderado asignado exitosamente.');
-    } else {
-        // Manejar el caso donde el registro no se encuentra
-        return redirect()->route('admin.tramites.index')->with('error', 'Registro no encontrado.');
+
+        // Obtener los valores validados
+        $clienteID = $validatedData['clienteitaid'];
+        $apoderadoAsignado = $validatedData['apoderadoasignado'];
+        $fechaBateria = $validatedData['fechabateria'];
+
+        // Encontrar el registro específico para actualizar
+        $tramitesubcliente = Tramitesubcliente::where('clienteitaid', $clienteID)
+            ->where('fechabateria', $fechaBateria)
+            ->first();
+
+        if ($tramitesubcliente) {
+            // Actualizar el registro
+            $tramitesubcliente->update([
+                'apoderadoasignado' => $apoderadoAsignado,
+            ]);
+            // Mensaje de éxito
+            return redirect()->route('admin.tramites.index')->with('info', 'Apoderado asignado exitosamente.');
+        } else {
+            // Manejar el caso donde el registro no se encuentra
+            return redirect()->route('admin.tramites.index')->with('error', 'Registro no encontrado.');
+        }
     }
-}
 
-
-    
     public function index(Cliente $cliente, Request $request, Tramite $tramite)
     {
         // Obtener proveedores, aprobaciones y fechas únicas
@@ -561,7 +559,6 @@ class TramitesController extends Controller
     return view('admin.tramites.index', compact('proveedores', 'result', 'cliente', 'fechas', 'aprobaciones'));
 } */
 
-
     public function procmasahereditaria(Request $request, Cliente $cliente)
         {
             $nombrecompleto = $cliente->nombrecompleto;
@@ -607,6 +604,8 @@ class TramitesController extends Controller
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
             $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+
+            $tienetramiteinicio = Tramite::where('clienteitaid', $cliente->id)->exists();
             
             $nombreclienteita = $cliente->nombrecompleto;
             $procedimientotramites = Tramite::where('clienteitanombre', $nombreclienteita)
@@ -629,7 +628,7 @@ class TramitesController extends Controller
                                     ->where('nivelprocedimiento', '!=', 'ADJUNTOS Y RESPUESTAS')
                                     ->simplePaginate(10000);
 
-            return view('admin.tramites.procinvalidez', compact('cartasreclamos','procedimientotramites','id','cliente','nombrecompleto', 'personal'));
+            return view('admin.tramites.procinvalidez', compact('tienetramiteinicio','cartasreclamos','procedimientotramites','id','cliente','nombrecompleto', 'personal'));
         }
     public function actualizarEstado($id, $clienteId)
         {
@@ -1696,7 +1695,6 @@ public function guardarinformefinal(StoreInformefinalRequest $request, $id, Clie
 
     return redirect()->route('admin.informesfinales.index')->with('info', 'Documento subido exitosamente.');
 }
-
 
 
 public function buscarprogramacionesclienteita(Cliente $cliente, Request $request)

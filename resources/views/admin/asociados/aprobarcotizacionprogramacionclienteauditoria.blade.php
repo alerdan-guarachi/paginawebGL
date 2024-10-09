@@ -2,7 +2,17 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
-<a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">ESTADO DE APROBACIONES</a>
+<a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">ESTADO DE APROB.</a>
+<a class="btn btn-nrofactura btn-sm float-right" data-toggle="modal" data-target="#facturaModal">NRO. FACTURA</a>
+{{-- {!! Form::open(['route' => 'generar.pdf.consentimientoinformado', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+    <a class="btn btn-consentimientoinformado btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">CONS. INFORMADO</a>
+    {!! Form::hidden('clienteitaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
+    {!! Form::hidden('nombres', $clienteauditoria->nombres, ['class' => 'form-control']) !!}
+    {!! Form::hidden('apepaterno', $clienteauditoria->apepaterno, ['class' => 'form-control']) !!}
+    {!! Form::hidden('apematerno', $clienteauditoria->apematerno, ['class' => 'form-control']) !!}
+    {!! Form::hidden('ci', $clienteauditoria->ci, ['class' => 'form-control']) !!}
+{!! Form::close() !!} --}}
+
 <h5>APROBAR COTIZACIÓN DE PROGRAMACIÓN DE:</h5>
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>
 @stop
@@ -28,7 +38,7 @@
                 {!! Form::hidden('clienteauditoriaid', $id) !!}
                 {!! Form::hidden('clienteauditorianombre', $clienteauditoria->nombrecompleto) !!}
                 <div class="row">
-                    <div class="col-lg-6">
+                    <div class="col-lg-4">
                         <div class="form-group">
                             {!! Form::label('fechabateria', 'Fecha de bateria:') !!}
                             {!! Form::select('fechabateria', $fechas->toArray(), null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'fechabateria']) !!}
@@ -49,9 +59,9 @@
                             });
                         </script>                    
                     </div>
-                    <div class="col-lg-6">
+                    <div class="col-lg-8">
                         <div class="form-group">
-                            {!! Form::label('file', 'Documento aprobado:') !!}
+                            {!! Form::label('file', 'Cotización aprobada:') !!}
                             <input type="file" name="archivo" id="archivo" class="dropify"/>
                             @error('archivo')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -67,7 +77,25 @@
                             </div>
                         </div>
                     </div>
-                    <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    {{-- <div class="col-lg-4">
+                        <div class="form-group">
+                            {!! Form::label('file', 'Cons. informado para realización de evaluaciones:') !!}
+                            <input type="file" name="archivo2" id="archivo2" class="dropify"/>
+                            @error('archivo2')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                        <div class="form-group">
+                            <div class="" id="preview-card2" style="display: none;">
+                                <div class="">
+                                    <iframe id="document-preview2" style="width: 100%; height: 300px;" frameborder="0"></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div> --}}
+                    {{-- <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -96,17 +124,257 @@
                                     });
                                 });
                             </script>
-                            <style>
-                                #fechas-list li.selected {
-                                    background-color: yellow;
-                                }
-                            </style>
                         </div>
-                    </div>
+                    </div> --}}
+                    <!-- Modal Principal -->
                 </div>
                 {!! Form::submit('APROBAR BATERIA', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
             </div>
+        </div>
+    </div>
+</div>
+{{-- <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"> 
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">ESTADO DE APROBACIONES</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h6>Baterías del cliente:</h6>
+                <ul id="fechas-list">
+                    @foreach($fechasDisponibles as $fecha)
+                        <li style="color:{{ $fechasRegistradas->contains($fecha) ? '#94c93b' : 'red' }}">
+                            {{ $fecha }}
+                            @if($fechasRegistradas->contains($fecha))
+                                <button type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal"><i class="fas fa-edit"></i></button>
+                                @php
+                                    $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
+                                @endphp
+                                @if($document)
+                                    <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm"><i class="fas fa-eye"></i></a>
+                                @else
+                                    <span class="text-danger">Documento no disponible</span>
+                                @endif
+                                @php
+                                    $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
+                                @endphp
+                                @if($documentconsinfo)
+                                    <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-vercotizacion btn-sm"><i class="fas fa-eye"></i></a>
+                                @else
+                                    
+                                @endif
+                            @endif
+                        </li>
+                    @endforeach
+
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div> --}}
+<div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">  
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">ESTADO DE APROBACIONES</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Fecha de Bateria</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($fechasDisponibles as $fecha)
+                            <tr style="color:{{ $fechasRegistradas->contains($fecha) ? 'green' : 'red' }}">
+                                <td><span style="display: inline-block; width: 5px; height: 5px; background-color: black; border-radius: 50%; margin-right: 5px;"></span>
+                                    {{ $fecha }}</td>
+                                <td>
+                                    @if($fechasRegistradas->contains($fecha))
+                                        <abbr title="MODIFICAR COTIZACIÓN">
+                                            <button type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </abbr>
+                                        @php
+                                            $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
+                                        @endphp
+                                        @if($document)
+                                        <abbr title="VER COTIZACIÓN APROBADA">
+                                            <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm">
+                                                <i class="fas fa-file-invoice-dollar"></i>
+                                            </a>
+                                        </abbr>
+                                        @else
+                                            {{-- <span class="text-danger">Documento no disponible</span> --}}
+                                        @endif
+                                        @php
+                                            $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
+                                        @endphp
+                                        @if($documentconsinfo)
+                                        <abbr title="VER CONSENTIMIENTO INFORMADO">
+                                            <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm">
+                                                <i class="fas fa-clone"></i>
+                                            </a>
+                                        </abbr>
+                                        @else
+                                            {{-- <span class="text-danger">Documento cons. info no disponible</span> --}}
+                                        @endif
+                                    @else
+                                    <span style="color: red;">NO APROBADO</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="editPdfModal" tabindex="-1" role="dialog" aria-labelledby="editPdfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPdfModalLabel">MODIFICAR COTIZACIÓN</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editPdfForm" action="{{ route('admin.actualizarPdf') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="clienteauditoriaid" id="clienteauditoriaid" value="{{ $clienteauditoria->id }}">
+                    <label for="">Fecha de Bateria:</label>
+                    @if (!is_null($fecha))
+                        <input type="text" name="fechabateria" id="fechabateria" value="{{ $fecha }}">
+                    @endif
+
+                    <div class="form-group">
+                        <label for="archivo">Nueva cotización:</label>
+                        <input type="file" class="form-control-file dropify" name="archivo" id="archivo" accept="application/pdf" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-crear">Actualizar cotización</button>
+                        <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </form>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{{-- <div class="modal fade" id="facturaModal" tabindex="-1" role="dialog" aria-labelledby="facturaModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="facturaModalLabel">NUMERO DE FACTURA</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="card-body">
+                <form id="facturaForm" method="POST" action="{{ route('admin.asociados.guardarFacturacotclienteita', $cliente->id) }}">
+                    @csrf
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="form-group">
+                                {!! Form::label('fechabateria', 'Fecha de batería:') !!}
+                                {!! Form::select('fechabateria', $fechasregis->toArray(), null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'fechabateria']) !!}
+                                {!! Form::hidden('fechabateriaSeleccionada', null, ['class' => 'form-control', 'readonly', 'id' => 'fechaSeleccionada']) !!}
+                                @error('fechabateria')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                            <div class="form-group">
+                                {!! Form::label('nrofactura', 'Nro. factura:') !!}
+                                {!! Form::text('nrofactura', null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                @error('nrofactura')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                        <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div> --}}
+<div class="modal fade" id="facturaModal" tabindex="-1" role="dialog" aria-labelledby="facturaModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">NRO. DE FACTURA</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('guardarFacturacotclienteita') }}" method="POST">
+                    @csrf
+                    <div class="form-group">
+                        {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id, null, ['class' => 'form-control', 'readonly',]) !!}
+                    </div>
+                    <div class="form-group">
+                        {!! Form::label('fechabateriaseleccionada', 'Fecha de batería:') !!}
+                        {!! Form::select('fechabateriaseleccionada', $fechasregis->toArray(), null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'fechabateriaseleccionada']) !!}
+                        {!! Form::hidden('fechabateriaseleccionada', null, ['class' => 'form-control', 'readonly', 'id' => 'fechaSeleccionada2']) !!}
+                        @error('fechabateriaseleccionada')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group">
+                        {!! Form::label('nrofactura', 'Nro. factura:') !!}
+                        {!! Form::text('nrofactura', null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                        @error('nrofactura')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                    <script>
+                        $(document).ready(function() {
+                            $('#fechabateriaseleccionada').change(function() {
+                                var selectedOption = $(this).children("option:selected").text();
+                                $('#fechaSeleccionada2').val(selectedOption);
+                            });
+                        });
+                    </script> 
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-guardarobservacion">Guardar</button>
+                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+            </div>
+        </form>
+            
         </div>
     </div>
 </div>
@@ -154,6 +422,22 @@
             documentPreview.src = fileURL;
         } else {
             var previewCard = document.getElementById('preview-card');
+            previewCard.style.display = 'none';
+            documentPreview.src = '';
+        }
+    });
+
+    document.getElementById('archivo2').addEventListener('change', function(event) {
+        var file = event.target.files[0];
+        if (file) {
+            var fileURL = URL.createObjectURL(file);
+            var previewCard = document.getElementById('preview-card2');
+            var documentPreview = document.getElementById('document-preview2');
+    
+            previewCard.style.display = 'block';
+            documentPreview.src = fileURL;
+        } else {
+            var previewCard = document.getElementById('preview-card2');
             previewCard.style.display = 'none';
             documentPreview.src = '';
         }
@@ -238,6 +522,42 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .btn-editar {
+    background-color:  #ffffff;
+    color: #faa625;
+    border-color: #faa625;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 5px 10px;
+}
+.btn-editar:hover {
+    background-color: #faa625;
+    color: #ffffff;
+}
+.btn-vercotizacion {
+    background-color:  #ffffff;
+    color: #1294b8d1;
+    border-color: #1294b8d1;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 5px 10px;
+}
+.btn-vercotizacion:hover {
+    background-color: #1294b8d1;
+    color: #ffffff;
+}
+.btn-verconsentimiento {
+    background-color:  #ffffff;
+    color: #1294b8d1;
+    border-color: #1294b8d1;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 5px 10px;
+}
+.btn-verconsentimiento:hover {
+    background-color: #1294b8d1;
+    color: #ffffff;
+}
     .dropify-wrapper {
         height: 125px !important;
     }
@@ -268,7 +588,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 20px;
         }
     .btn-crear:hover {
         background-color: #94c93b;
@@ -309,14 +629,49 @@
         background-color: #faa625;
         color: #ffffff;
     }
+    .btn-nrofactura {
+        background-color: #ffffff;
+        color: #f04cc4;
+        border-color: #f04cc4;
+        border-radius: 5px;
+        padding: 10px 20px;
+        margin-left: 10px;
+    }
+    .btn-nrofactura:hover {
+        background-color: #f04cc4;
+        color: #ffffff;
+    }
+    .btn-consentimientoinformado {
+        background-color: #ffffff;
+        color: #5db2cd;
+        border-color: #5db2cd;
+        border-radius: 5px;
+        padding: 10px 20px;
+        margin-left: 10px;
+    }
+    .btn-consentimientoinformado:hover {
+        background-color: #5db2cd;
+        color: #ffffff;
+    }
     .btn-cerrar {
+        background-color: #ffffff;
+        color: #e62e2e;
+        border-color: #e62e2e;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-cerrar:hover {
+        background-color: #e62e2e;
+        color: #ffffff;
+    }
+    .btn-guardarobservacion {
         background-color: #ffffff;
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
         padding: 5px 10px;
     }
-    .btn-cerrar:hover {
+    .btn-guardarobservacion:hover {
         background-color: #94c93b;
         color: #ffffff;
     }

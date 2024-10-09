@@ -35,17 +35,6 @@
                             @enderror
                         </div>
                     </div>
-                    {{-- <div class="col-lg-6">
-                        <div class="form-group">
-                            {!! Form::label('tipocliente', 'Tipo cliente:') !!}
-                            {!! Form::select('tipocliente', $tipocliente, null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                            @error('tipocliente')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    </div> --}}
                 </div>
                 <div class="row">
                     <div class="col-lg-3">

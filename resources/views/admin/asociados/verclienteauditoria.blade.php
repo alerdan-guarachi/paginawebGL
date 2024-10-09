@@ -248,12 +248,21 @@
                             @endif
                             @can('admin.asociados.generarchecklistclienteauditoria')
                                 @if ($tieneTramites)
-                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.generarchecklistclienteauditoria', $clienteauditoria) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
-                                        <i class="fas fa-tasks"></i>
-                                        <strong>REQUISITOS</strong>
-                                    </a>
-                                </div>
+                                    @if (!$tienerequisitosauditoria)
+                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                        <a href="{{ route('admin.asociados.generarchecklistclienteauditoria', $clienteauditoria) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                            <i class="fas fa-tasks"></i>
+                                            <strong>REQUISITOS</strong>
+                                        </a>
+                                    </div>
+                                    @else
+                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                        <a href="{{ route('admin.asociados.subirdocrequisitosauditoria', $clienteauditoria) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="REQUISITOS" aria-disabled="true">
+                                            <i class="fas fa-tasks"></i>
+                                            <strong>REQUISITOS</strong>
+                                        </a>
+                                    </div>
+                                    @endif
                                 @else
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                     <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
@@ -271,7 +280,7 @@
                         </div>
                         <div class="row text-center">
                             @can('admin.asociados.crearbateriaclienteauditoria')
-                                @if (($tieneRequisitos && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente)
+                                @if (/* ( */$tieneRequisitos/*  && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente */)
                                 <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                     <a href="{{ route('admin.asociados.crearbateriaclienteauditoria', $clienteauditoria) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
                                         <i class="fas fa-charging-station"></i>

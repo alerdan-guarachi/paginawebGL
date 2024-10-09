@@ -512,6 +512,42 @@
                                 $mostrarcrodomiciliopendiente = $accion['crodomicilio'] === 'PENDIENTE';
                                 $mostrarcontrato = !empty($accion['contrato']);
                                 $mostrarcontratopendiente = $accion['contrato'] === 'PENDIENTE';
+
+                                $mostraregestora = !empty($accion['egestora']);
+                                $mostraregestorapendiente = $accion['egestora'] === 'PENDIENTE';
+                                $mostrardictamencalentenc = !empty($accion['dictamencalentenc']);
+                                $mostrardictamencalentencpendiente = $accion['dictamencalentenc'] === 'PENDIENTE';
+                                $mostrarinfomedicasalud = !empty($accion['infomedicasalud']);
+                                $mostrarinfomedicasaludpendiente = $accion['infomedicasalud'] === 'PENDIENTE';
+                                $mostrarctrabajo = !empty($accion['ctrabajo']);
+                                $mostrarctrabajopendiente = $accion['ctrabajo'] === 'PENDIENTE';
+                                $mostrarboletapago = !empty($accion['boletapago']);
+                                $mostrarboletapagopendiente = $accion['boletapago'] === 'PENDIENTE';
+                                $mostraractdatos = !empty($accion['actdatos']);
+                                $mostraractdatospendiente = $accion['actdatos'] === 'PENDIENTE';
+                                $mostrarresolinvhijos = !empty($accion['resolinvhijos']);
+                                $mostrarresolinvhijospendiente = $accion['resolinvhijos'] === 'PENDIENTE';
+                                $mostrarcunionlibre = !empty($accion['cunionlibre']);
+                                $mostrarcunionlibrependiente = $accion['cunionlibre'] === 'PENDIENTE';
+                                $mostrarcnacimientounionlibre = !empty($accion['cnacimientounionlibre']);
+                                $mostrarcnacimientounionlibrependiente = $accion['cnacimientounionlibre'] === 'PENDIENTE';
+                                $mostrarciunionlibre = !empty($accion['ciunionlibre']);
+                                $mostrarciunionlibrependiente = $accion['ciunionlibre'] === 'PENDIENTE';
+                                $mostrarcdivorcio = !empty($accion['cdivorcio']);
+                                $mostrarcdivorciopendiente = $accion['cdivorcio'] === 'PENDIENTE';
+                                $mostrarcdefuncion = !empty($accion['cdefuncion']);
+                                $mostrarcdefuncionpendiente = $accion['cdefuncion'] === 'PENDIENTE';
+                                $mostrarpolizasgen = !empty($accion['polizasgen']);
+                                $mostrarpolizasgenpendiente = $accion['polizasgen'] === 'PENDIENTE';
+                                $mostrardeclasalud = !empty($accion['declasalud']);
+                                $mostrardeclasaludpendiente = $accion['declasalud'] === 'PENDIENTE';
+                                $mostrarpolizaseguro = !empty($accion['polizaseguro']);
+                                $mostrarpolizaseguropendiente = $accion['polizaseguro'] === 'PENDIENTE';
+
+                                $mostraranteriordictamen = !empty($accion['anteriordictamen']);
+                                $mostraranteriordictamenpendiente = $accion['anteriordictamen'] === 'PENDIENTE';
+                                $mostrarpoderciapoderado = !empty($accion['poderciapoderado']);
+                                $mostrarpoderciapoderadopendiente = $accion['poderciapoderado'] === 'PENDIENTE';
                             @endphp
 
                             @if ($mostrarpoder || $mostrarpoderpendiente)
@@ -668,8 +704,210 @@
                                     </td>
                                 </tr>
                             @endif
-
-
+                            @if ($mostraregestora || $mostraregestorapendiente)
+                                <tr>
+                                    <td>EXTRACTO DE GESTORA</td>
+                                    <td>
+                                        @if ($mostraregestorapendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostraregestora)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['egestora']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrardictamencalentenc || $mostrardictamencalentencpendiente)
+                                <tr>
+                                    <td>DICTAMEN CALIFICACION ENTIDAD ENCARGADA</td>
+                                    <td>
+                                        @if ($mostrardictamencalentencpendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrardictamencalentenc)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['dictamencalentenc']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarinfomedicasalud || $mostrarinfomedicasaludpendiente)
+                                <tr>
+                                    <td>INFORMACION MEDICA</td>
+                                    <td>
+                                        @if ($mostrarinfomedicasaludpendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarinfomedicasalud)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['infomedicasalud']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarctrabajo || $mostrarctrabajopendiente)
+                                <tr>
+                                    <td>CERTIFICADO DE TRABAJO</td>
+                                    <td>
+                                        @if ($mostrarctrabajopendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarctrabajo)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ctrabajo']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarboletapago || $mostrarboletapagopendiente)
+                                <tr>
+                                    <td>BOLETA DE PAGO</td>
+                                    <td>
+                                        @if ($mostrarboletapagopendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarboletapago)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['boletapago']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostraractdatos || $mostraractdatospendiente)
+                                <tr>
+                                    <td>ACTUALIZACION DE DATOS</td>
+                                    <td>
+                                        @if ($mostraractdatospendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostraractdatos)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['actdatos']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarresolinvhijos || $mostrarresolinvhijospendiente)
+                                <tr>
+                                    <td>RESOLUCION INVALIDEZ DE HIJOS < 25</td>
+                                    <td>
+                                        @if ($mostrarresolinvhijospendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarresolinvhijos)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['resolinvhijos']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarcunionlibre || $mostrarcunionlibrependiente)
+                                <tr>
+                                    <td>CERTIFICADO DE UNION LIBRE</td>
+                                    <td>
+                                        @if ($mostrarcunionlibrependiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarcunionlibre)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cunionlibre']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarcnacimientounionlibre || $mostrarcnacimientounionlibrependiente)
+                                <tr>
+                                    <td>CERTIFICADO NACIMIENTO DE UNION LIBRE</td>
+                                    <td>
+                                        @if ($mostrarcnacimientounionlibrependiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarcnacimientounionlibre)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacimientounionlibre']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarciunionlibre || $mostrarciunionlibrependiente)
+                                <tr>
+                                    <td>CARNET IDENTIDAD DE UNION LIBRE</td>
+                                    <td>
+                                        @if ($mostrarciunionlibrependiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarciunionlibre)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ciunionlibre']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarcdivorcio || $mostrarcdivorciopendiente)
+                                <tr>
+                                    <td>CERTIFICADO DE DIVORCIO</td>
+                                    <td>
+                                        @if ($mostrarcdivorciopendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarcdivorcio)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cdivorcio']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarcdefuncion || $mostrarcdefuncionpendiente)
+                                <tr>
+                                    <td>CERTIFICADO DE DIFUNCION</td>
+                                    <td>
+                                        @if ($mostrarcdefuncionpendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarcdefuncion)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cdefuncion']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarpolizasgen || $mostrarpolizasgenpendiente)
+                                <tr>
+                                    <td>POLIZAS GENERALES</td>
+                                    <td>
+                                        @if ($mostrarpolizasgenpendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarpolizasgen)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['polizasgen']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrardeclasalud || $mostrardeclasaludpendiente)
+                                <tr>
+                                    <td>DECLARACION SALUD</td>
+                                    <td>
+                                        @if ($mostrardeclasaludpendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrardeclasalud)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['declasalud']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarpolizaseguro || $mostrarpolizaseguropendiente)
+                                <tr>
+                                    <td>POLIZA SEGURO DESGRAVAMEN</td>
+                                    <td>
+                                        @if ($mostrarpolizaseguropendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarpolizaseguro)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['polizaseguro']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostraranteriordictamen || $mostraranteriordictamenpendiente)
+                                <tr>
+                                    <td>ANTERIOR DICTAMEN O RESOLUCION</td>
+                                    <td>
+                                        @if ($mostraranteriordictamenpendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostraranteriordictamen)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['anteriordictamen']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                            @if ($mostrarpoderciapoderado || $mostrarpoderciapoderadopendiente)
+                                <tr>
+                                    <td>PODER Y CARNET IDENTIDAD APODERADO</td>
+                                    <td>
+                                        @if ($mostrarpoderciapoderadopendiente)
+                                            <div class="pendiente">PENDIENTE</div>
+                                        @elseif ($mostrarpoderciapoderado)
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['poderciapoderado']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
                         </tbody>
                         <tbody>
                         </tbody>

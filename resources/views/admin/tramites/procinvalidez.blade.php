@@ -2,11 +2,13 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.tramites.index') }}">REGRESAR</a>
+@if($tienetramiteinicio)
 <a class="btn btn-sm float-right btn-seguimiento" data-toggle="modal" data-target="#modalseguimientoproceso">SEGUIMIENTO</a>
 <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalcartayreclamo">CARTA / RECLAMO</a>
 <a class="btn btn-sm float-right btn-adjuntosrespuestas" data-toggle="modal" data-target="#modaladjuntosrespuestas">ADJUNTOS Y RESPUESTAS</a>
 <a class="btn btn-sm float-right btn-comunicaciones" data-toggle="modal" data-target="#modalcomunicaciones">COMUNICACIONES</a>
 <a class="btn btn-sm float-right btn-solicitudes" data-toggle="modal" data-target="#modalsolicitudes">SOLICITUDES</a>
+@endif
 <h5>PROCEDIMIENTO DE INVALIDEZ DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
 @stop
@@ -24,6 +26,45 @@
 @endif
 
 <div class="card">
+
+    @if(!$tienetramiteinicio)
+    <div class="card-body">
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
+                <form action="{{ route('admin.tramites.guardariniciotramiteclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
+                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                    {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
+                    {!! Form::hidden('apoderado', auth()->user()->name) !!}
+                    @csrf
+                    <h5 style="text-align: center; font-size: 25px; margin-bottom:30px; margin-top:20px;">ELIGE UNA OPCIÓN</h5>
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
+                            <button type="button" class="btn btn-custom" style="width: 80%;" data-toggle="modal" data-target="#modalIngresoTramite">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-pencil-alt fa-5x mb-2"></i>
+                                    <span class="h6 mb-0">INICIO DE TRAMITE</span>
+                                </div>
+                            </button>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
+                            <button type="button" class="btn btn-custom" style="width: 80%;" data-toggle="modal" data-target="#modalNotificacionPoder">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-sync-alt fa-5x mb-2"></i>
+                                    <span class="h6 mb-0">CONTINUIDAD DE TRAMITE</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+    
+    @if($tienetramiteinicio)
     {{-- NIVELES DE PROCEDIMIENTO --}}
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" id="myTabs">
@@ -2297,6 +2338,7 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 
      
@@ -2946,6 +2988,9 @@
                                 <strong>FECHA DE SUBIDA</strong>
                             </div>
                             <div class="col-md-6">
+                                @php
+                                    $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->first();
+                                @endphp
                                 @if ($documento41)
                                     <p class="mb-0">{{ $documento41->fechasubida }}</p>
                                 @else

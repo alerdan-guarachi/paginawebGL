@@ -6345,7 +6345,7 @@
                             <label>Estatura</label>
                             <div class="form-group">
                                 <div class="input-group">
-                                    <input type="text" name="estatura" class="form-control" value="" oninput="this.value = this.value.replace(/[^\d\.]/g, ''); this.value = this.value.match(/^\d{0,1}(\.\d{0,2})?/g)[0];">
+                                    <input type="text" name="estatura" class="form-control" value="" oninput="this.value = this.value.replace(/[^\d\.]/g, ''); this.value = this.value.match(/^\d{0,5}(\.\d{0,5})?/g)[0];">
                                     <div class="input-group-append">
                                         <span class="input-group-text">cm</span>
                                     </div>

@@ -82,6 +82,11 @@
 
 
                         {!! Form::label('', 'ACCIONES REQUERIDAS Y PROVEEDORES DISPONIBLES:') !!}
+                        @error('proveedornombre')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
                         @foreach($accionesPorFecha as $fecha => $acciones) 
                             <div class="row">
                                 <div class="acciones-{{ $fecha }}" style="display:none;">

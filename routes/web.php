@@ -71,7 +71,6 @@ Route::post('admin/asociados/generarpdfcliente/{cliente}', 'App\Http\Controllers
 Route::post('admin/asociados/eliminar-pdf', 'App\Http\Controllers\Admin\AsociadoController@eliminarPDF')->name('admin.asociados.eliminarpdf');
 
 
-
 Route::get('asociados/{id}/download-pdf', [AsociadoController::class, 'downloadPDF'])->name('admin.asociados.downloadPDF');
 
 Route::get('informesfinales/documentosprogramaciones/7', 'App\Http\Controllers\Admin\InformeFinalController@documentosprogramaciones')->name('admin.informesfinales.documentosprogramaciones');
@@ -106,6 +105,7 @@ Route::get('admprogramaciones/controlregistros/7', 'App\Http\Controllers\Admin\A
 Route::get('informesfinales/reservasmedicas/8', 'App\Http\Controllers\Admin\InformeFinalController@reservasmedicas')->name('admin.informesfinales.reservasmedicas');
 
 Route::post('tramites/guardartramitesclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardartramitesclienteita')->name('admin.tramites.guardartramitesclienteita');
+Route::post('tramites/guardariniciotramiteclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardariniciotramiteclienteita')->name('admin.tramites.guardariniciotramiteclienteita');
 
 Route::get('tramites/generarcartareclamo/{cliente}', 'App\Http\Controllers\Admin\TramitesController@generarcartareclamo')->name('admin.tramites.generarcartareclamo');
 Route::get('tramites/generaradjuntoyrespuesta/{cliente}', 'App\Http\Controllers\Admin\TramitesController@generaradjuntoyrespuesta')->name('admin.tramites.generaradjuntoyrespuesta');
@@ -324,10 +324,12 @@ Route::post('asociados/guardarproveedorinformefinal/{cliente}', 'App\Http\Contro
         Route::get('asociados/crearformularioclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@crearformularioclienteauditoria')->name('admin.asociados.crearformularioclienteauditoria');
         Route::post('asociados/guardarformularioclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardarformularioclienteauditoria')->name('admin.asociados.guardarformularioclienteauditoria');
         Route::post('asociados/generarpdfclienteauditoria{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@generarpdfclienteauditoria')->name('admin.asociados.generarpdfclienteauditoria');
-    //GENERAR PDF
+    //GENERAR ETIQUETA Y REQUISITOS
         Route::get('asociados/generaretiquetaclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@generaretiquetaclienteauditoria')->name('admin.asociados.generaretiquetaclienteauditoria');
         Route::get('asociados/generarchecklistclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@generarchecklistclienteauditoria')->name('admin.asociados.generarchecklistclienteauditoria');
         Route::post('asociados/descargarchecklistclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@descargarchecklistclienteauditoria')->name('admin.asociados.descargarchecklistclienteauditoria');
+        Route::get('asociados/subirdocrequisitosauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@subirdocrequisitosauditoria')->name('admin.asociados.subirdocrequisitosauditoria');
+        Route::put('asociados/guardardocrequisitosauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardardocrequisitosauditoria')->name('admin.asociados.guardardocrequisitosauditoria');
     //CONTACTOS CLIENTES ITA
         Route::get('asociados/vercontactoclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@vercontactoclienteauditoria')->name('admin.asociados.vercontactoclienteauditoria');
         Route::get('asociados/crearcontactoclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@crearcontactoclienteauditoria')->name('admin.asociados.crearcontactoclienteauditoria');

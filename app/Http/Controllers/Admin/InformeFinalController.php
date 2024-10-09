@@ -579,6 +579,43 @@ class InformeFinalController extends Controller
                 $contrato = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->contrato);})->first()->contrato ?? null;
 
+                    $egestora = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->egestora);})->first()->egestora ?? null;
+                    $dictamencalentenc = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->dictamencalentenc);})->first()->dictamencalentenc ?? null;
+                    $infomedicasalud = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->infomedicasalud);})->first()->infomedicasalud ?? null;
+
+
+                        $ctrabajo = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->ctrabajo);})->first()->ctrabajo ?? null;
+                        $boletapago = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->boletapago);})->first()->boletapago ?? null;
+                        $actdatos = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->actdatos);})->first()->actdatos ?? null;
+                        $resolinvhijos = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->resolinvhijos);})->first()->resolinvhijos ?? null;
+                        $cunionlibre = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->cunionlibre);})->first()->cunionlibre ?? null;
+                        $cnacimientounionlibre = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->cnacimientounionlibre);})->first()->cnacimientounionlibre ?? null;
+                        $ciunionlibre = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->ciunionlibre);})->first()->ciunionlibre ?? null;
+                        $cdivorcio = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->cdivorcio);})->first()->cdivorcio ?? null;
+                        $cdefuncion = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->cdefuncion);})->first()->cdefuncion ?? null;
+                        $polizasgen = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->polizasgen);})->first()->polizasgen ?? null;
+                        $declasalud = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->declasalud);})->first()->declasalud ?? null;
+                        $polizaseguro = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->polizaseguro);})->first()->polizaseguro ?? null;
+                        $anteriordictamen = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->anteriordictamen);})->first()->anteriordictamen ?? null;
+                        $poderciapoderado = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->poderciapoderado);})->first()->poderciapoderado ?? null;
+
                 if ($accionEstado === 'PENDIENTE') {
                     $estado = 'INCOMPLETO';
                 }
@@ -609,6 +646,25 @@ class InformeFinalController extends Controller
                     'contrato' => $contrato,
                     'motivoabandono' => $motivoabandono,
                     'estadoGeneral' => $estadoGeneral,
+
+                    'egestora' => $egestora,
+                    'dictamencalentenc' => $dictamencalentenc,
+                    'infomedicasalud' => $infomedicasalud,
+
+                    'ctrabajo' => $ctrabajo,
+                    'boletapago' => $boletapago,
+                    'actdatos' => $actdatos,
+                    'resolinvhijos' => $resolinvhijos,
+                    'cunionlibre' => $cunionlibre,
+                    'cnacimientounionlibre' => $cnacimientounionlibre,
+                    'ciunionlibre' => $ciunionlibre,
+                    'cdivorcio' => $cdivorcio,
+                    'cdefuncion' => $cdefuncion,
+                    'polizasgen' => $polizasgen,
+                    'declasalud' => $declasalud,
+                    'polizaseguro' => $polizaseguro,
+                    'anteriordictamen' => $anteriordictamen,
+                    'poderciapoderado' => $poderciapoderado,
                 ];
             }
             $result[] = [

@@ -17,7 +17,7 @@
             $('#alert-info').fadeOut('fast');
         }, 5000);
     </script>
-@endif
+@endif 
 <div class="card">
     <div class="card-body">
         {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardarbateriaclienteauditoria', $clienteauditoria], 'method' => 'POST']) !!}
@@ -25,7 +25,7 @@
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                 {!! Form::hidden('clienteauditoriaid', $id) !!}
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="form-group" hidden>
                         {!! Form::label('nombrecompleto', 'Nombre completo:') !!}
                         {!! Form::text('nombrecompleto', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
@@ -35,8 +35,8 @@
                             </small>
                         @enderror
                     </div> 
-                    <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
+                    {{-- <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"> 
+                        <div class="modal-dialog modal-lg" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
@@ -47,7 +47,7 @@
                                 <div class="modal-body">
                                     <strong>Fecha de Bateria:</strong>
                                     <select id="select-fechas" class="form-control">
-                                        <option value="" disabled selected></option>
+                                        <option value="" disabled selected>Selecciona una fecha</option>
                                         @foreach($accionesPorFecha as $fecha => $acciones)
                                             <option value="{{ $fecha }}">{{ $fecha }}</option>
                                         @endforeach
@@ -56,8 +56,11 @@
                                         <strong>Acciones requeridas:</strong>
                                         @foreach($accionesPorFecha as $fecha => $acciones)
                                             <div id="acciones-{{ $fecha }}" class="acciones" style="display: none;">
-                                                @foreach($acciones as $accion)
-                                                    <div style="color: black;">&#10003; {{ $accion }}</div>
+                                                @foreach($acciones as $item)
+                                                    <div style="color: black;">
+                                                        &#10003; (ID: {{ $item['id'] }}) {{ $item['accion'] }} 
+                                                        (Proveedor: {{ $item['proveedor'] }}, Precio: {{ $item['precio'] }})
+                                                    </div>
                                                 @endforeach
                                             </div>
                                         @endforeach
@@ -68,7 +71,262 @@
                                 </div>
                             </div>
                         </div>
+                    </div> --}}
+                    <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <strong>Fecha de Bateria:</strong>
+                                    <select id="select-fechas" class="form-control">
+                                        <option value="" disabled selected>Selecciona una fecha</option>
+                                        @foreach($accionesPorFecha as $fecha => $acciones)
+                                            <option value="{{ $fecha }}">{{ $fecha }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div id="acciones-container" class="mt-3">
+                                        <strong>Acciones requeridas:</strong>
+                                        <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Acción</th>
+                                                    <th>Informe</th>
+                                                    <th>Proveedor</th>
+                                                    @if(!auth()->user()->hasRole('PROVEEDOR'))
+                                                        <th>Precio</th>
+                                                    @endif
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <a id="ver-pdf-btn" href="#" target="_blank" class="btn btn-crear"
+                                        onclick=generatePDF()>Generar PDF</a>
+                                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                                </div>
+                                <script> 
+                                    function generatePDF() {
+                                     // Obtener la fecha seleccionada
+                                     var fechaSeleccionada = document.getElementById('select-fechas').value;
+                                 
+                                     if (!fechaSeleccionada) {
+                                         alert("Por favor, selecciona una fecha.");
+                                         return;
+                                     }
+                                 
+                                     // Obtener el cliente ID desde Blade
+                                     var clienteId = @json($clienteauditoria->id);
+                                 
+                                     // URL del controlador para generar el PDF
+                                     var url = '{{ route("admin.asociados.generarpdfcliente", ":clienteId") }}';
+                                     url = url.replace(':clienteId', clienteId);
+                                 
+                                     // Realizar la solicitud AJAX para generar y descargar el PDF
+                                     fetch(url, {
+                                         method: 'POST',
+                                         headers: {
+                                             'Content-Type': 'application/json',
+                                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                         },
+                                         body: JSON.stringify({
+                                             fecha: fechaSeleccionada
+                                         })
+                                     })
+                                     .then(response => {
+                                         if (!response.ok) {
+                                             throw new Error('Error en la respuesta del servidor.');
+                                         }
+                                         return response.blob();  // Obtener el PDF como un blob
+                                     })
+                                     .then(blob => {
+                                         // Crear un enlace para descargar el archivo
+                                         var link = document.createElement('a');
+                                         link.href = window.URL.createObjectURL(blob);
+                                         link.download = 'Checklist_' + '{{ $clienteauditoria->nombrecompleto }}' + '.pdf';
+                                         link.click();
+                                     })
+                                     .catch(error => console.error('Error:', error));
+                                    }
+                                 
+                                    // Asociar el evento de clic al botón "Generar PDF"
+                                    document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                    
+                                        var fechaSeleccionada = document.getElementById('ver-pdf-btn').getAttribute('data-fecha');
+                                        var clienteId = @json($clienteauditoria->id); // Asegúrate de que tienes acceso a esta variable
+                                        var url = '{{ route('admin.asociados.generarpdfcliente', ':clienteId') }}';
+                                        url = url.replace(':clienteId', clienteId);
+                                    
+                                        // Realizar la solicitud AJAX para obtener el enlace del PDF
+                                        fetch(url, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                            },
+                                            body: JSON.stringify({
+                                                fecha: fechaSeleccionada
+                                            })
+                                        })
+                                        .then(response => {
+                                            if (!response.ok) {
+                                                throw new Error('Error en la respuesta del servidor.');
+                                            }
+                                            return response.blob();  // Obtener el PDF como un blob
+                                        })
+                                        .then(blob => {
+                                            // Crear un enlace para descargar el archivo
+                                            var link = document.createElement('a');
+                                            link.href = window.URL.createObjectURL(blob);
+                                            link.download = 'Checklist_' + '{{ $clienteauditoria->nombrecompleto }}' + '.pdf';
+                                            link.click();
+                                        })
+                                        .catch(error => console.error('Error:', error));
+                                    });
+                                </script>
+                                
+                            </div>
+                        </div>
                     </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const selectFechas = document.getElementById('select-fechas');
+                                const accionesTable = document.getElementById('acciones-table');
+                                const tbody = accionesTable.querySelector('tbody');
+                            
+                                const accionesPorFecha = @json($accionesPorFecha);
+                                const rolusuario = @json($rolusuario); // Asegúrate de que el rol se pasa al script
+                            
+                                selectFechas.addEventListener('change', function () {
+                                    const selectedDate = this.value;
+                            
+                                    tbody.innerHTML = '';
+                            
+                                    if (selectedDate && accionesPorFecha[selectedDate]) {
+                                        const acciones = accionesPorFecha[selectedDate];
+                            
+                                        acciones.forEach(item => {
+                                            const row = document.createElement('tr');
+                                            row.innerHTML = `
+                                                <td>${item.id}</td>
+                                                <td>${item.accion}</td>
+                                                <td>${item.informe}</td>
+                                                <td>${item.proveedor}</td>
+                                                <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
+                                            `;
+                                            tbody.appendChild(row);
+                                        });
+                                        accionesTable.style.display = 'table';
+                                    } else {
+                                        accionesTable.style.display = 'none';
+                                    }
+                                });
+                            });
+                        </script>
+
+<style>
+    .compact-table th, .compact-table td {
+        padding: 4px 8px; /* Reduce el padding para compactar las celdas */
+        line-height: 1.2; /* Ajusta el interlineado de las celdas */
+    }
+
+    .compact-table {
+        font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
+    }
+</style>
+                         {{-- <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const selectFechas = document.getElementById('select-fechas');
+                            const accionesTable = document.getElementById('acciones-table');
+                            const tbody = accionesTable.querySelector('tbody');
+
+                            const accionesPorFecha = @json($accionesPorFecha);
+                        
+                            selectFechas.addEventListener('change', function () {
+                                const selectedDate = this.value;
+
+                                tbody.innerHTML = '';
+                        
+                                if (selectedDate && accionesPorFecha[selectedDate]) {
+                                    const acciones = accionesPorFecha[selectedDate];
+                                    
+                                    acciones.forEach(item => {
+                                        const row = document.createElement('tr');
+                                        row.innerHTML = `
+                                            <td>${item.id}</td>
+                                            <td>${item.accion}</td>
+                                            <td>${item.proveedor}</td>
+                                            <td>${item.precio}</td>
+                                        `;
+                                        tbody.appendChild(row);
+                                    });
+                                    accionesTable.style.display = 'table';
+                                } else {
+                                    accionesTable.style.display = 'none';
+                                }
+                            });
+                        });
+                    </script> --}}   
+                    
+                    <div class="form-group">
+                        <strong>Fecha de Batería:</strong>
+                        <select id="select-fechas" name="fechabateria" class="form-control">
+                            <option value="nueva_bateria">FECHA DE HOY</option>
+                            @foreach($accionesPorFecha as $fecha => $acciones)
+                                <option value="{{ $fecha }}">{{ $fecha }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <strong>Informe:</strong>
+                        <select id="informe" name="informe" class="form-control">
+                            <option value="NO TIENE INFORME">NO TIENE</option>
+                            <option value="SI TIENE INFORME">SI TIENE</option>
+                        </select>
+                    </div>
+                    <div class="form-group hidden" id="fechaInformeGroup">
+                        <strong>Fecha del Informe:</strong>
+                        <input type="date" id="fechainforme" name="fechainforme" class="form-control">
+                    </div>
+                    <style>
+                        .form-group {
+                            margin-bottom: 15px;
+                        }
+                        .hidden {
+                            display: none;
+                        }
+                    </style>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const informeSelect = document.getElementById('informe');
+                            const fechaInformeGroup = document.getElementById('fechaInformeGroup');
+                
+                            function toggleFechaInforme() {
+                                if (informeSelect.value === 'SI TIENE INFORME') {
+                                    fechaInformeGroup.classList.remove('hidden');
+                                } else {
+                                    fechaInformeGroup.classList.add('hidden');
+                                }
+                            }
+                
+                            // Inicializa el estado del campo cuando la página carga
+                            toggleFechaInforme();
+                
+                            // Añade un listener para cambios en la selección
+                            informeSelect.addEventListener('change', toggleFechaInforme);
+                        });
+                    </script>
                     <div class="form-group">
                         {!! Form::label('tipoarea', 'Tipo Area:', ['id' => 'area_label2']) !!}
                         {!! Form::select('tipoarea', ['Estudios' => 'ESTUDIOS', 'Especialidades' => 'ESPECIALIDADES'], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoarea']) !!}
@@ -78,6 +336,36 @@
                             </small>
                         @enderror
                     </div>
+                    <!-- Campo adicional "ANTECEDENTES" -->
+                    <div class="form-group" id="antecedentes-field" style="display: none;">
+                        {!! Form::label('antecedentes', 'Antecedentes:') !!}
+                        {!! Form::text('antecedentes', null, ['class' => 'form-control', 'id' => 'antecedentes']) !!}
+                        @error('antecedentes')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const tipoareaSelect = document.getElementById('tipoarea');
+                            const antecedentesField = document.getElementById('antecedentes-field');
+                        
+                            tipoareaSelect.addEventListener('change', function() {
+                                if (tipoareaSelect.value === 'Especialidades') {
+                                    antecedentesField.style.display = 'block';
+                                } else {
+                                    antecedentesField.style.display = 'none';
+                                }
+                            });
+                        
+                            // Opcional: si ya hay un valor seleccionado al cargar la página
+                            if (tipoareaSelect.value === 'Especialidades') {
+                                antecedentesField.style.display = 'block';
+                            }
+                        });
+                        </script>
+                        
                     <div class="form-group" id="estudios_group" style="display: none;">
                         {!! Form::label('areanombre', 'Estudio:', ['id' => 'area_label']) !!}
                         {!! Form::select('areanombre', $areas, null, ['class' => 'form-control', 'id' => 'area_select', 'placeholder' => '']) !!}
@@ -89,20 +377,42 @@
                     </div>
                     <div id="reset_button_container" style="margin-bottom: 20px" class=""></div>
                 </div>
-                <div class="col-lg-6">
-                    @foreach($areas as $id => $nombreArea)
+                <div class="col-lg-8">
+                    {{-- @foreach($areas as $id => $nombreArea)
                         <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
-                            <div class="card" style="max-height: 300px; overflow-y: auto;">
+                            <div class="card" style="max-height: 500px; overflow-y: auto;">
                                 <div class="card-body">
                                     @php $count = count($accionesPorArea[$id]); @endphp
-                                    @foreach($accionesPorArea[$id] as $key => $accionNombre)
+                                    @foreach($accionesPorArea[$id] as $accion)
                                         <div class="form-check">
-                                            {!! Form::checkbox('accionnombre[]', $accionNombre, null, ['class' => 'form-check-input', 'id' => 'accionnombre_'.$key]) !!}
-                                            {!! Form::label('accionnombre_'.$key, $accionNombre, ['class' => 'form-check-label']) !!}
+                                            {!! Form::checkbox('acciones[]', $accion->id, null, ['class' => 'form-check-input', 'id' => 'accion_'.$accion->id]) !!}
+                                            {!! Form::label('accion_'.$accion->id, $accion->accion . ' - ID: ' . $accion->id . ' - Proveedor: ' . $accion->proveedor . ' - Precio: ' . $accion->precio, ['class' => 'form-check-label']) !!}
                                         </div>
-                                        @if(($key + 1) == ceil($count / 1))
-                                            </div><div class="card-body">
-                                        @endif
+                                    @endforeach
+
+                                </div>
+                            </div>
+                            @error('accionnombre')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    @endforeach --}}
+                    @foreach($areas as $id => $nombreArea) 
+                        <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
+                            <div class="card" style="max-height: 500px; overflow-y: auto;">
+                                <div class="card-body">
+                                    @php $count = count($accionesPorArea[$id]); @endphp
+                                    @foreach($accionesPorArea[$id] as $accion)
+                                        <div class="form-check">
+                                            {!! Form::checkbox('acciones[]', $accion->id, null, ['class' => 'form-check-input', 'id' => 'accion_'.$accion->id]) !!}
+                                            {!! Form::label('accion_'.$accion->id, $accion->accion . ' - ID: ' . $accion->id . ' - Proveedor: ' . $accion->proveedor, ['class' => 'form-check-label']) !!}
+
+                                            @if(!auth()->user()->hasRole('PROVEEDOR'))
+                                                <span>- Precio: {{ $accion->precio }}</span>
+                                            @endif
+                                        </div>
                                     @endforeach
                                 </div>
                             </div>
@@ -113,20 +423,31 @@
                             @enderror
                         </div>
                     @endforeach
-                    <div class="form-group card card-body" id="especialidades_group" style="display: none;">
+
+
+                    {{-- <div class="form-group card card-body" id="especialidades_group" style="display: none;">
                         {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
                         <div class="row">
-                            @foreach ($areas2 as $index => $area)
-                                <div class="col-md-6 form-check">
-                                    {!! Form::checkbox('accionnombre[]', $area, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area]) !!}
-                                    {!! Form::label('accionnombre_'. $area, $area, ['class' => 'form-check-label']) !!}
+                            @foreach ($areas2 as $area2)
+                                <div class="col-md-12 form-check">
+                                    {!! Form::checkbox('accionnombre[]', $area2->id, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area2->id]) !!}
+                                    {!! Form::label('accionnombre_' . $area2->id, $area2->area . ' - Proveedor: ' . $area2->proveedor . ' - Precio: ' . $area2->precio, ['class' => 'form-check-label']) !!}
                                 </div>
-                                {{-- @if(($index + 1) % ceil(count($areas2) / 5) == 0)
-                                    </div><div class="row">
-                                @endif --}}
+                            @endforeach
+                        </div>
+                    </div> --}}
+                    <div class="form-group card card-body" id="especialidades_group" style="display: none;"> 
+                        {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
+                        <div class="row">
+                            @foreach ($areas2 as $area2)
+                                <div class="col-md-12 form-check">
+                                    {!! Form::checkbox('accionnombre[]', $area2->id, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area2->id]) !!}
+                                    {!! Form::label('accionnombre_' . $area2->id, $area2->area . ' - Proveedor: ' . $area2->proveedor . (auth()->user()->hasRole('OPERATIVO') ? '' : ' - Precio: ' . $area2->precio), ['class' => 'form-check-label']) !!}
+                                </div>
                             @endforeach
                         </div>
                     </div>
+                    
                 </div>
             </div>
             {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-crear']) !!}
@@ -327,6 +648,33 @@
     });
 
 </script>
+{{-- <script>
+    function generatePDF() {
+        // Obtener la fecha seleccionada
+        var fechaSeleccionada = document.getElementById('select-fechas').value;
+
+        if (!fechaSeleccionada) {
+            alert("Por favor, selecciona una fecha.");
+            return;
+        }
+
+        // Obtener el cliente ID
+        var clienteId = {{ $cliente->id }}; // Asegúrate de que tienes acceso a esta variable
+
+        // URL del controlador para generar el PDF
+        var url = '/admin/asociados/generarpdfcliente/' + clienteId;
+
+        // Redirigir a la URL para descargar el PDF directamente
+        window.location.href = url + '?fecha=' + encodeURIComponent(fechaSeleccionada);
+    }
+
+    // Asociar el evento de clic al botón "Generar PDF"
+    document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        generatePDF();
+    });
+</script> --}}
+
 @endsection
 
 @section('css')

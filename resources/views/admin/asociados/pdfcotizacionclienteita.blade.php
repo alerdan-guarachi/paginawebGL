@@ -36,6 +36,7 @@
             padding: 8px;
             text-align: left;
             border-bottom: 1px solid #ddd;
+            font-size: 12.5px;
         }
         h1 {
             color: #94c93b; 

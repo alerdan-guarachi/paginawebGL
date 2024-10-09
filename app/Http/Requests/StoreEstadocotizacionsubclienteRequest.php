@@ -41,7 +41,7 @@ class StoreEstadocotizacionsubclienteRequest extends FormRequest
             'clienteauditorianombre' => '',
             'fechabateria' => 'required',
             'archivo' => 'required',
-            'archivo2' => 'required',
+            'archivo2' => '',
             'usuarioid' => '',
             'usuarioregistro' => '',
             'nrofactura' => '',

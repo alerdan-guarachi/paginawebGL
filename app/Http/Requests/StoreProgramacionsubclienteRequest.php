@@ -33,7 +33,7 @@ class StoreProgramacionsubclienteRequest extends FormRequest
         'id' => '',
         'clientebancoid' => 'max:45',
         'clientenombre' => 'max:45',
-        'proveedornombre' => 'max:45',
+        'proveedornombre' => 'required|max:45',
         'accionnombre' => 'max:45',
         'areanombre' => 'max:45',
         'horaasignada' => 'max:45',

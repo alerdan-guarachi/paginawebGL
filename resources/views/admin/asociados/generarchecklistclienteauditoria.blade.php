@@ -2,13 +2,13 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
-{{-- <a class="btn btn-sm float-right btn-subirrequisitos" href="{{ route('admin.asociados.subirdocrequisitosauditoria', $clienteauditoria) }}">SUBIR REQUISITOS</a> --}}
+<a class="btn btn-sm float-right btn-subirrequisitos" href="{{ route('admin.asociados.subirdocrequisitosauditoria', $clienteauditoria) }}">SUBIR REQUISITOS</a>
 <h5>REQUISITOS DE AUDITORIA MEDICA:</h5>
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>
 @stop
 
 @section('content') 
-{{-- <form id="pdfForm" action="{{ route('admin.asociados.descargarchecklistclienteclienteauditoria', $clienteauditoria) }}" method="POST"> --}}
+<form id="pdfForm" action="{{ route('admin.asociados.descargarchecklistclienteauditoria', $clienteauditoria) }}" method="POST">
     @csrf
     <input type="hidden" name="documentosSeleccionados" id="documentosSeleccionadosInput">
     <input type="hidden" name="documentosSeleccionados2" id="documentosSeleccionados2Input">
@@ -51,7 +51,7 @@
             @endif
         </div>
     </div>
-{{-- </form> --}}
+</form>
 
 <script>
     function generarFormulario() {

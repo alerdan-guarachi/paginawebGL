@@ -62,6 +62,10 @@
                     <input type="checkbox" name="egestora" value="egestora" id="egestora">
                     <label for="egestora" style="min-height: 20px;">EXTRACTO DE GESTORA</label>
                 </div>
+                <div class="form-group">
+                    <input type="checkbox" name="contrato" value="contrato" id="contrato" checked>
+                    <label for="contrato" style="min-height: 20px;">CONTRATO</label>
+                </div>
             </div>
             <div class="col-md-4" style="margin-top: 47px;">
                 @if (strtolower($estadoCivil) === 'casad@')
