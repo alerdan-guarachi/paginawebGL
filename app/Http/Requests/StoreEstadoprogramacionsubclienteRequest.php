@@ -39,14 +39,14 @@ class StoreEstadoprogramacionsubclienteRequest extends FormRequest
             'clienteitanombre' => '',
             'clienteauditoriaid' => '',
             'clienteauditorianombre' => '',
-            'proveedorasignado' => 'max:45',
-            'horarioasignado' => 'max:45',
-            'proveedorid' => 'max:45',
-            'fechaatencionprogramacion' => 'max:45',
-            'usuarioid' => 'max:45',
-            'usuarioregistro' => 'max:45',
-            'accionnombre' => 'required|max:45',
-            'fechabateria' => 'required|max:45',
+            'proveedorasignado' => '',
+            'horarioasignado' => '',
+            'proveedorid' => '',
+            'fechaatencionprogramacion' => '',
+            'usuarioid' => '',
+            'usuarioregistro' => '',
+            'accionnombre' => '',
+            'fechabateria' => '',
 
 
         ]; 

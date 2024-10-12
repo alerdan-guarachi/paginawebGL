@@ -22,14 +22,14 @@ class Estadoprogramacionsubcliente extends Model
             'clienteitanombre' => '',
             'clienteauditoriaid' => '',
             'clienteauditorianombre' => '',
-            'proveedorasignado' => 'required|max:45',
-            'horarioasignado' => 'required|max:45',
-            'proveedorid' => 'required|max:45',
-            'fechaatencionprogramacion' => 'required|max:45',
-            'usuarioid' => 'required|max:45',
-            'usuarioregistro' => 'required|max:45',
-            'accionnombre' => 'required|max:45',
-            'fechabateria' => 'required|max:45',
+            'proveedorasignado' => '',
+            'horarioasignado' => '',
+            'proveedorid' => '',
+            'fechaatencionprogramacion' => '',
+            'usuarioid' => '',
+            'usuarioregistro' => '',
+            'accionnombre' => '',
+            'fechabateria' => '',
     ]; 
 
     protected $fillable = [

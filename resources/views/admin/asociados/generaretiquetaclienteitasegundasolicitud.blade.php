@@ -31,7 +31,7 @@
             <td>SEGUNDA SOLICITUD</td>
         </tr>
         <tr>
-            <th>CIUDAD</th>
+            <th>LUGAR DE RESIDENCIA</th>
             <th>CI</th>
             <th>CELULAR</th>
             <th>ASEGURADORA</th>

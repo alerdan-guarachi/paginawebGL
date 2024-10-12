@@ -3,10 +3,16 @@
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
 <a class="btn btn-sm float-right btn-subirrequisitos" href="{{ route('admin.asociados.subirdocrequisitos', $cliente) }}">SUBIR REQUISITOS</a>
+
+@if (!$tieneInvalidez)
+<h5>REQUISITOS PARA INICIO DE BATERIA DE:</h5>
+<h3>{{$cliente->nombrecompleto}}</h3>
+@endif
+
 @if ($tieneInvalidez)
 <h5>REQUISITOS DE INVALIDEZ:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
-@endif
+
 @stop
 
 @section('content')
@@ -112,13 +118,13 @@
                         <label for="ciunionlibre" style="min-height: 20px;">CARNET IDENTIDAD DE UNIÓN LIBRE</label>
                     </div>
                 @endif
-                @if ($numHijosMenores > 0 || $numHijosMenores === null)
+                @if ($numHijosMenores > 0 || $numHijosMenores !== null)
                     <div class="form-group">
                         <input type="checkbox" name="cnacjihos" value="cnacjihos" id="cnacjihos" checked>
                         <label for="cnacjihos" style="min-height: 20px;">CERTIFICADO NACIMIENTO HIJOS < 25</label>
                     </div>
                 @endif
-                @if ($numHijosMenores > 0 || $numHijosMenores === null)
+                @if ($numHijosMenores > 0 || $numHijosMenores !== null)
                     <div class="form-group">
                         <input type="checkbox" name="cihijos" value="cihijos" id="cihijos" checked>
                         <label for="cihijos" style="min-height: 20px;">CARNET IDENTIDAD HIJOS < 25</label>
@@ -160,7 +166,7 @@
                     <input type="checkbox" name="actdatos" value="actdatos" id="actdatos" checked>
                     <label for="actdatos" class="color-toggle">ACTUALIZACIÓN DE DATOS</label>
                 </div>
-                @if ($numHijosMenores > 0 || $numHijosMenores === null)
+                @if ($numHijosMenores > 0 || $numHijosMenores !== null)
                 <div class="form-group">
                     <input type="checkbox" name="resolinvhijos" value="resolinvhijos" id="resolinvhijos" checked>
                     <label for="resolinvhijos" class="color-toggle">RESOLUCIÓN INVALIDEZ DE HIJOS < 25</label>
@@ -176,9 +182,11 @@
             </div>
             @endif
         </div>
+
         @if (!$tieneRequisitos)
         <button onclick="generatePDF(), generatePDF2()" class="btn-crear">GENERAR CHECK LIST</button>
         @endif
+
         <script>
             function generatePDF() {
                 var checkboxes = document.querySelectorAll('input[type="checkbox"]');
@@ -206,12 +214,15 @@
         </script>
     </div>
 </div>
+@endif
 <div class="card"> 
     <div class="card-body">
         <div class="row"> 
             <div class="col-lg-12">
-                <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">ATENCIÓN MÉDICA</h4>
+                <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px; margin-top: 20px;">ATENCIÓN MÉDICA</h4>
                 @if (!$registroExistente && !$registroaprobadoExistente)
+
+                    
                     <div class="form-group" style="display: flex; gap: 5px;">
                         {!! Form::open(['route' => 'generar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
                             {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
@@ -219,23 +230,37 @@
                             {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
                             {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
                             {!! Form::hidden('ci', $cliente->ci, ['class' => 'form-control']) !!}
+                            {!! Form::hidden('sucursal', $cliente->sucursal, ['class' => 'form-control']) !!}
                             {!! Form::submit('DERIVAR A MEDICINA LABORAL', ['class' => 'btn btn-derivar']) !!}
                         {!! Form::close() !!}
                     </div>
 
-                    {{-- <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                    <div class="form-group" style="display: flex; gap: 5px;">
+                        {!! Form::open(['route' => 'generar.pdf.soloconsentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                            <a class="btn btn-consen btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">GENERAR SOLO CONSENTIMIENTO</a>
                             {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
                             {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
                             {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
                             {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
-
-                            {!! Form::submit('APROBAR INICIAR BATERIA', [
-                                'class' => 'btn btn-aprobarbateria', 
-                                'hidden' => !($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
-                            ]) !!}
+                            {!! Form::hidden('ci', $cliente->ci, ['class' => 'form-control']) !!}
                         {!! Form::close() !!}
-                    </div> --}}
+                    </div>
+
+                    @if($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
+                        <div class="form-group" style="display: flex; gap: 5px;">
+                                {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                    {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
+                        
+                                    {!! Form::submit('APROBAR INICIAR BATERIA SIN CONSENTIMIENTO', [
+                                        'class' => 'btn btn-aprobarbateria'
+                                    ]) !!}
+                                {!! Form::close() !!}
+                        </div>
+                    @endif
+                    
                 @elseif ($registroExistente)
                     <p></p>
                 @elseif ($registroaprobadoExistente)
@@ -246,26 +271,68 @@
         </div>
 
         @if ($registroExistente && is_object($registroExistente))
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="form-group">
-                        @if ($registroExistente->document)
-                            <label>Consentimiento informado para evaluación inicial:</label>
-                            <a href="{{ asset('cotizacionesaprobadasita/' . $cliente->id . '/' . $registroExistente->document) }}" class="btn btn-crear" target="_blank">Ver Consentimiento</a>
-                        @else
-                            <label>Consentimiento informado para evaluación inicial:</label>
-                            {!! Form::open(['route' => 'guardar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                                {!! Form::hidden('clienteitaid', $cliente->id) !!}
-                                {!! Form::hidden('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS') !!}
-                                {!! Form::file('pdf_file', ['class' => 'dropify', 'data-height' => '150']) !!}
-                                <div class="mt-3">
-                                    {!! Form::submit('Guardar consentimiento', ['class' => 'btn btn-crear']) !!}
-                                </div>
-                            {!! Form::close() !!}
-                        @endif
-                    </div>
+        <div class="row justify-content-center my-5"> 
+            <div class="col-lg-8 col-md-10">
+                <div class="form-group bg-light p-5 rounded-lg border text-center">
+                    <label class="d-block font-weight-bold mb-4 h5" style="font-weight: 600; color: #e0752e;">
+                        Consentimiento informado para evaluación inicial
+                    </label>
+                    
+                    @if ($registroExistente->document)
+                        <div class="text-center">
+                            <a href="{{ asset('cotizacionesaprobadasita/' . $cliente->id . '/' . $registroExistente->document) }}" 
+                               class="btn btn-crear btn-lg px-5 py-2 font-weight-bold" target="_blank">
+                                Ver Consentimiento
+                            </a>
+                        </div>
+                    @else
+                        {!! Form::open(['route' => 'guardar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                            {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                            {!! Form::hidden('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS') !!}
+        
+                            <!-- Custom file input group centrado -->
+                            <div class="mt-4">
+                                <!-- Campo de archivo oculto -->
+                                {!! Form::file('pdf_file', ['id' => 'real-file', 'style' => 'display:none;']) !!}
+                                <!-- Botón visible personalizado centrado -->
+                                <button type="button" class="btn btn-outline-primary" id="custom-button">Buscar archivo</button>
+                            </div>
+        
+                            <!-- Texto del archivo seleccionado centrado debajo del botón -->
+                            <div class="mt-3">
+                                <span id="custom-text">No se ha seleccionado ningún archivo</span>
+                            </div>
+        
+                            <div class="text-center mt-5">
+                                {!! Form::submit('Guardar consentimiento', ['class' => 'btn btn-crear btn-lg px-5 py-2 font-weight-bold']) !!}
+                            </div>
+                        {!! Form::close() !!}
+                    @endif
                 </div>
             </div>
+        </div>
+        
+        <!-- JavaScript para gestionar la selección del archivo -->
+        <script>
+            const realFileBtn = document.getElementById('real-file');
+            const customBtn = document.getElementById('custom-button');
+            const customTxt = document.getElementById('custom-text');
+        
+            customBtn.addEventListener('click', function() {
+                realFileBtn.click(); // Simula el clic en el input de archivo oculto
+            });
+        
+            realFileBtn.addEventListener('change', function() {
+                if (realFileBtn.value) {
+                    customTxt.innerHTML = realFileBtn.files[0].name; // Muestra el nombre del archivo seleccionado
+                } else {
+                    customTxt.innerHTML = "No se ha seleccionado ningún archivo"; // Texto por defecto
+                }
+            });
+        </script>
+        
+        
+        
         @endif
     </div>
 </div>
@@ -365,91 +432,16 @@
         background-color: #faa625;
         color: #ffffff;
     }
-</style>
-@stop
-
-
-{{-- @extends('adminlte::page')
-
-@section('content_header')
-<h1>Check List</h1>
-@stop
-
-@section('content')
-<body>
-    <table>
-        <caption>DOCUMENTACIÓN A PRESENTAR</caption>
-        <tr>
-            <th>PODER</th>
-            <th>AVC/CARNET ASEGURADO</th>
-            <th>CERTIFICADO NACIMIENTO ASEGURADO</th>
-            <th>CARNET IDENTIDAD ASEGURADO</th>
-            <th>CERTIFICADO DE MATRIMONIO</th>
-            <th>CERTIFICADO NACIMIENTO CONYUGE</th>
-            <th>CARNET IDENTIDAD CONYUGE</th>
-            <th>CERTIFICADO NACIMIENTO HIJOS &lt; 25</th>
-            <th>CARNET IDENTIDAD HIJOS &lt; 25</th>
-            <th>DENUNCIA ENFERMEDAD ACCIDENTE</th>
-            <th>CROQUIS DE DOMICILIO</th>
-            <th>CONTRATO</th>
-        </tr>
-        <tr id="documentos">
-            <td><input type="checkbox" name="documentos[]" value="poder"></td>
-            <td><input type="checkbox" name="documentos[]" value="avc"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_nacimiento_asegurado"></td>
-            <td><input type="checkbox" name="documentos[]" value="carnet_identidad_asegurado"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_matrimonio"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_nacimiento_conyuge"></td>
-            <td><input type="checkbox" name="documentos[]" value="carnet_identidad_conyuge"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_nacimiento_hijos"></td>
-            <td><input type="checkbox" name="documentos[]" value="carnet_identidad_hijos"></td>
-            <td><input type="checkbox" name="documentos[]" value="denuncia_enfermedad_accidente"></td>
-            <td><input type="checkbox" name="documentos[]" value="croquis_domicilio"></td>
-            <td><input type="checkbox" name="documentos[]" value="contrato"></td>
-        </tr>
-    </table>
-    <form id="pdfForm" action="{{ route('admin.clientes.print2', $cliente) }}" method="POST" style="display: none;">
-        @csrf
-        <input type="hidden" name="documentosSeleccionados" id="documentosSeleccionadosInput">
-    </form>
-    
-    <button onclick="generatePDF()">Generar PDF</button>
-
-    <script>
-        function generatePDF() {
-            var checkboxes = document.querySelectorAll('#documentos input[type="checkbox"]');
-            var documentosSeleccionados = [];
-            checkboxes.forEach(function(checkbox) {
-                if (checkbox.checked) {
-                    documentosSeleccionados.push(checkbox.value);
-                }
-            });
-            document.getElementById('documentosSeleccionadosInput').value = JSON.stringify(documentosSeleccionados);
-            // Ahora envía el formulario
-            document.getElementById('pdfForm').submit();
-        }
-    </script>
-    
-</body>
-</html>
-@endsection
-@section('css')
-<style>
-    table {
-        width: 100%;
-        border-collapse: collapse;
+    .btn-consen {
+        background-color: #ffffff;
+        color: #af25fa;
+        border-color: #af25fa;
+        border-radius: 5px;
+        padding: 10px 10px;
     }
-    th, td {
-        border: 1px solid black;
-        padding: 8px;
-        text-align: center;
-    }
-    caption {
-        caption-side: top;
-        text-align: center;
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 20px;
+    .btn-consen:hover {
+        background-color: #af25fa;
+        color: #ffffff;
     }
 </style>
-@stop --}}
+@stop

@@ -109,13 +109,13 @@
                         <label for="ciunionlibre" style="min-height: 20px;">CARNET IDENTIDAD DE UNIÓN LIBRE</label>
                     </div>
                 @endif
-                @if ($numHijosMenores > 0 || $numHijosMenores === null)
+                @if ($numHijosMenores > 0 || $numHijosMenores !== null)
                     <div class="form-group">
                         <input type="checkbox" name="cnacjihos" value="cnacjihos" id="cnacjihos" checked>
                         <label for="cnacjihos" style="min-height: 20px;">CERTIFICADO NACIMIENTO HIJOS < 25</label>
                     </div>
                 @endif
-                @if ($numHijosMenores > 0 || $numHijosMenores === null)
+                @if ($numHijosMenores > 0 || $numHijosMenores !== null)
                     <div class="form-group">
                         <input type="checkbox" name="cihijos" value="cihijos" id="cihijos" checked>
                         <label for="cihijos" style="min-height: 20px;">CARNET IDENTIDAD HIJOS < 25</label>
@@ -138,10 +138,12 @@
                     <input type="checkbox" name="denfaccidente" value="denfaccidente" id="denfaccidente">
                     <label for="denfaccidente" class="color-toggle">DENUNCIA ENFERMEDAD ACCIDENTE</label>
                 </div>
+                @if ($numHijosMenores > 0 || $numHijosMenores !== null)
                 <div class="form-group">
                     <input type="checkbox" name="resolinvhijos" value="resolinvhijos" id="resolinvhijos">
                     <label for="resolinvhijos" class="color-toggle">RESOLUCIÓN INVALIDEZ DE HIJOS < 25</label>
                 </div>
+                @endif
                 
                 <script>
                     document.querySelectorAll('.color-toggle').forEach(label => {

@@ -31,12 +31,12 @@ class StoreBateriaproveedorRequest extends FormRequest
     {
         $rules = [
             'id' => '',
-            'proveedorid' => 'max:45',
-            'proveedor' => 'max:45',
-            'area' => 'max:45',
-            'accion' => 'max:45',
-            'horarioinicial' => 'max:45',
-            'horariofinal' => 'max:45',
+            'proveedorid' => '',
+            'proveedor' => '',
+            'area' => '',
+            'accion' => '',
+            'horarioinicial' => '',
+            'horariofinal' => '',
             'tiempoatencion' => '',
             'precio'=>'',
             'tipoarea'=>'',

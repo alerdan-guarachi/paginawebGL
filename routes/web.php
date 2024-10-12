@@ -183,7 +183,6 @@ Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\
 
         Route::post('/actualizar-pdf', [AsociadoController::class, 'actualizarPdf'])->name('admin.actualizarPdf');
 
-
     //CREAR PROGRAMACION Y REPROGRAMACION DE CLIENTE ITA
         Route::get('asociados/crearprogramacionclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@crearprogramacionclienteita')->name('admin.asociados.crearprogramacionclienteita');
         Route::post('asociados/guardarprogramacionclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardarprogramacionclienteita')->name('admin.asociados.guardarprogramacionclienteita');
@@ -234,6 +233,7 @@ Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\
         Route::put('asociados/guardardocrequisitossegsolicitud/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardardocrequisitossegsolicitud')->name('admin.asociados.guardardocrequisitossegsolicitud');
 
         Route::post('/generar-pdf-dermedlab', [AsociadoController::class, 'generarPDFconsentimiento'])->name('generar.pdf.consentimiento');
+        Route::post('/generar-pdf-dermedlab2', [AsociadoController::class, 'generarsoloPDFconsentimiento'])->name('generar.pdf.soloconsentimiento');
         Route::post('/generar-pdf-guardardocumentoconsentimiento', [AsociadoController::class, 'generarPDFguardarconsentimiento'])->name('guardar.pdf.consentimiento');
         Route::post('/generar-pdf-conocinfor', [AsociadoController::class, 'generarPDFconsentimientoinformado'])->name('generar.pdf.consentimientoinformado');
         Route::post('/aprobariniciarcrearbateria', [AsociadoController::class, 'aprobariniciarcrearbateria'])->name('aprobariniciarcrearbateria');
@@ -305,6 +305,9 @@ Route::post('asociados/guardarproveedorinformefinal/{cliente}', 'App\Http\Contro
         Route::get('asociados/generarpdfcotizacionclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@generarpdfcotizacionclienteauditoria')->name('admin.asociados.generarpdfcotizacionclienteauditoria');
         Route::get('asociados/aprobarcotizacionprogramacionclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@aprobarcotizacionprogramacionclienteauditoria')->name('admin.asociados.aprobarcotizacionprogramacionclienteauditoria');
         Route::post('asociados/guardaraprobacioncotizacionclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardaraprobacioncotizacionclienteauditoria')->name('admin.asociados.guardaraprobacioncotizacionclienteauditoria');
+    
+        Route::post('/actualizar-pdfauditoria', [AsociadoController::class, 'actualizarPdfcotauditoria'])->name('admin.actualizarPdfcotauditoria');
+    
     //CREAR PROGRAMACION Y REPROGRAMACION DE CLIENTE AUDITORIA
         Route::get('asociados/crearprogramacionclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@crearprogramacionclienteauditoria')->name('admin.asociados.crearprogramacionclienteauditoria');
         Route::post('asociados/guardarprogramacionclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardarprogramacionclienteauditoria')->name('admin.asociados.guardarprogramacionclienteauditoria');
@@ -334,6 +337,10 @@ Route::post('asociados/guardarproveedorinformefinal/{cliente}', 'App\Http\Contro
         Route::get('asociados/vercontactoclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@vercontactoclienteauditoria')->name('admin.asociados.vercontactoclienteauditoria');
         Route::get('asociados/crearcontactoclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@crearcontactoclienteauditoria')->name('admin.asociados.crearcontactoclienteauditoria');
         Route::post('asociados/guardarcontactoclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardarcontactoclienteauditoria')->name('admin.asociados.guardarcontactoclienteauditoria');
+
+    //HISOTIAL MEDICO
+        Route::post('asociados/guardarhistoriamedicaauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardarhistoriamedicaauditoria')->name('admin.asociados.guardarhistoriamedicaauditoria');
+        Route::get('/ver-documentoauditoria/{id}', [AsociadoController::class, 'verDocumentoauditoria'])->name('ver.documentoauditoria');
 //
 
 //CLIENTES BANCOS

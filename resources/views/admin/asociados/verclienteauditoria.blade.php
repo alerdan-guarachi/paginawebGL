@@ -277,7 +277,7 @@
                     <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
                         <div style="text-align: center; padding: 1.5px;">
                             <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
-                        </div>
+                        </div> 
                         <div class="row text-center">
                             @can('admin.asociados.crearbateriaclienteauditoria')
                                 @if (/* ( */$tieneRequisitos/*  && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente */)
@@ -381,13 +381,19 @@
                         </div>
                         <div class="row text-center">
                             @can('admin.asociados.editarclienteauditoria')
-                            <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('admin.asociados.editarclienteauditoria', $clienteauditoria) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
                                     <i class="fas fa-edit"></i>
                                     <strong>EDITAR</strong>
                                 </a>
                             </div>
                             @endcan
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <button type="button" class="btn btn-historiamedica btn-icono btn-block" data-toggle="modal" data-target="#historialMedicoModal" data-placement="top" title="HISTORIA MÉDICA">
+                                    <i class="fas fa-archive"></i>
+                                    <strong>HIST. MED.</strong>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -398,6 +404,93 @@
         </div>
     </div>
 
+    {{-- VER HISTORIA MEDICA --}}
+<div class="modal fade modal-custom-height" id="historialMedicoModal" tabindex="-1" aria-labelledby="historialMedicoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="titulo">
+                <h5 class="modal-title" id="historialMedicoModalLabel">HISTORIA MÉDICA DE</h5>
+                <h3>{{$clienteauditoria->nombrecompleto}}</h3>
+            </div>
+            {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardarhistoriamedicaauditoria', $clienteauditoria], 'method' => 'POST', 'files' => true]) !!}
+            {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+            {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+
+            @if($documentacion)
+            <div class="modal-body text-center">
+                <!-- Visor PDF -->
+                <iframe class="pdf-preview" src="{{ route('ver.documentoauditoria', $documentacion->id) }}" type="application/pdf"></iframe>
+
+                <a href="{{ route('ver.documentoauditoria', $documentacion->id) }}" class="btn btn-verhistoriamedica" target="_blank">
+                    <strong>VER HIST. MED.</strong>
+                </a>
+            </div>
+            @else
+            <div class="modal-body" style="margin-top: 50px;">
+                <div class="mb-3">
+                    {!! Form::label('file', 'Documento:', ['class' => 'form-label']) !!}
+                    <input type="file" name="archivo" id="archivo" class="dropify" />
+                    @error('archivo')
+                        <div class="text-danger">
+                            <i class="fas fa-exclamation-circle"></i> {{$message}}
+                        </div>
+                    @enderror
+                </div>
+                <input type="text" class="form-control" id="accion" name="accion" value="HISTORIA MÉDICA" hidden>
+            </div>
+            <div class="modal-footer" style="margin-top: 50px;">
+                <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">Cerrar</button>
+                <button type="submit" class="btn btn-si">Subir Doc.</button>
+            </div>
+            @endif
+            {!! Form::close() !!}
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-verhistoriamedica {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 10px;
+        margin-top: 20px;
+    }
+    .btn-verhistoriamedica:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
+    .pdf-preview {
+      width: 100%;
+      height: 430px; /* Ajusta la altura del visor PDF */
+      border: none;
+    }
+    .titulo {
+      margin-top: 50px;
+      margin-left: 20px;
+    }
+    /* Define el alto específico para el modal con la clase personalizada */
+    .modal-custom-height .modal-dialog {
+      height: 93.5vh; /* 75% de la altura de la ventana del navegador */
+    }
+    .modal-custom-height .modal-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-custom-height .modal-body {
+      overflow-y: auto; /* Permite desplazamiento vertical */
+      flex: 1; /* Permite que el contenido se expanda */
+      padding: 2rem; /* Espaciado interior */
+    }
+    .modal-footer {
+      justify-content: center; /* Centra los botones en el pie del modal */
+    }
+    .dropify-wrapper {
+      border-radius: 0.25rem;
+    }
+  </style>
 @endsection
 @section('js')
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>

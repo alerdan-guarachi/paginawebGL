@@ -29,7 +29,7 @@
             <td>AUDITORIA MEDICA</td>
         </tr>
         <tr>
-            <th>CIUDAD</th>
+            <th>LUGAR DE RESIDENCIA</th>
             <th>CI</th>
             <th>CELULAR</th>
         </tr>

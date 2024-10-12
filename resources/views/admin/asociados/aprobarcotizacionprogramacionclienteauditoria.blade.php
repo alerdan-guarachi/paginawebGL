@@ -59,7 +59,7 @@
                             });
                         </script>                    
                     </div>
-                    <div class="col-lg-8">
+                    <div class="col-lg-4">
                         <div class="form-group">
                             {!! Form::label('file', 'Cotización aprobada:') !!}
                             <input type="file" name="archivo" id="archivo" class="dropify"/>
@@ -77,7 +77,7 @@
                             </div>
                         </div>
                     </div>
-                    {{-- <div class="col-lg-4">
+                    <div class="col-lg-4">
                         <div class="form-group">
                             {!! Form::label('file', 'Cons. informado para realización de evaluaciones:') !!}
                             <input type="file" name="archivo2" id="archivo2" class="dropify"/>
@@ -94,39 +94,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div> --}}
-                    {{-- <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">ESTADO DE APROBACIONES</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <h6>Baterias del cliente:</h6>
-                                    <ul id="fechas-list">
-                                        @foreach($fechasDisponibles as $fecha)
-                                            <li style="color:{{ $fechasRegistradas->contains($fecha) ? '#94c93b' : 'red' }}">{{ $fecha }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                                </div>
-                            </div>
-                            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                            <script>
-                                $(document).ready(function(){
-                                    $('#fechas-list li').click(function(){
-                                        $(this).toggleClass('selected');
-                                    });
-                                });
-                            </script>
-                        </div>
-                    </div> --}}
-                    <!-- Modal Principal -->
+                    </div>
                 </div>
                 {!! Form::submit('APROBAR BATERIA', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
@@ -134,51 +102,7 @@
         </div>
     </div>
 </div>
-{{-- <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"> 
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">ESTADO DE APROBACIONES</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <h6>Baterías del cliente:</h6>
-                <ul id="fechas-list">
-                    @foreach($fechasDisponibles as $fecha)
-                        <li style="color:{{ $fechasRegistradas->contains($fecha) ? '#94c93b' : 'red' }}">
-                            {{ $fecha }}
-                            @if($fechasRegistradas->contains($fecha))
-                                <button type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal"><i class="fas fa-edit"></i></button>
-                                @php
-                                    $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
-                                @endphp
-                                @if($document)
-                                    <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm"><i class="fas fa-eye"></i></a>
-                                @else
-                                    <span class="text-danger">Documento no disponible</span>
-                                @endif
-                                @php
-                                    $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
-                                @endphp
-                                @if($documentconsinfo)
-                                    <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-vercotizacion btn-sm"><i class="fas fa-eye"></i></a>
-                                @else
-                                    
-                                @endif
-                            @endif
-                        </li>
-                    @endforeach
 
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div> --}}
 <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">  
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -213,7 +137,7 @@
                                         @endphp
                                         @if($document)
                                         <abbr title="VER COTIZACIÓN APROBADA">
-                                            <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm">
+                                            <a href="{{ asset('/cotizacionesaprobadasauditoria/'.$clienteauditoria->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm">
                                                 <i class="fas fa-file-invoice-dollar"></i>
                                             </a>
                                         </abbr>
@@ -225,7 +149,7 @@
                                         @endphp
                                         @if($documentconsinfo)
                                         <abbr title="VER CONSENTIMIENTO INFORMADO">
-                                            <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm">
+                                            <a href="{{ asset('/cotizacionesaprobadasauditoria/'.$clienteauditoria->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm">
                                                 <i class="fas fa-clone"></i>
                                             </a>
                                         </abbr>
@@ -259,7 +183,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form id="editPdfForm" action="{{ route('admin.actualizarPdf') }}" method="POST" enctype="multipart/form-data">
+                <form id="editPdfForm" action="{{ route('admin.actualizarPdfcotauditoria') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="clienteauditoriaid" id="clienteauditoriaid" value="{{ $clienteauditoria->id }}">
                     <label for="">Fecha de Bateria:</label>
@@ -277,54 +201,10 @@
                     </div>
                 </form>
             </div>
-            
         </div>
     </div>
 </div>
-{{-- <div class="modal fade" id="facturaModal" tabindex="-1" role="dialog" aria-labelledby="facturaModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="facturaModalLabel">NUMERO DE FACTURA</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="card-body">
-                <form id="facturaForm" method="POST" action="{{ route('admin.asociados.guardarFacturacotclienteita', $cliente->id) }}">
-                    @csrf
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="form-group">
-                                {!! Form::label('fechabateria', 'Fecha de batería:') !!}
-                                {!! Form::select('fechabateria', $fechasregis->toArray(), null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'fechabateria']) !!}
-                                {!! Form::hidden('fechabateriaSeleccionada', null, ['class' => 'form-control', 'readonly', 'id' => 'fechaSeleccionada']) !!}
-                                @error('fechabateria')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                            <div class="form-group">
-                                {!! Form::label('nrofactura', 'Nro. factura:') !!}
-                                {!! Form::text('nrofactura', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('nrofactura')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Guardar</button>
-                        <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div> --}}
+
 <div class="modal fade" id="facturaModal" tabindex="-1" role="dialog" aria-labelledby="facturaModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

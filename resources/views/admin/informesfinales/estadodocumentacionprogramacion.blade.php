@@ -496,8 +496,8 @@
                                 $mostrarcnacaseguradopendiente = $accion['cnacasegurado'] === 'PENDIENTE';
                                 $mostrarciasegurado = !empty($accion['ciasegurado']);
                                 $mostrarciaseguradopendiente = $accion['ciasegurado'] === 'PENDIENTE';
-                                $mostrarcimatrimonio = !empty($accion['cimatrimonio']);
-                                $mostrarcimatrimoniopendiente = $accion['cimatrimonio'] === 'PENDIENTE';
+                                $mostrarcimatrimonio = !empty($accion['cmatrimonio']);
+                                $mostrarcimatrimoniopendiente = $accion['cmatrimonio'] === 'PENDIENTE';
                                 $mostrarcnacconyuge = !empty($accion['cnacconyuge']);
                                 $mostrarcnacconyugependiente = $accion['cnacconyuge'] === 'PENDIENTE';
                                 $mostrarciconyuge = !empty($accion['ciconyuge']);
@@ -607,7 +607,7 @@
                                         @if ($mostrarcimatrimoniopendiente)
                                             <div class="pendiente">PENDIENTE</div>
                                         @elseif ($mostrarcimatrimonio)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cimatrimonio']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>   
+                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cmatrimonio']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>   
                                         @endif
                                     </td>
                                 </tr>

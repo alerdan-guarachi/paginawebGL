@@ -127,7 +127,7 @@
             C.I: {{$ci}}
         </div>
         <div class="tipo8">
-            Fecha: {{$fechahoy}}
+            Fecha:
         </div>
         <div class="container">
             <div class="rectangle"></div>

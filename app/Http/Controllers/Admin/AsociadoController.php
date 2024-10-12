@@ -308,7 +308,6 @@ class AsociadoController extends Controller
 
         $proveedores = Proveedor::where('id', 3)->get(['id', 'proveedor', 'celular']);
 
-
         $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
         $tieneBateria = Bateriasubcliente::where('clienteitaid', $cliente->id)->exists();
         $tieneContactos = ContactoSubCliente::where('clienteitaid', $cliente->id)->exists();
@@ -321,8 +320,8 @@ class AsociadoController extends Controller
         $tienerequisitossegundasolicitud = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
 
         $tieneTramites = Tramitesubcliente::where('clienteitaid', $cliente->id)->exists();
-        $cartaconsentimientoExistente = DocumentacionSubcliente::where('clienteitaid', $cliente->id) 
-            ->where('accion', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+        $cartaconsentimientoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id) 
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
             ->whereNotNull('document')
             ->first();
         $bateriaaprobadaExistente = DocumentacionSubcliente::where('clienteitaid', $cliente->id) 
@@ -1308,23 +1307,11 @@ class AsociadoController extends Controller
             }
         }
 
-        /* $accionesPorFecha = [];
-        foreach ($fechasBateriaPorAccion as $item) {
-            $accion = $item->accionnombre;
-            $fecha = $item->fechabateria;
-            if (!isset($accionesPorFecha[$fecha])) {
-                $accionesPorFecha[$fecha] = [];
-            }
-            if (!isset($accionesRegistradas[$fecha]) || !in_array($accion, $accionesRegistradas[$fecha])) {
-                $accionesPorFecha[$fecha][] = $accion;
-            }
-        } */
         $accionesPorFecha = [];
         foreach ($fechasBateriaPorAccion as $item) {
             $accion = $item->accionnombre;
             $fecha = $item->fechabateria;
-        
-            // Verifica si la acción ya está registrada para la fecha y cliente específico
+
             $accionYaRegistrada = Programacionsubcliente::where('clienteitaid', $idCliente)
                 ->where('fechabateria', $fecha)
                 ->where('accionnombre', $accion)
@@ -1333,8 +1320,7 @@ class AsociadoController extends Controller
             if (!isset($accionesPorFecha[$fecha])) {
                 $accionesPorFecha[$fecha] = [];
             }
-        
-            // Solo agrega la acción si no está registrada
+
             if (!$accionYaRegistrada) {
                 $accionesPorFecha[$fecha][] = $accion;
             }
@@ -1343,7 +1329,7 @@ class AsociadoController extends Controller
         
         $proveedoresDetalles = [];
         foreach ($proveedoresAsignados as $accion => $nombreProveedor) {
-            $proveedor = BateriaSubCliente::where('accionnombre', $accion)
+            $proveedor = BateriaSubCliente::where('accionnombre', $accion)->where('clienteitaid', $idCliente)
                 ->latest()
                 ->first();
 
@@ -1402,7 +1388,7 @@ class AsociadoController extends Controller
 
         return view('admin.asociados.crearprogramacionclienteita', compact('esProveedor','accionesDetallesPorFecha','accionesPorFechaBateria','fechasBateria','id','rolusuario', 'cliente', 'accionesPorFecha', 'proveedoresDetalles', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente'));
     }
-    public function guardarprogramacionclienteita(StoreProgramacionsubclienteRequest $request)
+    /* public function guardarprogramacionclienteita(StoreProgramacionsubclienteRequest $request)
     {
         $proveedoresSeleccionados = $request->input('proveedornombre');
         $horaasignada = $request->input('horaasignada');
@@ -1441,7 +1427,62 @@ class AsociadoController extends Controller
         }
 
         return redirect()->route('admin.asociados.crearprogramacionclienteita', $request->cliente)->with('info', 'La programacion del cliente se creo con éxito');
+    } */
+
+    public function guardarprogramacionclienteita(StoreProgramacionsubclienteRequest $request)
+{
+    // Recoge las acciones seleccionadas
+    $accionesSeleccionadas = $request->input('accionesSeleccionadas', []);
+    $horaasignada = $request->input('horaasignada');
+    $fechaasignada = $request->input('fechaasignada');
+    $clienteitaid = $request->input('clienteitaid');
+    $clienteitanombre = $request->input('clienteitanombre');
+    $fechabateria = $request->input('fechabateria');
+    $horadesde = $request->input('horadesde');
+    $horahasta = $request->input('horahasta');
+
+    foreach ($accionesSeleccionadas as $accion) {
+        // Sanitiza el nombre de la acción
+        $accionSanitizada = str_replace([' ', '.'], ['_', '-'], $accion);
+        
+        // Captura los datos específicos de cada acción
+        $proveedornombre = $request->input("proveedor_$accionSanitizada");
+        $areanombre = $request->input("areanombre_$accionSanitizada");
+        $precio = $request->input("precio_$accionSanitizada");
+        $preciocompra = $request->input("preciocompra_$accionSanitizada");
+
+        // Verifica si ya existe la programación
+        $existente = Programacionsubcliente::where('accionnombre', $accion)
+            ->where('fechabateria', $fechabateria)
+            ->where('clienteitaid', $clienteitaid)
+            ->exists();
+
+        // Solo crea un nuevo registro si no existe
+        if (!$existente) {
+            Programacionsubcliente::create([
+                'accionnombre' => $accion,
+                'horaasignada' => $horaasignada,
+                'fechaasignada' => $fechaasignada,
+                'proveedornombre' => $proveedornombre,
+                'clienteitaid' => $clienteitaid,
+                'clienteitanombre' => $clienteitanombre,
+                'horadesde' => $horadesde,
+                'horahasta' => $horahasta,
+                'fechabateria' => $fechabateria,
+                'areanombre' => $areanombre,
+                'precio' => $precio,
+                'preciocompra' => $preciocompra,
+                'usuarioid' => Auth::id(), // ID del usuario autenticado
+                'usuarioregistro' => Auth::user()->name, // Nombre del usuario autenticado
+            ]);
+        }
     }
+
+    return redirect()->route('admin.asociados.crearprogramacionclienteita', $request->cliente)->with('info', 'La programación del cliente se creó con éxito');
+}
+
+
+
     public function reprogramacionclienteita(Cliente $cliente, Request $request)
     {
         $fechaSeleccionada = $request->get('buscarpor');
@@ -1553,7 +1594,7 @@ class AsociadoController extends Controller
         
         $id = Cliente::where('nombrecompleto', $cliente->nombrecompleto)->value('id');
 
-        return view('admin.asociados.estadoprogramacionclienteita', compact('estadoMapeado','fechaSeleccionada', 'id','fechas','nombreclienteita','accionesDisponibles', 'cliente', 'id', 'accionesCliente', 'estadoRegistrados', 'fechasBateriaPorAccion', 'accionesPorFecha', 'accionesRegistradas'));
+        return view('admin.asociados.estadoprogramacionclienteita', compact('accionesNoRegistradas','estadoMapeado','fechaSeleccionada', 'id','fechas','nombreclienteita','accionesDisponibles', 'cliente', 'id', 'accionesCliente', 'estadoRegistrados', 'fechasBateriaPorAccion', 'accionesPorFecha', 'accionesRegistradas'));
     }
     public function buscarprogramacionclientesita(Cliente $cliente, Request $request)
     {
@@ -1583,7 +1624,7 @@ class AsociadoController extends Controller
         
         return $pdf->download($pdfName);
     }
-    public function guardarestadoprogramacionclienteita(StoreEstadoprogramacionsubclienteRequest $request)
+    /* public function guardarestadoprogramacionclienteita(StoreEstadoprogramacionsubclienteRequest $request)
     {
         $accionNombre = $request->input('accionnombre');
 
@@ -1593,7 +1634,27 @@ class AsociadoController extends Controller
             ]
         );
         return redirect()->route('admin.asociados.estadoprogramacionclienteita', $request->cliente)->with('info', 'El estado se actualizó con éxito');
+    } */
+    public function guardarestadoprogramacionclienteita(StoreEstadoprogramacionsubclienteRequest $request) 
+{
+    $accionesSeleccionadas = $request->input('accionesSeleccionadas', []);
+    $fechaBateria = $request->input('fechabateria'); // Obtiene la fecha de batería del input oculto
+
+    foreach ($accionesSeleccionadas as $accionNombre) {
+        Estadoprogramacionsubcliente::create(
+            $request->except('accionid') + [
+                'accionnombre' => $accionNombre,
+                'fechabateria' => $fechaBateria // Asegúrate de incluir la fecha aquí
+            ]
+        );
     }
+
+    return redirect()->route('admin.asociados.estadoprogramacionclienteita', $request->cliente)
+                     ->with('info', 'El estado se actualizó con éxito');
+}
+
+
+    
 //
 //CREAR DOCUMENTACION DE CLIENTE ITA
     public function creardocumentacionclienteita(Cliente $cliente, Asociado $asociado)
@@ -2831,6 +2892,141 @@ class AsociadoController extends Controller
             $pdfName = 'Requisitos_Invalidez_' . $cliente->nombrecompleto . '.pdf';
             return $pdf->download($pdfName);
         } 
+    public function descargarsolochecklistclienteita(Request $request, Cliente $cliente)
+        {
+            $usuarioAutenticado = Auth::user();
+            $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
+            $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
+
+
+            $nombreDocumentos = [
+                'poder' => 'PODER',
+                'avcci' => 'AVC / CARNET ASEGURADO',
+                'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+                'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+                'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
+                'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+                'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+                'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+                'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+                'crodomicilio' => 'CROQUIS DOMICILIO',
+                'contrato' => 'CONTRATO',
+                'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
+                'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
+                'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
+                'cdivorcio' => 'CERTIFICADO DIVORCIO',
+                'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
+                
+                
+            ];
+            $nombreDocumentos2 = [
+                'ctrabajo' => 'CERTIFICADO TRABAJO',
+                'boletapago' => 'BOLETA PAGO',
+                'egestora' => 'EXTRACTO GESTORA',
+                'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+                'actdatos' => 'ACTUALIZACIÓN DATOS',
+                'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
+                'recordservicios' => 'RECORD SERVICIOS',
+                'infomedicasalud' => 'INFORMACION MEDICA',
+            ];
+
+            foreach ($documentosSeleccionados as $documento) {
+                $nombreCompleto = isset($nombreDocumentos[$documento]) ? $nombreDocumentos[$documento] : $documento;
+            $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
+                switch ($documento) {
+                    case 'poder':
+                        $requisito->poder = $valorDocumento;
+                        break;
+                    case 'avcci':
+                        $requisito->avcci = $valorDocumento;
+                        break;
+                    case 'cnacasegurado':
+                        $requisito->cnacasegurado = $valorDocumento;
+                        break;
+                    case 'ciasegurado':
+                        $requisito->ciasegurado = $valorDocumento;
+                        break;
+                    case 'cmatrimonio':
+                        $requisito->cmatrimonio = $valorDocumento;
+                        break;
+                    case 'cnacconyuge':
+                        $requisito->cnacconyuge = $valorDocumento;
+                        break;
+                    case 'ciconyuge':
+                        $requisito->ciconyuge = $valorDocumento;
+                        break;
+                    case 'cnacjihos':
+                        $requisito->cnacjihos = $valorDocumento;
+                        break;
+                    case 'cihijos':
+                        $requisito->cihijos = $valorDocumento;
+                        break;
+                    case 'crodomicilio':
+                        $requisito->crodomicilio = $valorDocumento;
+                        break;
+                    case 'contrato':
+                        $requisito->contrato = $valorDocumento;
+                        break;
+                    case 'cunionlibre':
+                        $requisito->cunionlibre = $valorDocumento;
+                        break;
+                    case 'cnacimientounionlibre':
+                        $requisito->cnacimientounionlibre = $valorDocumento;
+                        break;
+                    case 'ciunionlibre':
+                        $requisito->ciunionlibre = $valorDocumento;
+                        break;
+                    case 'cdivorcio':
+                        $requisito->cdivorcio = $valorDocumento;
+                        break;
+                    case 'cdefuncion':
+                        $requisito->cdefuncion = $valorDocumento;
+                        break;
+                    
+                    default:
+                        break;
+                }
+            }
+
+            foreach ($documentosSeleccionados2 as $documento) {
+                $nombreCompleto = isset($nombreDocumentos2[$documento]) ? $nombreDocumentos2[$documento] : $documento;
+            $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
+                switch ($documento) {
+                    case 'ctrabajo':
+                        $requisito->ctrabajo = $valorDocumento;
+                        break;
+                    case 'boletapago':
+                        $requisito->boletapago = $valorDocumento;
+                        break;
+                    case 'egestora':
+                        $requisito->egestora = $valorDocumento;
+                        break;
+                    case 'denfaccidente':
+                        $requisito->denfaccidente = $valorDocumento;
+                        break;
+                    case 'actdatos':
+                        $requisito->actdatos = $valorDocumento;
+                        break;
+                    case 'resolinvhijos':
+                        $requisito->resolinvhijos = $valorDocumento;
+                        break;
+                    case 'recordservicios':
+                        $requisito->recordservicios = $valorDocumento;
+                        break;
+                    case 'infomedicasalud':
+                        $requisito->infomedicasalud = $valorDocumento;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            $requisito->save();
+
+            $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteita', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
+            $pdfName = 'Requisitos_Invalidez_' . $cliente->nombrecompleto . '.pdf';
+            return $pdf->download($pdfName);
+        } 
     public function subirdocrequisitos(Cliente $cliente)
         {
             $clienteitaid = $cliente->id; 
@@ -3802,7 +3998,72 @@ class AsociadoController extends Controller
             return redirect()->route('admin.asociados.subirdocrequisitossegsolicitud', $cliente)
                              ->with('info', 'El documento se subió con éxito');
         }
-    public function generarPDFconsentimiento(Request $request)
+    public function generarPDFconsentimiento(Cliente $cliente, Request $request)
+        {
+            $nombres = $request->input('nombres');
+            $apellidoPaterno = $request->input('apepaterno');
+            $apellidoMaterno = $request->input('apematerno');
+            $ci = $request->input('ci');
+            $fechahoy = date('Y-m-d'); 
+            $clienteitaId = $request->input('clienteitaid');
+            $sucursalCliente = $request->input('sucursal');
+
+            $nombreArchivo = "Consentimiento_Informado_Inicial {$nombres} {$apellidoPaterno} {$apellidoMaterno}.pdf";
+
+            $nombreCompleto = "{$nombres} {$apellidoPaterno} {$apellidoMaterno}";
+
+            $usuarioId = auth()->id();
+            $usuarioNombre = auth()->user()->name;
+
+            $documentacion = Estadocotizacionsubcliente::create([
+                'clienteitaid' => $clienteitaId,
+                'clienteitanombre' => $nombreCompleto,
+                'detalle' => 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS',
+                'usuarioid' => $usuarioId,
+                'usuarioregistro' => $usuarioNombre,
+                'document' => null, 
+            ]);
+        
+            
+            // Buscar el proveedor, precio y precio de compra en BateriaProveedor
+            $bateriaProveedor = BateriaProveedor::where('sucursal', $sucursalCliente)
+                ->where('accion', 'MEDICINA LABORAL')
+                ->first();
+
+            if ($bateriaProveedor) {
+            $programacion = BateriaSubCliente::create([
+                'clienteitaid' => $clienteitaId,
+                'clienteitanombre' => $nombreCompleto,
+                'tipoarea' => 'ESPECIALIDAD',
+                'areanombre' => 'MEDICINA LABORAL',
+                'accionnombre' => 'MEDICINA LABORAL',
+                'precio' => $bateriaProveedor->precio,
+                'informe' => 'NO TIENE INFORME',
+                'preciocompra' => $bateriaProveedor->preciocompra,
+                'proveedorasignado' => $bateriaProveedor->proveedor, 
+                'accionid' => $bateriaProveedor->id, 
+                'servicio' => $bateriaProveedor->servicio, 
+                'fechabateria' => now(),
+                'usuarioid' => $usuarioId,
+                'usuarioregistro' => $usuarioNombre,
+            ]);
+            } else {
+
+            }
+
+            $data = [
+                'nombres' => $nombres,
+                'apellidoPaterno' => $apellidoPaterno,
+                'apellidoMaterno' => $apellidoMaterno,
+                'ci' => $ci,
+                'fechahoy' => $fechahoy,
+            ];
+
+            $pdf = PDF::loadView('admin.asociados.pdfconsentimientoclienteita', $data);
+
+            return $pdf->download($nombreArchivo);
+        }
+    public function generarsoloPDFconsentimiento(Request $request)
         {
             // Obtener los datos del cliente desde el request
             $nombres = $request->input('nombres');
@@ -3832,23 +4093,6 @@ class AsociadoController extends Controller
                 'document' => null, // Inicialmente sin documento
             ]);
 
-            // Guardar el registro en DocumentacionSubcliente
-            $programacion = Bateriasubcliente::create([
-                'clienteitaid' => $clienteitaId,
-                'clienteitanombre' => $nombreCompleto,
-                'tipoarea' => 'ESPECIALIDAD',
-                'areanombre' => 'MEDICINA LABORAL',
-                'accionnombre' => 'MEDICINA LABORAL',
-                'precio' => '450.00',
-                'informe' => 'NO TIENE INFORME',
-                'preciocompra' => '100',
-                'proveedorasignado' => 'AGUIRRE VASQUEZ MARIA RENEE',
-                'accionid' => '6',
-                'servicio' => 'INTERNO',
-                'fechabateria' => now(), // Aquí asignamos la fecha actual
-                'usuarioid' => $usuarioId,
-                'usuarioregistro' => $usuarioNombre,
-            ]);
 
             // Pasar los datos a la vista para generar el PDF
             $data = [
@@ -4683,7 +4927,11 @@ class AsociadoController extends Controller
         $bateriaaprobadaExistente = DocumentacionSubcliente::where('clienteauditoriaid', $clienteauditoria->id) 
                     ->where('accion', 'APROBADO PARA INICIAR A CREAR BATERIA')
                     ->first();
-        return view('admin.asociados.verclienteauditoria', compact('tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
+        $documentacion = Documentacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+                    ->where('accion', 'HISTORIA MÉDICA')
+                    ->first();
+
+        return view('admin.asociados.verclienteauditoria', compact('documentacion','tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
         'tieneContactos','tieneTramites','clienteauditoria','tieneRequisitos','tieneProgramacion','tieneProgramacionatentido'));
     }
     public function editarclienteauditoria(ClienteAuditoria $clienteauditoria)
@@ -5207,10 +5455,57 @@ class AsociadoController extends Controller
     
         return $pdf->download($pdfName);
     }
+    public function actualizarPdfcotauditoria(Request $request) 
+    {
+        // Validar el formulario
+        $request->validate([
+            'fechabateria' => 'required|date',
+            'archivo' => 'required|file|mimes:pdf|max:20480', // max:20MB
+        ]);
+
+        // Encuentra el estado de cotización existente
+        $estadoCotizacion = EstadoCotizacionSubCliente::where('clienteauditoriaid', $request->clienteauditoriaid)
+            ->where('fechabateria', $request->fechabateria)
+            ->first();
+
+        // Verifica si el registro existe
+        if ($estadoCotizacion) {
+            $carpetaCliente = public_path("/cotizacionesaprobadasauditoria/{$request->clienteauditoriaid}");
+            
+            // Elimina el archivo PDF existente si es necesario
+            if ($estadoCotizacion->document) {
+                $archivoAntiguo = $carpetaCliente . '/' . $estadoCotizacion->document;
+                if (file_exists($archivoAntiguo)) {
+                    unlink($archivoAntiguo);
+                }
+            }
+            
+            // Guarda el nuevo archivo PDF
+            $archivo_name = null;
+            if ($request->hasFile('archivo')) {
+                $file = $request->file('archivo');
+                $archivo_name = time() . '_' . $file->getClientOriginalName();
+                $file->move($carpetaCliente, $archivo_name);
+            }
+            
+            // Actualiza el registro existente
+            $estadoCotizacion->update([
+                'document' => $archivo_name,
+                'usuarioid' => auth()->user()->id,
+                'usuarioregistro' => auth()->user()->name
+            ]);
+            
+            return redirect()->route('admin.asociados.aprobarcotizacionprogramacionclienteauditoria', $request->clienteauditoriaid)
+                ->with('info', 'El documento se actualizó con éxito');
+        } else {
+            return redirect()->route('admin.asociados.aprobarcotizacionprogramacionclienteauditoria', $request->clienteauditoriaid)
+                ->with('error', 'No se encontró el registro para actualizar');
+        }
+    }
     public function aprobarcotizacionprogramacionclienteauditoria(ClienteAuditoria $clienteauditoria)
     {
         $nombreCliente = $clienteauditoria->nombrecompleto;
-        
+
         $id = $clienteauditoria->nombrecompleto ? ClienteAuditoria::where('nombrecompleto', $clienteauditoria->nombrecompleto)->value('id') : null;
 
         $fechasRegistradas = EstadoCotizacionSubCliente::where('clienteauditoriaid', $clienteauditoria->id)
@@ -5221,11 +5516,24 @@ class AsociadoController extends Controller
                                         ->pluck('fechabateria')
                                         ->unique();
 
+        $fechasConFactura = EstadoCotizacionSubCliente::where('clienteauditoriaid', $clienteauditoria->id)
+                                        ->whereNotNull('nrofactura')
+                                        ->pluck('fechabateria')
+                                        ->unique();
+
         $fechas = $fechasDisponibles->filter(function ($fecha) use ($fechasRegistradas) {
             return !$fechasRegistradas->contains($fecha);
         });
 
-        return view('admin.asociados.aprobarcotizacionprogramacionclienteauditoria', compact('clienteauditoria', 'id', 'fechas', 'fechasRegistradas','fechasDisponibles'));
+        $fechasregis = $fechasDisponibles->filter(function ($fecha) use ($fechasConFactura) {
+            return !$fechasConFactura->contains($fecha);
+        });
+
+        $documentosPorFecha = EstadoCotizacionSubCliente::where('clienteauditoriaid', $clienteauditoria->id)
+            ->get(['fechabateria', 'document', 'documentconsinfo'])
+            ->groupBy('fechabateria');
+        $fecha = '';
+        return view('admin.asociados.aprobarcotizacionprogramacionclienteauditoria', compact('fecha','documentosPorFecha','fechasregis','clienteauditoria', 'id', 'fechas', 'fechasRegistradas','fechasDisponibles'));
     }
     public function guardaraprobacioncotizacionclienteauditoria(StoreEstadocotizacionsubclienteRequest $request, ClienteAuditoria $clienteauditoria)
     {
@@ -5238,23 +5546,38 @@ class AsociadoController extends Controller
             $archivo_name = time() . '_' . $file->getClientOriginalName();
             $file->move($carpetaCliente, $archivo_name);
         }
+        $archivo_name2 = null;
+        if ($request->hasFile('archivo2')) {
+            $file = $request->file('archivo2');
+            $carpetaCliente = public_path("/cotizacionesaprobadasauditoria/{$clienteauditoria->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);}
+            $archivo_name2 = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name2);
+        }
         $documentacioncotizacioncliente = Estadocotizacionsubcliente::create([
             'document' => $archivo_name,
+            'documentconsinfo' => $archivo_name2,
             'usuarioid' => auth()->user()->id,
             'usuarioregistro' => auth()->user()->name,
             'clienteauditoriaid' => $request->clienteauditoriaid,
             'clienteauditorianombre' => $request->clienteauditorianombre,
             'fechabateria' => $request->input('fechabateria'),
         ]);
-
+    
         return redirect()->route('admin.asociados.aprobarcotizacionprogramacionclienteauditoria', $request->clienteauditoria)->with('info', 'El documento se subió con éxito');
     }
 //
 //CREAR PROGRAMACION Y REPROGRAMACION DE CLIENTE AUDITORIA
-    public function crearprogramacionclienteauditoria(ClienteAuditoria $clienteauditoria)
+    public function crearprogramacionclienteauditoria(ClienteAuditoria $clienteauditoria, Request $request)
     {
         $nombreCliente = $clienteauditoria->nombrecompleto;
+        $idCliente = $clienteauditoria->id;
+        $clienteitaid = $clienteauditoria->id;
         $sucursalCliente = $clienteauditoria->sucursal;
+        $rolusuario = auth()->user()->getRoleNames()->first(); 
+        $esProveedor = ($rolusuario === 'PROVEEDOR');
+        $id = $clienteauditoria->nombrecompleto ? ClienteAuditoria::where('nombrecompleto', $clienteauditoria->nombrecompleto)->value('id') : null;
 
         $accionesCliente = BateriaSubCliente::where('clienteauditorianombre', $nombreCliente)
             ->whereIn('accionnombre', function ($query) use ($sucursalCliente) {
@@ -5263,43 +5586,129 @@ class AsociadoController extends Controller
             ->pluck('accionnombre')
             ->unique();
 
-        $proveedoresAsociados = BateriaProveedor::whereIn('accion', $accionesCliente)->where('asociado', 'CLIENTES ITA')
-            ->whereHas('proveedor', function ($query) use ($sucursalCliente) {
-                $query->where('ciudad', $sucursalCliente)->where('estadoproveedor', 'ACTIVO');
-            })
-            ->get()
-            ->groupBy('accion');
-
-        $accionesRegistradas = Programacionsubcliente::whereIn('accionnombre', $accionesCliente)
-            ->where('clienteauditorianombre', $nombreCliente)
-            ->pluck('accionnombre')
+        $proveedoresAsignados = BateriaSubCliente::where('clienteauditorianombre', $nombreCliente)
+            ->whereIn('accionnombre', $accionesCliente)
+            ->pluck('proveedorasignado', 'accionnombre')
             ->toArray();
 
-        $id = $clienteauditoria->nombrecompleto ? ClienteAuditoria::where('nombrecompleto', $clienteauditoria->nombrecompleto)->value('id') : null;
+        $fechasEnEstadoCotizacionSubCliente = EstadoCotizacionSubCliente::where('clienteauditorianombre', $nombreCliente)  
+            ->distinct()
+            ->pluck('fechabateria');
+    
+        $fechasBateriaPorAccion = BateriaSubCliente::where('clienteauditorianombre', $nombreCliente)
+            ->where(function ($query) use ($fechasEnEstadoCotizacionSubCliente) {
+                $query->whereIn('fechabateria', $fechasEnEstadoCotizacionSubCliente)
+                    ->orWhere('accionnombre', 'MEDICINA LABORAL');
+            })
+            ->whereIn('accionnombre', $accionesCliente)
+            ->select('accionnombre', 'fechabateria')
+            ->get();
+        
+        $accionesRegistradas = Programacionsubcliente::where('clienteauditoriaid', $idCliente)
+            ->pluck('accionnombre', 'fechabateria')
+            ->toArray();
 
-        $fechasEnEstadoCotizacionSubCliente = EstadoCotizacionSubCliente::where('clienteauditorianombre', $nombreCliente)
-        ->distinct()
-        ->pluck('fechabateria');
+        foreach ($accionesRegistradas as $fecha => $accion) {
+        if (!isset($accionesRegistradas[$fecha])) {
+            $accionesRegistradas[$fecha] = [];
+            }
 
-        $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionnombre', $accionesCliente)
-        ->where('clienteauditorianombre', $nombreCliente)
-        ->whereIn('fechabateria', $fechasEnEstadoCotizacionSubCliente)
-        ->distinct()
-        ->pluck('fechabateria', 'accionnombre');
+            if (!is_array($accionesRegistradas[$fecha])) {
+                $accionesRegistradas[$fecha] = [$accion];
+            } else {
+                $accionesRegistradas[$fecha][] = $accion;
+            }
+        }
 
         $accionesPorFecha = [];
-        foreach ($fechasBateriaPorAccion as $accion => $fecha) {
-        $accionesPorFecha[$fecha][] = $accion;
+        foreach ($fechasBateriaPorAccion as $item) {
+            $accion = $item->accionnombre;
+            $fecha = $item->fechabateria;
+
+            $accionYaRegistrada = Programacionsubcliente::where('clienteauditoriaid', $idCliente)
+                ->where('fechabateria', $fecha)
+                ->where('accionnombre', $accion)
+                ->exists();
+        
+            if (!isset($accionesPorFecha[$fecha])) {
+                $accionesPorFecha[$fecha] = [];
+            }
+
+            if (!$accionYaRegistrada) {
+                $accionesPorFecha[$fecha][] = $accion;
+            }
         }
-        return view('admin.asociados.crearprogramacionclienteauditoria', compact('id', 'clienteauditoria', 'accionesPorFecha', 'proveedoresAsociados', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente'));
+
+        
+        $proveedoresDetalles = [];
+        foreach ($proveedoresAsignados as $accion => $nombreProveedor) {
+            $proveedor = BateriaSubCliente::where('accionnombre', $accion)->where('clienteauditoriaid', $idCliente)
+                ->latest()
+                ->first();
+
+            if ($proveedor) {
+                $proveedoresDetalles[$accion] = [
+                    'proveedor' => $proveedor->proveedorasignado,
+                    'horarioinicial' => $proveedor->horarioinicial,
+                    'horariofinal' => $proveedor->horariofinal,
+                    'fechabateria' => $proveedor->fechabateria,
+                    'fechaasignada' => Programacionsubcliente::where('accionnombre', $accion)
+                        ->where('clienteauditorianombre', $nombreCliente)
+                        ->value('fechaasignada'),
+                    'horadesde' => Programacionsubcliente::where('accionnombre', $accion)
+                        ->where('clienteauditorianombre', $nombreCliente)
+                        ->value('horadesde'),
+                    'horahasta' => Programacionsubcliente::where('accionnombre', $accion)
+                        ->where('clienteauditorianombre', $nombreCliente)
+                        ->value('horahasta'),
+                    'tiempoatencion' => $proveedor->tiempoatencion,
+                    'accion' => $proveedor->accionnombre,
+                    'area' => $proveedor->areanombre,
+                    'precio' => $proveedor->precio,
+                    'preciocompra' => $proveedor->preciocompra,
+                    'programacionid' => Programacionsubcliente::where('accionnombre', $accion)
+                        ->where('clienteauditorianombre', $nombreCliente)
+                        ->value('id'),
+                ];
+            }
+        }
+
+        $fechasBateria = BateriaSubCliente::where('clienteauditoriaid', $clienteitaid)
+            ->distinct()
+            ->pluck('fechabateria');
+
+
+        $accionesPorFechaBateria = [];
+        foreach ($fechasBateria as $fecha) {
+            $accionesBateria = BateriaSubCliente::where('fechabateria', $fecha)
+                ->where('clienteauditoriaid', $clienteitaid)
+                ->pluck('accionnombre')
+                ->toArray();
+
+            $accionesPorFechaBateria[$fecha] = $accionesBateria;
+        }
+
+        $accionesDetallesPorFecha = [];
+        foreach ($fechasBateria as $fecha) {
+            $accionesProgramadas = ProgramacionSubCliente::where('fechabateria', $fecha)
+                ->where('clienteauditoriaid', $clienteitaid)
+                ->get(['id', 'accionnombre','proveedornombre', 'fechaasignada', 'horadesde', 'horahasta', 'horahasta', 'precio']);
+
+            foreach ($accionesProgramadas as $accion) {
+                $accionesDetallesPorFecha[$fecha][$accion->accionnombre] = $accion;
+            }
+        }
+
+        return view('admin.asociados.crearprogramacionclienteauditoria', compact('esProveedor','accionesDetallesPorFecha','accionesPorFechaBateria','fechasBateria','id','rolusuario', 'clienteauditoria', 'accionesPorFecha', 'proveedoresDetalles', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente'));
     }
-    public function guardarprogramacionclienteauditoria(StoreProgramacionsubclienteRequest $request, WhatsAppService $whatsAppService)
+    public function guardarprogramacionclienteauditoria(StoreProgramacionsubclienteRequest $request)
     {
         $proveedoresSeleccionados = $request->input('proveedornombre');
         $horaasignada = $request->input('horaasignada');
         $fechaasignada = $request->input('fechaasignada');
         $accionnombre = $request->input('accionnombre');
         $precio = $request->input('precio');
+        $preciocompra = $request->input('preciocompra');
 
         if (!is_array($proveedoresSeleccionados)) {
             $proveedoresSeleccionados = [$proveedoresSeleccionados];
@@ -5311,9 +5720,6 @@ class AsociadoController extends Controller
                 ->where('fechaasignada', $fechaasignada)
                 ->exists();
 
-            if ($existente) {
-                return redirect()->back()->with('error', 'YA EXISTE UN REGISTRO CON EL MISMO PROVEEDOR, HORA Y FECHA');
-            }
             $clienteitaData = $request->except(['proveedornombre', '_token']);
             $clienteitaData['proveedornombre'] = $proveedor;
 
@@ -5327,6 +5733,7 @@ class AsociadoController extends Controller
             $clienteitaData['clienteauditorianombre'] = $request->input('nombrecompleto');
             $clienteitaData['fechaasignada'] = $fechaasignada;
             $clienteitaData['precio'] = $precio;
+            $clienteitaData['preciocompra'] = $preciocompra;
             $clienteitaData['fechabateria'] = $request->input('fechabateria');
 
             $clienteauditoria = Programacionsubcliente::create($clienteitaData);
@@ -5343,7 +5750,7 @@ class AsociadoController extends Controller
         $programacionsubclientes = collect();
         
         $reprogramaciones = ProgramacionSubCliente::where('clienteauditoriaid', $clienteauditoria->id)
-        ->onlyTrashed() // Obtener solo los registros eliminados
+        ->onlyTrashed()
         ->get();
         $total = 0;
         if ($fechaSeleccionada) {
@@ -5356,8 +5763,9 @@ class AsociadoController extends Controller
             $total = number_format($total, 2, '.', '');
         }
 
+
         $id = ClienteAuditoria::where('nombrecompleto', $clienteauditoria->nombrecompleto)->value('id');
-        return view('admin.asociados.reprogramacionclienteita', compact('reprogramaciones','programacionsubclientes', 'id', 'clienteauditoria', 'fechas', 'total', 'fechaSeleccionada'));
+        return view('admin.asociados.reprogramacionclienteauditoria', compact('reprogramaciones','programacionsubclientes', 'id', 'clienteauditoria', 'fechas', 'total', 'fechaSeleccionada'));
     }
     public function buscarprogramacionclienteauditoria(ClienteAuditoria $clienteauditoria, Request $request)
     {
@@ -5403,33 +5811,48 @@ class AsociadoController extends Controller
         $accionesPorArea = Programacionsubcliente::where('clienteauditorianombre', $nombreCliente)
             ->get(['accionnombre', 'proveedornombre','fechabateria','fechaasignada', 'horadesde', 'horahasta']);
 
-        $estadoRegistrados = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesCliente)
-            ->where('clienteauditorianombre', $nombreCliente)
-            ->pluck('accionnombre')->toArray();
+        $estadoRegistrados = Estadoprogramacionsubcliente::where('clienteauditorianombre', $nombreCliente)
+                ->get(['accionnombre', 'fechabateria']);
+
+        $estadoMapeado = [];
+            foreach ($estadoRegistrados as $estado) {
+                $estadoMapeado[$estado->accionnombre][$estado->fechabateria] = true;
+            }
 
         $accionesDisponibles = $accionesDisponibles ?? $accionesPorArea;
         
         $accionesRegistradas = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesCliente)
-        ->where('clienteauditorianombre', $nombreCliente)
-        ->pluck('accionnombre')
-        ->toArray();
+            ->where('clienteauditorianombre', $nombreCliente)
+            ->pluck('accionnombre')
+            ->toArray();
 
         $fechasEnEstadoCotizacionSubCliente = EstadoCotizacionSubCliente::where('clienteauditorianombre', $nombreCliente)
-        ->distinct()
-        ->pluck('fechabateria');
+            ->distinct()
+            ->pluck('fechabateria');
 
         $fechasBateriaPorAccion = Programacionsubcliente::whereIn('accionnombre', $accionesCliente)
-        ->where('clienteauditorianombre', $nombreCliente)
-        ->whereIn('fechabateria', $fechasEnEstadoCotizacionSubCliente)
-        ->distinct()
-        ->pluck('fechabateria', 'accionnombre');
+            ->where('clienteauditorianombre', $nombreCliente)
+            /* ->whereIn('fechabateria', $fechasEnEstadoCotizacionSubCliente) */
+            ->distinct()
+            ->pluck('fechabateria', 'accionnombre');
 
+        $accionesPorFecha = Programacionsubcliente::where('clienteauditorianombre', $nombreCliente)
+            ->where('fechabateria', $fechaSeleccionada)
+            ->get(['accionnombre'])
+            ->pluck('accionnombre')
+            ->toArray();
+        $accionesNoRegistradas = array_filter($accionesPorFecha, function ($accion) use ($estadoMapeado, $fechaSeleccionada) {
+                return empty($estadoMapeado[$accion][$fechaSeleccionada]);
+            });
+            
         $accionesPorFecha = [];
         foreach ($fechasBateriaPorAccion as $accion => $fecha) {
         $accionesPorFecha[$fecha][] = $accion;
         }
+        
         $id = ClienteAuditoria::where('nombrecompleto', $clienteauditoria->nombrecompleto)->value('id');
-        return view('admin.asociados.estadoprogramacionclienteauditoria', compact('fechaSeleccionada', 'id','fechas','nombreclienteita','accionesDisponibles', 'clienteauditoria', 'id', 'accionesCliente', 'estadoRegistrados', 'fechasBateriaPorAccion', 'accionesPorFecha', 'accionesRegistradas'));
+
+        return view('admin.asociados.estadoprogramacionclienteauditoria', compact('estadoMapeado','fechaSeleccionada', 'id','fechas','nombreclienteita','accionesDisponibles', 'clienteauditoria', 'id', 'accionesCliente', 'estadoRegistrados', 'fechasBateriaPorAccion', 'accionesPorFecha', 'accionesRegistradas'));
     }
     public function buscarprogramacionclientesauditoria(ClienteAuditoria $clienteauditoria, Request $request)
     {
@@ -5469,9 +5892,24 @@ class AsociadoController extends Controller
     public function creardocumentacionclienteauditoria(ClienteAuditoria $clienteauditoria, Asociado $asociado)
     {
         $nombreCliente = $clienteauditoria->nombrecompleto;
+
         $accionesCliente = Programacionsubcliente::where('clienteauditorianombre', $nombreCliente)
             ->pluck('accionnombre')
             ->unique();
+
+        $accionesRegistradasPorFecha = Documentacionsubcliente::where('clienteauditorianombre', $nombreCliente)
+            ->get(['accion', 'fechabateria'])
+            ->groupBy('fechabateria');
+
+        $accionesNoRegistradasPorFecha = Programacionsubcliente::where('clienteauditorianombre', $nombreCliente)
+            ->get(['accionnombre', 'fechabateria'])
+            ->filter(function($accion) use ($accionesRegistradasPorFecha) {
+                $fechabateria = $accion->fechabateria;
+                $accionnombre = $accion->accionnombre;
+                return !isset($accionesRegistradasPorFecha[$fechabateria]) || !in_array($accionnombre, $accionesRegistradasPorFecha[$fechabateria]->pluck('accion')->toArray());
+            })
+            ->groupBy('fechabateria');
+
         $accionesRegistradas = Documentacionsubcliente::whereIn('accion', $accionesCliente)
             ->where('clienteauditorianombre', $nombreCliente)
             ->pluck('accion')
@@ -5481,10 +5919,9 @@ class AsociadoController extends Controller
 
         $fechasBateriaPorAccion = Programacionsubcliente::whereIn('accionnombre', $accionesCliente)
             ->where('clienteauditorianombre', $nombreCliente)
-            ->distinct()
-            ->pluck('fechabateria', 'accionnombre');
-
-            // Obtener acciones en ESTADOPROGRAMACIONSUBCLIENTE
+            ->get(['accionnombre', 'fechabateria', 'proveedornombre'])
+            ->groupBy('fechabateria');
+        
         $accionesEnEstado = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesCliente)
             ->pluck('accionnombre')
             ->toArray();
@@ -5493,39 +5930,111 @@ class AsociadoController extends Controller
             ->pluck('accion')->toArray();
 
         $accionesPorFecha = [];
-        foreach ($fechasBateriaPorAccion as $accion => $fecha) {
-            $accionesPorFecha[$fecha][] = $accion;
+
+        foreach ($fechasBateriaPorAccion as $fecha => $acciones) {
+            foreach ($acciones as $accion) {
+                $accionesPorFecha[$fecha][] = $accion;
+            }
         }
-        return view('admin.asociados.creardocumentacionclienteauditoria', compact('asociado', 'accionesEnEstado','id', 'clienteauditoria', 'accionesPorFecha', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente', 'documentosRegistrados'));
+        
+
+        $documentosRegistradosPorFecha = Documentacionsubcliente::where('clienteauditorianombre', $nombreCliente)
+            ->get(['accion', 'fechabateria'])
+            ->groupBy('fechabateria');
+
+        $accionesPorFecha2 = Programacionsubcliente::where('clienteauditorianombre', $nombreCliente)
+            ->get(['accionnombre', 'fechabateria'])
+            ->groupBy('fechabateria');
+
+        $accionesConEstadoPorFecha = [];
+        foreach ($accionesPorFecha as $fecha => $acciones) {
+            foreach ($acciones as $accion) {
+                $registrado = isset($documentosRegistradosPorFecha[$fecha]) && 
+                            in_array($accion->accionnombre, $documentosRegistradosPorFecha[$fecha]->pluck('accion')->toArray());
+
+                $documento = $registrado ? Documentacionsubcliente::where('accion', $accion->accionnombre)
+                                                        ->where('fechabateria', $fecha)
+                                                        ->value('document') : null;
+
+                $image = $registrado ? Documentacionsubcliente::where('accion', $accion->accionnombre)
+                                                        ->where('fechabateria', $fecha)
+                                                        ->value('image') : null;
+
+                $image2 = $registrado ? Documentacionsubcliente::where('accion', $accion->accionnombre)
+                                                        ->where('fechabateria', $fecha)
+                                                        ->value('image2') : null;
+                $id = $registrado ? Documentacionsubcliente::where('accion', $accion->accionnombre)
+                                                        ->where('fechabateria', $fecha)
+                                                        ->value('id') : null;
+
+                $creacionregistro = $registrado ? Documentacionsubcliente::where('accion', $accion->accionnombre) 
+                                                        ->where('fechabateria', $fecha)
+                                                        ->value('created_at') : null;
+                if ($creacionregistro) {
+                    $creacionregistro = \Carbon\Carbon::parse($creacionregistro);
+                    $creacionregistroFormatted = $creacionregistro->format('Y-m-d') . ' - ' . $creacionregistro->format('H:i:s');
+                } else {
+                    $creacionregistroFormatted = null;
+                }
+
+                $proveedor = $accion->proveedornombre;
+
+                $accionesConEstadoPorFecha[$fecha][] = [
+                    'id' => $id,
+                    'accionnombre' => $accion->accionnombre,
+                    'proveedornombre' => $proveedor,
+                    'registrado' => $registrado,
+                    'document' => $documento,
+                    'image' => $image,
+                    'image2' => $image2,
+                    'creacionregistro' => $creacionregistroFormatted
+                ];
+            }
+        }
+        return view('admin.asociados.creardocumentacionclienteauditoria', compact('accionesConEstadoPorFecha','accionesRegistradasPorFecha','accionesNoRegistradasPorFecha','asociado', 'accionesEnEstado','id', 'clienteauditoria', 'accionesPorFecha', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente', 'documentosRegistrados'));
     }
-    public function guardardocumentacionclienteauditoria(StoreDocumentacionsubclienteRequest $request)
+    public function guardardocumentacionclienteauditoria(StoreDocumentacionsubclienteRequest $request, ClienteAuditoria $clienteauditoria)
     {
         $archivo_name = null;
         if ($request->hasFile('archivo')) {
             $file = $request->file('archivo');
+            
+            $carpetaCliente = public_path("/documentacionclientesauditoria/{$clienteauditoria->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);}
             $archivo_name = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path("/file"), $archivo_name);
+            $file->move($carpetaCliente, $archivo_name);
         }
+        
         $image_name = null;
         if ($request->hasFile('picture')) {
             $file = $request->file('picture');
-            $image_name = time().'_'.$file->getClientOriginalName();
-            $file->move(public_path("/image"), $image_name);
+            $carpetaCliente = public_path("/documentacionclientesauditoria/{$clienteauditoria->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);}
+            $image_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $image_name);
         }
+
         $image_name2 = null;
         if ($request->hasFile('picture2')) {
             $file = $request->file('picture2');
-            $image_name2 = time().'_'.$file->getClientOriginalName();
-            $file->move(public_path("/image"), $image_name2);
+            $carpetaCliente = public_path("/documentacionclientesauditoria/{$clienteauditoria->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);}
+            $image_name2 = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $image_name2);
         }
 
         $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
         $accion = $request->input('accion');
         $nombrecliente = $request->input('nombrecompleto');
+        $idcliente = $request->input('clienteauditoriaid');
         $documentacioncliente = Documentacionsubcliente::create(
             $request->except('accion') + [
                 'document' => $archivo_name,
                 'accion' => $accion,
+                'clienteauditoriaid' => $idcliente,
                 'clienteauditorianombre' => $nombrecliente,
                 'image' => $image_name,
                 'image2' => $image_name2
@@ -5576,6 +6085,86 @@ class AsociadoController extends Controller
             ->simplePaginate(10000);
 
         return view('admin.asociados.documentacionmultipleclienteauditoria', compact('clienteauditoria', 'asociado', 'clientes'));
+    }
+    public function guardarhistoriamedicaauditoria(StoreDocumentacionsubclienteRequest $request, ClienteAuditoria $clienteauditoria)
+    {
+        $archivo_name = null;
+        $archivo_comprimido_name = null;
+
+        if ($request->hasFile('archivo')) {
+            $file = $request->file('archivo');
+            
+            $carpetaCliente = public_path("/historiamedicaauditoria/{$clienteauditoria->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+            
+            // Nombre del archivo PDF
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+
+            // Crear un archivo ZIP para comprimir el PDF
+            $zip = new \ZipArchive();
+            $archivo_comprimido_name = 'HISTORIA_MEDICA_' . $clienteauditoria->nombrecompleto . '.zip';
+            $zip_path = $carpetaCliente . '/' . $archivo_comprimido_name;
+
+            if ($zip->open($zip_path, \ZipArchive::CREATE) === TRUE) {
+                $zip->addFile($carpetaCliente . '/' . $archivo_name, $archivo_name);
+                $zip->close();
+            } else {
+                return redirect()->back()->with('error', 'No se pudo crear el archivo comprimido');
+            }
+
+            // Eliminar el archivo PDF original después de comprimirlo
+            unlink($carpetaCliente . '/' . $archivo_name);
+        }
+
+        $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
+        $accion = $request->input('accion');
+        $clienteauditoriaid = $request->input('usuarioid');
+        $clienteauditorianombre = $request->input('usuarioregistro');
+
+        $documentacioncliente = Documentacionsubcliente::create(
+            $request->except('accion') + [
+                'document' => $archivo_comprimido_name,
+                'accion' => $accion,
+                'usuarioregistro' => $clienteauditorianombre,
+                'usuarioid' => $clienteauditoriaid,
+                'clienteauditoriaid' => $clienteauditoria->id,
+                'clienteauditorianombre' => $clienteauditoria->nombrecompleto
+            ]
+        );
+
+        return redirect()->route('admin.asociados.verclienteauditoria', $request->clienteauditoria)->with('info', 'El documento se subió con éxito');
+    }
+    public function verDocumentoauditoria($id)
+    {
+        $documentacion = Documentacionsubcliente::find($id);
+        $carpetaCliente = public_path("/historiamedicaauditoria/{$documentacion->clienteauditoriaid}");
+        $zip_path = $carpetaCliente . '/' . $documentacion->document;
+
+        if (file_exists($zip_path)) {
+            $zip = new \ZipArchive();
+            if ($zip->open($zip_path) === TRUE) {
+                $extract_path = $carpetaCliente . '/extracted/';
+                if (!file_exists($extract_path)) {
+                    mkdir($extract_path, 0755, true);
+                }
+                $zip->extractTo($extract_path);
+                $zip->close();
+
+                // Asumiendo que el ZIP contiene solo un archivo PDF
+                $files = scandir($extract_path);
+                foreach ($files as $file) {
+                    if (pathinfo($file, PATHINFO_EXTENSION) === 'pdf') {
+                        $pdf_path = $extract_path . $file;
+                        return response()->file($pdf_path);
+                    }
+                }
+            }
+        }
+
+        return redirect()->back()->with('error', 'El documento no se encontró');
     }
 //
 //CREAR FORMULARIO DE CLIENTE AUDITORIA

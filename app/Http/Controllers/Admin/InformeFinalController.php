@@ -555,8 +555,8 @@ class InformeFinalController extends Controller
                 $ciasegurado = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->ciasegurado);})->first()->ciasegurado ?? null;
 
-                $cimatrimonio = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->cimatrimonio);})->first()->cimatrimonio ?? null;
+                $cmatrimonio = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->cmatrimonio);})->first()->cmatrimonio ?? null;
 
                 $cnacconyuge = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->cnacconyuge);})->first()->cnacconyuge ?? null;
@@ -636,7 +636,7 @@ class InformeFinalController extends Controller
                     'avcci' => $avcci,
                     'cnacasegurado' => $cnacasegurado,
                     'ciasegurado' => $ciasegurado,
-                    'cimatrimonio' => $cimatrimonio,
+                    'cmatrimonio' => $cmatrimonio,
                     'cnacconyuge' => $cnacconyuge,
                     'ciconyuge' => $ciconyuge,
                     'cnacjihos' => $cnacjihos,

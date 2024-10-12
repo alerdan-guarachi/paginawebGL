@@ -46,6 +46,7 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Acciones</th>
                         <th>Proveedor</th>
                         <th>Fecha bateria</th>
@@ -66,30 +67,33 @@
                     $mensajeCodificado = urlencode($mensaje);
                     ?>
                     <tr>
+                        <td class="align-middle">{{ $accion->id }}</td>
                         <td class="align-middle">{{ $accion->accionnombre }}</td>
                         <td class="align-middle">{{ $accion->proveedornombre }}</td>
                         <td class="align-middle">{{ $accion->fechabateria }}</td>
                         <td class="align-middle">{{ $accion->fechaasignada }}</td>
                         <td class="align-middle">{{ $accion->horadesde }} - {{ $accion->horahasta }}</td>
                         <td width="10px">
-                            @if(in_array($accion->accionnombre, $estadoRegistrados))
+                            @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria]))
                                 <i class="fas fa-check-circle fa-2x checkverde"></i>
                             @else
                                 <i class="fas fa-times-circle fa-2x text-danger"></i>
                             @endif
                         </td>
-                        <td width="10px">
+                        
+                        <td width="10px"> 
                             <abbr title="Recordar">
-                                <a class="btn btn-sm btn-whatsapp @if(in_array($accion->accionnombre, $estadoRegistrados)) disabled @endif" 
-                                @if(in_array($accion->accionnombre, $estadoRegistrados)) 
-                                    onclick="return false;" 
-                                @else 
-                                    href="https://wa.me/{{ $clienteauditoria->celular }}?text={{ $mensajeCodificado }}" 
-                                @endif>
+                                <a class="btn btn-sm btn-whatsapp 
+                                    @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria])) disabled @endif" 
+                                    @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria])) 
+                                        onclick="return false;" 
+                                    @else 
+                                        href="https://wa.me/{{ $clienteauditoria->celular }}?text={{ $mensajeCodificado }}" 
+                                    @endif>
                                     <i class="fas fa-sms"></i>
                                 </a>
                             </abbr>
-                        </td>
+                        </td>                        
                     </tr>
                 @endforeach
                 </tbody>
@@ -120,7 +124,7 @@
                 {!! Form::hidden('clienteauditorianombre', $nombreclienteita) !!}
                 {!! Form::hidden('accionid', '', ['id' => 'modalAccionId']) !!}
 
-                <div class="form-group">
+                <div class="form-group"> 
                     {!! Form::label('', 'Fecha de Bateria:') !!}
                     <select class="form-control" id="fecha_bateria">
                         <option value="" disabled selected></option>
@@ -135,7 +139,7 @@
                     @enderror
                 </div>
                 <input type="hidden" id="fechabateria" name="fechabateria">
-
+                
                 <div class="form-group" id="acciones_select">
                     {!! Form::label('', 'Acciones disponibles:') !!}
                     <select class="form-control" id="accion" name="accion">
@@ -148,6 +152,7 @@
                     @enderror
                 </div>
                 <input type="hidden" id="accionnombre" name="accionnombre">
+                
                 <div class="form-group" hidden>
                     {!! Form::label('nombrecompleto', 'Nombre del Cliente:') !!}
                     {!! Form::text('nombrecompleto', $clienteauditoria->nombrecompleto, ['id' => 'modalNombreCompleto', 'class' => 'form-control', 'readonly']) !!}
@@ -176,11 +181,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/js/dropify.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
+
+{{-- <script>
     $(document).ready(function(){
         $('#fecha_bateria').on('change', function(){
             $('#accion').val('');
             $('#accionnombre').val('');
+            actualizarAcciones();
         });
 
         $('#accion').on('change', function(){
@@ -189,33 +196,79 @@
         });
     });
 
-document.getElementById('fecha_bateria').addEventListener('change', function() {
-    var fechaSeleccionada = this.value;
-    var accionesDisponibles = document.getElementById('accion');
-    accionesDisponibles.innerHTML = '';
-    var accionesPorFecha = @json($accionesPorFecha);
-    var accionesRegistradas = @json($accionesRegistradas);
+    function actualizarAcciones() {
+        var fechaSeleccionada = $('#fecha_bateria').val();
+        var accionesDisponibles = $('#accion');
+        accionesDisponibles.empty(); // Limpiar opciones anteriores
 
-    var opcionVacia = document.createElement('option');
-    opcionVacia.value = '';
-    opcionVacia.text = '';
-    accionesDisponibles.appendChild(opcionVacia);
+        var accionesPorFecha = @json($accionesPorFecha);
+        var accionesRegistradas = @json($accionesRegistradas);
 
-    var accionesFechaSeleccionada = accionesPorFecha[fechaSeleccionada];
+        // Opción vacía
+        accionesDisponibles.append(new Option('', '', false, true));
 
-    var accionesDisponiblesFiltradas = accionesFechaSeleccionada.filter(function(accion) {
-        return !accionesRegistradas.includes(accion);
+        // Obtener las acciones para la fecha seleccionada
+        var accionesFechaSeleccionada = accionesPorFecha[fechaSeleccionada] || [];
+
+        // Filtrar las acciones que no están registradas para esta fecha
+        var accionesNoRegistradas = accionesFechaSeleccionada.filter(function(accion) {
+            return !accionesRegistradas.some(function(item) {
+                return item === accion;
+            });
+        });
+
+        // Añadir las acciones no registradas al select
+        accionesNoRegistradas.forEach(function(accion) {
+            accionesDisponibles.append(new Option(accion, accion));
+        });
+
+        // Mostrar el select de acciones si hay opciones disponibles
+        document.getElementById('acciones_select').style.display = accionesNoRegistradas.length > 0 ? 'block' : 'none';
+
+        // Mensaje si no hay acciones disponibles
+        if (accionesNoRegistradas.length === 0) {
+            alert('No hay acciones disponibles para la fecha seleccionada.');
+        }
+    }
+</script> --}}
+
+<script>
+    $(document).ready(function(){
+        $('#fecha_bateria').on('change', function(){
+            $('#accion').val('');
+            $('#accionnombre').val('');
+            actualizarAcciones();
+        });
+
+        $('#accion').on('change', function(){
+            var selectedOption = $(this).val();
+            $('#accionnombre').val(selectedOption);
+        });
     });
 
-    accionesDisponiblesFiltradas.forEach(function(accion) {
-        var opcion = document.createElement('option');
-        opcion.value = accion;
-        opcion.text = accion;
-        accionesDisponibles.appendChild(opcion);
-    });
-    
-    document.getElementById('acciones_select').style.display = 'block';
-});
+    function actualizarAcciones() {
+        var fechaSeleccionada = $('#fecha_bateria').val();
+        var accionesDisponibles = $('#accion');
+        accionesDisponibles.empty();
+
+        var accionesPorFecha = @json($accionesPorFecha);
+        var accionesRegistradas = @json($estadoMapeado);
+
+        accionesDisponibles.append(new Option('', '', false, true));
+
+        var accionesFechaSeleccionada = accionesPorFecha[fechaSeleccionada] || [];
+
+        var accionesNoRegistradas = accionesFechaSeleccionada.filter(function(accion) {
+            return !accionesRegistradas[accion] || !accionesRegistradas[accion][fechaSeleccionada];
+        });
+
+        accionesNoRegistradas.forEach(function(accion) {
+            accionesDisponibles.append(new Option(accion, accion));
+        });
+
+        document.getElementById('acciones_select').style.display = accionesNoRegistradas.length > 0 ? 'block' : 'none';
+        
+    }
 </script>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

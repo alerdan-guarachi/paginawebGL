@@ -1,8 +1,10 @@
 @extends('adminlte::page')
     
 @section('content_header')
-
-<h1>REPROGRAMACION DE CLIENTE "{{ $clienteauditoria }}"</h1>
+<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.crearprogramacionclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
+<a class="btn btn-sm float-right btn-reprogramacion" data-toggle="modal" data-target="#ventanaModal">REPROGRAMACIONES</a>
+<h5>REPROGRAMAR ACCIONES DE:</h5>
+<h3>{{$clienteauditoria->nombrecompleto}}</h3>
 @stop
 
 @section('content')
@@ -18,18 +20,68 @@
 @endif
 <div class="card">
     <div class="card-body">
-        {{-- <nav class="navbar navbar-expand-lg float-right">
+        <nav class="navbar navbar-expand-lg float-right">
             <div class="container-fluid">
                 <div class="d-flex flex-wrap align-items-center">
-                    <form action="{{ route('buscar.clientes') }}" method="get" class="form-inline">
+                    <form action="{{ route('buscarprogramacionclienteauditoria', $clienteauditoria) }}" method="get" class="form-inline">
                         <div class="flex-grow-1">
-                            <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="Cliente  /  CI  /  Ciudad" aria-label="Search">
+                            <select name="buscarpor" class="form-control mr-sm-2">
+                                <option value="" disabled selected>Fecha de Bateria</option>
+                                @foreach($fechas as $fecha)
+                                    <option value="{{ $fecha }}">{{ $fecha }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit" disabled>Buscar</button>
+                        <input type="hidden" name="total" id="total" value="{{ $total }}">
+                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit">Buscar</button>
                     </form>
                 </div>
             </div>
-        </nav> --}}
+        </nav>
+
+        <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">REPROGRAMACIONES:</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Responsable</th>
+                                        <th>Proveedor</th>
+                                        <th>Acción</th>
+                                        <th>Motivo</th>
+                                        <th>Fecha de Batería</th>
+                                        <th>Fecha y hora de reprog.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($reprogramaciones as $reprogramacion)
+                                        <tr>
+                                            <td>{{ $reprogramacion->usuarioactualizacion }}</td>
+                                            <td>{{ $reprogramacion->proveedornombre }}</td>
+                                            <td>{{ $reprogramacion->accionnombre }}</td>
+                                            <td>{{ $reprogramacion->motivoreprogramacion }}</td>
+                                            <td>{{ $reprogramacion->fechabateria }}</td>
+                                            <td>{{ $reprogramacion->deleted_at }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="table-responsive">
             <table class="table table-striped">
@@ -37,8 +89,8 @@
                     <tr>
                         <th>Accion</th>
                         <th>Proveedor</th>
-                        <th>Fecha asignada</th>
-                        <th>Horario asignado</th>
+                        <th>Fecha programada</th>
+                        <th>Hora programada</th>
                         <th colspan="3"></th>
                     </tr>
                 </thead>
@@ -48,7 +100,7 @@
                         <td>{{$programacionsubcliente->accionnombre}}</td>
                         <td>{{$programacionsubcliente->proveedornombre}}</td>
                         <td>{{$programacionsubcliente->fechaasignada}}</td>
-                        <td>{{$programacionsubcliente->horaasignada}}</td>
+                        <td>{{$programacionsubcliente->horadesde}} - {{$programacionsubcliente->horahasta}}</td>
                         <td width="10px">
                             <abbr title="Reprogramar">
                                 <button type="button" class="btn btn-sm fas fa-list-alt btn-eliminar" data-id="{{ $programacionsubcliente->id }}" data-toggle="modal" data-target="#deleteModal"></button>
@@ -61,7 +113,7 @@
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteModalLabel">Confirmar Reprogramación</h5>
+                                    <h5 class="modal-title" id="deleteModalLabel">REPROGRAMAR</h5>
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
@@ -70,37 +122,20 @@
                                     @csrf
                                     @method('DELETE')
                                     <div class="modal-body">
+                                        {!! Form::hidden('usuarioactualizacion', auth()->user()->name) !!}
                                         <div class="form-group">
                                             <label for="motivoreprogramacion">Motivo de Reprogramación:</label>
                                             <input type="text" name="motivoreprogramacion" id="motivoreprogramacion" class="form-control" required>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                                        <button type="submit" class="btn btn-danger">Reprogramar</button>
+                                        <button type="button" class="btn btn-cancelar" data-dismiss="modal">CANCELAR</button>
+                                        <button type="submit" class="btn btn-reprogramar">REPROGRAMAR</button>
                                     </div>
                                 </form>
                             </div>
                         </div>
                     </div>
-                    
-                    {{-- @foreach ($programacionsubclientes as $programacionsubcliente)
-                    <tr>
-                        <td>{{$programacionsubcliente->clientenombre}}</td>
-                        <td>{{$programacionsubcliente->accionnombre}}</td>
-                        <td>{{$programacionsubcliente->proveedornombre}}</td>
-                        <td width="10px">
-                            <abbr title="Reprogramar">
-                                <form action="{{ route('admin.asociados.guardarreprogramacionclientebanco', $programacionsubcliente) }}" class="d-inline formulario-eliminar" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <input type="hidden" name="motivoreprogramacion" id="motivoreprogramacion">
-                                    <button type="submit" class="btn btn-sm fas fa-trash-alt btn-eliminar" onclick="showMotivoField(event)"></button>
-                                </form>
-                            </abbr>
-                        </td>
-                    </tr>
-                @endforeach --}}
                 </tbody>
             </table>
         </div>
@@ -111,11 +146,68 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .btn-cerrar {
+        background-color: #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-cerrar:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
+    .btn-reprogramacion {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 10px 20px;
+        margin-left: 10px;
+        margin-right: 10px;
+        }
+    .btn-reprogramacion:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
+    .btn-reprogramar {
+        background-color: #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-reprogramar:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
+    .btn-cancelar {
+        background-color: #ffffff;
+        color: #ff0000;
+        border-color: #ff0000;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-cancelar:hover {
+        background-color: #ff0000;
+        color: #ffffff;
+    }
     h1, th {
         color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 900;
     }
+    h5 {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 500;
+        margin-bottom: 0%;
+        }
+    h3 {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 1000;
+        }
     .btn-crear {
         background-color:  #ffffff;
         color: #94c93b;
@@ -207,6 +299,17 @@
                 background-color: #faa625;
                 color: #ffffff;
             }
+            .btn-regresar {
+        background-color: #ffffff;
+        color: #2926e2;
+        border-color: #2926e2;
+        border-radius: 5px;
+        padding: 10px 10px;
+    }
+    .btn-regresar:hover {
+        background-color: #2926e2;
+        color: #ffffff;
+    }
 </style>
 @stop
 
@@ -235,7 +338,7 @@ $('.dropify').dropify();
 $(document).ready(function(){
     $('.btn-eliminar').on('click', function(){
         var id = $(this).data('id');
-        var url = "{{ route('admin.asociados.guardarreprogramacionclienteauditoria', ':id') }}";
+        var url = "{{ route('admin.asociados.guardarreprogramacionclienteita', ':id') }}";
         url = url.replace(':id', id);
         $('#deleteForm').attr('action', url);
         $('#deleteModal').modal('show');
