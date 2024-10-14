@@ -1636,22 +1636,22 @@ class AsociadoController extends Controller
         return redirect()->route('admin.asociados.estadoprogramacionclienteita', $request->cliente)->with('info', 'El estado se actualizó con éxito');
     } */
     public function guardarestadoprogramacionclienteita(StoreEstadoprogramacionsubclienteRequest $request) 
-{
-    $accionesSeleccionadas = $request->input('accionesSeleccionadas', []);
-    $fechaBateria = $request->input('fechabateria'); // Obtiene la fecha de batería del input oculto
+    {
+        $accionesSeleccionadas = $request->input('accionesSeleccionadas', []);
+        $fechaBateria = $request->input('fechabateria'); // Obtiene la fecha de batería del input oculto
 
-    foreach ($accionesSeleccionadas as $accionNombre) {
-        Estadoprogramacionsubcliente::create(
-            $request->except('accionid') + [
-                'accionnombre' => $accionNombre,
-                'fechabateria' => $fechaBateria // Asegúrate de incluir la fecha aquí
-            ]
-        );
+        foreach ($accionesSeleccionadas as $accionNombre) {
+            Estadoprogramacionsubcliente::create(
+                $request->except('accionid') + [
+                    'accionnombre' => $accionNombre,
+                    'fechabateria' => $fechaBateria // Asegúrate de incluir la fecha aquí
+                ]
+            );
+        }
+
+        return redirect()->route('admin.asociados.estadoprogramacionclienteita', $request->cliente)
+                        ->with('info', 'El estado se actualizó con éxito');
     }
-
-    return redirect()->route('admin.asociados.estadoprogramacionclienteita', $request->cliente)
-                     ->with('info', 'El estado se actualizó con éxito');
-}
 
 
     
@@ -1761,7 +1761,7 @@ class AsociadoController extends Controller
         }
         return view('admin.asociados.creardocumentacionclienteita', compact('accionesConEstadoPorFecha','accionesRegistradasPorFecha','accionesNoRegistradasPorFecha','asociado', 'accionesEnEstado','id', 'cliente', 'accionesPorFecha', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente', 'documentosRegistrados'));
     }
-    public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
+    /* public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
     {
         $archivo_name = null;
         if ($request->hasFile('archivo')) {
@@ -1809,7 +1809,69 @@ class AsociadoController extends Controller
             ]
         );
         return redirect()->route('admin.asociados.creardocumentacionclienteita', $request->cliente)->with('info', 'El documento se subió con éxito');
+    } */
+
+    public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente) 
+{
+    $archivo_name = null;
+    if ($request->hasFile('archivo')) {
+        $file = $request->file('archivo');
+        $carpetaCliente = public_path("/documentacionclientesita/{$cliente->id}");
+        if (!file_exists($carpetaCliente)) {
+            mkdir($carpetaCliente, 0755, true);
+        }
+        $archivo_name = time() . '_' . $file->getClientOriginalName();
+        $file->move($carpetaCliente, $archivo_name);
     }
+
+    $image_name = null;
+    if ($request->hasFile('picture')) {
+        $file = $request->file('picture');
+        $carpetaCliente = public_path("/documentacionclientesita/{$cliente->id}");
+        if (!file_exists($carpetaCliente)) {
+            mkdir($carpetaCliente, 0755, true);
+        }
+        $image_name = time() . '_' . $file->getClientOriginalName();
+        $file->move($carpetaCliente, $image_name);
+    }
+
+    $image_name2 = null;
+    if ($request->hasFile('picture2')) {
+        $file = $request->file('picture2');
+        $carpetaCliente = public_path("/documentacionclientesita/{$cliente->id}");
+        if (!file_exists($carpetaCliente)) {
+            mkdir($carpetaCliente, 0755, true);
+        }
+        $image_name2 = time() . '_' . $file->getClientOriginalName();
+        $file->move($carpetaCliente, $image_name2);
+    }
+
+    $nombrecliente = $request->input('nombrecompleto');
+    $idcliente = $request->input('clienteitaid');
+
+    // Iterar sobre las acciones seleccionadas (enviadas como array)
+    $accionesSeleccionadas = $request->input('acciones', []); // 'acciones' viene de los checkboxes
+    
+    foreach ($accionesSeleccionadas as $accionId) {
+        $accionNombre = Programacionsubcliente::where('id', $accionId)->value('accionnombre');
+
+        // Guardar cada acción con el mismo PDF e imágenes
+        Documentacionsubcliente::create(
+            $request->except('acciones') + [
+                'document' => $archivo_name,
+                'accion' => $accionId,  // Guardar el ID de la acción
+                'accionnombre' => $accionNombre,  // Guardar el nombre de la acción (opcional)
+                'clienteitaid' => $idcliente,
+                'clienteitanombre' => $nombrecliente,
+                'image' => $image_name,
+                'image2' => $image_name2
+            ]
+        );
+    }
+
+    return redirect()->route('admin.asociados.creardocumentacionclienteita', $request->cliente)->with('info', 'El documento se subió con éxito');
+}
+
     public function guardardocumentacionclienteitadeproveedor(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
     {
         $archivo_name = null;
