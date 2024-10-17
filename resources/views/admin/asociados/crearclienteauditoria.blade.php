@@ -51,7 +51,7 @@
                         <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('ci', 'CI:') !!}
-                                {!! Form::text('ci', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '9', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
+                                {!! Form::text('ci', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
                                 @error('ci')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
@@ -61,7 +61,7 @@
                         </div>
                     </div>
                     <div class="row"> 
-                        <div class="col-lg-3">
+                        <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('genero', 'Género:') !!}
                                 {!! Form::select('genero', $genero, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -72,7 +72,7 @@
                                 @enderror
                             </div>
                         </div>  
-                        <div class="col-lg-2">
+                        {{-- <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('lugarnacimiento', 'Lugar nacimiento:') !!}
                                 {!! Form::select('lugarnacimiento', $departamentos, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
@@ -82,7 +82,54 @@
                                     </small>
                                 @enderror
                             </div>
+                        </div> --}}
+                        
+
+                        <div class="col-lg-3" id="custom_place_group" style="display: none;"> 
+                            <div class="form-group">
+                                {!! Form::label('custom_lugarnacimiento', 'Otro lugar de nac.:') !!}
+                                {!! Form::text('custom_lugarnacimiento', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                                @error('custom_lugarnacimiento')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
                         </div>
+                        <div class="col-lg-3" id="select_place_group">
+                            <div class="form-group">
+                                {!! Form::label('lugarnacimiento', 'Lugar nacimiento:') !!}
+                                <input style="margin-left: 120px;" type="checkbox" id="enable_custom_place"> Otro
+                                {!! Form::select('lugarnacimiento', $departamentos, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                                @error('lugarnacimiento')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <script>
+                            document.getElementById('enable_custom_place').addEventListener('change', function() {
+                                if (this.checked) {
+                                    // Show the text input and hide the select input
+                                    document.getElementById('custom_place_group').style.display = 'block';
+                                    document.getElementById('select_place_group').style.display = 'none';
+                                    
+                                    // Clear the select input value
+                                    document.querySelector('[name="lugarnacimiento"]').value = '';
+                                } else {
+                                    // Hide the text input and show the select input
+                                    document.getElementById('custom_place_group').style.display = 'none';
+                                    document.getElementById('select_place_group').style.display = 'block';
+                                    
+                                    // Clear the text input value
+                                    document.querySelector('[name="custom_lugarnacimiento"]').value = '';
+                                }
+                            });
+                        </script>
+                        
+                        
                         <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('fechanacimiento', 'Fecha de nacimiento:') !!}

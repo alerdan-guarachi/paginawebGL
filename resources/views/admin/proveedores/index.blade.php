@@ -2,9 +2,9 @@
 
 @section('content_header')
 
-{{-- @can('admin.roles.create') --}}
+@can('admin.proveedores.create')
 <a class="btn btn-sm float-right btn-crear" href="{{route('admin.proveedores.create')}}">CREAR PROVEEDOR</a>
-{{-- @endcan --}}
+@endcan
 <h1>PROVEEDORES</h1>
 @stop
 

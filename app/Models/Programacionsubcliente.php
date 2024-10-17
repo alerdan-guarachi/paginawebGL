@@ -95,6 +95,14 @@ class Programacionsubcliente extends Model
     {
         return $this->hasMany(Requisitosubcliente::class, 'clienteitaid', 'clienteitaid');
     }
+    public function requisitosclienteauditoria()
+    {
+        return $this->hasMany(Requisitosclientesauditoria::class, 'clienteitaid', 'clienteitaid');
+    }
+    public function requisitosclienteauditoriamedica()
+    {
+        return $this->hasMany(Requisitosclientesauditoria::class, 'clienteauditoriaid', 'clienteauditoriaid');
+    }
     public function bateriasubcliente()
     {
         return $this->hasMany(Bateriasubcliente::class, 'clienteitaid', 'clienteitaid');

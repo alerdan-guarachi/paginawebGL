@@ -36,22 +36,25 @@
         </nav>
         <table class="table table-striped">
             <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombres y Apellidos</th>
-                    {{-- <th>Tipo de cliente</th> --}}
-                    <th>CI</th>
-                    <th>Edad</th>
-                    <th>Sucursal</th>
-                    <th></th>
+                <tr> 
+                    <th style="width: 20px;">ID</th>
+                    <th style="width: 200px;">Nombres y Apellidos</th>
+                    <th style="width: 150px;">Servicio</th>
+                    <th style="width: 100px;">CI</th>
+                    <th style="width: 80px;">Edad</th>
+                    <th style="width: 120px;">Sucursal</th>
+                    <th style="width: 50px;"></th>
                 </tr>
+                
             </thead>
             <tbody>
                 @foreach ($clientes as $cliente)
                     <tr>
                         <td class="align-middle">{{$cliente->id}}</td>
                         <td class="align-middle">{{$cliente->nombrecompleto}}</td>
-                        {{-- <td class="align-middle">{{$cliente->tipocliente}}</td> --}}
+                        <td class="align-middle"> 
+                            {{ implode(', ', $cliente->servicios->pluck('tramite')->unique()->toArray()) }} <!-- Mostrar servicios únicos separados por comas -->
+                        </td>                        
                         <td class="align-middle">{{$cliente->ci}}</td>
                         <td class="align-middle">{{$cliente->edad}}</td>
                         <td class="align-middle">{{$cliente->sucursal}}</td>

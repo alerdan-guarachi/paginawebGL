@@ -161,7 +161,11 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <table style="width: 100%;">
-                                            <tbody>                                 
+                                            <tbody>
+                                                <tr>
+                                                    <th>Servicio</th>
+                                                    <td>{{ implode(', ', $cliente->servicios->pluck('tramite')->unique()->toArray()) }}</td> <!-- Mostrar servicios separados por comas -->
+                                                </tr>                                
                                                 <tr>
                                                     <th>NUA/CUA</th>
                                                     <td>{{$cliente->nuacua}}</td>

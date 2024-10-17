@@ -3,7 +3,10 @@
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
 <a class="btn btn-sm float-right btn-subirrequisitos" href="{{ route('admin.asociados.subirdocrequisitos', $cliente) }}">SUBIR REQUISITOS</a>
-
+<a class="btn btn-sm float-right btn-generarpdf" onclick="generatePDFOnly()" style="margin-right: 10px;">
+    GENERAR CHECK LIST SIN REGISTRAR</a>
+    
+    
 @if (!$tieneInvalidez)
 <h5>REQUISITOS PARA INICIO DE BATERIA DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
@@ -33,6 +36,7 @@
         }, 5000);
     </script>
 @endif
+
 <div class="card"> 
     <div class="card-body">
         <div class="row">
@@ -44,12 +48,12 @@
                     <input type="checkbox" name="poder" value="poder" id="poder" checked disabled>
                     <label for="poder">PODER</label>
                 </div>
-                @if (strtolower($estadoLaboral) === 'activo')
+                
                 <div class="form-group">
-                    <input type="checkbox" name="avcci" value="avcci" id="avcci" checked>
+                    <input type="checkbox" name="avcci" value="avcci" id="avcci" checked disabled>
                     <label for="avcci">AVC/CARNET ASEGURADO</label>
                 </div>
-                @endif
+
                 <div class="form-group">
                     <input type="checkbox" name="cnacasegurado" value="cnacasegurado" id="cnacasegurado" checked disabled>
                     <label for="cnacasegurado" style="min-height: 20px;">CERTIFICADO NACIMIENTO ASEGURADO</label>
@@ -183,9 +187,9 @@
             @endif
         </div>
 
-        @if (!$tieneRequisitos)
+        {{-- @if (!$tieneRequisitos) --}}
         <button onclick="generatePDF(), generatePDF2()" class="btn-crear">GENERAR CHECK LIST</button>
-        @endif
+        {{-- @endif --}}
 
         <script>
             function generatePDF() {
@@ -211,6 +215,27 @@
                 document.getElementById('documentosSeleccionados2Input').value = JSON.stringify(documentosSeleccionados2);
                 document.getElementById('pdfForm').submit();
             }
+        </script>
+        <script>
+            function generatePDFOnly() {
+                        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                        var documentosSeleccionados = [];
+                        checkboxes.forEach(function(checkbox) {
+                            if (checkbox.checked) {
+                                documentosSeleccionados.push(checkbox.value);
+                            }
+                        });
+                        document.getElementById('documentosSeleccionadosInputOnly').value = JSON.stringify(documentosSeleccionados);
+        
+                        var documentosSeleccionados2 = [];
+                        checkboxes.forEach(function(checkbox) {
+                            if (checkbox.checked) {
+                                documentosSeleccionados2.push(checkbox.value);
+                            }
+                        });
+                        document.getElementById('documentosSeleccionados2InputOnly').value = JSON.stringify(documentosSeleccionados2);
+        
+                        document.getElementById('pdfOnlyForm').submit();}
         </script>
     </div>
 </div>
@@ -341,6 +366,24 @@
 @stop
 @section('css')
 <style>
+    .btn-generarpdf {
+            background-color: #ffffff;
+            /* Fondo blanco */
+            color: #94c93b;
+            /* Texto y borde verde */
+            border-color: #94c93b;
+            border-radius: 5px;
+            padding: 10px 15px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-generarpdf:hover {
+            background-color: #94c93b;
+            /* Fondo verde al pasar el mouse */
+            color: #ffffff;
+            /* Texto blanco al pasar el mouse */
+        }
+
     .color-toggle {
         min-height: 20px;
         color: red; /* Color inicial del texto */

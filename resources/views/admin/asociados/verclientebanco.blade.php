@@ -28,98 +28,130 @@
                     <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="ventanaModalLabel" aria-hidden="true">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="ventanaModalLabel"><strong>ACCIONES DEL CLIENTE</strong></h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
+                                <strong style="text-align: center; font-size:20px; margin-top: 20px;">ACCIONES DEL CLIENTE</strong>
+                                <style>
+                                    .bordeetapa1 {
+                                        border-top: 2px solid #26a1c0;
+                                        border-bottom: 2px solid #26a1c0;
+                                        border-right: 2px solid #26a1c0;
+                                        border-left: 2px solid #26a1c0;
+                                    }
+                                    .bordeetapa2 {
+                                        border-top: 2px solid #409c3e;
+                                        border-bottom: 2px solid #409c3e;
+                                        border-right: 2px solid #409c3e;
+                                        border-left: 2px solid #409c3e;
+                                    }
+                                    .bordeetapa3 {
+                                        border-top: 2px solid #a3bc35;
+                                        border-bottom: 2px solid #a3bc35;
+                                        border-right: 2px solid #a3bc35;
+                                        border-left: 2px solid #a3bc35;
+                                    }
+                                    .otros {
+                                        border-top: 2px solid #c47a35;
+                                        border-bottom: 2px solid #c47a35;
+                                        border-right: 2px solid #c47a35;
+                                        border-left: 2px solid #c47a35;
+                                    }
+                                </style>
                                 <div class="modal-body">
-                                    <div class="row text-center">
-                                        @can('admin.asociados.vercontactoclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.vercontactoclientebanco', $clientebanco) }}" class="btn btn-contactos btn-block" data-toggle="tooltip" data-placement="top" title="CONTACTOS">
-                                                <i class="fas fa-users fa-2x"></i>
-                                            </a>
+                                    <div style="background-color: #e9fbff;  border-radius: 40px;">
+                                        <div style="text-align: center;padding: 1.5px;">
+                                            <strong style="color: #26a1c0; font-size:20px;">ETAPA 1</strong>
                                         </div>
-                                        @endcan
-                                        @can('admin.asociados.editarclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.editarclientebanco', $clientebanco) }}" class="btn btn-editar btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
-                                                <i class="fas fa-edit fa-2x"></i>
-                                            </a>
+                                        <div class="row text-center">
+                                            @can('admin.asociados.vercontactoclientebanco')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.vercontactoclientebanco', $clientebanco) }}" class="btn btn-contactos btn-block" data-toggle="tooltip" data-placement="top" title="CONTACTOS">
+                                                    <i class="fas fa-users fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.editarclientebanco')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.editarclientebanco', $clientebanco) }}" class="btn btn-editar btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
+                                                    <i class="fas fa-edit fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.crearbateriaclientebanco')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.crearbateriaclientebanco', $clientebanco) }}" class="btn btn-bateria btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
+                                                    <i class="fas fa-charging-station fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.aprobacioncotizacionclientebanco')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.aprobacioncotizacionclientebanco', $clientebanco) }}" class="btn btn-cotizacion btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
+                                                    <i class="fas fa-donate fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.aprobarcotizacionprogramacionclientebanco')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.aprobarcotizacionprogramacionclientebanco', $clientebanco) }}" class="btn btn-aprobacion btn-block" data-toggle="tooltip" data-placement="top" title="APROBAR COTIZACIÓN">
+                                                    <i class="fas fa-hand-holding-usd fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.crearprogramacionclientebanco')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.crearprogramacionclientebanco', $clientebanco) }}" class="btn btn-programar btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
+                                                    <i class="fas fa-calendar-alt fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.estadoprogramacionclientebanco')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.estadoprogramacionclientebanco', $clientebanco) }}" class="btn btn-estado btn-block" data-toggle="tooltip" data-placement="top" title="ESTADO DE PROGRAMACIÓN">
+                                                    <i class="fas fa-calendar-check fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.creardocumentacionclientebanco')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.creardocumentacionclientebanco', $clientebanco) }}" class="btn btn-subirdocumento btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
+                                                    <i class="fas fa-file-upload fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.listadodocumentacionclientebanco')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.listadodocumentacionclientebanco', $clientebanco) }}" class="btn btn-listadodocumentos btn-block" data-toggle="tooltip" data-placement="top" title="LISTA DE DOCUMENTOS">
+                                                    <i class="fas fa-list-alt fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.crearformularioclienteauditoria')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.crearformularioclientebanco', $clientebanco) }}" class="btn btn-formulario btn-block" data-toggle="tooltip" data-placement="top" title="FORMULARIO MÉDICO">
+                                                    <i class="fas fa-file-signature fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.formularios.declaracionesmedico', $clientebanco) }}" class="btn btn-formulario btn-block" data-toggle="tooltip" data-placement="top" title="FORMULARIO MÉDICO">
+                                                    <i class="fas fa-file-signature fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            {{-- @can('admin.asociados.generaretiquetaclienteauditoria')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.generaretiquetaclientebanco', $clientebanco) }}" class="btn btn-etiqueta btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR ETIQUETA">
+                                                    <i class="fas fa-tags fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.generarchecklistclienteauditoria')
+                                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.generarchecklistclientebanco', $clientebanco) }}" class="btn btn-requisitos btn-block" data-toggle="tooltip" data-placement="top" title="REQUISITOS">
+                                                    <i class="fas fa-tasks fa-2x"></i>
+                                                </a>
+                                            </div>
+                                            @endcan --}}
                                         </div>
-                                        @endcan
-                                        @can('admin.asociados.crearbateriaclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.crearbateriaclientebanco', $clientebanco) }}" class="btn btn-bateria btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
-                                                <i class="fas fa-charging-station fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan
-                                        @can('admin.asociados.aprobacioncotizacionclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.aprobacioncotizacionclientebanco', $clientebanco) }}" class="btn btn-cotizacion btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
-                                                <i class="fas fa-donate fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan
-                                        @can('admin.asociados.aprobarcotizacionprogramacionclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.aprobarcotizacionprogramacionclientebanco', $clientebanco) }}" class="btn btn-aprobacion btn-block" data-toggle="tooltip" data-placement="top" title="APROBAR COTIZACIÓN">
-                                                <i class="fas fa-hand-holding-usd fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan
-                                        @can('admin.asociados.crearprogramacionclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.crearprogramacionclientebanco', $clientebanco) }}" class="btn btn-programar btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
-                                                <i class="fas fa-calendar-alt fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan
-                                        @can('admin.asociados.estadoprogramacionclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.estadoprogramacionclientebanco', $clientebanco) }}" class="btn btn-estado btn-block" data-toggle="tooltip" data-placement="top" title="ESTADO DE PROGRAMACIÓN">
-                                                <i class="fas fa-calendar-check fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan
-                                        @can('admin.asociados.creardocumentacionclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.creardocumentacionclientebanco', $clientebanco) }}" class="btn btn-subirdocumento btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
-                                                <i class="fas fa-file-upload fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan
-                                        @can('admin.asociados.listadodocumentacionclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.listadodocumentacionclientebanco', $clientebanco) }}" class="btn btn-listadodocumentos btn-block" data-toggle="tooltip" data-placement="top" title="LISTA DE DOCUMENTOS">
-                                                <i class="fas fa-list-alt fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan
-                                        {{-- @can('admin.asociados.crearformularioclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.crearformularioclientebanco', $clientebanco) }}" class="btn btn-formulario btn-block" data-toggle="tooltip" data-placement="top" title="FORMULARIO MÉDICO">
-                                                <i class="fas fa-file-signature fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan --}}
-                                        {{-- @can('admin.asociados.generaretiquetaclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.generaretiquetaclientebanco', $clientebanco) }}" class="btn btn-etiqueta btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR ETIQUETA">
-                                                <i class="fas fa-tags fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan
-                                        @can('admin.asociados.generarchecklistclienteauditoria')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.generarchecklistclientebanco', $clientebanco) }}" class="btn btn-requisitos btn-block" data-toggle="tooltip" data-placement="top" title="REQUISITOS">
-                                                <i class="fas fa-tasks fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan --}}
                                     </div>
                                 </div>
                                 <div class="modal-footer">

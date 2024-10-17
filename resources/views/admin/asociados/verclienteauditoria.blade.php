@@ -248,21 +248,21 @@
                             @endif
                             @can('admin.asociados.generarchecklistclienteauditoria')
                                 @if ($tieneTramites)
-                                    @if (!$tienerequisitosauditoria)
+                                    {{-- @if (!$tienerequisitosauditoria) --}}
                                     <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                         <a href="{{ route('admin.asociados.generarchecklistclienteauditoria', $clienteauditoria) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                             <i class="fas fa-tasks"></i>
                                             <strong>REQUISITOS</strong>
                                         </a>
                                     </div>
-                                    @else
+                                    {{-- @else
                                     <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                         <a href="{{ route('admin.asociados.subirdocrequisitosauditoria', $clienteauditoria) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="REQUISITOS" aria-disabled="true">
                                             <i class="fas fa-tasks"></i>
                                             <strong>REQUISITOS</strong>
                                         </a>
                                     </div>
-                                    @endif
+                                    @endif --}}
                                 @else
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                     <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">

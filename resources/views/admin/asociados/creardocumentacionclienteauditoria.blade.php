@@ -4,7 +4,7 @@
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">INFORMES DEL CLIENTE</a>
 {{-- <a class="btn btn-sm float-right btn-listainformes" href="{{ route('admin.asociados.listadodocumentacionclienteita', $cliente) }}">LISTA DE INFORMES</a> --}}
-{{-- <a class="btn btn-sm float-right btn-multiple" href="{{ route('admin.asociados.documentacionmultipleclienteauditoria', 6) }}">DOC. MÚLTIPLE</a> --}}
+{{-- <a class="btn btn-sm float-right btn-multiple" href="{{ route('admin.asociados.documentacionmultipleclienteita', 6) }}">DOC. MÚLTIPLE</a> --}}
 
 <h5>SUBIR INFORMES DE:</h5>
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>
@@ -56,7 +56,7 @@
                         </div>
                         <input type="hidden" id="fechabateria" name="fechabateria">
                         
-                        <div class="form-group" id="acciones_select">
+                        {{-- <div class="form-group" id="acciones_select">
                             {!! Form::label('', 'Acciones disponibles:') !!}
                             <select class="form-control" id="accion" name="accion">
                                 <option value="" disabled selected></option>
@@ -67,8 +67,24 @@
                                 </small>
                             @enderror
                         </div>
+                        <input type="hidden" id="accionselec" name="accionselec"> --}}
+
+                        <div class="form-group" id="acciones_select" style="display: none;">
+                            {!! Form::label('', 'Acciones disponibles:') !!}
+                            <div id="acciones_disponibles"></div>
+                            @error('accion')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                        <style>
+                            /* Estilo para que los labels de las acciones no se muestren en negritas */
+                            #acciones_disponibles label {
+                                font-weight: normal; /* Evita que las etiquetas sean gruesas */
+                            }
+                        </style>
                         <input type="hidden" id="accionselec" name="accionselec">
-                        
                     </div>
 
                     <div class="col-lg-3">
@@ -254,7 +270,7 @@
                     
                         /* Asegura que el color rojo se aplique a todos los textos cuando no está registrado */
                         table tbody tr td[style*="color: red;"] {
-                            font-weight: bold; /* Resalta más el texto en rojo */
+                            font-weight: normal; /* Resalta más el texto en rojo */
                         }
                     
                         .btn-verinforme,
@@ -289,11 +305,6 @@
                             color: #ffffff;
                         }
                     </style>
-                    
-                    
-                    
-                    
-
                 </div>
                 {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
@@ -306,10 +317,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/js/dropify.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
+{{-- <script>
         $(document).ready(function(){
             $('#fecha_bateria').on('change', function(){
                 $('#accion').val('');
@@ -354,7 +363,52 @@
             var selectedDate = this.value;
                 document.getElementById('fechabateria').value = selectedDate;
     });
+</script> --}}
+
+<script>
+    $(document).ready(function(){
+        $('#fecha_bateria').on('change', function(){
+            $('#accionselec').val('');  // Limpia el valor previo
+        });
+
+        document.getElementById('fecha_bateria').addEventListener('change', function() {
+            var fechaSeleccionada = this.value;
+            var accionesContainer = document.getElementById('acciones_disponibles');
+            accionesContainer.innerHTML = '';  // Limpia los checkboxes previos
+            var accionesNoRegistradasPorFecha = @json($accionesNoRegistradasPorFecha);
+
+            if (accionesNoRegistradasPorFecha[fechaSeleccionada]) {
+                accionesNoRegistradasPorFecha[fechaSeleccionada].forEach(function(accion) {
+                    // Crear el checkbox
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'acciones[]';
+                    checkbox.value = accion.accionnombre;
+                    checkbox.id = 'accion_' + accion.accionnombre;
+
+                    // Crear la etiqueta del checkbox
+                    var label = document.createElement('label');
+                    label.htmlFor = 'accion_' + accion.accionnombre;
+                    label.textContent = accion.accionnombre;
+
+                    // Añadir checkbox y etiqueta al contenedor
+                    accionesContainer.appendChild(checkbox);
+                    accionesContainer.appendChild(label);
+                    accionesContainer.appendChild(document.createElement('br'));
+                });
+            }
+
+            // Mostrar el div de acciones
+            document.getElementById('acciones_select').style.display = 'block';
+        });
+    });
+
+    document.getElementById('fecha_bateria').addEventListener('change', function() {
+        var selectedDate = this.value;
+        document.getElementById('fechabateria').value = selectedDate;
+    });
 </script>
+
 <script>
     // Función para cargar la vista previa del documento seleccionado en el iframe del modal
     function cargarVistaPrevia() {
@@ -416,7 +470,7 @@
         }
     });
 
-    //CANCELAR FUNCION DE LA TECLA ENTER
+//CANCELAR FUNCION DE LA TECLA ENTER
     document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {

@@ -31,11 +31,11 @@ class StoreClienteAuditoriaRequest extends FormRequest
     {
         $rules = [
             'id' => '',
-            'nombrecompleto' => 'required|max:45',
+            'nombrecompleto' => 'required|max:255',
             'fechanacimiento' => 'required|max:45',
             'ocupacionprofesion' => 'required',
             'estadocivil' => 'required|max:45',
-            'ci' => 'required|numeric',
+            'ci' => 'required',
             'genero' => 'required|max:45',
             'lugarresidencia' => 'required',
             'edad' => 'required',
@@ -43,7 +43,7 @@ class StoreClienteAuditoriaRequest extends FormRequest
             'usuarioregistro' => 'required',
             'celular' => 'required',
             'gradoinstruccion' => 'required',
-            'lugarnacimiento' => 'required',
+            'lugarnacimiento' => '',
             'direccion' => 'required',
             'actividadlaboral' => 'required',
             'sucursal' => 'required',

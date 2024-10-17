@@ -4,14 +4,12 @@
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">ESTADO DE APROB.</a>
 <a class="btn btn-nrofactura btn-sm float-right" data-toggle="modal" data-target="#facturaModal">NRO. FACTURA</a>
-{{-- {!! Form::open(['route' => 'generar.pdf.consentimientoinformado', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+{!! Form::open(['route' => 'generar.pdf.consentimientoinformadoauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
     <a class="btn btn-consentimientoinformado btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">CONS. INFORMADO</a>
-    {!! Form::hidden('clienteitaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
-    {!! Form::hidden('nombres', $clienteauditoria->nombres, ['class' => 'form-control']) !!}
-    {!! Form::hidden('apepaterno', $clienteauditoria->apepaterno, ['class' => 'form-control']) !!}
-    {!! Form::hidden('apematerno', $clienteauditoria->apematerno, ['class' => 'form-control']) !!}
+    {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
+    {!! Form::hidden('nombrecompleto', $clienteauditoria->nombrecompleto, ['class' => 'form-control']) !!}
     {!! Form::hidden('ci', $clienteauditoria->ci, ['class' => 'form-control']) !!}
-{!! Form::close() !!} --}}
+{!! Form::close() !!}
 
 <h5>APROBAR COTIZACIÓN DE PROGRAMACIÓN DE:</h5>
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>

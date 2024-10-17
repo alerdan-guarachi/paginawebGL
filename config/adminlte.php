@@ -392,9 +392,15 @@ return [
                     'can'  => 'admin.informesfinales.verreservasmedicas',
                 ],
                 [
-                    'text' => 'Resultados Médicos',
+                    'text' => 'Resultados Médicos ITA',
                     'route'  => 'admin.informesfinales.estadodocumentacionprogramacion',
-                    'icon' => 'fas fa-fw fas fa-book-reader',
+                    'icon' => 'fas fa-fw fas fa-x-ray',
+                    'can'  => 'admin.informesfinales.verresultadosmedicosgeneral',
+                ],
+                [
+                    'text' => 'Resultados Médicos AUDI',
+                    'route'  => 'admin.informesfinales.resultadosmedicosclientesauditoria',
+                    'icon' => 'fas fa-fw fas fa-x-ray',
                     'can'  => 'admin.informesfinales.verresultadosmedicosgeneral',
                 ],
                 [

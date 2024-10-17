@@ -14,11 +14,11 @@ class ClienteAuditoria extends Model
     protected $table = 'clienteauditorias';
     static $rules = [
         'id' => '',
-        'nombrecompleto' => 'required|max:45',
+        'nombrecompleto' => 'required|max:255',
         'fechanacimiento' => 'required|max:45',
         'ocupacionprofesion' => 'required',
-        'estadocivil' => 'required|max:45',
-        'ci' => 'required|numeric|max:45',
+        'estadocivil' => 'required|max:90',
+        'ci' => 'required|max:90',
         'genero' => 'required|max:45',
         'lugarresidencia' => 'required',
         'edad' => 'required',

@@ -124,7 +124,7 @@
                 {!! Form::hidden('clienteauditorianombre', $nombreclienteita) !!}
                 {!! Form::hidden('accionid', '', ['id' => 'modalAccionId']) !!}
 
-                <div class="form-group"> 
+                <div class="form-group">  
                     {!! Form::label('', 'Fecha de Bateria:') !!}
                     <select class="form-control" id="fecha_bateria">
                         <option value="" disabled selected></option>
@@ -140,19 +140,64 @@
                 </div>
                 <input type="hidden" id="fechabateria" name="fechabateria">
                 
-                <div class="form-group" id="acciones_select">
+                <script>
+                    document.getElementById('fecha_bateria').addEventListener('change', function() {
+                        var selectedValue = this.value; 
+                        document.getElementById('fechabateria').value = selectedValue;
+                    });
+                </script>
+                
+                <script>
+                    document.getElementById('fecha_bateria').addEventListener('change', function() {
+                        document.getElementById('fechabateria_hidden').value = this.value;
+                    });
+                </script>
+                
+                <div class="form-group"> 
                     {!! Form::label('', 'Acciones disponibles:') !!}
-                    <select class="form-control" id="accion" name="accion">
-                        <option value="" disabled selected></option>
-                    </select>
-                    @error('accion')
+                    <div id="acciones_select">
+                        @foreach($accionesPorFecha as $fecha => $acciones)
+                            <div class="acciones-{{ $fecha }}" style="display:none; ">
+                                @foreach($acciones as $accion)
+                                    @if (in_array($accion, $accionesNoRegistradas))
+                                        <div>
+                                            <label style="font-weight: normal;">
+                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }}
+                                            </label>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                    @error('accionesSeleccionadas')
                         <small class="text-danger fas fa-exclamation-circle">
                             {{$message}}
                         </small>
                     @enderror
                 </div>
-                <input type="hidden" id="accionnombre" name="accionnombre">
                 
+                <script>
+                    document.getElementById('fecha_bateria').addEventListener('change', function() {
+                        const selectedFecha = this.value;
+                        const accionesDivs = document.querySelectorAll('.acciones-' + selectedFecha);
+                
+                        // Oculta todas las acciones
+                        document.querySelectorAll('[class^="acciones-"]').forEach(div => {
+                            div.style.display = 'none';
+                        });
+                
+                        // Muestra las acciones para la fecha seleccionada
+                        accionesDivs.forEach(div => {
+                            div.style.display = 'block';
+                            // Muestra solo los checkboxes de acciones no registradas
+                            div.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                                checkbox.closest('div').style.display = 'block'; // Muestra el checkbox
+                            });
+                        });
+                    });
+                </script>
+                                 
                 <div class="form-group" hidden>
                     {!! Form::label('nombrecompleto', 'Nombre del Cliente:') !!}
                     {!! Form::text('nombrecompleto', $clienteauditoria->nombrecompleto, ['id' => 'modalNombreCompleto', 'class' => 'form-control', 'readonly']) !!}
@@ -181,7 +226,44 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/js/dropify.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+{{-- <script>
+                    $(document).ready(function(){
+                        $('#fecha_bateria').on('change', function(){
+                            $('#accion').val('');
+                            $('#accionnombre').val('');
+                            actualizarAcciones();
+                        });
+                
+                        $('#accion').on('change', function(){
+                            var selectedOption = $(this).val();
+                            $('#accionnombre').val(selectedOption);
+                        });
+                    });
+                
+                    function actualizarAcciones() {
+                        var fechaSeleccionada = $('#fecha_bateria').val();
+                        var accionesDisponibles = $('#accion');
+                        accionesDisponibles.empty();
+                
+                        var accionesPorFecha = @json($accionesPorFecha);
+                        var accionesRegistradas = @json($estadoMapeado);
+                
+                        accionesDisponibles.append(new Option('', '', false, true));
+                
+                        var accionesFechaSeleccionada = accionesPorFecha[fechaSeleccionada] || [];
+                
+                        var accionesNoRegistradas = accionesFechaSeleccionada.filter(function(accion) {
+                            return !accionesRegistradas[accion] || !accionesRegistradas[accion][fechaSeleccionada];
+                        });
+                
+                        accionesNoRegistradas.forEach(function(accion) {
+                            accionesDisponibles.append(new Option(accion, accion));
+                        });
+                
+                        document.getElementById('acciones_select').style.display = accionesNoRegistradas.length > 0 ? 'block' : 'none';
+                        
+                    }
+                </script> --}}
 {{-- <script>
     $(document).ready(function(){
         $('#fecha_bateria').on('change', function(){
@@ -232,7 +314,7 @@
     }
 </script> --}}
 
-<script>
+{{-- <script>
     $(document).ready(function(){
         $('#fecha_bateria').on('change', function(){
             $('#accion').val('');
@@ -269,9 +351,9 @@
         document.getElementById('acciones_select').style.display = accionesNoRegistradas.length > 0 ? 'block' : 'none';
         
     }
-</script>
+</script> --}}
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
         $('#fechabateria').change(function() {
@@ -410,7 +492,7 @@
             }
         });
     });
-</script>
+</script> --}}
 @endsection
 
 @section('css')

@@ -36,12 +36,12 @@
                     <input type="checkbox" name="poder" value="poder" id="poder" checked disabled>
                     <label for="poder">PODER</label>
                 </div>
-                @if (strtolower($estadoLaboral) === 'activo')
+                {{-- @if (strtolower($estadoLaboral) === 'activo') --}}
                 <div class="form-group">
-                    <input type="checkbox" name="avcci" value="avcci" id="avcci" checked>
+                    <input type="checkbox" name="avcci" value="avcci" id="avcci" checked disabled>
                     <label for="avcci">AVC/CARNET ASEGURADO</label>
                 </div>
-                @endif
+                {{-- @endif --}}
                 <div class="form-group">
                     <input type="checkbox" name="cnacasegurado" value="cnacasegurado" id="cnacasegurado" checked disabled>
                     <label for="cnacasegurado" style="min-height: 20px;">CERTIFICADO NACIMIENTO ASEGURADO</label>

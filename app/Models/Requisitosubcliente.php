@@ -39,7 +39,7 @@ class Requisitosubcliente extends Model
         'infomedicasalud' => '',
         'usuarioid' => '',
         'usuarioregistro' => '',
-
+        'recordservicios' => '',
         'ctrabajo' => '',
         'boletapago' => '',
         'actdatos' => '',
@@ -82,6 +82,7 @@ class Requisitosubcliente extends Model
         'contrato',
         'usuarioid',
         'usuarioregistro',
+        'recordservicios',
         'ctrabajo',
         'boletapago',
         'egestora',

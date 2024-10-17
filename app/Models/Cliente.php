@@ -132,4 +132,8 @@ class Cliente extends Model
     {
         return $this->hasMany(Tramite::class, 'clienteitaid', 'id');
     }
+    public function servicios()
+    {
+        return $this->hasMany(Tramitesubcliente::class, 'clienteitaid');
+    }
 }

@@ -61,7 +61,7 @@
                         <td>{{$clientebanco->ciudad}}</td>
                         {{-- <td>{{$clientebanco->estadocivil}}</td> --}}
                         <td>{{$clientebanco->ocupacionprofesion}}</td>
-                        @can('admin.asociados.verclienteita')
+                        @can('admin.asociados.verclientebanco')
                         <td width="10px">
                             <abbr title="Ver Cliente">
                                 <a class="btn btn-sm btn-bateria" href="{{ route('admin.asociados.verclientebanco', $clientebanco) }}">

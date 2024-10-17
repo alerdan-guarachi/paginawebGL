@@ -151,11 +151,139 @@
         document.getElementById('pdfForm').submit();
     }
 </script>
+
+
+<div class="card"> 
+    <div class="card-body">
+        <div class="row"> 
+            <div class="col-lg-12">
+                <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px; margin-top: 20px;">ATENCIÓN MÉDICA</h4>
+                @if (!$registroExistente && !$registroaprobadoExistente)
+
+                    
+                    <div class="form-group" style="display: flex; gap: 5px;">
+                        {!! Form::open(['route' => 'generar.pdf.consentimientoauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                            {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
+                            {!! Form::hidden('nombrecompleto', $clienteauditoria->nombrecompleto, ['class' => 'form-control']) !!}
+                            {!! Form::hidden('ci', $clienteauditoria->ci, ['class' => 'form-control']) !!}
+                            {!! Form::hidden('sucursal', $clienteauditoria->sucursal, ['class' => 'form-control']) !!}
+                            {!! Form::submit('DERIVAR A MEDICINA LABORAL', ['class' => 'btn btn-derivar']) !!}
+                        {!! Form::close() !!}
+                    </div>
+
+                    <div class="form-group" style="display: flex; gap: 5px;">
+                        {!! Form::open(['route' => 'generar.pdf.soloconsentimientoauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                            <a class="btn btn-consen btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">GENERAR SOLO CONSENTIMIENTO</a>
+                            {!! Form::hidden('clienteitaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
+                            {!! Form::hidden('nombrecompleto', $clienteauditoria->nombres, ['class' => 'form-control']) !!}
+                            {!! Form::hidden('ci', $clienteauditoria->ci, ['class' => 'form-control']) !!}
+                        {!! Form::close() !!}
+                    </div>
+
+                    @if($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
+                        <div class="form-group" style="display: flex; gap: 5px;">
+                                {!! Form::open(['route' => 'aprobariniciarcrearbateriaauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                    {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('nombrecompleto', $clienteauditoria->nombrecompleto, ['class' => 'form-control']) !!}
+                        
+                                    {!! Form::submit('APROBAR INICIAR BATERIA SIN CONSENTIMIENTO', [
+                                        'class' => 'btn btn-aprobarbateria'
+                                    ]) !!}
+                                {!! Form::close() !!}
+                        </div>
+                    @endif
+                    
+                @elseif ($registroExistente)
+                    <p></p>
+                @elseif ($registroaprobadoExistente)
+                    <p>APROBADO PARA CREAR BATERÍA</p>
+                @endif
+
+            </div>
+        </div>
+
+        @if ($registroExistente && is_object($registroExistente))
+        <div class="row justify-content-center my-5"> 
+            <div class="col-lg-8 col-md-10">
+                <div class="form-group bg-light p-5 rounded-lg border text-center">
+                    <label class="d-block font-weight-bold mb-4 h5" style="font-weight: 600; color: #e0752e;">
+                        Consentimiento informado para evaluación inicial
+                    </label>
+                    
+                    @if ($registroExistente->document)
+                        <div class="text-center">
+                            <a href="{{ asset('cotizacionesaprobadasauditoria/' . $clienteauditoria->id . '/' . $registroExistente->document) }}" 
+                               class="btn btn-crear btn-lg px-5 py-2 font-weight-bold" target="_blank">
+                                Ver Consentimiento
+                            </a>
+                        </div>
+                    @else
+                        {!! Form::open(['route' => 'guardar.pdf.consentimientoauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                            {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id) !!}
+                            {!! Form::hidden('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS') !!}
+        
+                            <!-- Custom file input group centrado -->
+                            <div class="mt-4">
+                                <!-- Campo de archivo oculto -->
+                                {!! Form::file('pdf_file', ['id' => 'real-file', 'style' => 'display:none;']) !!}
+                                <!-- Botón visible personalizado centrado -->
+                                <button type="button" class="btn btn-outline-primary" id="custom-button">Buscar archivo</button>
+                            </div>
+        
+                            <!-- Texto del archivo seleccionado centrado debajo del botón -->
+                            <div class="mt-3">
+                                <span id="custom-text">No se ha seleccionado ningún archivo</span>
+                            </div>
+        
+                            <div class="text-center mt-5">
+                                {!! Form::submit('Guardar consentimiento', ['class' => 'btn btn-crear btn-lg px-5 py-2 font-weight-bold']) !!}
+                            </div>
+                        {!! Form::close() !!}
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        <!-- JavaScript para gestionar la selección del archivo -->
+        <script>
+            const realFileBtn = document.getElementById('real-file');
+            const customBtn = document.getElementById('custom-button');
+            const customTxt = document.getElementById('custom-text');
+        
+            customBtn.addEventListener('click', function() {
+                realFileBtn.click(); // Simula el clic en el input de archivo oculto
+            });
+        
+            realFileBtn.addEventListener('change', function() {
+                if (realFileBtn.value) {
+                    customTxt.innerHTML = realFileBtn.files[0].name; // Muestra el nombre del archivo seleccionado
+                } else {
+                    customTxt.innerHTML = "No se ha seleccionado ningún archivo"; // Texto por defecto
+                }
+            });
+        </script>
+        
+        
+        
+        @endif
+    </div>
+</div>
 @stop
 
 
 @section('css')
 <style>
+    .btn-consen {
+        background-color: #ffffff;
+        color: #af25fa;
+        border-color: #af25fa;
+        border-radius: 5px;
+        padding: 10px 10px;
+    }
+    .btn-consen:hover {
+        background-color: #af25fa;
+        color: #ffffff;
+    }
     /* Estilos para alinear horizontalmente los elementos */
     .poliza-group {
         display: flex;

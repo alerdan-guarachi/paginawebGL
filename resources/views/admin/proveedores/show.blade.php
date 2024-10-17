@@ -2,7 +2,9 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.proveedores.index') }}">REGRESAR</a>
+@can('admin.proveedores.edit')
 <a class="btn btn-sm float-right btn-editar" href="{{route('admin.proveedores.edit', $proveedor)}}">EDITAR  PROVEEDOR</a>
+@endcan
 <h5>DATOS DE:</h5>
 <h3>{{$proveedor->proveedor}}</h3>
 @stop

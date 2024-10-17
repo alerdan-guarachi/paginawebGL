@@ -3,9 +3,9 @@
 <link href="assets/img/logo.png" rel="icon">
 
 @section('content_header')
-{{-- @can('admin.roles.create') --}}
+@can('admin.asociados.crearasociados')
 <a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.create')}}">CREAR ASOCIADO</a>
-{{-- @endcan --}}
+@endcan
 <h1>ASOCIADOS</h1>
 @stop
 
@@ -64,14 +64,17 @@
 @endif
 <div class="card">
     <div class="card-body">
-        <nav class="navbar float-right">
-            <form class="form-inline">
-                <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="ASOCIADO" aria-label="Search">
-                <button class="btn btn-buscar my-2 my-sm-0" type="submit">BUSCAR</button>
-            </form>
-        </nav>
+        @can('admin.asociados.crearasociados')
+            <nav class="navbar float-right">
+                <form class="form-inline">
+                    <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="ASOCIADO" aria-label="Search">
+                    <button class="btn btn-buscar my-2 my-sm-0" type="submit">BUSCAR</button>
+                </form>
+            </nav>
+        @endcan
         <div class="table-responsive">
             <table class="table table-striped">
+                @if($rolusuario !== 'ASOCIADO')
                 <thead>
                     <tr>
                         <th>Clientes Good Life</th>
@@ -155,7 +158,9 @@
                         </tr>
                     @endforeach
                 </tbody>
-                {{-- <thead>
+                @endif
+
+                <thead>
                     <tr>
                         <th>Asociados</th>
                         <th colspan="2"></th>
@@ -163,38 +168,74 @@
                 </thead>
                 <tbody>
                     @foreach ($asociados as $asociado)
-                        <tr>
-                            <td>{{$asociado->asociado}}</td>
-                            @can('admin.asociados.crearclientebanco')
-                            <td width="10px">
-                                <abbr title="Ver Batería">
-                                    <a class="btn btn-sm btn-crearbateria" href="{{ route('admin.asociados.verbateriasbanco', $asociado) }}">
-                                        <i class="fas fa-database"></i>
-                                    </a>
-                                </abbr>
-                            </td>
-                            @endcan
-                            @can('admin.asociados.listadoclientebanco')
-                            <td width="10px">
-                                <abbr title="Lista de clientes">
-                                    <a class="btn btn-sm btn-listaclientes" href="{{ route('admin.asociados.listadoclientebanco', $asociado) }}">
-                                        <i class="fas fa-users"></i>
-                                    </a> 
-                                </abbr>
-                            </td>    
-                            @endcan
-                            @can('admin.asociados.documentacionmultipleclienteita')
-                            <td width="10px">
-                                <abbr title="Lista de clientes">
-                                    <a class="btn btn-sm btn-documentacionmultiple" href="{{ route('admin.asociados.documentacionmultipleclientebanco', $asociado) }}">
-                                        <i class="fas fa-folder"></i>
-                                    </a>   
-                                </abbr>
-                            </td>    
-                            @endcan
-                        </tr>
+                        @if($rolusuario === 'ASOCIADO')
+                            @if($asociado->asociado === $empresaUsuario)
+                                <tr>
+                                    <td>{{ $asociado->asociado }}</td>
+                                    @can('admin.asociados.crearclientebanco')
+                                    <td width="10px">
+                                        <abbr title="Ver Batería">
+                                            <a class="btn btn-sm btn-crearbateria" href="{{ route('admin.asociados.verbateriasbanco', $asociado) }}">
+                                                <i class="fas fa-database"></i>
+                                            </a>
+                                        </abbr>
+                                    </td>
+                                    @endcan
+                                    @can('admin.asociados.listadoclientebanco')
+                                    <td width="10px">
+                                        <abbr title="Lista de clientes">
+                                            <a class="btn btn-sm btn-listaclientes" href="{{ route('admin.asociados.listadoclientebanco', $asociado) }}">
+                                                <i class="fas fa-users"></i>
+                                            </a>
+                                        </abbr>
+                                    </td>
+                                    @endcan
+                                    @can('admin.asociados.documentacionmultipleclientebanco')
+                                    <td width="10px">
+                                        <abbr title="Lista de clientes">
+                                            <a class="btn btn-sm btn-documentacionmultiple" href="{{ route('admin.asociados.documentacionmultipleclientebanco', $asociado) }}">
+                                                <i class="fas fa-folder"></i>
+                                            </a>
+                                        </abbr>
+                                    </td>
+                                    @endcan
+                                </tr>
+                            @endif
+                        @else
+                            <tr>
+                                <td>{{ $asociado->asociado }}</td>
+                                @can('admin.asociados.crearclientebanco')
+                                <td width="10px">
+                                    <abbr title="Ver Batería">
+                                        <a class="btn btn-sm btn-crearbateria" href="{{ route('admin.asociados.verbateriasbanco', $asociado) }}">
+                                            <i class="fas fa-database"></i>
+                                        </a>
+                                    </abbr>
+                                </td>
+                                @endcan
+                                @can('admin.asociados.listadoclientebanco')
+                                <td width="10px">
+                                    <abbr title="Lista de clientes">
+                                        <a class="btn btn-sm btn-listaclientes" href="{{ route('admin.asociados.listadoclientebanco', $asociado) }}">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+                                    </abbr>
+                                </td>
+                                @endcan
+                                @can('admin.asociados.documentacionmultipleclientebanco')
+                                <td width="10px">
+                                    <abbr title="Lista de clientes">
+                                        <a class="btn btn-sm btn-documentacionmultiple" href="{{ route('admin.asociados.documentacionmultipleclientebanco', $asociado) }}">
+                                            <i class="fas fa-folder"></i>
+                                        </a>
+                                    </abbr>
+                                </td>
+                                @endcan
+                            </tr>
+                        @endif
                     @endforeach
-                </tbody> --}}
+                </tbody>
+
             </table>
         </div>
     </div>

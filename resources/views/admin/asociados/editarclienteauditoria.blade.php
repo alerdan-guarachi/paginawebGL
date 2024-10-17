@@ -50,7 +50,7 @@
                         <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('ci', 'CI:') !!}
-                                {!! Form::text('ci', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '9', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
+                                {!! Form::text('ci', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
                                 @error('ci')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
@@ -60,7 +60,7 @@
                         </div>
                     </div>
                     <div class="row"> 
-                        <div class="col-lg-3">
+                        <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('genero', 'Género:') !!}
                                 {!! Form::select('genero', $genero, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -71,10 +71,10 @@
                                 @enderror
                             </div>
                         </div>  
-                        <div class="col-lg-2">
+                        <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('lugarnacimiento', 'Lugar nacimiento:') !!}
-                                {!! Form::select('lugarnacimiento', $departamentos, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                                {!! Form::text('lugarnacimiento', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
                                 @error('lugarnacimiento')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
@@ -82,6 +82,45 @@
                                 @enderror
                             </div>
                         </div>
+                        {{-- <div class="col-lg-3" id="custom_place_group" style="display: {{ $isCustomPlace ? 'block' : 'none' }};"> 
+                            <div class="form-group">
+                                {!! Form::label('custom_lugarnacimiento', 'Otro lugar de nac.:') !!}
+                                {!! Form::text('custom_lugarnacimiento', $isCustomPlace ? $lugarnacimiento : '', ['class' => 'form-control', 'maxlength' => '45']) !!}
+                                @error('custom_lugarnacimiento')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <div class="col-lg-3" id="select_place_group" style="display: {{ $isCustomPlace ? 'none' : 'block' }};">
+                            <div class="form-group">
+                                {!! Form::label('lugarnacimiento', 'Lugar nacimiento:') !!}
+                                <input style="margin-left: 80px;" type="checkbox" id="enable_custom_place" {{ $isCustomPlace ? 'checked' : '' }}> Otro
+                                {!! Form::select('lugarnacimiento', $departamentos, !$isCustomPlace ? $lugarnacimiento : null, ['class' => 'form-control', 'placeholder' => 'Seleccione un lugar', 'maxlength' => '45']) !!}
+                                @error('lugarnacimiento')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <script>
+                            document.getElementById('enable_custom_place').addEventListener('change', function() {
+                                if (this.checked) {
+                                    // Mostrar campo de texto y ocultar el select
+                                    document.getElementById('custom_place_group').style.display = 'block';
+                                    document.getElementById('select_place_group').style.display = 'none';
+                                } else {
+                                    // Mostrar el select y ocultar el campo de texto
+                                    document.getElementById('custom_place_group').style.display = 'none';
+                                    document.getElementById('select_place_group').style.display = 'block';
+                                }
+                            });
+                        </script> --}}
+                        
                         <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('fechanacimiento', 'Fecha de nacimiento:') !!}

@@ -29,6 +29,7 @@ use App\Models\Proveedor;
 use App\Models\Aseguradora;
 use App\Models\Contactosubcliente;
 use App\Models\Requisitosubcliente;
+use App\Models\Requisitosclientesauditoria;
 use App\Models\Afp;
 use App\Models\Bateriasubcliente;
 use App\Models\Estadoprogramacionsubcliente;
@@ -430,19 +431,14 @@ class InformeFinalController extends Controller
     public function estadodocumentacionprogramacion(Cliente $cliente, Request $request)
     {
         $sucursal = $cliente->sucursal;
-
         $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
-
         $aprobaciones = AprobacionInformeFinal::all();
-
         $fechas = Programacionsubcliente::pluck('fechabateria')->unique()->sort()->toArray();
-
         $usuarioAutenticado = auth()->user()->name;
         $esProveedor = $usuarioAutenticado->role ?? null;
-
         $userRole = auth()->user()->getRoleNames()->first(); 
         
-        $query = Programacionsubcliente::with(['requisitosubcliente', 'bateriasubcliente', 'estadoprogramacionsubcliente', 'documentacionsubcliente', 'proveedorinformesfinales', 'informesfinales'])
+        $query = Programacionsubcliente::with(['requisitosclienteauditoria', 'requisitosubcliente', 'bateriasubcliente', 'estadoprogramacionsubcliente', 'documentacionsubcliente', 'proveedorinformesfinales', 'informesfinales'])
             ->whereNotNull('clienteitaid');
 
         if ($request->has('buscarporfecha') && $request->buscarporfecha !== '') {
@@ -465,6 +461,12 @@ class InformeFinalController extends Controller
             $clienteNombre = explode('|', $key)[0];
             $fechabateria = explode('|', $key)[1];
 
+            $clienteitaid = $items->first()->clienteitaid;
+            $tramites = TramiteSubCliente::where('clienteitaid', $clienteitaid)
+                ->where('fechabateria', $fechabateria)
+                ->get();
+            $tramiteNombre = $tramites->isEmpty() ? ['SIN SERVICIO'] : $tramites->pluck('tramite')->toArray();
+
             $usuarioAutenticado = auth()->user()->name;
             $esProveedor = $usuarioAutenticado->role ?? null;
 
@@ -482,25 +484,30 @@ class InformeFinalController extends Controller
                 ->where('fechabateria', $fechabateria)
                 ->first();
 
-            $usuarioRegistro = Bateriasubcliente::where('clienteitaid', $items->first()->clienteitaid)
-            ->where('fechabateria', $fechabateria)
-            ->first();
+            $usuarioRegistro = Cliente::where('id', $items->first()->clienteitaid)
+                ->first();
 
             $historiamedicaclienteita = $historiamedica ? $historiamedica->document : null;
-            $usuarioregistro = $usuarioRegistro ? $usuarioRegistro->usuarioregistro : null;
+            $usuarioregistro = $usuarioRegistro ? $usuarioRegistro->sucursal : null;
             $motivoabandono = $motivoabandonobateria ? $motivoabandonobateria->motivoabandono : null;
             $clienteitaid = $items->first()->clienteitaid;
         
             $estado = 'COMPLETO';
             $accionesConEstado = [];
 
-            $requisitos = Requisitosubcliente::where('clienteitaid', $items->first()->clienteitaid)->first();
+            /* $requisitos = Requisitosubcliente::where('clienteitaid', $items->first()->clienteitaid)->first(); */
+            $requisitos = Requisitosubcliente::where('servicio', 'INVALIDEZ')->where('clienteitaid', $items->first()->clienteitaid)->get();
+            
+            $requisitosap = Requisitosubcliente::where('servicio', 'APELACION')->where('clienteitaid', $items->first()->clienteitaid)->get();
 
-            if (is_null($requisitos)) {
+            $requisitosss = Requisitosubcliente::where('servicio', 'SEGUNDA SOLICITUD')->where('clienteitaid', $items->first()->clienteitaid)->get();
+
+            $requisitosauditoriamedica = Requisitosclientesauditoria::where('clienteitaid', $items->first()->clienteitaid)->get();
+
+            /* if (is_null($requisitos)) {
                 $estadoGeneral = 'NO REGISTRADO';
             } else {
                 $estadoGeneral = 'COMPLETO';
-
                 $campos = ['poder','numeropoder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos',
                 'cihijos','denfaccidente','crodomicilio','contrato','usuarioid','usuarioregistro','ctrabajo','boletapago','egestora',
                 'actdatos','resolinvhijos','cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion'];
@@ -510,6 +517,88 @@ class InformeFinalController extends Controller
                         break;
                     }
                 }
+            } */
+
+            if ($requisitos->isEmpty()) { 
+                $estadoGeneral = 'NO REGISTRADO';
+            } else {
+                $estadoGeneral = 'COMPLETO';
+                $campos = ['poder','numeropoder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos',
+                'cihijos','denfaccidente','crodomicilio','contrato','usuarioid','usuarioregistro','ctrabajo','boletapago','egestora',
+                'actdatos','resolinvhijos','cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion'];
+            
+                foreach ($requisitos as $requisito) {
+                    foreach ($campos as $campo) {
+                        if (!is_null($requisito->$campo) && stripos($requisito->$campo, 'PENDIENTE') !== false) {
+                            $estadoGeneral = 'PENDIENTE';
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            if ($requisitosap->isEmpty()) { 
+                $estadoGeneralap = 'NO REGISTRADO';
+            } else {
+                $estadoGeneralap = 'COMPLETO';
+                $camposap = ['poder','numeropoder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos',
+                'cihijos','denfaccidente','crodomicilio','contrato','usuarioid','usuarioregistro','ctrabajo','boletapago','egestora',
+                'actdatos','resolinvhijos','cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion'];
+            
+                foreach ($requisitosap as $requisitoa) {
+                    foreach ($camposap as $campoa) {
+                        if (!is_null($requisitoa->$campoa) && stripos($requisitoa->$campoa, 'PENDIENTE') !== false) {
+                            $estadoGeneralap = 'PENDIENTE';
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            if ($requisitosss->isEmpty()) { 
+                $estadoGeneralss = 'NO REGISTRADO';
+            } else {
+                $estadoGeneralss = 'COMPLETO';
+                $camposss = ['poder','numeropoder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos',
+                'cihijos','denfaccidente','crodomicilio','contrato','usuarioid','usuarioregistro','ctrabajo','boletapago','egestora',
+                'actdatos','resolinvhijos','cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion'];
+            
+                foreach ($requisitosss as $requisitoss) {
+                    foreach ($camposss as $campos) {
+                        if (!is_null($requisitoss->$campos) && stripos($requisitoss->$campos, 'PENDIENTE') !== false) {
+                            $estadoGeneralss = 'PENDIENTE';
+                            break 2;
+                        }
+                    }
+                }
+            }
+            
+            /* if (is_null($requisitosauditoriamedica)) {
+                $estadoGeneralauditoria = 'NO REGISTRADO';
+            } else {
+                $estadoGeneralauditoria = 'COMPLETO';
+                $aucampos = ['cnacasegurado','ciasegurado','banco','nropolizageneral','polizageneral','declasalud','nropolizadesgravamen','polizasegurodesgravamen'];
+                foreach ($aucampos as $aucampo) {
+                    if (!is_null($requisitosauditoriamedica->$aucampo) && stripos($requisitosauditoriamedica->$aucampo, 'PENDIENTE') !== false) {
+                        $estadoGeneralauditoria = 'PENDIENTE';
+                        break;
+                    }
+                }
+            } */
+            if ($requisitosauditoriamedica->isEmpty()) { 
+                $estadoGeneralauditoria = 'NO REGISTRADO';
+            } else {
+                $estadoGeneralauditoria = 'COMPLETO';
+                $aucampos = ['cnacasegurado', 'ciasegurado', 'banco', 'nropolizageneral', 'polizageneral', 'declasalud', 'nropolizadesgravamen', 'polizasegurodesgravamen'];
+                
+                foreach ($requisitosauditoriamedica as $requisito) {
+                    foreach ($aucampos as $aucampo) {
+                        if (!is_null($requisito->$aucampo) && stripos($requisito->$aucampo, 'PENDIENTE') !== false) {
+                            $estadoGeneralauditoria = 'PENDIENTE';
+                            break 2; // Romper ambos bucles si se encuentra "PENDIENTE"
+                        }
+                    }
+                }
             }
 
             foreach ($items as $item) {
@@ -517,7 +606,6 @@ class InformeFinalController extends Controller
                 $image = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
                 $image2 = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
                 $accionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
-
                 $documentacionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
 
                 $estadoProgramacion = $item->estadoprogramacionsubcliente
@@ -529,8 +617,6 @@ class InformeFinalController extends Controller
                     ->value('motivoabandono');
 
                 $fechaAtencion = $estadoProgramacion ? $estadoProgramacion->fechaatencionprogramacion : null;
-
-
                 $createdatbateria = $item->bateriasubcliente->where('accionnombre', $item->accionnombre)->first();
 
                 if ($createdatbateria) {
@@ -540,81 +626,209 @@ class InformeFinalController extends Controller
                     $formattedDate = 'Fecha no disponible';
                 }
 
+            //REQUISITOS INVALIDEZ
                 $poder = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->poder);})->first()->poder ?? null;
-
+                    return !empty($requisito->poder) && $requisito->servicio === 'INVALIDEZ';})->first()->poder ?? null;
                 $numeropoder = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->numeropoder);})->first()->numeropoder ?? null;
-
+                    return !empty($requisito->numeropoder) && $requisito->servicio === 'INVALIDEZ';})->first()->numeropoder ?? null;
                 $avcci = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->avcci);})->first()->avcci ?? null;
-
+                    return !empty($requisito->avcci) && $requisito->servicio === 'INVALIDEZ';})->first()->avcci ?? null;
                 $cnacasegurado = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->cnacasegurado);})->first()->cnacasegurado ?? null;
-
+                    return !empty($requisito->cnacasegurado) && $requisito->servicio === 'INVALIDEZ';})->first()->cnacasegurado ?? null;
                 $ciasegurado = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->ciasegurado);})->first()->ciasegurado ?? null;
-
+                    return !empty($requisito->ciasegurado) && $requisito->servicio === 'INVALIDEZ';})->first()->ciasegurado ?? null;
                 $cmatrimonio = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->cmatrimonio);})->first()->cmatrimonio ?? null;
-
+                    return !empty($requisito->cmatrimonio) && $requisito->servicio === 'INVALIDEZ';})->first()->cmatrimonio ?? null;
                 $cnacconyuge = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->cnacconyuge);})->first()->cnacconyuge ?? null;
-
+                    return !empty($requisito->cnacconyuge) && $requisito->servicio === 'INVALIDEZ';})->first()->cnacconyuge ?? null;
                 $ciconyuge = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->ciconyuge);})->first()->ciconyuge ?? null;
-
+                    return !empty($requisito->ciconyuge) && $requisito->servicio === 'INVALIDEZ';})->first()->ciconyuge ?? null;
                 $cnacjihos = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->cnacjihos);})->first()->cnacjihos ?? null;
-
+                    return !empty($requisito->cnacjihos) && $requisito->servicio === 'INVALIDEZ';})->first()->cnacjihos ?? null;
                 $cihijos = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->cihijos);})->first()->cihijos ?? null;
-
+                    return !empty($requisito->cihijos) && $requisito->servicio === 'INVALIDEZ';})->first()->cihijos ?? null;
                 $denfaccidente = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->denfaccidente);})->first()->denfaccidente ?? null;
-
+                    return !empty($requisito->denfaccidente) && $requisito->servicio === 'INVALIDEZ';})->first()->denfaccidente ?? null;
                 $crodomicilio = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->crodomicilio);})->first()->crodomicilio ?? null;
-
+                    return !empty($requisito->crodomicilio) && $requisito->servicio === 'INVALIDEZ';})->first()->crodomicilio ?? null;
                 $contrato = $item->requisitosubcliente->filter(function ($requisito) {
-                    return !empty($requisito->contrato);})->first()->contrato ?? null;
+                    return !empty($requisito->contrato) && $requisito->servicio === 'INVALIDEZ';})->first()->contrato ?? null;
+                $egestora = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->egestora) && $requisito->servicio === 'INVALIDEZ';})->first()->egestora ?? null;
+                $dictamencalentenc = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->dictamencalentenc) && $requisito->servicio === 'INVALIDEZ';})->first()->dictamencalentenc ?? null;
+                $infomedicasalud = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->infomedicasalud) && $requisito->servicio === 'INVALIDEZ';})->first()->infomedicasalud ?? null;
+                $ctrabajo = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->ctrabajo) && $requisito->servicio === 'INVALIDEZ';})->first()->ctrabajo ?? null;
+                $boletapago = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->boletapago) && $requisito->servicio === 'INVALIDEZ';})->first()->boletapago ?? null;
+                $actdatos = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->actdatos) && $requisito->servicio === 'INVALIDEZ';})->first()->actdatos ?? null;
+                $resolinvhijos = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->resolinvhijos) && $requisito->servicio === 'INVALIDEZ';})->first()->resolinvhijos ?? null;
+                $cunionlibre = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->cunionlibre) && $requisito->servicio === 'INVALIDEZ';})->first()->cunionlibre ?? null;
+                $cnacimientounionlibre = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->cnacimientounionlibre) && $requisito->servicio === 'INVALIDEZ';})->first()->cnacimientounionlibre ?? null;
+                $ciunionlibre = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->ciunionlibre) && $requisito->servicio === 'INVALIDEZ';})->first()->ciunionlibre ?? null;
+                $cdivorcio = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->cdivorcio) && $requisito->servicio === 'INVALIDEZ';})->first()->cdivorcio ?? null;
+                $cdefuncion = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->cdefuncion) && $requisito->servicio === 'INVALIDEZ';})->first()->cdefuncion ?? null;
+                $polizasgen = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->polizasgen) && $requisito->servicio === 'INVALIDEZ';})->first()->polizasgen ?? null;
+                $declasalud = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->declasalud) && $requisito->servicio === 'INVALIDEZ';})->first()->declasalud ?? null;
+                $polizaseguro = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->polizaseguro) && $requisito->servicio === 'INVALIDEZ';})->first()->polizaseguro ?? null;
+                $anteriordictamen = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->anteriordictamen) && $requisito->servicio === 'INVALIDEZ';})->first()->anteriordictamen ?? null;
+                $poderciapoderado = $item->requisitosubcliente->filter(function ($requisito) {
+                    return !empty($requisito->poderciapoderado) && $requisito->servicio === 'INVALIDEZ';})->first()->poderciapoderado ?? null;
 
-                    $egestora = $item->requisitosubcliente->filter(function ($requisito) {
-                        return !empty($requisito->egestora);})->first()->egestora ?? null;
-                    $dictamencalentenc = $item->requisitosubcliente->filter(function ($requisito) {
-                        return !empty($requisito->dictamencalentenc);})->first()->dictamencalentenc ?? null;
-                    $infomedicasalud = $item->requisitosubcliente->filter(function ($requisito) {
-                        return !empty($requisito->infomedicasalud);})->first()->infomedicasalud ?? null;
+            //
 
+            //REQUISITOS AUDITRIA MEDICA
+                $cnacaseguradoau = $item->requisitosclienteauditoria->filter(function ($requisitoau) {
+                    return !empty($requisitoau->cnacasegurado);})->first()->cnacasegurado ?? null;
+                $ciaseguradoau = $item->requisitosclienteauditoria->filter(function ($requisitoau) {
+                    return !empty($requisitoau->ciasegurado);})->first()->ciasegurado ?? null;
+                $polizasgenau = $item->requisitosclienteauditoria->filter(function ($requisitoau) {
+                    return !empty($requisitoau->polizasgen);})->first()->polizasgen ?? null;
+                $declasaludau = $item->requisitosclienteauditoria->filter(function ($requisitoau) {
+                    return !empty($requisitoau->declasalud);})->first()->declasalud ?? null;
+                $polizaseguroau = $item->requisitosclienteauditoria->filter(function ($requisitoau) {
+                    return !empty($requisitoau->polizaseguro);})->first()->polizaseguro ?? null;
+            //
 
-                        $ctrabajo = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->ctrabajo);})->first()->ctrabajo ?? null;
-                        $boletapago = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->boletapago);})->first()->boletapago ?? null;
-                        $actdatos = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->actdatos);})->first()->actdatos ?? null;
-                        $resolinvhijos = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->resolinvhijos);})->first()->resolinvhijos ?? null;
-                        $cunionlibre = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->cunionlibre);})->first()->cunionlibre ?? null;
-                        $cnacimientounionlibre = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->cnacimientounionlibre);})->first()->cnacimientounionlibre ?? null;
-                        $ciunionlibre = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->ciunionlibre);})->first()->ciunionlibre ?? null;
-                        $cdivorcio = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->cdivorcio);})->first()->cdivorcio ?? null;
-                        $cdefuncion = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->cdefuncion);})->first()->cdefuncion ?? null;
-                        $polizasgen = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->polizasgen);})->first()->polizasgen ?? null;
-                        $declasalud = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->declasalud);})->first()->declasalud ?? null;
-                        $polizaseguro = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->polizaseguro);})->first()->polizaseguro ?? null;
-                        $anteriordictamen = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->anteriordictamen);})->first()->anteriordictamen ?? null;
-                        $poderciapoderado = $item->requisitosubcliente->filter(function ($requisito) {
-                            return !empty($requisito->poderciapoderado);})->first()->poderciapoderado ?? null;
+            //REQUISITOS SEGUNDA SOLICITUD
+                $poderss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->poder) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->poder ?? null;
+                $numeropoderss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->numeropoder) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->numeropoder ?? null;
+                $avcciss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->avcci) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->avcci ?? null;
+                $cnacaseguradoss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->cnacasegurado) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->cnacasegurado ?? null;
+                $ciaseguradoss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->ciasegurado) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->ciasegurado ?? null;
+                $cmatrimonioss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->cmatrimonio) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->cmatrimonio ?? null;
+                $cnacconyugess = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->cnacconyuge) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->cnacconyuge ?? null;
+                $ciconyugess = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->ciconyuge) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->ciconyuge ?? null;
+                $cnacjihosss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->cnacjihos) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->cnacjihos ?? null;
+                $cihijosss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->cihijos) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->cihijos ?? null;
+                $denfaccidentess = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->denfaccidente) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->denfaccidente ?? null;
+                $crodomicilioss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->crodomicilio) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->crodomicilio ?? null;
+                $contratoss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->contrato) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->contrato ?? null;
+                $egestorass = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->egestora) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->egestora ?? null;
+                $dictamencalentencss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->dictamencalentenc) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->dictamencalentenc ?? null;
+                $infomedicasaludss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->infomedicasalud) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->infomedicasalud ?? null;
+                $ctrabajoss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->ctrabajo) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->ctrabajo ?? null;
+                $boletapagoss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->boletapago) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->boletapago ?? null;
+                $actdatosss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->actdatos) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->actdatos ?? null;
+                $resolinvhijosss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->resolinvhijos) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->resolinvhijos ?? null;
+                $cunionlibress = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->cunionlibre) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->cunionlibre ?? null;
+                $cnacimientounionlibress = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->cnacimientounionlibre) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->cnacimientounionlibre ?? null;
+                $ciunionlibress = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->ciunionlibre) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->ciunionlibre ?? null;
+                $cdivorcioss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->cdivorcio) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->cdivorcio ?? null;
+                $cdefuncionss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->cdefuncion) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->cdefuncion ?? null;
+                $polizasgenss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->polizasgen) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->polizasgen ?? null;
+                $declasaludss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->declasalud) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->declasalud ?? null;
+                $polizaseguross = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->polizaseguro) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->polizaseguro ?? null;
+                $anteriordictamenss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->anteriordictamen) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->anteriordictamen ?? null;
+                $poderciapoderadoss = $item->requisitosubcliente->filter(function ($requisitoss) {
+                    return !empty($requisitoss->poderciapoderado) && $requisitoss->servicio === 'SEGUNDA SOLICITUD';})->first()->poderciapoderado ?? null;
+
+            //
+
+            //REQUISITOS APELACION
+                $poderap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->poder) && $requisitoa->servicio === 'APELACION';})->first()->poder ?? null;
+                $numeropoderap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->numeropoder) && $requisitoa->servicio === 'APELACION';})->first()->numeropoder ?? null;
+                $avcciap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->avcci) && $requisitoa->servicio === 'APELACION';})->first()->avcci ?? null;
+                $cnacaseguradoap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->cnacasegurado) && $requisitoa->servicio === 'APELACION';})->first()->cnacasegurado ?? null;
+                $ciaseguradoap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->ciasegurado) && $requisitoa->servicio === 'APELACION';})->first()->ciasegurado ?? null;
+                $cmatrimonioap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->cmatrimonio) && $requisitoa->servicio === 'APELACION';})->first()->cmatrimonio ?? null;
+                $cnacconyugeap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->cnacconyuge) && $requisitoa->servicio === 'APELACION';})->first()->cnacconyuge ?? null;
+                $ciconyugeap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->ciconyuge) && $requisitoa->servicio === 'APELACION';})->first()->ciconyuge ?? null;
+                $cnacjihosap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->cnacjihos) && $requisitoa->servicio === 'APELACION';})->first()->cnacjihos ?? null;
+                $cihijosap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->cihijos) && $requisitoa->servicio === 'APELACION';})->first()->cihijos ?? null;
+                $denfaccidenteap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->denfaccidente) && $requisitoa->servicio === 'APELACION';})->first()->denfaccidente ?? null;
+                $crodomicilioap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->crodomicilio) && $requisitoa->servicio === 'APELACION';})->first()->crodomicilio ?? null;
+                $contratoap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->contrato) && $requisitoa->servicio === 'APELACION';})->first()->contrato ?? null;
+                $egestoraap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->egestora) && $requisitoa->servicio === 'APELACION';})->first()->egestora ?? null;
+                $dictamencalentencap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->dictamencalentenc) && $requisitoa->servicio === 'APELACION';})->first()->dictamencalentenc ?? null;
+                $infomedicasaludap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->infomedicasalud) && $requisitoa->servicio === 'APELACION';})->first()->infomedicasalud ?? null;
+                $ctrabajoap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->ctrabajo) && $requisitoa->servicio === 'APELACION';})->first()->ctrabajo ?? null;
+                $boletapagoap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->boletapago) && $requisitoa->servicio === 'APELACION';})->first()->boletapago ?? null;
+                $actdatosap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->actdatos) && $requisitoa->servicio === 'APELACION';})->first()->actdatos ?? null;
+                $resolinvhijosap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->resolinvhijos) && $requisitoa->servicio === 'APELACION';})->first()->resolinvhijos ?? null;
+                $cunionlibreap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->cunionlibre) && $requisitoa->servicio === 'APELACION';})->first()->cunionlibre ?? null;
+                $cnacimientounionlibreap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->cnacimientounionlibre) && $requisitoa->servicio === 'APELACION';})->first()->cnacimientounionlibre ?? null;
+                $ciunionlibreap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->ciunionlibre) && $requisitoa->servicio === 'APELACION';})->first()->ciunionlibre ?? null;
+                $cdivorcioap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->cdivorcio) && $requisitoa->servicio === 'APELACION';})->first()->cdivorcio ?? null;
+                $cdefuncionap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->cdefuncion) && $requisitoa->servicio === 'APELACION';})->first()->cdefuncion ?? null;
+                $polizasgenap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->polizasgen) && $requisitoa->servicio === 'APELACION';})->first()->polizasgen ?? null;
+                $declasaludap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->declasalud) && $requisitoa->servicio === 'APELACION';})->first()->declasalud ?? null;
+                $polizaseguroap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->polizaseguro) && $requisitoa->servicio === 'APELACION';})->first()->polizaseguro ?? null;
+                $anteriordictamenap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->anteriordictamen) && $requisitoa->servicio === 'APELACION';})->first()->anteriordictamen ?? null;
+                $poderciapoderadoap = $item->requisitosubcliente->filter(function ($requisitoa) {
+                    return !empty($requisitoa->poderciapoderado) && $requisitoa->servicio === 'APELACION';})->first()->poderciapoderado ?? null;
+            //
 
                 if ($accionEstado === 'PENDIENTE') {
                     $estado = 'INCOMPLETO';
@@ -646,11 +860,9 @@ class InformeFinalController extends Controller
                     'contrato' => $contrato,
                     'motivoabandono' => $motivoabandono,
                     'estadoGeneral' => $estadoGeneral,
-
                     'egestora' => $egestora,
                     'dictamencalentenc' => $dictamencalentenc,
                     'infomedicasalud' => $infomedicasalud,
-
                     'ctrabajo' => $ctrabajo,
                     'boletapago' => $boletapago,
                     'actdatos' => $actdatos,
@@ -665,11 +877,83 @@ class InformeFinalController extends Controller
                     'polizaseguro' => $polizaseguro,
                     'anteriordictamen' => $anteriordictamen,
                     'poderciapoderado' => $poderciapoderado,
+                    'estadoGeneralauditoria' => $estadoGeneralauditoria,
+                    'cnacaseguradoau' => $cnacaseguradoau,
+                    'ciaseguradoau' => $ciaseguradoau,
+                    'polizasgenau' => $polizasgenau,
+                    'declasaludau' => $declasaludau,
+                    'polizaseguroau' => $polizaseguroau,
+                    
+                    'poderss' => $poderss,
+                    'numeropoderss' => $numeropoderss,
+                    'avcciss' => $avcciss,
+                    'cnacaseguradoss' => $cnacaseguradoss,
+                    'ciaseguradoss' => $ciaseguradoss,
+                    'cmatrimonioss' => $cmatrimonioss,
+                    'cnacconyugess' => $cnacconyugess,
+                    'ciconyugess' => $ciconyugess,
+                    'cnacjihosss' => $cnacjihosss,
+                    'cihijosss' => $cihijosss,
+                    'denfaccidentess' => $denfaccidentess,
+                    'crodomicilioss' => $crodomicilioss,
+                    'contratoss' => $contratoss,
+                    'egestorass' => $egestorass,
+                    'dictamencalentencss' => $dictamencalentencss,
+                    'infomedicasaludss' => $infomedicasaludss,
+                    'ctrabajoss' => $ctrabajoss,
+                    'boletapagoss' => $boletapagoss,
+                    'actdatosss' => $actdatosss,
+                    'resolinvhijosss' => $resolinvhijosss,
+                    'cunionlibress' => $cunionlibress,
+                    'cnacimientounionlibress' => $cnacimientounionlibress,
+                    'ciunionlibress' => $ciunionlibress,
+                    'cdivorcioss' => $cdivorcioss,
+                    'cdefuncionss' => $cdefuncionss,
+                    'polizasgenss' => $polizasgenss,
+                    'declasaludss' => $declasaludss,
+                    'polizaseguross' => $polizaseguross,
+                    'anteriordictamenss' => $anteriordictamenss,
+                    'poderciapoderadoss' => $poderciapoderadoss,
+
+                    'poderap' => $poderap,
+                    'numeropoderap' => $numeropoderap,
+                    'avcciap' => $avcciap,
+                    'cnacaseguradoap' => $cnacaseguradoap,
+                    'ciaseguradoap' => $ciaseguradoap,
+                    'cmatrimonioap' => $cmatrimonioap,
+                    'cnacconyugeap' => $cnacconyugeap,
+                    'ciconyugeap' => $ciconyugeap,
+                    'cnacjihosap' => $cnacjihosap,
+                    'cihijosap' => $cihijosap,
+                    'denfaccidenteap' => $denfaccidenteap,
+                    'crodomicilioap' => $crodomicilioap,
+                    'contratoap' => $contratoap,
+                    'egestoraap' => $egestoraap,
+                    'dictamencalentencap' => $dictamencalentencap,
+                    'infomedicasaludap' => $infomedicasaludap,
+                    'ctrabajoap' => $ctrabajoap,
+                    'boletapagoap' => $boletapagoap,
+                    'actdatosap' => $actdatosap,
+                    'resolinvhijosap' => $resolinvhijosap,
+                    'cunionlibreap' => $cunionlibreap,
+                    'cnacimientounionlibreap' => $cnacimientounionlibreap,
+                    'ciunionlibreap' => $ciunionlibreap,
+                    'cdivorcioap' => $cdivorcioap,
+                    'cdefuncionap' => $cdefuncionap,
+                    'polizasgenap' => $polizasgenap,
+                    'declasaludap' => $declasaludap,
+                    'polizaseguroap' => $polizaseguroap,
+                    'anteriordictamenap' => $anteriordictamenap,
+                    'poderciapoderadoap' => $poderciapoderadoap,
+                    'estadoGeneralap' => $estadoGeneralap,
+                    'estadoGeneralss' => $estadoGeneralss,
+                    
                 ];
             }
             $result[] = [
                 'clienteitanombre' => $clienteNombre,
                 'fechabateria' => $fechabateria,
+                'tramite' => $tramiteNombre,
                 'estado' => $estado,
                 'acciones' => $accionesConEstado,
                 'clienteitaid' => $clienteitaid,
@@ -682,21 +966,40 @@ class InformeFinalController extends Controller
                 'motivoabandono' => $motivoabandono,
                 'estadoGeneral' => $estadoGeneral,
                 'usuarioregistro' => $usuarioregistro,
+                'estadoGeneralauditoria' => $estadoGeneralauditoria,
+                'estadoGeneralap' => $estadoGeneralap,
+                'estadoGeneralss' => $estadoGeneralss,
             ];
         }
  
         $completosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
-            if ($item['estado'] === 'COMPLETO') {
+            if ($item['estado'] === 'COMPLETO' && $item['estadoGeneral'] === 'COMPLETO') {
                 $count++;
             }
             return $count;
         }, 0);
+
+        $resultadosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado'] === 'COMPLETO' && $item['estadoGeneral'] === 'PENDIENTE') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        $documentosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estadoGeneral'] === 'COMPLETO' && $item['estado'] === 'INCOMPLETO') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
         $incompletosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
-            if ($item['estado'] === 'INCOMPLETO') {
+            if ($item['estado'] === 'INCOMPLETO' && $item['estadoGeneral'] === 'PENDIENTE') {
                 $count++;
             }
             return $count;
         }, 0);
+
         $abandonaronCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
             if ($item['motivoabandono']) {
                 $count++;
@@ -704,8 +1007,214 @@ class InformeFinalController extends Controller
             return $count;
         }, 0);
         
+        $requisitosClientepolizas = Requisitosclientesauditoria::where('clienteitaid', $clienteitaid)->wherenotNull('banco')->get();
 
-        return view('admin.informesfinales.estadodocumentacionprogramacion', compact('userRole','estadoGeneral','abandonaronCount','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'cliente', 'fechas', 'aprobaciones'));
+        return view('admin.informesfinales.estadodocumentacionprogramacion', compact('estadoGeneralap','estadoGeneralss','requisitosClientepolizas','estadoGeneralauditoria', 'documentosCount','resultadosCount','userRole','estadoGeneral','abandonaronCount','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'cliente', 'fechas', 'aprobaciones'));
+    }
+
+    public function resultadosmedicosclientesauditoria(ClienteAuditoria $clienteauditoria, Request $request)
+    {
+        $sucursal = $clienteauditoria->sucursal;
+        $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
+        $aprobaciones = AprobacionInformeFinal::all();
+        $fechas = Programacionsubcliente::pluck('fechabateria')->unique()->sort()->toArray();
+        $usuarioAutenticado = auth()->user()->name;
+        $esProveedor = $usuarioAutenticado->role ?? null;
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        
+        $query = Programacionsubcliente::with(['requisitosclienteauditoriamedica', 'requisitosubcliente', 'bateriasubcliente', 'estadoprogramacionsubcliente', 'documentacionsubcliente', 'proveedorinformesfinales', 'informesfinales'])
+            ->whereNotNull('clienteauditoriaid');
+
+        if ($request->has('buscarporfecha') && $request->buscarporfecha !== '') {
+            $query->where('fechabateria', $request->buscarporfecha);
+        }
+
+        if ($request->has('buscarporcliente') && $request->buscarporcliente !== '') {
+            $query->whereHas('clienteauditoria', function ($q) use ($request) {
+                $q->where('clienteauditorianombre', 'LIKE', '%' . $request->buscarporcliente . '%');
+            });
+        }
+
+        $programacionclientes = $query->get();
+        $grouped = $programacionclientes->groupBy(function($item) {
+            return $item->clienteauditorianombre . '|' . $item->fechabateria;
+        });
+
+        $result = [];
+        foreach ($grouped as $key => $items) {
+            $clienteNombre = explode('|', $key)[0];
+            $fechabateria = explode('|', $key)[1];
+
+            $clienteauditoriaid = $items->first()->clienteauditoriaid;
+            $tramites = TramiteSubCliente::where('clienteauditoriaid', $clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->get();
+            $tramiteNombre = $tramites->isEmpty() ? ['SIN SERVICIO'] : $tramites->pluck('tramite')->toArray();
+
+            $usuarioAutenticado = auth()->user()->name;
+            $esProveedor = $usuarioAutenticado->role ?? null;
+
+            $proveedorAsignado = ProveedorInformeFinal::where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->first();
+            $documentosubido = Informefinal::where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->first();
+            $historiamedica = Documentacionsubcliente::withTrashed()
+                ->where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('accion', 'HISTORIA MÉDICA')
+                ->first();
+            $motivoabandonobateria = Bateriasubcliente::where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->first();
+
+            $usuarioRegistro = ClienteAuditoria::where('id', $items->first()->clienteauditoriaid)
+                ->first();
+
+            $historiamedicaclienteita = $historiamedica ? $historiamedica->document : null;
+            $usuarioregistro = $usuarioRegistro ? $usuarioRegistro->sucursal : null;
+            $motivoabandono = $motivoabandonobateria ? $motivoabandonobateria->motivoabandono : null;
+            $clienteauditoriaid = $items->first()->clienteauditoriaid;
+        
+            $estado = 'COMPLETO';
+            $accionesConEstado = [];
+
+            $requisitosauditoriamedica = Requisitosclientesauditoria::where('clienteauditoriaid', $items->first()->clienteauditoriaid)->get();
+
+            if ($requisitosauditoriamedica->isEmpty()) { 
+                $estadoGeneralauditoria = 'NO REGISTRADO';
+            } else {
+                $estadoGeneralauditoria = 'COMPLETO';
+                $aucampos = ['cnacasegurado', 'ciasegurado', 'banco', 'nropolizageneral', 'polizageneral', 'declasalud', 'nropolizadesgravamen', 'polizasegurodesgravamen'];
+                
+                foreach ($requisitosauditoriamedica as $requisito) {
+                    foreach ($aucampos as $aucampo) {
+                        if (!is_null($requisito->$aucampo) && stripos($requisito->$aucampo, 'PENDIENTE') !== false) {
+                            $estadoGeneralauditoria = 'PENDIENTE';
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            foreach ($items as $item) {
+                $documentacion = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
+                $image = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
+                $image2 = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
+                $accionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
+                $documentacionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
+
+                $estadoProgramacion = $item->estadoprogramacionsubcliente
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accionnombre', $item->accionnombre)
+                    ->first();
+                $motivoabandono = Bateriasubcliente::where('clienteauditoriaid', $item->clienteauditoriaid)
+                    ->where('fechabateria', $item->fechabateria)
+                    ->value('motivoabandono');
+
+                $fechaAtencion = $estadoProgramacion ? $estadoProgramacion->fechaatencionprogramacion : null;
+                $createdatbateria = $item->bateriasubcliente->where('accionnombre', $item->accionnombre)->first();
+
+                if ($createdatbateria) {
+                    $createdfechabateria = $createdatbateria->created_at;
+                    $formattedDate = $createdfechabateria->format('Y-m-d H:i:s');
+                } else {
+                    $formattedDate = 'Fecha no disponible';
+                }
+
+            //REQUISITOS AUDITRIA MEDICA
+                $cnacaseguradoau = $item->requisitosclienteauditoriamedica->filter(function ($requisitoau) {
+                    return !empty($requisitoau->cnacasegurado);})->first()->cnacasegurado ?? null;
+                $ciaseguradoau = $item->requisitosclienteauditoriamedica->filter(function ($requisitoau) {
+                    return !empty($requisitoau->ciasegurado);})->first()->ciasegurado ?? null;
+                $polizasgenau = $item->requisitosclienteauditoriamedica->filter(function ($requisitoau) {
+                    return !empty($requisitoau->polizasgen);})->first()->polizasgen ?? null;
+                $declasaludau = $item->requisitosclienteauditoriamedica->filter(function ($requisitoau) {
+                    return !empty($requisitoau->declasalud);})->first()->declasalud ?? null;
+                $polizaseguroau = $item->requisitosclienteauditoriamedica->filter(function ($requisitoau) {
+                    return !empty($requisitoau->polizaseguro);})->first()->polizaseguro ?? null;
+            //
+
+                if ($accionEstado === 'PENDIENTE') {
+                    $estado = 'INCOMPLETO';
+                }
+                $accionesConEstado[] = [
+                    'accion' => $item->accionnombre,
+                    'estado' => $accionEstado,
+                    'document' => $documentacion,
+                    'image' => $image,
+                    'image2' => $image2,
+                    'proveedornombre' => $item->proveedornombre,
+                    'fechaasignada' => $item->fechaasignada,
+                    'created_at' => $item->created_at,
+                    'fechaatencionprogramacion' => $fechaAtencion,
+                    'fechadocumento' => $documentacion ? $documentacion->created_at : null,
+                    'creacionbateria' => $createdatbateria,
+                    'estadoGeneralauditoria' => $estadoGeneralauditoria,
+                    'cnacaseguradoau' => $cnacaseguradoau,
+                    'ciaseguradoau' => $ciaseguradoau,
+                    'polizasgenau' => $polizasgenau,
+                    'declasaludau' => $declasaludau,
+                    'polizaseguroau' => $polizaseguroau,
+                ];
+            }
+            $result[] = [
+                'clienteauditorianombre' => $clienteNombre,
+                'fechabateria' => $fechabateria,
+                'tramite' => $tramiteNombre,
+                'estado' => $estado,
+                'acciones' => $accionesConEstado,
+                'clienteauditoriaid' => $clienteauditoriaid,
+                'proveedornombre' => $proveedorAsignado ? $proveedorAsignado->proveedorasignado : null,
+                'celularproveedor' => $proveedorAsignado ? $proveedorAsignado->celularproveedor : null,
+                'document' => $documentosubido ? $documentosubido->document : null,
+                'idinformefinal' => $documentosubido ? $documentosubido->id : null,
+                'proveedorrol' => $esProveedor,
+                'historiamedica' => $historiamedicaclienteita,
+                'motivoabandono' => $motivoabandono,
+                'usuarioregistro' => $usuarioregistro,
+                'estadoGeneralauditoria' => $estadoGeneralauditoria,
+            ];
+        }
+ 
+        $completosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado'] === 'COMPLETO' && $item['estadoGeneralauditoria'] === 'COMPLETO') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        $resultadosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado'] === 'COMPLETO' && $item['estadoGeneralauditoria'] === 'PENDIENTE') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        $documentosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estadoGeneralauditoria'] === 'COMPLETO' && $item['estado'] === 'INCOMPLETO') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        $incompletosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado'] === 'INCOMPLETO' && $item['estadoGeneralauditoria'] === 'PENDIENTE') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        $abandonaronCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['motivoabandono']) {
+                $count++;
+            }
+            return $count;
+        }, 0);
+        
+        $requisitosClientepolizas = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoriaid)->wherenotNull('banco')->get();
+
+        return view('admin.informesfinales.resultadosmedicosclientesauditoria', compact('requisitosClientepolizas','estadoGeneralauditoria', 'documentosCount','resultadosCount','userRole','abandonaronCount','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'clienteauditoria', 'fechas', 'aprobaciones'));
     }
 public function solrevisioninformefinal(Request $request, Informefinal $informefinal)
 {

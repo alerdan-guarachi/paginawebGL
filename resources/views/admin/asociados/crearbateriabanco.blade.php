@@ -120,7 +120,7 @@
                     </div>
                     
                                         
-                    <div class="col-lg-4">
+                    {{-- <div class="col-lg-4">
                         <div class="form-group">
                             {!! Form::label('accion', 'Acción:') !!}
                             {!! Form::text('accion', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90']) !!}
@@ -130,7 +130,60 @@
                                 </small>
                             @enderror
                         </div>
-                    </div>  
+                    </div> --}}  
+                    <div class="col-lg-4">
+                        <div class="form-group">
+                            {!! Form::label('grupoaccion', 'Acción:') !!}
+                            {!! Form::select('grupoaccion', [], null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90', 'id' => 'accionSelect', 'onchange' => 'updateAccionText()']) !!}
+                            @error('grupoaccion')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4" hidden>
+                        <div class="form-group">
+                            {!! Form::label('accion', 'Acción:') !!}
+                            {!! Form::text('accion', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45', 'readonly' => true, 'id' => 'accionText']) !!}
+                        </div>
+                    </div>
+                    
+                    <script>
+                        function updateAccionText() {
+                            var select = document.getElementById('accionSelect');
+                            var selectedOptionText = select.options[select.selectedIndex].text;
+                    
+                            // Actualiza el campo de texto con el valor seleccionado en el select
+                            document.getElementById('accionText').value = selectedOptionText;
+                        }
+                    </script>
+                    
+                    <script>
+                        function filterActions() {
+                            var selectedArea = document.getElementById('tipoareaSelect').value;
+                            var actionsSelect = document.getElementById('accionSelect');
+
+                            actionsSelect.innerHTML = '';
+
+                            var blankOption = document.createElement('option');
+                            blankOption.value = '';
+                            blankOption.text = '';
+                            actionsSelect.appendChild(blankOption);
+
+                            @foreach($acciones as $accion)
+                                if ("{{ $accion->areasid }}" === selectedArea) {
+                                    var option = document.createElement('option');
+                                    option.value = "{{ $accion->id }}";
+                                    option.text = "{{ $accion->accion }}";
+                                    actionsSelect.appendChild(option);
+                                }
+                            @endforeach
+                        }
+                        document.getElementById('tipoareaSelect').addEventListener('change', filterActions);
+                    </script>
+                    
                 </div>
                 <div class="row">
                     <div class="col-lg-6">
@@ -181,9 +234,9 @@
                 <div class="row">
                     <div class="col-lg-4">
                         <div class="form-group">
-                            {!! Form::label('preciocompra', 'Precio de Compra:') !!}
-                            {!! Form::text('preciocompra', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
-                            @error('preciocompra')
+                            {!! Form::label('precio', 'Precio de Venta:') !!}
+                            {!! Form::text('precio', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90']) !!}
+                            @error('precio')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
                                 </small>
@@ -192,9 +245,9 @@
                     </div>
                     <div class="col-lg-4">
                         <div class="form-group">
-                            {!! Form::label('precio', 'Precio de Venta:') !!}
-                            {!! Form::text('precio', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90']) !!}
-                            @error('precio')
+                            {!! Form::label('preciocompra', 'Precio de Compra:') !!}
+                            {!! Form::text('preciocompra', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                            @error('preciocompra')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
                                 </small>

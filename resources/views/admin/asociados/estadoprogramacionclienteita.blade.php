@@ -161,7 +161,7 @@
                                 @foreach($acciones as $accion)
                                     @if (in_array($accion, $accionesNoRegistradas))
                                         <div>
-                                            <label>
+                                            <label style="font-weight: normal;">
                                                 <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }}
                                             </label>
                                         </div>

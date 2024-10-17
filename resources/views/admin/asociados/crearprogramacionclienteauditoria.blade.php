@@ -47,6 +47,7 @@
                     {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                     {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                     {!! Form::hidden('clienteauditoriaid', $id) !!}
+                    {!! Form::hidden('clienteauditorianombre', $clienteauditoria->nombrecompleto) !!}
                     <div class="col-lg-8">
                         {!! Form::label('', 'ACCIONES PARA PROGRAMAR:') !!}
                         <div class="form-group" hidden>
@@ -80,14 +81,13 @@
                             </script>
                         </div>
 
-
                         {!! Form::label('', 'ACCIONES REQUERIDAS Y PROVEEDORES DISPONIBLES:') !!}
                         @error('proveedornombre')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
                                 </small>
                             @enderror
-                        @foreach($accionesPorFecha as $fecha => $acciones) 
+                        {{-- @foreach($accionesPorFecha as $fecha => $acciones) 
                             <div class="row">
                                 <div class="acciones-{{ $fecha }}" style="display:none;">
                                     <div style="display:flex; flex-wrap: wrap;">
@@ -102,7 +102,7 @@
                                                 $accionShort = strlen($accion) > 35 ? substr($accion, 0, 35) . '...' : $accion;
                                             @endphp
                                             @if(!$registrada && (!isset($proveedor) || $proveedor['proveedor'] !== $proveedorAjeno))
-                                                <div class="col-lg-4" style="margin-bottom: 20px;">
+                                                <div class="col-lg-12" style="margin-bottom: 20px;">
                                                     <div class="form-group">
                                                         <strong title="{{ $accion }}" style="font-size: 12px">{{ $accionShort }}</strong><br>
                                                         <div>
@@ -115,7 +115,115 @@
                                     </div>
                                 </div>
                             </div>
+                        @endforeach --}}
+
+                        
+                        
+                        @foreach($accionesPorFecha as $fecha => $acciones)     
+                            {{-- <div class="row"> --}}
+                                <div class="acciones-{{ $fecha }}" style="display:none;">
+                                    <div class="row" style="margin-top: 5px; margin-bottom: 20px; align-items: center;">
+                                        <div class="col-lg-8">
+                                            <input type="text" id="search-{{ $fecha }}" placeholder="Buscar acción..."
+                                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); 
+                                                        transition: box-shadow 0.3s ease; outline: none;" 
+                                                onfocus="this.style.boxShadow='0 0 8px rgba(0, 0, 255, 0.3)';" 
+                                                onblur="this.style.boxShadow='none';">
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <label style="font-weight: normal; display: flex; align-items: center;">
+                                                <input type="checkbox" id="select-all-{{ $fecha }}" style="margin-right: 5px;"> 
+                                                <span style="font-weight: bold; font-size: 14px;">SELECCIONAR TODO</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="row action-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                                        @foreach($acciones as $accion)
+                                            @php
+                                                $proveedorAjeno = 'PROVEEDOR AJENO';
+                                                $proveedor = isset($proveedoresDetalles[$accion]) ? $proveedoresDetalles[$accion] : null;
+                                                $registrada = isset($accionesRegistradas[$fecha]) && in_array($accion, $accionesRegistradas[$fecha]);
+                                                
+                                                // Reemplaza espacios por guiones bajos y puntos por guiones
+                                                $accionSanitizada = str_replace([' ', '.'], ['_', '-'], $accion);
+                                            @endphp
+                                            
+                                            @if(!$registrada && (!isset($proveedor) || $proveedor['proveedor'] !== $proveedorAjeno))
+                                                <div class="col-lg-6 action-item" style="flex: 0 0 48%; margin-bottom: -15px;">
+                                                    <div class="form-group">
+                                                        <div>
+                                                            <label style="font-weight: normal; margin-bottom: -15px;">
+                                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }}
+                                                            </label>
+                                                            <input type="hidden" name="proveedor_{{ $accionSanitizada }}" value="{{ $proveedor['proveedor'] ?? '' }}">
+                                                            <input type="hidden" name="areanombre_{{ $accionSanitizada }}" value="{{ $proveedor['area'] ?? '' }}">
+                                                            <input type="hidden" name="precio_{{ $accionSanitizada }}" value="{{ $proveedor['precio'] ?? '' }}">
+                                                            <input type="hidden" name="preciocompra_{{ $accionSanitizada }}" value="{{ $proveedor['preciocompra'] ?? '' }}">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </div>
+                            {{-- </div> --}}
                         @endforeach
+
+                        <!-- Script para el filtrado y seleccionar todo -->
+                        <script>
+                            document.querySelectorAll('[id^="search-"]').forEach(function(searchInput) {
+                                searchInput.addEventListener('keyup', function() {
+                                    var input = this.value.toLowerCase();
+                                    var fecha = this.id.split('-')[1]; // Extrae la fecha del id
+                                    var actionItems = document.querySelectorAll('.action-item');
+                                    var selectAllCheckbox = document.getElementById('select-all-' + fecha);
+                                    
+                                    actionItems.forEach(function(item) {
+                                        var actionText = item.textContent.toLowerCase();
+                                        if (actionText.includes(input)) {
+                                            item.style.display = ""; // Muestra el item
+                                        } else {
+                                            item.style.display = "none"; // Oculta el item
+                                        }
+                                    });
+                                    
+                                    // Desmarcar "Seleccionar Todo" al buscar
+                                    selectAllCheckbox.checked = false;
+
+                                    // Actualiza el checkbox "Seleccionar Todo"
+                                    updateSelectAll(fecha);
+                                });
+                            });
+
+                            // Función para actualizar el checkbox "Seleccionar Todo"
+                            function updateSelectAll(fecha) {
+                                var actionItems = document.querySelectorAll('.action-item');
+                                var selectAllCheckbox = document.getElementById('select-all-' + fecha);
+                                var visibleItems = Array.from(actionItems).filter(function(item) {
+                                    return item.style.display !== "none";
+                                });
+
+                                // Marca el checkbox "Seleccionar Todo" si todos los visibles están seleccionados
+                                selectAllCheckbox.checked = visibleItems.length > 0 && visibleItems.every(function(item) {
+                                    return item.querySelector('input[type="checkbox"]').checked;
+                                });
+                            }
+
+                            // Evento para el checkbox "Seleccionar Todo"
+                            document.querySelectorAll('[id^="select-all-"]').forEach(function(selectAllCheckbox) {
+                                selectAllCheckbox.addEventListener('change', function() {
+                                    var fecha = this.id.split('-')[2]; // Extrae la fecha del id
+                                    var actionItems = document.querySelectorAll('.action-item');
+
+                                    actionItems.forEach(function(item) {
+                                        // Verifica si el item es visible antes de seleccionar
+                                        if (item.style.display !== "none") {
+                                            item.querySelector('input[type="checkbox"]').checked = selectAllCheckbox.checked;
+                                        }
+                                    });
+                                });
+                            });
+                        </script>
 
                         <script>
                             document.addEventListener("DOMContentLoaded", function() {
@@ -157,7 +265,7 @@
                         </script>
                         <button type="button" id="habilitarSelectores" style="display:none;" class="custom-button">Seleccionar otra acción</button>
                     </div>
-                    <div class="col-lg-4" hidden>
+                    {{-- <div class="col-lg-4" hidden>
                         <div class="form-group">
                             {!! Form::label('proveedornombre', 'Proveedor seleccionado:') !!}
                             {!! Form::text('proveedornombre', null, ['id' => 'proveedornombre', 'class' => 'form-control', 'placeholder' => '']) !!}
@@ -218,11 +326,11 @@
                                 </small>
                             @enderror
                         </div>
-                    </div>
+                    </div> --}}
                     <br>
                     <div class="col-lg-4">
                         {!! Form::label('', 'PROGRAMAR ACCION:') !!}
-                        <div class="form-group">
+                        {{-- <div class="form-group">
                             {!! Form::label('precio', 'Precio:') !!}
                             {!! Form::text('precio', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'precio', 'readonly' => true]) !!}
                             @error('precio')
@@ -239,7 +347,7 @@
                                     {{$message}}
                                 </small>
                             @enderror
-                        </div>
+                        </div> --}}
                         <div class="form-group">
                             {!! Form::label('fechaasignada', 'Fecha a programar:') !!}
                             {!! Form::date('fechaasignada', null, ['class' => 'form-control']) !!}
@@ -267,7 +375,7 @@
                                 </small>
                             @enderror
                         </div>
-                        <div class="form-group" hidden>
+                        {{-- <div class="form-group" hidden>
                             <label for="horariodisponible">Horarios disponibles:</label>
                             <select name="horariodisponible{{ isset($accion) ? $accion : '' }}" class="form-control horariodisponible no-bloquear" placeholder="" id="horariosdisponibles" {{ isset($accion) ? 'data-accion=' . $accion : '' }}>
                             </select>
@@ -285,14 +393,14 @@
                                     {{$message}}
                                 </small>
                             @enderror
-                        </div>
+                        </div> --}}
                     </div>
                 @else
                     <div class="alert " role="alert">
                         ESTE CLIENTE NO TIENE BATERIA
                     </div>
-                @endif  
-                {!! Form::submit('PROGRAMAR CLIENTE', ['class' => 'btn btn-crear']) !!}   
+                @endif 
+                {!! Form::submit('PROGRAMAR CLIENTE', ['class' => 'btn btn-crear', 'style' => 'margin-top: 30px;']) !!}
             </div>
             {!! Form::close() !!}
         </div>
@@ -384,7 +492,7 @@
                 table {
                     width: 100%;
                     border-collapse: collapse;
-                    line-height: 0.3;
+                    line-height: 1;
                 }
                 th, td {
                     padding: 8px;
