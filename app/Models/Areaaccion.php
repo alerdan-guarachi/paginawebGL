@@ -25,7 +25,8 @@ class Areaaccion extends Model
             'asociado' => 'required|max:45',
             'asociadoid' => 'required|max:45',
             'categoria' => 'max:45',
-
+            'proveedorid' => 'max:45',
+            'proveedor' => 'max:255',
     ]; 
     
     protected $fillable = [
@@ -41,8 +42,9 @@ class Areaaccion extends Model
             'preciocompra',
             'asociado',
             'asociadoid',
-            'categoria'
-
+            'categoria',
+            'proveedorid',
+            'proveedor',
     ];
     public function clienteBanco()
     {

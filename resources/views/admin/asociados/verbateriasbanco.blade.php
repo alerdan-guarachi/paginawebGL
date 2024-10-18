@@ -2,7 +2,9 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.index') }}">REGRESAR</a>
+@can('admin.asociados.crearbateriabanco')
 <a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.crearbateriabanco', $asociado)}}">CREAR BATERÍA</a>
+@endcan
 <h5>BATERIA DE:</h5>
 <h3>{{$asociado->asociado}}</h3>
 @stop
@@ -59,7 +61,6 @@
                                 <th>Área</th>
                                 <th>Acción</th>
                                 <th>Sucursal</th>
-                                <th>Precio</th>
                                 <th>Estado</th>
                             </tr>
                         </thead>
@@ -70,7 +71,6 @@
                                     <td>{{ $asociado->area }}</td>
                                     <td>{{ $asociado->accion }}</td>
                                     <td>{{ $asociado->sucursal }}</td>
-                                    <td>{{ $asociado->precio }}</td>
                                     <td>
                                         @if ($asociado->estado == 'ACTIVO')
                                             <span class="badge badge-success">{{ $asociado->estado }}</span>
@@ -78,6 +78,7 @@
                                             <span class="badge badge-danger">{{ $asociado->estado }}</span>
                                         @endif
                                     </td>
+                                    @can('admin.asociados.editarbateriabanco')
                                     <td>
                                         <abbr title="Editar accion">
                                             <a class="btn btn-sm btn-editaraccion" href="{{ route('admin.asociados.editarbateriabanco', $asociado) }}">
@@ -85,6 +86,7 @@
                                             </a>
                                         </abbr>
                                     </td>
+                                    @endcan
                                 </tr>
                             @endforeach
                         </tbody>

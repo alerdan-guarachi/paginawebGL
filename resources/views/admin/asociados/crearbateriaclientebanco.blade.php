@@ -88,9 +88,11 @@
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
+                                        <th>ID</th>
                                         <th>Tipo de área</th>
                                         <th>Área</th>
                                         <th>Acción</th>
+                                        <th>Proveedor</th>
                                         <th>Precio</th>
                                         <th class="text-center">Seleccionar</th>
                                     </tr>
@@ -98,9 +100,11 @@
                                 <tbody>
                                     @foreach ($clientebancos->where('categoria', $categoria) as $clientebanco)
                                     <tr>
+                                        <td>{{ $clientebanco->id }}</td>
                                         <td>{{ $clientebanco->tiponombre }}</td>
                                         <td>{{ $clientebanco->area }}</td>
                                         <td>{{ $clientebanco->accion }}</td>
+                                        <td>{{ $clientebanco->proveedor }}</td>
                                         <td>{{ $clientebanco->precio }}</td>
                                         <td class="text-center">
                                             <input type="checkbox" name="items[]" value="{{ $clientebanco->id }}">

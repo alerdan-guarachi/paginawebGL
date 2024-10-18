@@ -299,7 +299,7 @@
         <div class="row justify-content-center my-5"> 
             <div class="col-lg-8 col-md-10">
                 <div class="form-group bg-light p-5 rounded-lg border text-center">
-                    <label class="d-block font-weight-bold mb-4 h5" style="font-weight: 600; color: #e0752e;">
+                    <label class="d-block font-weight-bold mb-4 h5" style="font-weight: 600; color: #94c93b;">
                         Consentimiento informado para evaluación inicial
                     </label>
                     

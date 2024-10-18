@@ -42,7 +42,9 @@ class StoreAreaaccionRequest extends FormRequest
             'preciocompra' => 'max:45',
             'asociado' => 'required|max:45',
             'asociadoid' => 'required|max:45',
-            'categoria' => 'max:45'
+            'categoria' => 'max:45',
+            'proveedorid' => 'max:45',
+            'proveedor' => 'max:255'
         ]; 
         return $rules;
     }

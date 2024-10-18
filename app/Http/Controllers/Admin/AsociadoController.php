@@ -14,6 +14,7 @@ use App\Models\Areaaccion;
 use App\Models\Departamento;
 use App\Models\Area;
 use App\Models\Banco;
+use App\Models\Formulario;
 use App\Models\Tipoareaaccion;
 use App\Models\ClienteAuditoria;
 use App\Models\ClienteComun;
@@ -5234,18 +5235,20 @@ class AsociadoController extends Controller
                     }
                     $fechaSeleccionada = $request->input('fechabateria');
                     $clienteitaData = $request->except(['acciones', '_token']);
-                    $clienteitaData['accionid'] = $accionId;
-                    $clienteitaData['accionnombre'] = $accionNombre;
                     $clienteitaData['clienteauditoriaid'] = $clienteID;
                     $clienteitaData['areanombre'] = $areaNombre;
                     $clienteitaData['clienteauditorianombre'] = $clienteauditoria->nombrecompleto;
                     $clienteitaData['tipoarea'] = 'ESTUDIO';
                     if ($informe === 'SI TIENE INFORME') {
+                        $clienteitaData['accionid'] = $accionId . 'PA';
+                        $clienteitaData['accionnombre'] = $accionNombre . ' - PA';
                         $clienteitaData['precio'] = '0';
                         $clienteitaData['preciocompra'] = '0';
                         $clienteitaData['proveedorasignado'] = 'PROVEEDOR AJENO';
                         $clienteitaData['servicio'] = 'AJENO';
                     } else {
+                        $clienteitaData['accionid'] = $accionId;
+                        $clienteitaData['accionnombre'] = $accionNombre;
                         $clienteitaData['precio'] = $precioAccion;
                         $clienteitaData['preciocompra'] = $preciocompraAccion;
                         $clienteitaData['proveedorasignado'] = $proveedorAsignado;
@@ -5269,7 +5272,7 @@ class AsociadoController extends Controller
                             'horadesde' => $horaActual,
                             'horahasta' => $horaActual,
                             'areanombre' => $areaNombre,
-                            'accionnombre' => $accionNombre,
+                            'accionnombre' => $accionNombre . ' - PA',
                             'precio' => '0',
                             'usuarioid' => $usuarioID,
                             'usuarioregistro' => $usuarioNombre,
@@ -5279,7 +5282,7 @@ class AsociadoController extends Controller
                             'clienteauditorianombre' => $clienteauditoria->nombrecompleto,
                             'fechaatencionprogramacion' => $fechaActual,
                             'fechabateria' => $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada,
-                            'accionnombre' => $accionNombre,
+                            'accionnombre' => $accionNombre . ' - PA',
                             'usuarioid' => $usuarioID,
                             'usuarioregistro' => $usuarioNombre,
                         ]);
@@ -5309,19 +5312,21 @@ class AsociadoController extends Controller
                 }
                 $fechaSeleccionada = $request->input('fechabateria');
                 $clienteitaData = $request->except(['accionnombre', '_token']);
-                $clienteitaData['accionid'] = $accionId;
-                $clienteitaData['accionnombre'] = $accionNombre;
                 $clienteitaData['antecedentes'] = $antecedentes;
                 $clienteitaData['clienteauditoriaid'] = $clienteID;
                 $clienteitaData['areanombre'] = $accionNombre;
                 $clienteitaData['clienteauditorianombre'] = $clienteauditoria->nombrecompleto;
                 $clienteitaData['tipoarea'] = 'ESPECIALIDAD';
                 if ($informe === 'SI TIENE INFORME') {
+                    $clienteitaData['accionid'] = $accionId . 'PA';
+                    $clienteitaData['accionnombre'] = $accionNombre . ' - PA';
                     $clienteitaData['precio'] = '0';
                     $clienteitaData['preciocompra'] = '0';
                     $clienteitaData['proveedorasignado'] = 'PROVEEDOR AJENO';
                     $clienteitaData['servicio'] = 'AJENO';
                 } else{
+                    $clienteitaData['accionid'] = $accionId;
+                    $clienteitaData['accionnombre'] = $accionNombre;
                     $clienteitaData['precio'] = $precioAccion;
                     $clienteitaData['preciocompra'] = $preciocompraAccion;
                     $clienteitaData['proveedorasignado'] = $proveedorAsignado;
@@ -5345,7 +5350,7 @@ class AsociadoController extends Controller
                         'horadesde' => $horaActual,
                         'horahasta' => $horaActual,
                         'areanombre' => $accionNombre,
-                        'accionnombre' => $accionNombre,
+                        'accionnombre' => $accionNombre . ' - PA',
                         'precio' => '0',
                         'usuarioid' => $usuarioID,
                         'usuarioregistro' => $usuarioNombre,
@@ -5355,7 +5360,7 @@ class AsociadoController extends Controller
                         'clienteauditorianombre' => $clienteauditoria->nombrecompleto,
                         'fechaatencionprogramacion' => $fechaActual,
                         'fechabateria' => $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada,
-                        'accionnombre' => $accionNombre,
+                        'accionnombre' => $accionNombre . ' - PA',
                         'usuarioid' => $usuarioID,
                         'usuarioregistro' => $usuarioNombre,
                     ]);
@@ -7354,10 +7359,119 @@ class AsociadoController extends Controller
     {
         return view('admin.asociados.formularios.declaracionesmedico', compact('clientebanco'));
     }
-    public function guardardeclaracion(ClienteBanco $clientebanco)
+
+    public function guardardeclaracion(Request $request, ClienteBanco $clientebanco)
     {
-        return view('admin.asociados.formularios.declaracionesmedico', compact('clientebanco'));
+        $preguntas = $request->input('preguntas');
+
+        foreach ($preguntas as $pregunta) {
+            // Verificar si la respuesta existe y no está vacía
+            if (isset($pregunta['respuesta']) && !empty($pregunta['respuesta'])) {
+                $respuesta = $pregunta['respuesta'];
+
+                // Verificar si la respuesta es 'si' para guardar el formulario
+                if ($respuesta == 'si') {
+                    $formulario = new Formulario();
+                    $formulario->cliente_id = $pregunta['cliente_id'];
+                    $formulario->pregunta_id = $pregunta['pregunta_id'];
+                    $formulario->pregunta_nombre = $pregunta['pregunta_nombre'];
+
+                    // Verificar y asignar campos opcionales
+                    if (isset($pregunta['diagnostico'])) {
+                        $formulario->diagnostico = $pregunta['diagnostico'];
+                    }
+                    if (isset($pregunta['fecha'])) {
+                        $formulario->fecha = $pregunta['fecha'];
+                    }
+                    if (isset($pregunta['tiempo'])) {
+                        $formulario->tiempo = $pregunta['tiempo'];
+                    }
+                    if (isset($pregunta['gradorecuperacion'])) {
+                        $formulario->gradorecuperacion = $pregunta['gradorecuperacion'];
+                    }
+                    if (isset($pregunta['medico'])) {
+                        $formulario->medico = $pregunta['medico'];
+                    }
+                    if (isset($pregunta['direccionmedico'])) {
+                        $formulario->direccionmedico = $pregunta['direccionmedico'];
+                    }
+                    // Verificar y asignar campos opcionales
+                    if (isset($pregunta['diagnostico2'])) {
+                        $formulario->diagnostico2 = $pregunta['diagnostico2'];
+                    }
+                    if (isset($pregunta['fecha2'])) {
+                        $formulario->fecha2 = $pregunta['fecha2'];
+                    }
+                    if (isset($pregunta['tiempo2'])) {
+                        $formulario->tiempo = $pregunta['tiempo'];
+                    }
+                    if (isset($pregunta['gradorecuperacion'])) {
+                        $formulario->tiempo2 = $pregunta['tiempo2'];
+                    }
+                    if (isset($pregunta['medico2'])) {
+                        $formulario->medico2 = $pregunta['medico2'];
+                    }
+                    if (isset($pregunta['direccionmedico2'])) {
+                        $formulario->direccionmedico2 = $pregunta['direccionmedico2'];
+                    }
+                    if (isset($pregunta['hacecuanto'])) {
+                        $formulario->hacecuanto = $pregunta['hacecuanto'];
+                    }
+                    if (isset($pregunta['cadacuanto'])) {
+                        $formulario->cadacuanto = $pregunta['cadacuanto'];
+                    }
+                    if (isset($pregunta['parentesco2'])) {
+                        $formulario->parentesco2 = $pregunta['parentesco2'];
+                    }
+                    if (isset($pregunta['cuantosmeses'])) {
+                        $formulario->cuantosmeses = $pregunta['cuantosmeses'];
+                    }
+                    if (isset($pregunta['detallescompletos'])) {
+                        $formulario->detallescompletos = $pregunta['detallescompletos'];
+                    }
+
+                    $formulario->save();
+                }
+            } else {
+                // Si no se seleccionó ninguna respuesta, puedes manejar este caso según tus requisitos
+                // Por ejemplo, puedes ignorar este formulario o guardar una marca para indicar que no se seleccionó ninguna respuesta.
+            }
+        }
+
+        return redirect()->route('admin.asociados.formularios.declaracionesmedico', $clientebanco)->with('info', 'Los formularios se registraron con éxito');
     }
+    public function generarQR(Request $request, Cliente $cliente)
+            {
+                $datosFormulario = $request->except('_token');
+            
+                // Convertir los datos del formulario a JSON
+                $contenidoQR = json_encode([
+                    'nombres' => $cliente->nombres,
+                    'apepaterno' => $cliente->apepaterno,
+                    'apematerno' => $cliente->apematerno,
+                    // Agrega más datos aquí si es necesario
+                ]);
+                
+                // Generar el nombre del archivo QR
+                $nombreQR = 'qr_temporal.png';
+            
+                // Generar la ruta del directorio donde se guardará el QR
+                $rutaDirectorio = public_path('temp');
+            
+                // Verificar si el directorio no existe y crearlo si es necesario
+                if (!file_exists($rutaDirectorio)) {
+                    mkdir($rutaDirectorio, 0777, true);
+                }
+            
+                // Generar la ruta completa donde se guardará el QR
+                $rutaQR = $rutaDirectorio . '/' . $nombreQR;
+            
+                // Generar el QR con el contenido y guardarlo temporalmente
+                QrCode::format('png')->size(300)->generate($contenidoQR, $rutaQR);
+            
+                // Retornar la vista con la ruta del QR
+                return view('admin.clientes.formulario', ['rutaQR' => asset('temp/' . $nombreQR)], compact('cliente'));
+            }
 //
 
 
@@ -7425,7 +7539,59 @@ class AsociadoController extends Controller
     }
     public function verclientebanco(ClienteBanco $clientebanco, Asociado $asociado)
     {
-        return view('admin.asociados.verclientebanco', compact('clientebanco', 'asociado'));
+        $requisitosubclientes = ProveedorInformefinal::where('clientebancoid', $clientebanco->id)->get();
+
+        $proveedores = Proveedor::where('id', 3)->get(['id', 'proveedor', 'celular']);
+
+        $tieneRequisitos = RequisitoSubCliente::where('clientebancoid', $clientebanco->id)->exists();
+        $tieneBateria = Bateriasubcliente::where('clienteid', $clientebanco->id)->exists();
+        $tieneContactos = ContactoSubCliente::where('clientebancoid', $clientebanco->id)->exists();
+        $tieneCotizacionaprobada = Estadocotizacionsubcliente::where('clientebancoid', $clientebanco->id)->exists();
+        $tieneProgramacion = Programacionsubcliente::where('clientebancoid', $clientebanco->id)->exists();
+        $tieneProgramacionatentido = Estadoprogramacionsubcliente::where('clientebancoid', $clientebanco->id)->exists();
+
+        $tienerequisitosapelacion = RequisitoSubCliente::where('clientebancoid', $clientebanco->id)->exists();
+        $tienerequisitossegundasolicitud = RequisitoSubCliente::where('clientebancoid', $clientebanco->id)->exists();
+
+        
+        $cartaconsentimientoExistente = Estadocotizacionsubcliente::where('clientebancoid', $clientebanco->id) 
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->whereNotNull('document')
+            ->first();
+        $bateriaaprobadaExistente = DocumentacionSubcliente::where('clientebancoid', $clientebanco->id) 
+            ->where('accion', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->first();
+
+        $documentacion = Documentacionsubcliente::where('clientebancoid', $clientebanco->id)
+        ->where('accion', 'HISTORIA MÉDICA')
+        ->first();
+
+        $nombreCliente = $clientebanco->nombrecompleto;
+        $sucursalCliente = $clientebanco->sucursal;
+
+        $accionesCliente = BateriaSubCliente::where('clientenombre', $nombreCliente)->pluck('accionnombre')->toArray();
+
+        $fechasbateriasSubCliente = BateriaSubCliente::where('clientenombre', $nombreCliente)
+            ->distinct()
+            ->pluck('fechabateria');
+
+        $fechasRegistradas = ProveedorInformefinal::where('clientebancoid', $clientebanco->id)
+            ->pluck('fechabateria');
+
+        $fechasDisponibles = $fechasbateriasSubCliente->diff($fechasRegistradas);
+
+        $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionnombre', $accionesCliente)
+            ->where('clientenombre', $nombreCliente)
+            ->whereIn('fechabateria', $fechasDisponibles)
+            ->distinct()
+            ->pluck('fechabateria', 'accionnombre');
+
+        $accionesPorFecha = [];
+        foreach ($fechasBateriaPorAccion as $accion => $fecha) {
+            $accionesPorFecha[$fecha][] = $accion;
+        }
+
+        return view('admin.asociados.verclientebanco', compact('tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'clientebanco', 'tieneRequisitos', 'documentacion'));
     }
     public function editarclientebanco(ClienteBanco $clientebanco)
     {
@@ -7476,7 +7642,6 @@ class AsociadoController extends Controller
         $sucursalCliente = $clientebanco->sucursal;
         $accionesCliente = BateriaSubCliente::where('clientenombre', $nombreCliente)->pluck('accionnombre')->toArray();
         
-
         $asociadoid = $clientebanco->asociadoid;
 
         $categorias = AreaAccion::where('asociadoid', $asociadoid)
@@ -7990,21 +8155,41 @@ class AsociadoController extends Controller
         $clienteData = $request->all();
         $clienteData['clientebanconombre'] = $clientebanco->nombrecompleto;
         $contacto = Contactosubcliente::create($clienteData);
-        return redirect()->route('admin.asociados.crearcontactoclientebanco', ['clientebanco' => $clientebanco])->with('info', 'El contacto se creó con éxito');
+        return redirect()->route('admin.asociados.vercontactoclientebanco', ['clientebanco' => $clientebanco])->with('info', 'El contacto se creó con éxito');
     }
 //
 //ETIQUETAS Y REQUISITOS CLIENTE BANCO
     public function generaretiquetaclientebanco(Request $request, ClienteBanco $clientebanco)
     {
-        $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteita', compact('cliente'));
-        $pdfName = 'Etiqueta_' . $cliente->id . '.pdf';
+        $pdf = PDF::loadView('admin.asociados.generaretiquetaclientebanco', compact('clientebanco'));
+        $pdfName = 'Etiqueta_' . $clientebanco->id . '.pdf';
         return $pdf->download($pdfName);
     }
     public function generarchecklistclientebanco(ClienteBanco $clientebanco)
     {
-        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
+        $tieneRequisitos = Requisitosubcliente::where('clientebancoid', $clientebanco->id)
+            ->where('servicio', 'INVALIDEZ')->exists();
+        $estadoLaboral = strtolower($clientebanco->estadolaboral);
+        $numHijosMenores = $clientebanco->numhijosmenores;
+        $estadoCivil = strtolower($clientebanco->estadocivil);
+        $servicio1 = strtolower($clientebanco->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first(); 
 
-        return view('admin.asociados.generarchecklistclientebanco', compact('cliente', 'tieneRequisitos'));
+        $registroExistente = Estadocotizacionsubcliente::where('clientebancoid', $clientebanco->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clientebancoid', $clientebanco->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->first();
+
+        return view('admin.asociados.generarchecklistclientebanco', compact(
+            'clientebanco', 
+            'tieneRequisitos', 
+            'estadoLaboral',
+            'numHijosMenores',  
+            'estadoCivil', 
+            'registroExistente','rolusuario','registroaprobadoExistente','servicio1'
+        ));
     }
     public function descargarchecklistclientebanco(Request $request, ClienteBanco $clientebanco)
     {
@@ -8012,8 +8197,8 @@ class AsociadoController extends Controller
         $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
 
         $requisito = new RequisitoSubCliente();
-        $requisito->clienteitaid = $cliente->id;
-        $requisito->clienteitanombre = $cliente->nombrecompleto;
+        $requisito->clientebancoid = $clientebanco->id;
+        $requisito->clientebanconombre = $clientebanco->nombrecompleto;
         $requisito->usuarioid = $usuarioAutenticado->id;
         $requisito->usuarioregistro = $usuarioAutenticado->name;
 
@@ -8063,13 +8248,13 @@ class AsociadoController extends Controller
 
         $requisito->save();
 
-        $pdf = PDF::loadView('admin.asociados.descargarchecklistclientebanco', compact('cliente', 'documentosSeleccionados'));
-        $pdfName = 'Requisitos_' . $cliente->nombrecompleto . '.pdf';
+        $pdf = PDF::loadView('admin.asociados.descargarchecklistclientebanco', compact('clientebanco', 'documentosSeleccionados'));
+        $pdfName = 'Requisitos_' . $clientebanco->nombrecompleto . '.pdf';
         return $pdf->download($pdfName);
     }
     public function subirdocrequisitosclientebanco(ClienteBanco $clientebanco)
     {
-        $clienteitaid = $cliente->id;
+        $clienteitaid = $clientebanco->id;
 
         $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)->first();
 
@@ -8108,7 +8293,7 @@ class AsociadoController extends Controller
     }
     public function guardardocrequisitosclientebanco(Request $request, ClienteBanco $clientebanco)
     {
-        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)->firstOrFail();
+        $requisito = RequisitoSubCliente::where('clienteitaid', $clientebanco->id)->firstOrFail();
 
         $request->validate([
             'poder' => 'nullable|mimes:pdf|max:2048',
@@ -8127,7 +8312,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('poder')) {
             $file = $request->file('poder');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_poder = time() . '_' . $file->getClientOriginalName();
@@ -8137,7 +8322,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('avcci')) {
             $file = $request->file('avcci');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_avcci = time() . '_' . $file->getClientOriginalName();
@@ -8147,7 +8332,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('cnacasegurado')) {
             $file = $request->file('cnacasegurado');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_cnacasegurado = time() . '_' . $file->getClientOriginalName();
@@ -8157,7 +8342,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('ciasegurado')) {
             $file = $request->file('ciasegurado');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_ciasegurado = time() . '_' . $file->getClientOriginalName();
@@ -8167,7 +8352,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('cmatrimonio')) {
             $file = $request->file('cmatrimonio');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_cmatrimonio = time() . '_' . $file->getClientOriginalName();
@@ -8177,7 +8362,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('cnacconyuge')) {
             $file = $request->file('cnacconyuge');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_cnacconyuge = time() . '_' . $file->getClientOriginalName();
@@ -8187,7 +8372,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('ciconyuge')) {
             $file = $request->file('ciconyuge');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_ciconyuge = time() . '_' . $file->getClientOriginalName();
@@ -8197,7 +8382,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('cnacjihos')) {
             $file = $request->file('cnacjihos');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_cnacjihos = time() . '_' . $file->getClientOriginalName();
@@ -8207,7 +8392,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('cihijos')) {
             $file = $request->file('cihijos');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_cihijos = time() . '_' . $file->getClientOriginalName();
@@ -8217,7 +8402,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('denfaccidente')) {
             $file = $request->file('denfaccidente');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_denfaccidente = time() . '_' . $file->getClientOriginalName();
@@ -8227,7 +8412,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('crodomicilio')) {
             $file = $request->file('crodomicilio');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_crodomicilio = time() . '_' . $file->getClientOriginalName();
@@ -8237,7 +8422,7 @@ class AsociadoController extends Controller
 
         if ($request->hasFile('contrato')) {
             $file = $request->file('contrato');
-            $carpetaCliente = public_path("/requisitosclientesita/{$cliente->id}");
+            $carpetaCliente = public_path("/requisitosclientesita/{$clientebanco->id}");
             if (!file_exists($carpetaCliente)) {
                 mkdir($carpetaCliente, 0755, true);}
             $archivo_contrato = time() . '_' . $file->getClientOriginalName();
@@ -8245,8 +8430,218 @@ class AsociadoController extends Controller
             $requisito->update(['contrato' => $archivo_contrato]);
         }
 
-        return redirect()->route('admin.asociados.subirdocrequisitos', $cliente)->with('info', 'El documento se subió con éxito');
+        return redirect()->route('admin.asociados.subirdocrequisitos', $clientebanco)->with('info', 'El documento se subió con éxito');
     }
+    public function generarPDFconsentimientobanco(ClienteBanco $clientebanco, Request $request)
+        {
+            $nombres = $request->input('nombres');
+            $ci = $request->input('ci');
+            $fechahoy = date('Y-m-d'); 
+            $clientebancoId = $request->input('clientebancoid');
+            $sucursalCliente = $request->input('sucursal');
+
+            $nombreArchivo = "Consentimiento_Informado_Inicial {$nombres}.pdf";
+
+            $nombreCompleto = "{$nombres}";
+
+            $usuarioId = auth()->id();
+            $usuarioNombre = auth()->user()->name;
+
+            $documentacion = Estadocotizacionsubcliente::create([
+                'clientebancoid' => $clientebancoId,
+                'clientebanconombre' => $nombreCompleto,
+                'detalle' => 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS',
+                'usuarioid' => $usuarioId,
+                'usuarioregistro' => $usuarioNombre,
+                'document' => null, 
+            ]);
+        
+            
+            // Buscar el proveedor, precio y precio de compra en BateriaProveedor
+            $bateriaProveedor = BateriaProveedor::where('sucursal', $sucursalCliente)
+                ->where('accion', 'MEDICINA LABORAL')
+                ->first();
+
+            if ($bateriaProveedor) {
+            $programacion = BateriaSubCliente::create([
+                'clienteid' => $clientebancoId,
+                'clientenombre' => $nombreCompleto,
+                'tipoarea' => 'ESPECIALIDAD',
+                'areanombre' => 'MEDICINA LABORAL',
+                'accionnombre' => 'MEDICINA LABORAL',
+                'precio' => $bateriaProveedor->precio,
+                'informe' => 'NO TIENE INFORME',
+                'preciocompra' => $bateriaProveedor->preciocompra,
+                'proveedorasignado' => $bateriaProveedor->proveedor, 
+                'accionid' => $bateriaProveedor->id, 
+                'servicio' => $bateriaProveedor->servicio, 
+                'fechabateria' => now(),
+                'usuarioid' => $usuarioId,
+                'usuarioregistro' => $usuarioNombre,
+            ]);
+            } else {
+
+            }
+
+            $data = [
+                'nombres' => $nombres,
+                'ci' => $ci,
+                'fechahoy' => $fechahoy,
+            ];
+
+            $pdf = PDF::loadView('admin.asociados.consentimientobanco.pdfconsentimientoclientebanco', $data);
+
+            return $pdf->download($nombreArchivo);
+        }
+    public function generarsoloPDFconsentimientobanco(Request $request)
+        {
+            // Obtener los datos del cliente desde el request
+            $nombres = $request->input('nombres');
+            $apellidoPaterno = $request->input('apepaterno');
+            $apellidoMaterno = $request->input('apematerno');
+            $ci = $request->input('ci');
+            $fechahoy = date('Y-m-d'); 
+            $clienteitaId = $request->input('clienteitaid');
+
+            // Generar el nombre del archivo PDF
+            $nombreArchivo = "Consentimiento_Informado_Inicial {$nombres} {$apellidoPaterno} {$apellidoMaterno}.pdf";
+
+            // Crear el nombre completo del cliente
+            $nombreCompleto = "{$nombres} {$apellidoPaterno} {$apellidoMaterno}";
+
+            // Obtener el ID del usuario autenticado
+            $usuarioId = auth()->id();
+            $usuarioNombre = auth()->user()->name;
+
+            // Guardar el registro en DocumentacionSubcliente
+            $documentacion = Estadocotizacionsubcliente::create([
+                'clienteitaid' => $clienteitaId,
+                'clienteitanombre' => $nombreCompleto,
+                'detalle' => 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS',
+                'usuarioid' => $usuarioId,
+                'usuarioregistro' => $usuarioNombre,
+                'document' => null, // Inicialmente sin documento
+            ]);
+
+
+            // Pasar los datos a la vista para generar el PDF
+            $data = [
+                'nombres' => $nombres,
+                'apellidoPaterno' => $apellidoPaterno,
+                'apellidoMaterno' => $apellidoMaterno,
+                'ci' => $ci,
+                'fechahoy' => $fechahoy,
+            ];
+
+            // Cargar la vista para el PDF
+            $pdf = PDF::loadView('admin.asociados.pdfconsentimientoclientebanco', $data);
+            
+            // Retornar el PDF con el nombre generado
+            return $pdf->download($nombreArchivo);
+        }
+    public function aprobariniciarcrearbateriabanco(Request $request, Cliente $cliente)
+        {
+            // Obtener los datos del cliente desde el request
+            $nombres = $request->input('nombres');
+            $apellidoPaterno = $request->input('apepaterno');
+            $apellidoMaterno = $request->input('apematerno');
+            $clienteitaId = $request->input('clienteitaid');
+
+            // Crear el nombre completo del cliente
+            $nombreCompleto = "{$nombres} {$apellidoPaterno} {$apellidoMaterno}";
+
+            // Obtener el ID del usuario autenticado
+            $usuarioId = auth()->id();
+            $usuarioNombre = auth()->user()->name;
+
+            // Guardar el registro en DocumentacionSubcliente
+            $documentacion = Estadocotizacionsubcliente::create([
+                'clienteitaid' => $clienteitaId,
+                'clienteitanombre' => $nombreCompleto,
+                'detalle' => 'APROBADO PARA INICIAR A CREAR BATERIA',
+                'usuarioid' => $usuarioId,
+                'usuarioregistro' => $usuarioNombre,
+                'document' => null, // Inicialmente sin documento
+            ]);
+
+            return redirect()->back()->with('info', 'Aprobación exitosa.');
+        }
+    public function generarPDFguardarconsentimientobanco(Request $request)
+        {
+            $request->validate(['pdf_file' => 'required|mimes:pdf|max:2048']); // Validar archivo
+
+            // Obtener el clienteitaid y la acción
+            $clientebancoId = $request->input('clientebancoid');
+            $detalle = $request->input('detalle');
+
+            // Buscar el registro existente
+            $documentacion = Estadocotizacionsubcliente::where('clientebancoid', $clientebancoId)
+                ->where('detalle', $detalle)
+                ->first();
+
+            if ($documentacion) {
+                // Guardar el archivo
+                $file = $request->file('pdf_file');
+                $carpetaCliente = public_path("/cotizacionesaprobadasbanco/{$clientebancoId}");
+                if (!file_exists($carpetaCliente)) {
+                    mkdir($carpetaCliente, 0755, true);
+                }
+                $archivo_name = time() . '_' . $file->getClientOriginalName();
+                $file->move($carpetaCliente, $archivo_name);
+
+                // Actualizar el campo document en el registro
+                $documentacion->document = $archivo_name;
+                $documentacion->save();
+
+                return redirect()->back()->with('info', 'PDF guardado exitosamente.');
+            }
+
+            return redirect()->back()->with('error', 'Registro no encontrado.');
+        }
+    public function generarPDFconsentimientoinformadobanco(Request $request)
+        {
+            // Obtener los datos del cliente desde el request
+            $nombres = $request->input('nombres');
+            $apellidoPaterno = $request->input('apepaterno');
+            $apellidoMaterno = $request->input('apematerno');
+            $clienteitaId = $request->input('clienteitaid');
+            $ci = $request->input('ci');
+            $fechahoy = date('Y-m-d'); 
+
+            // Generar el nombre del archivo PDF
+            $nombreArchivo = "Consentimiento_Informado_Evaluaciones_Estudios {$nombres} {$apellidoPaterno} {$apellidoMaterno}.pdf";
+
+            // Crear el nombre completo del cliente
+            $nombreCompleto = "{$nombres} {$apellidoPaterno} {$apellidoMaterno}";
+
+            // Obtener el ID del usuario autenticado
+            $usuarioId = auth()->id();
+            $usuarioNombre = auth()->user()->name;
+
+            /* $documentacion = DocumentacionSubcliente::create([
+                'clienteitaid' => $clienteitaId,
+                'clienteitanombre' => $nombreCompleto,
+                'accion' => 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS',
+                'usuarioid' => $usuarioId,
+                'usuarioregistro' => $usuarioNombre,
+                'document' => null, // Inicialmente sin documento
+            ]); */
+
+            // Pasar los datos a la vista para generar el PDF
+            $data = [
+                'nombres' => $nombres,
+                'apellidoPaterno' => $apellidoPaterno,
+                'apellidoMaterno' => $apellidoMaterno,
+                'ci' => $ci,
+                'fechahoy' => $fechahoy,
+            ];
+
+            // Cargar la vista para el PDF
+            $pdf = PDF::loadView('admin.asociados.pdfconsentimientoinformadoclientebanco', $data);
+            
+            // Retornar el PDF con el nombre generado
+            return $pdf->download($nombreArchivo);
+        }
 //
 
 
