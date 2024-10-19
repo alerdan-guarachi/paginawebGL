@@ -377,7 +377,7 @@ return [
         [
             'text' => 'Programación y Doc.',
             'icon' => 'fas fa-fw fas fa-cogs',
-            'can'  => 'admin.informesfinales.verinformesfinales',
+            'can'  => 'admin.informesfinales.verresultadostodosclientes',
             'submenu' => [
                 /* [
                     'text' => 'Estado de Prog.',
@@ -400,8 +400,14 @@ return [
                 [
                     'text' => 'Resultados Médicos AUDI',
                     'route'  => 'admin.informesfinales.resultadosmedicosclientesauditoria',
-                    'icon' => 'fas fa-fw fas fa-x-ray',
+                    'icon' => 'fas fa-fw fas fa-first-aid',
                     'can'  => 'admin.informesfinales.verresultadosmedicosgeneral',
+                ],
+                [
+                    'text' => 'Resultados Médicos BNC',
+                    'route'  => 'admin.informesfinales.resultadosmedicosclientesbancos',
+                    'icon' => 'fas fa-fw fas fa-diagnoses',
+                    'can'  => 'admin.informesfinales.verresultadosmedicosbanco',
                 ],
                 [
                     'text' => 'Informes Finales',

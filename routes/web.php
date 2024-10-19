@@ -102,6 +102,7 @@ Route::get('tramites/proccompensacionsenasir/{cliente}', 'App\Http\Controllers\A
 
 Route::get('informesfinales/estadodocumentacionprogramacion/7', 'App\Http\Controllers\Admin\InformeFinalController@estadodocumentacionprogramacion')->name('admin.informesfinales.estadodocumentacionprogramacion');
 Route::get('informesfinales/resultadosmedicosclientesauditoria/8', 'App\Http\Controllers\Admin\InformeFinalController@resultadosmedicosclientesauditoria')->name('admin.informesfinales.resultadosmedicosclientesauditoria');
+Route::get('informesfinales/resultadosmedicosclientesbancos/9', 'App\Http\Controllers\Admin\InformeFinalController@resultadosmedicosclientesbancos')->name('admin.informesfinales.resultadosmedicosclientesbancos');
 Route::get('admprogramaciones/controlregistros/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@controlregistros')->name('admin.admprogramaciones.controlregistros');
 Route::get('informesfinales/reservasmedicas/8', 'App\Http\Controllers\Admin\InformeFinalController@reservasmedicas')->name('admin.informesfinales.reservasmedicas');
 

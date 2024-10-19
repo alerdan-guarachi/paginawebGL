@@ -36,6 +36,9 @@ class StoreFichamedicasubclienteRequest extends FormRequest
             'archivo' => 'required',
             'usuarioid' => '',
             'usuarioregistro' => '',
+            'detalle' => '',
+            'clientebancoid' => '',
+            'clientebanconombre' => '',
 
         ]; 
         return $rules;

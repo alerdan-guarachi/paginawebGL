@@ -43,6 +43,7 @@ use PDF;
 use App\Http\Requests\StoreDocumentacionsubclienteRequest;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\TablaExport;
+use App\Models\Fichamedicasubcliente;
 use App\Models\Tramitesubcliente;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -1022,7 +1023,7 @@ class InformeFinalController extends Controller
         $esProveedor = $usuarioAutenticado->role ?? null;
         $userRole = auth()->user()->getRoleNames()->first(); 
         
-        $query = Programacionsubcliente::with(['requisitosclienteauditoriamedica', 'requisitosubcliente', 'bateriasubcliente', 'estadoprogramacionsubcliente', 'documentacionsubcliente', 'proveedorinformesfinales', 'informesfinales'])
+        $query = Programacionsubcliente::with([ 'estadoprogramacionsubclienteauditoria', 'documentacionsubclienteauditoria','requisitosclienteauditoriamedica', 'requisitosubcliente', 'bateriasubcliente', 'estadoprogramacionsubcliente', 'documentacionsubcliente', 'proveedorinformesfinales', 'informesfinales'])
             ->whereNotNull('clienteauditoriaid');
 
         if ($request->has('buscarporfecha') && $request->buscarporfecha !== '') {
@@ -1098,13 +1099,13 @@ class InformeFinalController extends Controller
             }
 
             foreach ($items as $item) {
-                $documentacion = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
-                $image = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
-                $image2 = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
+                $documentacion = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
+                $image = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
+                $image2 = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
                 $accionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
                 $documentacionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
 
-                $estadoProgramacion = $item->estadoprogramacionsubcliente
+                $estadoProgramacion = $item->estadoprogramacionsubclienteauditoria
                     ->where('fechabateria', $item->fechabateria)
                     ->where('accionnombre', $item->accionnombre)
                     ->first();
@@ -1215,6 +1216,182 @@ class InformeFinalController extends Controller
         $requisitosClientepolizas = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoriaid)->wherenotNull('banco')->get();
 
         return view('admin.informesfinales.resultadosmedicosclientesauditoria', compact('requisitosClientepolizas','estadoGeneralauditoria', 'documentosCount','resultadosCount','userRole','abandonaronCount','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'clienteauditoria', 'fechas', 'aprobaciones'));
+    }
+
+    public function resultadosmedicosclientesbancos(ClienteBanco $clientebanco, Request $request)
+    {
+        $sucursal = $clientebanco->sucursal;
+        $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
+        $aprobaciones = AprobacionInformeFinal::all();
+        $fechas = Programacionsubcliente::pluck('fechabateria')->unique()->sort()->toArray();
+        $usuarioAutenticado = auth()->user()->name;
+        $esProveedor = $usuarioAutenticado->role ?? null;
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        
+        $query = Programacionsubcliente::with(['requisitosclienteauditoriamedica', 'requisitosubcliente', 'bateriasubcliente', 'estadoprogramacionsubcliente', 'documentacionsubcliente', 'proveedorinformesfinales', 'informesfinales'])
+            ->whereNotNull('clientebancoid');
+
+        if ($request->has('buscarporfecha') && $request->buscarporfecha !== '') {
+            $query->where('fechabateria', $request->buscarporfecha);
+        }
+
+        if ($request->has('buscarporcliente') && $request->buscarporcliente !== '') {
+            $query->whereHas('clientebanco', function ($q) use ($request) {
+                $q->where('clientebanconombre', 'LIKE', '%' . $request->buscarporcliente . '%');
+            });
+        }
+
+        $programacionclientes = $query->get();
+        $grouped = $programacionclientes->groupBy(function($item) {
+            return $item->clientenombre . '|' . $item->fechabateria;
+        });
+
+        $result = [];
+        foreach ($grouped as $key => $items) {
+            $clienteNombre = explode('|', $key)[0];
+            $fechabateria = explode('|', $key)[1];
+
+            $clientebancoid = $items->first()->clientebancoid;
+
+            $usuarioAutenticado = auth()->user()->name;
+            $esProveedor = $usuarioAutenticado->role ?? null;
+
+            $proveedorAsignado = ProveedorInformeFinal::where('clientebancoid', $items->first()->clientebancoid)
+                ->where('fechabateria', $fechabateria)
+                ->first();
+            $documentosubido = Informefinal::where('clientebancoid', $items->first()->clientebancoid)
+                ->where('fechabateria', $fechabateria)
+                ->first();
+            $fichamedica = Fichamedicasubcliente::withTrashed()
+                ->where('clientebancoid', $items->first()->clientebancoid)
+                ->where('detalle', 'FICHA MEDICA')
+                ->first();
+            $declaracionmedica = Fichamedicasubcliente::withTrashed()
+                ->where('clientebancoid', $items->first()->clientebancoid)
+                ->where('detalle', 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR')
+                ->first();
+
+            $consentimientoinformado = Estadocotizacionsubcliente::withTrashed()
+                ->where('clientebancoid', $items->first()->clientebancoid)
+                ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+                ->whereNotNull('document')
+                ->first();
+
+            $informefinal = Informefinal::withTrashed()
+                ->where('clientebancoid', $items->first()->clientebancoid)
+                /* ->where('detalle', 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR') */
+                ->first();
+            $motivoabandonobateria = Bateriasubcliente::where('clienteid', $items->first()->clientebancoid)
+                ->where('fechabateria', $fechabateria)
+                ->first();
+
+            $usuarioRegistro = ClienteBanco::where('id', $items->first()->clientebancoid)
+                ->first();
+
+            $fichamedicaclientebanco = $fichamedica ? $fichamedica->document : null;
+            $declaracionmedicaclientebanco = $declaracionmedica ? $declaracionmedica->document : null;
+            $consentimiento = $consentimientoinformado ? $consentimientoinformado->document : null;
+            $informefinalclientebanco = $informefinal ? $informefinal->document : null;
+            $usuarioregistro = $usuarioRegistro ? $usuarioRegistro->sucursal : null;
+            $empresaregistro = $usuarioRegistro ? $usuarioRegistro->asociadonombre : null;
+            $motivoabandono = $motivoabandonobateria ? $motivoabandonobateria->motivoabandono : null;
+            $clientebancoid = $items->first()->clientebancoid;
+        
+            $estado = 'COMPLETO';
+            $accionesConEstado = [];
+
+            foreach ($items as $item) {
+                $documentacion = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
+                $image = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
+                $image2 = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
+                $accionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
+                $documentacionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
+
+                $estadoProgramacion = $item->estadoprogramacionsubcliente
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accionnombre', $item->accionnombre)
+                    ->first();
+                $motivoabandono = Bateriasubcliente::where('clienteid', $item->clientebancoid)
+                    ->where('fechabateria', $item->fechabateria)
+                    ->value('motivoabandono');
+
+                $fechaAtencion = $estadoProgramacion ? $estadoProgramacion->fechaatencionprogramacion : null;
+                $createdatbateria = $item->bateriasubcliente->where('accionnombre', $item->accionnombre)->first();
+
+                if ($createdatbateria) {
+                    $createdfechabateria = $createdatbateria->created_at;
+                    $formattedDate = $createdfechabateria->format('Y-m-d H:i:s');
+                } else {
+                    $formattedDate = 'Fecha no disponible';
+                }
+
+                if ($accionEstado === 'PENDIENTE') {
+                    $estado = 'INCOMPLETO';
+                }
+                $accionesConEstado[] = [
+                    'accion' => $item->accionnombre,
+                    'estado' => $accionEstado,
+                    'document' => $documentacion,
+                    'image' => $image,
+                    'image2' => $image2,
+                    'proveedornombre' => $item->proveedornombre,
+                    'fechaasignada' => $item->fechaasignada,
+                    'created_at' => $item->created_at,
+                    'fechaatencionprogramacion' => $fechaAtencion,
+                    'fechadocumento' => $documentacion ? $documentacion->created_at : null,
+                    'creacionbateria' => $createdatbateria,
+                ];
+            }
+            $result[] = [
+                'clientebanconombre' => $clienteNombre,
+                'fechabateria' => $fechabateria,
+                'estado' => $estado,
+                'acciones' => $accionesConEstado,
+                'clientebancoid' => $clientebancoid,
+                'proveedornombre' => $proveedorAsignado ? $proveedorAsignado->proveedorasignado : null,
+                'celularproveedor' => $proveedorAsignado ? $proveedorAsignado->celularproveedor : null,
+                'document' => $documentosubido ? $documentosubido->document : null,
+                'idinformefinal' => $documentosubido ? $documentosubido->id : null,
+                'proveedorrol' => $esProveedor,
+                'fichamedica' => $fichamedicaclientebanco,
+                'motivoabandono' => $motivoabandono,
+                'usuarioregistro' => $usuarioregistro,
+                'empresaregistro' => $empresaregistro,
+                'declaracionmedica' => $declaracionmedicaclientebanco,
+                'informefinal' => $informefinalclientebanco,
+                'consentimiento' => $consentimiento,
+            ];
+        }
+ 
+        $completosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado'] === 'COMPLETO') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        $resultadosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado'] === 'COMPLETO') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        $documentosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado'] === 'COMPLETO') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        $incompletosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado'] === 'INCOMPLETO') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        return view('admin.informesfinales.resultadosmedicosclientesbancos', compact('clientebancoid','documentosCount','resultadosCount','userRole','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'clientebanco', 'fechas', 'aprobaciones'));
     }
 public function solrevisioninformefinal(Request $request, Informefinal $informefinal)
 {

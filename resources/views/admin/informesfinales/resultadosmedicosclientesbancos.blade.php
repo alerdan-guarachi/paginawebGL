@@ -1,7 +1,14 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<h1>RESULTADOS MÉDICOS CLIENTES AUDITORIA</h1>
+
+@if($userRole === 'ASOCIADO')
+<h1>RESULTADOS MÉDICOS</h1>
+@endif
+
+@if($userRole !== 'ASOCIADO')
+<h1>RESULTADOS MÉDICOS CLIENTES BANCOS</h1>
+@endif
 @stop
 
 @section('content')
@@ -16,10 +23,10 @@
     </script>
 @endif
 <div class="card">
-    <nav class="navbar navbar-expand-lg">
+    {{-- <nav class="navbar navbar-expand-lg">
         <div class="container-fluid justify-content-end">
             <div class="d-flex flex-wrap align-items-center">
-                <form id="search-form" action="{{ route('buscarprogramacionescomclienteita') }}" method="get" class="form-inline">
+                <form id="search-form" action="{{ route('buscarprogramacionescomclientebanco') }}" method="get" class="form-inline">
                     <div class="flex-grow-1">
                         <input type="text" name="buscarporcliente" class="form-control mr-sm-2" placeholder="Nombre del Cliente">
                     </div>
@@ -32,7 +39,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('btn-mostrar-todo').addEventListener('click', function() {
-                window.location.href = "{{ route('buscarprogramacionescomclienteita') }}";
+                window.location.href = "{{ route('buscarprogramacionescomclientebanco') }}";
             });
     
             const activeTabId = localStorage.getItem('activeTab') || 'tab-1';
@@ -48,11 +55,12 @@
                 });
             });
         });
-    </script>
+    </script> --}}
     
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" id="myTabs">
 
+            @if($userRole === 'MAESTRO' || $userRole === 'ADMINISTRADOR' || $userRole === 'OPERATIVO')
             <li class="nav-item">
                 <a class="nav-link active" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
                     100% COMPLETOS
@@ -61,9 +69,10 @@
                     <?php endif; ?>
                 </a>
             </li> 
+            
             <li class="nav-item">
                 <a class="nav-link" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
-                    RESULT. MÉDICOS COMPLETOS
+                    INFORME FINAL PENDIENTE
                     <?php if ($resultadosCount > 0): ?>
                         <span class="circle"><?= $resultadosCount ?></span>
                     <?php endif; ?>
@@ -71,12 +80,12 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
-                    DOCUMENTACIONES COMPLETAS
+                    RESULT. MÉDICOS COMPLETOS
                     <?php if ($documentosCount > 0): ?>
                         <span class="circle"><?= $documentosCount ?></span>
                     <?php endif; ?>
                 </a>
-            </li>    
+            </li> 
             <li class="nav-item">
                 <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
                     INCOMPLETOS
@@ -84,7 +93,8 @@
                         <span class="circle"><?= $incompletosCount ?></span>
                     <?php endif; ?>
                 </a>
-            </li>
+            </li>   
+            @endif
         </ul>
     </div>
     <div class="card-body">
@@ -97,23 +107,33 @@
                         <thead>
                             <tr>
                                 <th style="width: 5%;">ID</th>
-                                <th style="width: 20%;">Cliente</th>
+                                <th style="width: 25%;">Cliente</th>
+                                <th style="width: 10%;">Banco</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 25%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
-                                <th style="width: 15%;">Documentación</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Fecha Bat.</th>
+                                <th style="width: 10%;">Res. Médicos</th>
+                                <th style="width: 10%;">Ficha Médica</th>
+                                <th style="width: 10%;">Decla. Médica</th>
+                                <th style="width: 10%;">Inf. Final</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
-                            @if ($item['estado'] === 'COMPLETO' && $item['estadoGeneralauditoria'] === 'COMPLETO')
+                            @if ($item['estado'] === 'COMPLETO')
                                 <tr>
                                     {{-- ID DEL CLIENTE --}}
-                                    <td>{{ $item['clienteauditoriaid'] }}</td>
+                                    <td>{{ $item['clientebancoid'] }}</td>
 
                                     {{-- CLIENTE --}}
-                                    <td>{{ $item['clienteauditorianombre'] }}</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {{ $item['clientebanconombre'] }}
+                                    </td>
+
+                                    {{-- BANCO --}}
+                                    <td>{{ $item['empresaregistro'] }}</td>
 
                                     {{-- USUARIO REGISTRO --}}
                                     <td>{{ $item['usuarioregistro'] }}</td>
@@ -126,13 +146,7 @@
                                     </td>
 
                                     {{-- FECHA DE BATERIA --}}
-                                    <td>
-                                        @if (is_array($item['tramite']) && count($item['tramite']) > 0)
-                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }} {{-- Muestra la fecha seguida de los trámites --}}
-                                        @else
-                                            {{ $item['fechabateria'] }} - SIN SERVICIO {{-- Muestra la fecha con un mensaje si no hay trámites --}}
-                                        @endif
-                                    </td>
+                                    <td>{{ $item['fechabateria'] }}</td>
 
                                     {{-- RESULTADOS MEDICOS --}}
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
@@ -142,36 +156,45 @@
                                         </abbr>
                                     </td>
 
-                                    {{-- DOCUMENTACION --}}
+                                    {{-- FICHA MEDICA --}}
                                     <td>
-                                        @if (in_array('AUDITORIA MEDICA', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            AUD. MEDICA
-                                            @if ($item['estadoGeneralauditoria'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionauditoria{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SIN SERVICIO', $item['tramite']))
-                                            <p class="text-noregistrado">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-                                    {{-- HISTORIA MEDICA --}}
-                                    <td>
-                                        @if ($item['historiamedica'])
+                                        @if ($item['fichamedica'])
                                         <p class="text-completo">VER
-                                        <abbr title="VER HISTORIA MÉDICA">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
+                                        <abbr title="VER FICHA MÉDICA">
+                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['fichamedica']) }}" class="btn btn-completo" target="_blank">
                                                 <i class="fas fa-book-medical"></i>
                                             </a>
                                         </abbr></p>
                                         @else
-                                        <p class="text-notiene">NO TIENE</p>
+                                        <p class="text-incompleto">NO REGISTRADO</p>
+                                        @endif
+                                    </td>
+
+                                    {{-- DECLARACION MEDICA --}}
+                                    <td>
+                                        @if ($item['declaracionmedica'])
+                                        <p class="text-completo">VER
+                                        <abbr title="VER DECLARACION MEDICA">
+                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['declaracionmedica']) }}" class="btn btn-completo" target="_blank">
+                                                <i class="fas fa-book-medical"></i>
+                                            </a>
+                                        </abbr></p>
+                                        @else
+                                        <p class="text-incompleto">NO REGISTRADO</p>
+                                        @endif
+                                    </td>
+
+                                    {{-- INFORME FINAL --}}
+                                    <td>
+                                        @if ($item['informefinal'])
+                                        <p class="text-completo">VER
+                                        <abbr title="VER INFORME FINAL">
+                                            <a href="{{ asset('/informesfinalesclientesbanco/' . $item['clientebancoid'] . '/' . $item['informefinal']) }}" class="btn btn-completo" target="_blank">
+                                                <i class="fas fa-book-medical"></i>
+                                            </a>
+                                        </abbr></p>
+                                        @else
+                                        <p class="text-incompleto">NO REGISTRADO</p>
                                         @endif
                                     </td>
                                 </tr>
@@ -183,32 +206,45 @@
                 </div>
             </div>
 
-            {{-- RESULTADOS MEDICOS COMPLETOS --}}
+            @if($userRole === 'MAESTRO' || $userRole === 'ADMINISTRADOR' || $userRole === 'OPERATIVO')
+            {{-- INFORME FINAL PENDIENTE --}}
             <div class="tab-pane fade" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
                             <tr> 
-                                <th style="width: 5%;">ID</th>
-                                <th style="width: 20%;">Cliente</th>
-                                <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 25%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
-                                <th style="width: 15%;">Documentación</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <tr>
+                                    <th style="width: 5%;">ID</th>
+                                    <th style="width: 25%;">Cliente</th>
+                                    <th style="width: 10%;">Banco</th>
+                                    <th style="width: 10%;">Sucursal</th>
+                                    <th style="width: 10%;">Fecha Bat.</th>
+                                    <th style="width: 10%;">Res. Médicos</th>
+                                    <th style="width: 10%;">Ficha Médica</th>
+                                    <th style="width: 10%;">Decla. Médica</th>
+                                    <th style="width: 10%;">Inf. Final</th>
+                                </tr>
                             </tr>                            
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
                             {{-- @if ($item['estado'] === 'COMPLETO' && $item['estadoGeneral'] === 'PENDIENTE' || $item['estadoGeneralauditoria'] === 'PENDIENTE') --}}
-                            @if ($item['estado'] === 'COMPLETO' && ($item['estadoGeneralauditoria'] === 'PENDIENTE'))
+                            @if ($item['estado'] === 'COMPLETO')
 
                             <tr>
                                     {{-- ID DEL CLIENTE --}}
-                                    <td>{{ $item['clienteauditoriaid'] }}</td>
+                                    <td>{{ $item['clientebancoid'] }}</td>
 
                                     {{-- CLIENTE --}}
-                                    <td>{{ $item['clienteauditorianombre'] }}</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {{ $item['clientebanconombre'] }}
+                                    </td>
+
+                                    {{-- BANCO --}}
+                                    <td>{{ $item['empresaregistro'] }}</td>
 
                                     {{-- USUARIO REGISTRO --}}
                                     <td>{{ $item['usuarioregistro'] }}</td>
@@ -221,13 +257,7 @@
                                     </td>
 
                                     {{-- FECHA DE BATERIA Y SERVICIO--}}
-                                    <td>
-                                        @if (is_array($item['tramite']) && count($item['tramite']) > 0)
-                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }}
-                                        @else
-                                            {{ $item['fechabateria'] }} - SIN SERVICIO
-                                        @endif
-                                    </td>
+                                    <td>{{ $item['fechabateria'] }}</td>
 
 
                                     {{-- RESULTADOS MEDICOS --}}
@@ -251,37 +281,45 @@
                                                 }
                                     </style>
 
-                                    {{-- DOCUMENTACION --}}
+                                    {{-- FICHA MEDICA --}}
                                     <td>
-                                        @if (in_array('AUDITORIA MEDICA', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            AUD. MEDICA
-                                            @if ($item['estadoGeneralauditoria'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionauditoria{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SIN SERVICIO', $item['tramite']))
-                                            <p class="text-noregistrado">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-                                    
-                                    {{-- HISTORIA MEDICA --}}
-                                    <td>
-                                        @if ($item['historiamedica'])
+                                        @if ($item['fichamedica'])
                                         <p class="text-completo">VER
-                                        <abbr title="VER HISTORIA MÉDICA">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
+                                        <abbr title="VER FICHA MÉDICA">
+                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['fichamedica']) }}" class="btn btn-completo" target="_blank">
                                                 <i class="fas fa-book-medical"></i>
                                             </a>
                                         </abbr></p>
                                         @else
-                                        <p class="text-notiene">NO TIENE</p>
+                                        <p class="text-incompleto">NO REGISTRADO</p>
+                                        @endif
+                                    </td>
+
+                                    {{-- DECLARACION MEDICA --}}
+                                    <td>
+                                        @if ($item['declaracionmedica'])
+                                        <p class="text-completo">VER
+                                        <abbr title="VER DECLARACION MEDICA">
+                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['declaracionmedica']) }}" class="btn btn-completo" target="_blank">
+                                                <i class="fas fa-book-medical"></i>
+                                            </a>
+                                        </abbr></p>
+                                        @else
+                                        <p class="text-incompleto">NO REGISTRADO</p>
+                                        @endif
+                                    </td>
+
+                                    {{-- INFORME FINAL --}}
+                                    <td>
+                                        @if ($item['informefinal'])
+                                        <p class="text-completo">VER
+                                        <abbr title="VER INFORME FINAL">
+                                            <a href="{{ asset('/informesfinalesclientesbanco/' . $item['clientebancoid'] . '/' . $item['informefinal']) }}" class="btn btn-completo" target="_blank">
+                                                <i class="fas fa-book-medical"></i>
+                                            </a>
+                                        </abbr></p>
+                                        @else
+                                        <p class="text-incompleto">NO REGISTRADO</p>
                                         @endif
                                     </td>
                                 </tr>
@@ -292,30 +330,40 @@
                 </div>
             </div>
 
-            {{-- DOCUMENTACIONES COMPLETAS --}}
+            {{-- RESULT. MÉDICOS COMPLETOS --}}
             <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th style="width: 5%;">ID</th>
-                                <th style="width: 20%;">Cliente</th>
+                                <th style="width: 25%;">Cliente</th>
+                                <th style="width: 10%;">Banco</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 25%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
-                                <th style="width: 15%;">Documentación</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Fecha Bat.</th>
+                                <th style="width: 10%;">Res. Médicos</th>
+                                <th style="width: 10%;">Ficha Médica</th>
+                                <th style="width: 10%;">Decla. Médica</th>
+                                <th style="width: 10%;">Inf. Final</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
-                            @if ($item['estado'] === 'INCOMPLETO' && ($item['estadoGeneralauditoria'] === 'COMPLETO'))
+                            @if ($item['estado'] === 'COMPLETO')
                                 <tr>
                                     {{-- ID DEL CLIENTE --}}
-                                    <td>{{ $item['clienteauditoriaid'] }}</td>
+                                    <td>{{ $item['clientebancoid'] }}</td>
 
                                     {{-- CLIENTE --}}
-                                    <td>{{ $item['clienteauditorianombre'] }}</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {{ $item['clientebanconombre'] }}
+                                    </td>
+
+                                    {{-- BANCO --}}
+                                    <td>{{ $item['empresaregistro'] }}</td>
 
                                     {{-- USUARIO REGISTRO --}}
                                     <td>{{ $item['usuarioregistro'] }}</td>
@@ -328,23 +376,10 @@
                                     </td>
 
                                     {{-- FECHA DE BATERIA --}}
-                                    {{-- <td>{{ $item['fechabateria'] }} - {{ $item['tramite'] }}</td> --}}
-                                    <td>
-                                        @if (is_array($item['tramite']) && count($item['tramite']) > 0)
-                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }} {{-- Muestra la fecha seguida de los trámites --}}
-                                        @else
-                                            {{ $item['fechabateria'] }} - SIN SERVICIO {{-- Muestra la fecha con un mensaje si no hay trámites --}}
-                                        @endif
-                                    </td>
+                                    <td>{{ $item['fechabateria'] }}</td>
 
 
                                     {{-- RESULTADOS MEDICOS --}}
-                                    {{-- <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></button>
-                                        </abbr>
-                                    </td> --}}
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER RESULTADOS MÉDICOS">
@@ -367,38 +402,45 @@
                                                 }
                                     </style>
                                 
-                                    {{-- DOCUMENTACION --}}
+                                    {{-- FICHA MEDICA --}}
                                     <td>
-                                        @if (in_array('AUDITORIA MEDICA', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            AUD. MEDICA
-                                            @if ($item['estadoGeneralauditoria'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionauditoria{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SIN SERVICIO', $item['tramite']))
-                                            <p class="text-noregistrado">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-                                    
-
-                                    {{-- HISTORIA MEDICA --}}
-                                    <td>
-                                        @if ($item['historiamedica'])
+                                        @if ($item['fichamedica'])
                                         <p class="text-completo">VER
-                                        <abbr title="VER HISTORIA MÉDICA">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
+                                        <abbr title="VER FICHA MÉDICA">
+                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['fichamedica']) }}" class="btn btn-completo" target="_blank">
                                                 <i class="fas fa-book-medical"></i>
                                             </a>
                                         </abbr></p>
                                         @else
-                                        <p class="text-notiene">NO TIENE</p>
+                                        <p class="text-incompleto">NO REGISTRADO</p>
+                                        @endif
+                                    </td>
+                                    
+                                    {{-- DECLARACION MEDICA --}}
+                                    <td>
+                                        @if ($item['declaracionmedica'])
+                                        <p class="text-completo">VER
+                                        <abbr title="VER DECLARACION MEDICA">
+                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['declaracionmedica']) }}" class="btn btn-completo" target="_blank">
+                                                <i class="fas fa-book-medical"></i>
+                                            </a>
+                                        </abbr></p>
+                                        @else
+                                        <p class="text-incompleto">NO REGISTRADO</p>
+                                        @endif
+                                    </td>
+
+                                    {{-- INFORME FINAL --}}
+                                    <td>
+                                        @if ($item['informefinal'])
+                                        <p class="text-completo">VER
+                                        <abbr title="VER INFORME FINAL">
+                                            <a href="{{ asset('/informesfinalesclientesbanco/' . $item['clientebancoid'] . '/' . $item['informefinal']) }}" class="btn btn-completo" target="_blank">
+                                                <i class="fas fa-book-medical"></i>
+                                            </a>
+                                        </abbr></p>
+                                        @else
+                                        <p class="text-incompleto">NO REGISTRADO</p>
                                         @endif
                                     </td>
                                 </tr>
@@ -417,22 +459,33 @@
                             <tr>
                                 <th style="width: 5%;">ID</th>
                                 <th style="width: 20%;">Cliente</th>
+                                <th style="width: 10%;">Banco</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 25%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
-                                <th style="width: 15%;">Documentación</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Atención</th>
+                                <th style="width: 15%;">Res. Médicos</th>
+                                <th style="width: 15%;">Doc. Adicional</th>
+                                <th style="width: 10%;">Inf. Médico</th>
+                                <th style="width: 5%;">Conciliación</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
-                            @if ($item['estado'] === 'INCOMPLETO' && $item['estadoGeneralauditoria'] === 'PENDIENTE')
+                            @if ($item['estado'] === 'INCOMPLETO')
                                 <tr>
                                     {{-- ID DEL CLIENTE --}}
-                                    <td>{{ $item['clienteauditoriaid'] }}</td>
+                                    <td>{{ $item['clientebancoid'] }}</td>
 
                                     {{-- CLIENTE --}}
-                                    <td>{{ $item['clienteauditorianombre'] }}</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {{ $item['clientebanconombre'] }}
+                                    </td>
+
+
+                                    {{-- EMPRESA --}}
+                                    <td>{{ $item['empresaregistro'] }}</td>
 
                                     {{-- USUARIO REGISTRO --}}
                                     <td>{{ $item['usuarioregistro'] }}</td>
@@ -445,133 +498,80 @@
                                     </td>
 
                                     {{-- FECHA DE BATERIA --}}
-                                    {{-- <td>{{ $item['fechabateria'] }} - {{ $item['tramite'] }}</td>--}}
-                                    <td>
-                                        @if (is_array($item['tramite']) && count($item['tramite']) > 0)
-                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }} {{-- Muestra la fecha seguida de los trámites --}}
-                                        @else
-                                            {{ $item['fechabateria'] }} - SIN SERVICIO {{-- Muestra la fecha con un mensaje si no hay trámites --}}
-                                        @endif
-                                    </td>
+                                    <td>{{ $item['fechabateria'] }}</td>
                                     
-                                    {{-- ESTADO DE DOCUMENTACION --}}
+                                    {{-- ESTADO DE INFORMES --}}
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn btn-veracciones2" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></button>
+                                            <button class="btn btn-veracciones2 btn-sm" data-toggle="modal" data-target="#modal{{ $loop->index }}">
+                                                <i class="fas fa-eye"></i></button>
                                         </abbr>
                                     </td>
 
-                                    {{-- DOCUMENTACION --}}
-                                    <td>
-                                        @if (in_array('AUDITORIA MEDICA', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            AUD. MEDICA
-                                            @if ($item['estadoGeneralauditoria'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionauditoria{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SIN SERVICIO', $item['tramite']))
-                                            <p class="text-noregistrado">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-
-                                    {{-- HISTORIA MEDICA --}}
-                                    <td>
-                                        @if ($item['historiamedica'])
-                                        <p class="text-completo">VER
-                                        <abbr title="VER HISTORIA MÉDICA">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr></p>
-                                        @else
-                                        <p class="text-notiene">NO TIENE</p>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                        
-                    </table>
-                </div>
-            </div>
-
-            {{-- ABANDONARON --}}
-            <div class="tab-pane fade" id="tab-content-6" role="tabpanel" aria-labelledby="tab-6">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID Cliente</th>
-                                <th>Cliente</th>
-                                <th>Fecha Batería</th>
-                                <th>Result. Médicos</th>
-                                <th>Otros doc.</th>
-                                <th>Motivo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($result as $item)
-                            @if ($item['motivoabandono'])
-                                <tr>
-                                    {{-- ID DEL CLIENTE --}}
-                                    <td>{{ $item['clienteitaid'] }}</td>
-
-                                    {{-- CLIENTE --}}
-                                    <td>{{ $item['clienteitanombre'] }}</td>
-
-                                    {{-- CELULAR DE PROVEEDOR --}}
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
-                                        @endif
-                                    </td>
-
-                                    {{-- FECHA DE BATERIA --}}
-                                    <td>{{ $item['fechabateria'] }}</td>
-
-                                    {{-- ESTADO DE DOCUMENTACION --}}
+                                    {{-- DOCUMENTOS ADICIONALES --}}
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
-                                        <abbr title="VER DOCUMENTACIÓN">
-                                            <button class="btn btn-veracciones2" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></button>
-                                        </abbr>
-                                    </td>
-
-                                    {{-- HISTORIAS MEDICAS Y DOCUMENTACION --}}
-                                    <td>
-                                        <abbr title="VER DOCUMENTACIÓN">
-                                            <button class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
-                                                <i class="fas fa-address-book"></i>
+                                        <abbr title="VER OTRO CONTENIDO">
+                                            <button class="btn btn-veracciones2 btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
+                                                <i class="fas fa-eye"></i>
                                             </button>
                                         </abbr>
+                                    </td>
 
-                                        @if ($item['historiamedica'])
-                                        <abbr title="VER HISTORIA MÉDICA">
-                                            <a href="{{ asset('/historiamedica/' . $item['clienteitaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr>
+                                    {{-- INFORME MEDICO --}}
+                                    <td>
+                                        @if ($item['informefinal'])
+                                            <p class="text-completo">VER
+                                                <abbr title="VER INFORME FINAL">
+                                                    <a href="{{ asset('/informesfinalesclientesbanco/' . $item['clientebancoid'] . '/' . $item['informefinal']) }}" class="btn btn-completo" target="_blank">
+                                                        <i class="fas fa-book-medical"></i>
+                                                    </a>
+                                                </abbr>
+                                            </p>
+                                        @else
+                                            <button type="button" class="btn btn-primary btn-sm btn-bateria" title="SUBIR INFORME FINAL" data-toggle="modal" data-target="#uploadModal{{ $item['clientebancoid'] }}">
+                                                <i class="fas fa-upload"></i>
+                                            </button>
+
+                                            <div class="modal fade" id="uploadModal{{ $item['clientebancoid'] }}" tabindex="-1" aria-labelledby="uploadModalLabel{{ $item['clientebancoid'] }}" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="uploadModalLabel{{ $item['clientebancoid'] }}">Subir Informe Final</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <form action="{{ route('admin.informes.subir', $item['clientebancoid']) }}" method="POST" enctype="multipart/form-data">
+                                                                @csrf
+                                                                <div class="mb-3">
+                                                                    <label for="informe_final" class="form-label">Selecciona el PDF del Informe Final</label>
+                                                                    <input type="file" class="form-control dropify" name="informe_final" id="informe_final" accept="application/pdf" required>
+                                                                </div>
+                                                                <button type="submit" class="btn btn-success">Subir</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         @endif
                                     </td>
-                                    <td>{{ $item['motivoabandono'] }}</td>
+                                    {{-- CONSILIACIÓN --}}
+                                    <td>  
+                                        <a class="btn btn-sm btn-bateria" 
+                                        href="{{ route('admin.asociados.generarpdfcotizacionclientebanco', ['clientebanco' => $clientebancoid]) }}"
+                                           onclick="confirmarGeneracionPdf(event)">
+                                           <i class="fas fa-donate"></i>
+                                        </a>
+                                    </td>
                                 </tr>
-                                
                                 @endif
                             @endforeach
                         </tbody>
-                        
                     </table>
                 </div>
             </div>
+            @endif
         </div>
     </div>
 </div>
@@ -595,7 +595,7 @@
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="modalLabel{{ $loop->index }}"><strong>{{ $item['clienteauditorianombre'] }}</strong> - Fecha Bateria: {{ \Carbon\Carbon::parse($item['fechabateria'])->format('Y-m-d') }}</h4>
+                    <h4 class="modal-title" id="modalLabel{{ $loop->index }}"><strong>{{ $item['clientebanconombre'] }}</strong> - Fecha Bateria: {{ \Carbon\Carbon::parse($item['fechabateria'])->format('Y-m-d') }}</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -605,28 +605,18 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    {{-- <th>Fecha Bateria</th> --}}
-                                    <th>Acción</th>
+                                    <th>Estudio / Especialidad</th>
                                     <th>Proveedor</th>
-                                    <th>Programación</th>
-                                    <th>Atención</th>
+                                    <th>Fecha atención</th>
                                     <th>Result. Médico</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($item['acciones'] as $accion)
                                     <tr>
-                                        {{-- <td>{{ $accion['creacionbateria']->format('Y-m-d') }}</td> --}}
                                         <td>{{ $accion['accion'] }}</td>
                                         <td>{{ $accion['proveedornombre'] }}</td>
                                         <td>{{ $accion['fechaasignada'] }}</td>   
-                                        <td>
-                                            @if ($accion['fechaatencionprogramacion'])
-                                            {{ $accion['fechaatencionprogramacion'] }}
-                                            @else
-                                            <div class="pendiente">PENDIENTE</div>
-                                            @endif
-                                        </td>
                                         <td>
                                             @if ($accion['estado'] === 'COMPLETO')
                                                 {{ $accion['fechadocumento']->format('Y-m-d') }}
@@ -638,19 +628,19 @@
                                                     </button>
                                                     <div class="dropdown-menu">
                                                         @if (isset($accion['document']))
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['document']->document) }}" class="btn btn-verdocumentacion" target="_blank" title="VER RESULTADO MÉDICO">
+                                                            <a href="{{ asset('/documentacionclientesbanco/' . $item['clientebancoid'] . '/' . $accion['document']->document) }}" class="btn btn-verdocumentacion" target="_blank" title="VER RESULTADO MÉDICO">
                                                                 <i class="fas fa-folder-open"></i>
                                                             </a>
                                                         @endif
                                         
                                                         @if (isset($accion['image']) && $accion['image']->image)
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['image']->image) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 1">
+                                                            <a href="{{ asset('/documentacionclientesbanco/' . $item['clientebancoid'] . '/' . $accion['image']->image) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 1">
                                                                 <i class="fas fa-images"></i>
                                                             </a>
                                                         @endif
                                         
                                                         @if (isset($accion['image2']) && $accion['image2']->image2)
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['image2']->image2) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
+                                                            <a href="{{ asset('/documentacionclientesbanco/' . $item['clientebancoid'] . '/' . $accion['image2']->image2) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
                                                                 <i class="far fa-images"></i>
                                                             </a>
                                                         @endif
@@ -670,28 +660,18 @@
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    {{-- <th>Fecha Bateria</th> --}}
-                                    <th>Acción</th>
+                                    <th>Estudio / Especialidad</th>
                                     <th>Proveedor</th>
-                                    <th>Programación</th>
-                                    <th>Atención</th>
+                                    <th>Fecha atención</th>
                                     <th>Result. Médico</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($item['acciones'] as $accion)
                                     <tr>
-                                        {{-- <td>{{ $accion['creacionbateria']->format('Y-m-d') }}</td> --}}
                                         <td>{{ $accion['accion'] }}</td>
                                         <td>{{ $accion['proveedornombre'] }}</td>
                                         <td>{{ $accion['fechaasignada'] }}</td>   
-                                        <td>
-                                            @if ($accion['fechaatencionprogramacion'])
-                                            {{ $accion['fechaatencionprogramacion'] }}
-                                            @else
-                                            <div class="pendiente">PENDIENTE</div>
-                                            @endif
-                                        </td>
                                         <td>
                                             @if ($accion['estado'] === 'COMPLETO')
                                                 {{ $accion['fechadocumento']->format('Y-m-d') }}
@@ -703,19 +683,19 @@
                                                     </button>
                                                     <div class="dropdown-menu">
                                                         @if (isset($accion['document']))
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['document']->document) }}" class="btn btn-verdocumentacion" target="_blank" title="VER RESULTADO MÉDICO">
+                                                            <a href="{{ asset('/documentacionclientesbanco/' . $item['clientebancoid'] . '/' . $accion['document']->document) }}" class="btn btn-verdocumentacion" target="_blank" title="VER RESULTADO MÉDICO">
                                                                 <i class="fas fa-folder-open"></i>
                                                             </a>
                                                         @endif
                     
                                                         @if (isset($accion['image']) && $accion['image']->image)
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['image']->image) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 1">
+                                                            <a href="{{ asset('/documentacionclientesbanco/' . $item['clientebancoid'] . '/' . $accion['image']->image) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 1">
                                                                 <i class="fas fa-images"></i>
                                                             </a>
                                                         @endif
                     
                                                         @if (isset($accion['image2']) && $accion['image2']->image2)
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['image2']->image2) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
+                                                            <a href="{{ asset('/documentacionclientesbanco/' . $item['clientebancoid'] . '/' . $accion['image2']->image2) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
                                                                 <i class="far fa-images"></i>
                                                             </a>
                                                         @endif
@@ -739,108 +719,104 @@
         </div>
     </div>
 
-    <!-- DOCUMENTACIÓN AUDITORIA-->
-    <div class="modal fade" id="modalDocumentacionauditoria{{ $loop->index }}" tabindex="-1" role="dialog" aria-labelledby="modalLabelDocumentacion{{ $loop->index }}" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+    <!-- DOCUMENTACION ADICIONAL -->
+    <div class="modal fade" id="nuevoModal{{ $loop->index }}" tabindex="-1" role="dialog" aria-labelledby="nuevoModalLabel{{ $loop->index }}" aria-hidden="true"> 
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="modalLabelDocumentacionauditoria{{ $loop->index }}">
-                        <strong>DOCUMENTACIÓN AUDITORIA MEDICA</strong>
+                    <h4 class="modal-title" id="modalLabel{{ $loop->index }}">
+                        <strong>{{ $item['clientebanconombre'] }}</strong>
                     </h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Documento</th>
-                                <th>Ver Doc.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $mostrarcnacaseguradoau = !empty($accion['cnacaseguradoau']);
-                                $mostrarcnacaseguradopendienteau = $accion['cnacaseguradoau'] === 'PENDIENTE';
-                                $mostrarciaseguradoau = !empty($accion['ciaseguradoau']);
-                                $mostrarciaseguradopendienteau = $accion['ciaseguradoau'] === 'PENDIENTE';
-                            @endphp
+                    <!-- Información del cliente y fecha -->
+                    
+    
+                    <!-- Contenido del modal con tabla -->
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Documento</th>
+                                    <th>Estado</th>
+                                    <th>Ver doc.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Consentimiento informado -->
+                                <tr>
+                                    <td>CONSENTIMIENTO INFORMADO</td>
+                                    <td>
+                                        @if ($item['consentimiento'])
+                                            <span class="text-completo">COMPLETO</span>
+                                        @else
+                                            <span class="text-incompleto">PENDIENTE</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($item['consentimiento'])
+                                            <abbr title="Ver Ficha Médica">
+                                                <a href="{{ asset('/cotizacionesaprobadasbanco/' . $item['clientebancoid'] . '/' . $item['fichamedica']) }}" class="btn btn-completo" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </abbr>
+                                        @else
+                                            <span class="text-incompleto">PENDIENTE</span>
+                                        @endif
+                                    </td>
+                                </tr>
 
-                            
-                            @if ($mostrarcnacaseguradoau || $mostrarcnacaseguradopendienteau)
+                                <!-- Declaración Médica -->
                                 <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE ASEGURADO</td>
+                                    <td>DECLARACIÓN MÉDICA</td>
                                     <td>
-                                        @if ($mostrarcnacaseguradopendienteau)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacaseguradoau)
-                                            <a href="{{ asset('/requisitosclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['cnacaseguradoau']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
+                                        @if ($item['declaracionmedica'])
+                                            <span class="text-completo">COMPLETO</span>
+                                        @else
+                                            <span class="text-incompleto">PENDIENTE</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($item['declaracionmedica'])
+                                            <abbr title="Ver Declaración Médica">
+                                                <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['declaracionmedica']) }}" class="btn btn-completo" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </abbr>
+                                        @else
+                                            <span class="text-incompleto">PENDIENTE</span>
                                         @endif
                                     </td>
                                 </tr>
-                            @endif
-                            @if ($mostrarciaseguradoau || $mostrarciaseguradopendienteau)
+
+                                <!-- Ficha Médica -->
                                 <tr>
-                                    <td>CARNET IDENTIDAD DE ASEGURADO</td>
+                                    <td>FICHA MÉDICA</td>
                                     <td>
-                                        @if ($mostrarciaseguradopendienteau)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarciaseguradoau)
-                                            <a href="{{ asset('/requisitosclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['ciaseguradoau']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
+                                        @if ($item['fichamedica'])
+                                            <span class="text-completo">COMPLETO</span>
+                                        @else
+                                            <span class="text-incompleto">PENDIENTE</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($item['fichamedica'])
+                                            <abbr title="Ver Ficha Médica">
+                                                <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['fichamedica']) }}" class="btn btn-completo" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </abbr>
+                                        @else
+                                            <span class="text-incompleto">PENDIENTE</span>
                                         @endif
                                     </td>
                                 </tr>
-                            @endif
-                            <table class="table">
-                                <thead>
-                                    <tr> 
-                                        <th>Banco</th>
-                                        <th>Nro. Póliza General</th>
-                                        <th>Póliza General</th>
-                                        <th>Declaración Salud</th>
-                                        <th>Nro. Póliza Desgravamen</th>
-                                        <th>Poliza seguro desgravamen</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($requisitosClientepolizas as $requisito)
-                                    <tr>
-                                        <td>{{ $requisito->banco }}</td>
-                                        <td>{{ $requisito->nropolizageneral ?? '' }}</td>
-                                        <td>
-                                            @if ($requisito->polizageneral === 'PENDIENTE')
-                                                <div class="pendiente">PENDIENTE</div>
-                                            @else
-                                                <a href="{{ asset("/requisitosclientesauditoria/{$clienteauditoria->id}/{$requisito->polizageneral}") }}" target="_blank" class="verdoc">VER DOC.</a>
-                                            @endif
-                                        </td>
-                                        <td> 
-                                            @if ($requisito->declasalud === 'PENDIENTE')
-                                                <div class="pendiente">PENDIENTE</div>
-                                            @elseif ($requisito->declasalud === 'NO APLICA')
-                                                <div class="noaplica">NO APLICA</div>
-                                            @else
-                                                <a href="{{ asset("/requisitosclientesauditoria/{$clienteauditoria->id}/{$requisito->declasalud}") }}" target="_blank" class="verdoc">VER DOC.</a>
-                                            @endif
-                                        </td>
-                                        
-                                        <td>{{ $requisito->nropolizadesgravamen ?? '' }}</td>
-                                        <td>
-                                            @if ($requisito->polizasegurodesgravamen === 'PENDIENTE')
-                                                <div class="pendiente">PENDIENTE</div>
-                                            @else
-                                                <a href="{{ asset("/requisitosclientesauditoria/{$clienteauditoria->id}/{$requisito->polizasegurodesgravamen}") }}" target="_blank" class="verdoc">VER DOC.</a> 
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </tbody>
-                        <tbody>
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
@@ -848,7 +824,8 @@
             </div>
         </div>
     </div>
-
+    
+  
 @endforeach
 
 @stop
@@ -856,6 +833,16 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .btn-bateria {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+    }
+    .btn-bateria:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
     .verdoc {
         color:#94c93b; 
         font-family: "Segoe UI";
@@ -1169,7 +1156,7 @@ margin-top: -10px;
         color: red;
         border-color: red;
         border-radius: 5px;
-        padding: 2px 10px;
+        
         }
     .btn-veracciones2:hover {
         background-color: red;

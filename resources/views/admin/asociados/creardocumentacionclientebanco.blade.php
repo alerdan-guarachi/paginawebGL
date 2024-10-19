@@ -2,9 +2,11 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclientebanco', $clientebanco) }}">REGRESAR</a>
-<a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">DOCUMENTACION DEL CLIENTE</a>
-{{-- <a class="btn btn-sm float-right btn-multiple" href="{{ route('admin.asociados.documentacionmultipleclientebanco', 6) }}">DOC. MÚLTIPLE</a> --}}
-<h5>SUBIR DOCUMENTACIÓN DE:</h5>
+<a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">INFORMES DEL CLIENTE</a>
+{{-- <a class="btn btn-sm float-right btn-listainformes" href="{{ route('admin.asociados.listadodocumentacionclienteita', $cliente) }}">LISTA DE INFORMES</a> --}}
+{{-- <a class="btn btn-sm float-right btn-multiple" href="{{ route('admin.asociados.documentacionmultipleclienteita', 6) }}">DOC. MÚLTIPLE</a> --}}
+
+<h5>SUBIR INFORMES DE:</h5>
 <h3>{{$clientebanco->nombrecompleto}}</h3>
 @stop
 
@@ -26,7 +28,7 @@
                 {!! Form::model($clientebanco, ['route' => ['admin.asociados.guardardocumentacionclientebanco', $clientebanco], 'method' => 'POST', 'files' => true]) !!}
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                {!! Form::hidden('clientebancoid', $id) !!}
+                {!! Form::hidden('clientebancoid', $clientebanco->id) !!}
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="form-group" hidden>
@@ -54,7 +56,7 @@
                         </div>
                         <input type="hidden" id="fechabateria" name="fechabateria">
                         
-                        <div class="form-group" id="acciones_select">
+                        {{-- <div class="form-group" id="acciones_select">
                             {!! Form::label('', 'Acciones disponibles:') !!}
                             <select class="form-control" id="accion" name="accion">
                                 <option value="" disabled selected></option>
@@ -65,73 +67,29 @@
                                 </small>
                             @enderror
                         </div>
+                        <input type="hidden" id="accionselec" name="accionselec"> --}}
+
+                        <div class="form-group" id="acciones_select" style="display: none;">
+                            {!! Form::label('', 'Acciones disponibles:') !!}
+                            <div id="acciones_disponibles"></div>
+                            @error('accion')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                        <style>
+                            /* Estilo para que los labels de las acciones no se muestren en negritas */
+                            #acciones_disponibles label {
+                                font-weight: normal; /* Evita que las etiquetas sean gruesas */
+                            }
+                        </style>
                         <input type="hidden" id="accionselec" name="accionselec">
-                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                        <script>
-                            $(document).ready(function(){
-                                $('#fecha_bateria').on('change', function(){
-                                    $('#accion').val('');
-                                    $('#accionselec').val('');
-                                });
-                                $('#accion').on('change', function(){o
-                                    var selectedOption = $(this).val();
-                                    $('#accionselec').val(selectedOption);
-                                });
-                            });
-                           // JavaScript para mostrar las acciones correspondientes cuando se selecciona una fecha de batería
-                           document.getElementById('fecha_bateria').addEventListener('change', function() {
-                            var fechaSeleccionada = this.value;
-                            var accionesDisponibles = document.getElementById('accion');
-                            accionesDisponibles.innerHTML = '';
-                            var accionesPorFecha = @json($accionesPorFecha);
-                            var accionesRegistradas = @json($accionesRegistradas);
-                            var accionesEnEstado = @json($accionesEnEstado); // Aquí debes pasar las acciones de ESTADOPROGRAMACIONSUBCLIENTE
-
-                            // Mostrar la primera opción vacía
-                            var opcionVacia = document.createElement('option');
-                            opcionVacia.value = '';
-                            opcionVacia.text = '';
-                            accionesDisponibles.appendChild(opcionVacia);
-
-                            // Obtener las acciones correspondientes a la fecha seleccionada
-                            var accionesFechaSeleccionada = accionesPorFecha[fechaSeleccionada];
-
-                            // Filtrar las acciones que no están registradas y que están en ESTADOPROGRAMACIONSUBCLIENTE
-                            var accionesDisponiblesFiltradas = accionesFechaSeleccionada.filter(function(accion) {
-                                return !accionesRegistradas.includes(accion) && accionesEnEstado.includes(accion);
-                            });
-
-                            // Mostrar las acciones filtradas en el select
-                            accionesDisponiblesFiltradas.forEach(function(accion) {
-                                var opcion = document.createElement('option');
-                                opcion.value = accion;
-                                opcion.text = accion;
-                                accionesDisponibles.appendChild(opcion);
-                            });
-
-                            document.getElementById('acciones_select').style.display = 'block';
-                        });
-
-
-                        </script>
-                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                        <script>
-                            $(document).ready(function() {
-                                $('#fechabateria').change(function() {
-                                    var selectedOption = $(this).children("option:selected").text();
-                                    $('#fechaSeleccionada').val(selectedOption);
-                                });
-                            });
-                            document.getElementById('fecha_bateria').addEventListener('change', function() {
-                                var selectedDate = this.value;
-                                document.getElementById('fechabateria').value = selectedDate;
-                            });
-                        </script>    
                     </div>
 
                     <div class="col-lg-3">
                         <div class="form-group">
-                            {!! Form::label('file', 'Documento:') !!}
+                            {!! Form::label('file', 'Informe:') !!}
                             <input type="file" name="archivo" id="archivo" class="dropify" />
                             @error('archivo')
                             <small class="text-danger fas fa-exclamation-circle">
@@ -139,14 +97,14 @@
                             </small>
                             @enderror
                         </div>
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#previewModal">VISTA PREVIA</button>
+                    <button type="button" class="btn btn-regresar" data-toggle="modal" data-target="#previewModal">VISTA PREVIA</button>
                     </div>
 
                     <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                            <h5 class="modal-title" id="previewModalLabel">Vista Previa del Documento</h5>
+                            <h5 class="modal-title" id="previewModalLabel">Vista Previa del Informe</h5>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
@@ -178,64 +136,177 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
+                    <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"> 
+                        <div class="modal-dialog modal-xl" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">DOCUMENTOS DEL CLIENTE:</h5>
+                                    <h5 class="modal-title" id="exampleModalLabel">INFORMES DEL CLIENTE:</h5>
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <strong>Fecha de Bateria:</strong>
+                                    <strong>Fecha de Batería:</strong>
                                     <select id="select-fechas" class="form-control">
                                         <option value="" disabled selected></option>
-                                        @foreach($accionesPorFecha as $fecha => $acciones)
+                                        @foreach($accionesConEstadoPorFecha as $fecha => $acciones)
                                             <option value="{{ $fecha }}">{{ $fecha }}</option>
                                         @endforeach
                                     </select>
+                        
                                     <div id="acciones-container" class="mt-3">
-                                        <strong>Documentos requeridos:</strong>
-                                        @foreach($accionesPorFecha as $fecha => $acciones)
-                                            <div id="acciones-{{ $fecha }}" class="acciones" style="display: none;">
-                                                @foreach($acciones as $accion)
-                                                    @if(in_array($accion, $documentosRegistrados))
-                                                        <div style="color: green;">&#10003; {{ $accion }}</div>
-                                                    @else
-                                                        <div style="color: red;">&#10007; {{ $accion }}</div>
-                                                    @endif
+                                        <table class="table table-bordered" id="acciones-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Estudio/Especialidad</th>
+                                                    <th>Proveedor</th>
+                                                    <th>Registro</th>
+                                                    <th>Informes</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($accionesConEstadoPorFecha as $fecha => $acciones)
+                                                    @foreach($acciones as $accion)
+                                                        <tr id="acciones-{{ $fecha }}" class="acciones" style="display: none;">
+                                                            <td @if($accion['registrado']) style="color: green;" @else style="color: red;" @endif>
+                                                                @if($accion['registrado']) 
+                                                                    {{ $accion['id'] }} 
+                                                                @else 
+                                                                    0 
+                                                                @endif
+                                                            </td>
+                                                            
+                                                            <td @if($accion['registrado']) style="color: green;" @else style="color: red;" @endif>{{ $accion['accionnombre'] }}</td>
+                                                            <td @if($accion['registrado']) style="color: green;" @else style="color: red;" @endif>
+                                                                @if($accion['registrado'])
+                                                                    {{ $accion['proveedornombre'] }}
+                                                                @else
+                                                                    <span style="color: red;">No registrado</span>
+                                                                @endif
+                                                            </td>
+                                                            <td @if($accion['registrado']) style="color: green;" @else style="color: red;" @endif>
+                                                                @if($accion['creacionregistro'])
+                                                                    <span style="color: green;">{{ $accion['creacionregistro'] }}</span>
+                                                                @else
+                                                                    <span style="color: red;">No registrado</span>
+                                                                @endif
+                                                            </td>
+                                                            
+                                                            <td @if($accion['registrado']) style="color: green;" @else style="color: red;" @endif>
+                                                                @if($accion['document'])
+                                                                    <a href="{{ asset('/documentacionclientesbanco/' . $clientebanco->id . '/' . $accion['document']) }}" class="btn btn-verinforme btn-sm" target="_blank">
+                                                                        <i class="fas fa-folder-open"></i>
+                                                                    </a>
+                                                                @else
+                                                                    <span style="color: red;">No disponible</span>
+                                                                @endif
+                    
+                                                                @if($accion['image'])
+                                                                    <a href="{{ asset('/documentacionclientesbanco/' . $clientebanco->id . '/' . $accion['image']) }}" class="btn btn-verimagen btn-sm" target="_blank">
+                                                                        <i class="fas fa-images"></i>
+                                                                    </a>
+                                                                @endif
+                    
+                                                                @if($accion['image2'])
+                                                                    <a href="{{ asset('/documentacionclientesbanco/' . $clientebanco->id . '/' . $accion['image2']) }}" class="btn btn-verimagen btn-sm" target="_blank">
+                                                                        <i class="fas fa-images"></i>
+                                                                    </a>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
                                                 @endforeach
-                                            </div>
-                                        @endforeach
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', function () {
-                                        const selectFechas = document.getElementById('select-fechas');
-                                        const accionesContainer = document.getElementById('acciones-container');
-                                
-                                        selectFechas.addEventListener('change', function(event) {
-                                            const selectedFecha = this.value;
-                                            const allActionDivs = accionesContainer.querySelectorAll('.acciones');
-                                            allActionDivs.forEach(function(actionDiv) {
-                                                if (actionDiv.id === 'acciones-' + selectedFecha) {
-                                                    actionDiv.style.display = "block";
-                                                } else {
-                                                    actionDiv.style.display = "none";
-                                                }
-                                            });
-                                        });
-                                    });
-                                </script>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const selectFechas = document.getElementById('select-fechas');
+                            const allActionRows = document.querySelectorAll('.acciones');
+                    
+                            selectFechas.addEventListener('change', function(event) {
+                                const selectedFecha = this.value;
+                                
+                                allActionRows.forEach(function(actionRow) {
+                                    // Muestra solo las filas de la fecha seleccionada
+                                    if (actionRow.id === 'acciones-' + selectedFecha) {
+                                        actionRow.style.display = "table-row";
+                                    } else {
+                                        actionRow.style.display = "none";
+                                    }
+                                });
+                            });
+                        });
+                    </script>
+                    
+                    <style>
+                        /* Reduce el interlineado entre filas */
+                        table tbody tr {
+                            line-height: 0.5; /* Menor interlineado */
+                        }
+                    
+                        table tbody tr td {
+                            padding: 4px 5px; /* Reduce el padding para disminuir el espacio vertical */
+                            vertical-align: middle; /* Asegura la alineación vertical en el medio */
+                        }
+                    
+                        /* Colorear las filas impares */
+                        table tbody tr:nth-child(odd) {
+                            background-color: #f1f1f1; /* Color de fondo para filas impares */
+                        }
+                    
+                        table tbody tr:nth-child(even) {
+                            background-color: #ffffff; /* Color de fondo para filas pares */
+                        }
+                    
+                        /* Asegura que el color rojo se aplique a todos los textos cuando no está registrado */
+                        table tbody tr td[style*="color: red;"] {
+                            font-weight: normal; /* Resalta más el texto en rojo */
+                        }
+                    
+                        .btn-verinforme,
+                        .btn-verimagen {
+                            background-color: #ffffff;
+                            border-radius: 5px;
+                            padding: 2px 4px; /* Reduce el padding para botones */
+                            font-size: 12px; /* Tamaño de fuente más pequeño */
+                            margin: 0; /* Elimina el margen para evitar espacios extra */
+                            border: 1px solid transparent; /* Establecer un borde */
+                            margin-bottom: -8px;
+                            margin-top: -8px;
+                        }
+                    
+                        .btn-verinforme {
+                            color: #faa625;
+                            border-color: #faa625;
+                        }
+                    
+                        .btn-verinforme:hover {
+                            background-color: #faa625;
+                            color: #ffffff;
+                        }
+                    
+                        .btn-verimagen {
+                            color: #25b6fa;
+                            border-color: #25b6fa;
+                        }
+                    
+                        .btn-verimagen:hover {
+                            background-color: #25b6fa;
+                            color: #ffffff;
+                        }
+                    </style>
                 </div>
-                {!! Form::submit('SUBIR DOCUMENTACION', ['class' => 'btn btn-crear']) !!}
+                {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
             </div>
         </div>
@@ -246,8 +317,98 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/js/dropify.min.js"></script>
+{{-- <script>
+        $(document).ready(function(){
+            $('#fecha_bateria').on('change', function(){
+                $('#accion').val('');
+                $('#accionselec').val('');
+            });
+            $('#accion').on('change', function(){o
+                var selectedOption = $(this).val();
+                $('#accionselec').val(selectedOption);
+            });
+        });
+        
+        document.getElementById('fecha_bateria').addEventListener('change', function() {
+        var fechaSeleccionada = this.value;
+        var accionesDisponibles = document.getElementById('accion');
+        accionesDisponibles.innerHTML = '';
+        var accionesNoRegistradasPorFecha = @json($accionesNoRegistradasPorFecha);
+
+        var opcionVacia = document.createElement('option');
+        opcionVacia.value = '';
+        opcionVacia.text = '';
+        accionesDisponibles.appendChild(opcionVacia);
+
+        if (accionesNoRegistradasPorFecha[fechaSeleccionada]) {
+            accionesNoRegistradasPorFecha[fechaSeleccionada].forEach(function(accion) {
+                var opcion = document.createElement('option');
+                opcion.value = accion.accionnombre;
+                opcion.text = accion.accionnombre;
+                accionesDisponibles.appendChild(opcion);
+            });
+        }
+
+        document.getElementById('acciones_select').style.display = 'block';
+    });
+
+    $(document).ready(function() {
+        $('#fechabateria').change(function() {
+            var selectedOption = $(this).children("option:selected").text();
+                $('#fechaSeleccionada').val(selectedOption);
+            });
+        });
+        document.getElementById('fecha_bateria').addEventListener('change', function() {
+            var selectedDate = this.value;
+                document.getElementById('fechabateria').value = selectedDate;
+    });
+</script> --}}
+
+<script>
+    $(document).ready(function(){
+        $('#fecha_bateria').on('change', function(){
+            $('#accionselec').val('');  // Limpia el valor previo
+        });
+
+        document.getElementById('fecha_bateria').addEventListener('change', function() {
+            var fechaSeleccionada = this.value;
+            var accionesContainer = document.getElementById('acciones_disponibles');
+            accionesContainer.innerHTML = '';  // Limpia los checkboxes previos
+            var accionesNoRegistradasPorFecha = @json($accionesNoRegistradasPorFecha);
+
+            if (accionesNoRegistradasPorFecha[fechaSeleccionada]) {
+                accionesNoRegistradasPorFecha[fechaSeleccionada].forEach(function(accion) {
+                    // Crear el checkbox
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'acciones[]';
+                    checkbox.value = accion.accionnombre;
+                    checkbox.id = 'accion_' + accion.accionnombre;
+
+                    // Crear la etiqueta del checkbox
+                    var label = document.createElement('label');
+                    label.htmlFor = 'accion_' + accion.accionnombre;
+                    label.textContent = accion.accionnombre;
+
+                    // Añadir checkbox y etiqueta al contenedor
+                    accionesContainer.appendChild(checkbox);
+                    accionesContainer.appendChild(label);
+                    accionesContainer.appendChild(document.createElement('br'));
+                });
+            }
+
+            // Mostrar el div de acciones
+            document.getElementById('acciones_select').style.display = 'block';
+        });
+    });
+
+    document.getElementById('fecha_bateria').addEventListener('change', function() {
+        var selectedDate = this.value;
+        document.getElementById('fechabateria').value = selectedDate;
+    });
+</script>
+
 <script>
     // Función para cargar la vista previa del documento seleccionado en el iframe del modal
     function cargarVistaPrevia() {
@@ -422,6 +583,19 @@
     }
     .btn-multiple:hover {
         background-color: #26b0e2;
+        color: #ffffff;
+    }
+    .btn-listainformes {
+        background-color: #ffffff;
+        color: #493535;
+        border-color: #493535;
+        border-radius: 5px;
+        padding: 10px 10px;
+        margin-left: 10px;
+
+    }
+    .btn-listainformes:hover {
+        background-color: #493535;
         color: #ffffff;
     }
 </style>

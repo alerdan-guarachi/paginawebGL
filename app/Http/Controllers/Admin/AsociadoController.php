@@ -7553,7 +7553,8 @@ class AsociadoController extends Controller
         $tienerequisitosapelacion = RequisitoSubCliente::where('clientebancoid', $clientebanco->id)->exists();
         $tienerequisitossegundasolicitud = RequisitoSubCliente::where('clientebancoid', $clientebanco->id)->exists();
 
-        
+        $rolusuario = auth()->user()->getRoleNames()->first(); 
+
         $cartaconsentimientoExistente = Estadocotizacionsubcliente::where('clientebancoid', $clientebanco->id) 
             ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
             ->whereNotNull('document')
@@ -7591,7 +7592,7 @@ class AsociadoController extends Controller
             $accionesPorFecha[$fecha][] = $accion;
         }
 
-        return view('admin.asociados.verclientebanco', compact('tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'clientebanco', 'tieneRequisitos', 'documentacion'));
+        return view('admin.asociados.verclientebanco', compact('rolusuario','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'clientebanco', 'tieneRequisitos', 'documentacion'));
     }
     public function editarclientebanco(ClienteBanco $clientebanco)
     {
@@ -7641,7 +7642,7 @@ class AsociadoController extends Controller
         $nombreCliente = $clientebanco->nombrecompleto;
         $sucursalCliente = $clientebanco->sucursal;
         $accionesCliente = BateriaSubCliente::where('clientenombre', $nombreCliente)->pluck('accionnombre')->toArray();
-        
+        $rolusuario = auth()->user()->getRoleNames()->first(); 
         $asociadoid = $clientebanco->asociadoid;
 
         $categorias = AreaAccion::where('asociadoid', $asociadoid)
@@ -7656,7 +7657,7 @@ class AsociadoController extends Controller
 
         $id = $clientebanco->nombrecompleto ? ClienteBanco::where('nombrecompleto', $clientebanco->nombrecompleto)->value('id') : null;
 
-        $fechasbateriasSubCliente = BateriaSubCliente::where('clientenombre', $nombreCliente)
+        /* $fechasbateriasSubCliente = BateriaSubCliente::where('clientenombre', $nombreCliente)
             ->distinct()
             ->pluck('fechabateria');
         $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionnombre', $accionesCliente)
@@ -7667,8 +7668,49 @@ class AsociadoController extends Controller
         $accionesPorFecha = [];
                 foreach ($fechasBateriaPorAccion as $accion => $fecha) {
                 $accionesPorFecha[$fecha][] = $accion;
-                }
-        return view('admin.asociados.crearbateriaclientebanco', compact('clientebancos','clientebanco', 'categorias','id', 'accionesPorFecha','fechasBateriaPorAccion','accionesCliente'));
+                } */
+
+        
+
+                $nombreCliente = $clientebanco->nombrecompleto; 
+        $idCliente = $clientebanco->id; 
+
+        $accionesCliente = BateriaSubCliente::where('clienteid', $idCliente)
+            ->pluck('accionid')
+            ->toArray();
+
+        $fechasbateriasSubCliente = BateriaSubCliente::where('clienteid', $idCliente)
+            ->distinct()
+            ->pluck('fechabateria');
+
+        $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionid', $accionesCliente)
+            ->where('clienteid', $idCliente)
+            ->whereIn('fechabateria', $fechasbateriasSubCliente)
+            ->distinct()
+            ->pluck('fechabateria', 'accionid');
+
+        $accionesNombres = BateriaSubCliente::whereIn('accionid', $accionesCliente)
+            ->pluck('accionnombre', 'accionid')
+            ->toArray();
+
+        $accionesPorFecha = [];
+        foreach ($fechasBateriaPorAccion as $accionid => $fecha) {
+            $idbateirasubcliente = Bateriasubcliente::where('accionid', $accionid)->where('clienteid', $idCliente)->value('id');
+            $precioaccion = Bateriasubcliente::where('accionid', $accionid)->where('clienteid', $idCliente)->value('precio');
+            $informeaccion = Bateriasubcliente::where('accionid', $accionid)->where('clienteid', $idCliente)->value('informe');
+            $proveedorbateria = Bateriasubcliente::where('accionid', $accionid)->where('clienteid', $idCliente)->value('proveedorasignado');
+
+            $accionNombre = $accionesNombres[$accionid] ?? 'Desconocida';
+
+            $accionesPorFecha[$fecha][] = [
+                'id' => $idbateirasubcliente,
+                'accion' => $accionNombre,
+                'proveedor' => $proveedorbateria,
+                'precio' => $precioaccion,
+                'informe' => $informeaccion
+            ];
+        }
+        return view('admin.asociados.crearbateriaclientebanco', compact('rolusuario','clientebancos','clientebanco', 'categorias','id', 'accionesPorFecha','fechasBateriaPorAccion','accionesCliente'));
     }
     public function guardarbateriaclientebanco(StoreBateriasubclienteRequest $request, ClienteBanco $clientebanco)
     {
@@ -7684,6 +7726,11 @@ class AsociadoController extends Controller
                 'tipoarea' => $clienteBancoItem->tiponombre,
                 'areanombre' => $clienteBancoItem->area,
                 'accionnombre' => $clienteBancoItem->accion,
+                'servicio' => $clienteBancoItem->servicio,
+                'proveedorasignado' => $clienteBancoItem->proveedor,
+                'preciocompra' => $clienteBancoItem->preciocompra,
+                'informe' => 'NO TIENE INFORME',
+                'accionid' => $clienteBancoItem->id,
                 'precio' => $clienteBancoItem->precio,
                 'fechabateria' => now()->toDateString(),
                 'itemid' => $itemId,
@@ -7732,26 +7779,55 @@ class AsociadoController extends Controller
     {
         return $this->aprobacioncotizacionclientebanco($clientebanco, $request);
     }
-    public function generarpdfcotizacionclientebanco(ClienteBanco $clientebanco, Request $request) 
-    {
-        $fechaSeleccionada = $request->get('buscarporfecha');
-        $areaSeleccionada = $request->get('buscarporarea');
-        $total = $request->get('total');
-        $bateriasubclientes = BateriaSubCliente::where('clienteid', $clientebanco->id)
-                        ->when($fechaSeleccionada, function ($query) use ($fechaSeleccionada) {
-                            return $query->where('fechabateria', $fechaSeleccionada);
-                        })
-                        ->when($areaSeleccionada, function ($query) use ($areaSeleccionada) {
-                            return $query->where('areanombre', $areaSeleccionada);
-                        })
-                        ->get();
-                    
-        $pdf = PDF::loadView('admin.asociados.pdfcotizacionclientebanco', compact('clientebanco', 'bateriasubclientes', 'total'));
-        $pdfName = 'Cotización_' . $clientebanco->nombrecompleto;
-        $pdfName .= '.pdf';
-        
-        return $pdf->download($pdfName);
-    }
+    /* public function generarpdfcotizacionclientebanco(ClienteBanco $clientebanco, Request $request)
+{
+    // Obtener la última fechabateria del cliente
+    $ultimaFechaBateria = ProgramacionsubCliente::where('clientebancoid', $clientebanco->id)
+        ->orderBy('fechabateria', 'desc')
+        ->first()->fechabateria;
+
+    // Obtener las acciones asociadas a la última fechabateria
+    $bateriasubclientes = ProgramacionsubCliente::where('clientebancoid', $clientebanco->id)
+        ->where('fechabateria', $ultimaFechaBateria)
+        ->get();
+
+    // Calcular el total de los precios
+    $total = $bateriasubclientes->sum('precio');
+
+    // Generar el PDF con la información del cliente y las acciones
+    $pdf = PDF::loadView('admin.asociados.pdfcotizacionclientebanco', compact('clientebanco', 'bateriasubclientes', 'total'));
+
+    // Crear un nombre dinámico para el archivo PDF
+    $pdfName = 'Cotización_' . $clientebanco->nombrecompleto . '.pdf';
+    
+    // Descargar el PDF
+    return $pdf->download($pdfName);
+} */
+public function generarpdfcotizacionclientebanco(ClienteBanco $clientebanco, Request $request) 
+{
+    // Obtener la última fechabateria del cliente
+    $ultimaFechaBateria = Bateriasubcliente::where('clienteid', $clientebanco->id)
+        ->orderBy('fechabateria', 'desc')
+        ->first()->fechabateria;
+
+    // Obtener las acciones asociadas a la última fechabateria
+    $bateriasubclientes = Bateriasubcliente::where('clienteid', $clientebanco->id)
+        ->where('fechabateria', $ultimaFechaBateria)
+        ->get();
+
+    // Calcular el total de los precios
+    $total = $bateriasubclientes->sum('precio');
+
+    // Generar el PDF con la información del cliente y las acciones
+    $pdf = PDF::loadView('admin.asociados.pdfcotizacionclientebanco', compact('clientebanco', 'bateriasubclientes', 'total'));
+
+    // Crear un nombre dinámico para el archivo PDF
+    $pdfName = 'Cotización_' . $clientebanco->nombrecompleto . '.pdf';
+    
+    // Retornar la vista en lugar de descargar
+    return $pdf->stream($pdfName); // Usamos stream() para mostrar el PDF en lugar de descargarlo
+}
+
     public function aprobarcotizacionprogramacionclientebanco(ClienteBanco $clientebanco)
     {
         $nombreCliente = $clientebanco->nombrecompleto;
@@ -7799,85 +7875,178 @@ class AsociadoController extends Controller
     public function crearprogramacionclientebanco(ClienteBanco $clientebanco)
     {
         $nombreCliente = $clientebanco->nombrecompleto;
+        $idCliente = $clientebanco->id;
+        $clienteitaid = $clientebanco->id;
         $sucursalCliente = $clientebanco->sucursal;
+        $rolusuario = auth()->user()->getRoleNames()->first(); 
+        $esProveedor = ($rolusuario === 'PROVEEDOR');
+        $id = $clientebanco->nombrecompleto ? ClienteBanco::where('nombrecompleto', $clientebanco->nombrecompleto)->value('id') : null;
 
-        $accionesCliente = BateriaSubCliente::where('clientenombre', $nombreCliente)
+        $accionesCliente = BateriaSubCliente::where('clienteid', $idCliente)
             ->whereIn('accionnombre', function ($query) use ($sucursalCliente) {
                 $query->select('accionnombre')->from('clientebancos')->where('sucursal', $sucursalCliente);
             })
             ->pluck('accionnombre')
             ->unique();
 
-        $proveedoresAsociados = BateriaProveedor::whereIn('accion', $accionesCliente)->where('asociado', 'CLIENTES ITA')
-            ->whereHas('proveedor', function ($query) use ($sucursalCliente) {
-                $query->where('ciudad', $sucursalCliente)->where('estadoproveedor', 'ACTIVO');
-            })
-            ->get()
-            ->groupBy('accion');
-
-        $accionesRegistradas = Programacionsubcliente::whereIn('accionnombre', $accionesCliente)
-            ->where('clientenombre', $nombreCliente)
-            ->pluck('accionnombre')
+        $proveedoresAsignados = BateriaSubCliente::where('clienteid', $idCliente)
+            ->whereIn('accionnombre', $accionesCliente)
+            ->pluck('proveedorasignado', 'accionnombre')
+            ->toArray();
+    
+        $fechasBateriaPorAccion = BateriaSubCliente::where('clienteid', $idCliente)
+            ->whereIn('accionnombre', $accionesCliente)
+            ->select('accionnombre', 'fechabateria')
+            ->get();
+        
+        
+        $accionesRegistradas = Programacionsubcliente::where('clientebancoid', $idCliente)
+            ->pluck('accionnombre', 'fechabateria')
             ->toArray();
 
-        $id = $clientebanco->nombrecompleto ? ClienteBanco::where('nombrecompleto', $clientebanco->nombrecompleto)->value('id') : null;
+        foreach ($accionesRegistradas as $fecha => $accion) {
+        if (!isset($accionesRegistradas[$fecha])) {
+            $accionesRegistradas[$fecha] = [];
+            }
 
-        $fechasEnEstadoCotizacionSubCliente = EstadoCotizacionSubCliente::where('clientebanconombre', $nombreCliente)
-        ->distinct()
-        ->pluck('fechabateria');
-
-        $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionnombre', $accionesCliente)
-        ->where('clientenombre', $nombreCliente)
-        ->whereIn('fechabateria', $fechasEnEstadoCotizacionSubCliente)
-        ->distinct()
-        ->pluck('fechabateria', 'accionnombre');
+            if (!is_array($accionesRegistradas[$fecha])) {
+                $accionesRegistradas[$fecha] = [$accion];
+            } else {
+                $accionesRegistradas[$fecha][] = $accion;
+            }
+        }
 
         $accionesPorFecha = [];
-        foreach ($fechasBateriaPorAccion as $accion => $fecha) {
-        $accionesPorFecha[$fecha][] = $accion;
+        foreach ($fechasBateriaPorAccion as $item) {
+            $accion = $item->accionnombre;
+            $fecha = $item->fechabateria;
+
+            $accionYaRegistrada = Programacionsubcliente::where('clientebancoid', $idCliente)
+                ->where('fechabateria', $fecha)
+                ->where('accionnombre', $accion)
+                ->exists();
+        
+            if (!isset($accionesPorFecha[$fecha])) {
+                $accionesPorFecha[$fecha] = [];
+            }
+
+            if (!$accionYaRegistrada) {
+                $accionesPorFecha[$fecha][] = $accion;
+            }
         }
-        return view('admin.asociados.crearprogramacionclientebanco', compact('id', 'clientebanco', 'accionesPorFecha', 'proveedoresAsociados', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente'));
+
+        
+        $proveedoresDetalles = [];
+        foreach ($proveedoresAsignados as $accion => $nombreProveedor) {
+            $proveedor = BateriaSubCliente::where('accionnombre', $accion)->where('clienteid', $idCliente)
+                ->latest()
+                ->first();
+
+            if ($proveedor) {
+                $proveedoresDetalles[$accion] = [
+                    'proveedor' => $proveedor->proveedorasignado,
+                    'horarioinicial' => $proveedor->horarioinicial,
+                    'horariofinal' => $proveedor->horariofinal,
+                    'fechabateria' => $proveedor->fechabateria,
+                    'fechaasignada' => Programacionsubcliente::where('accionnombre', $accion)
+                        ->where('clientebancoid', $idCliente)
+                        ->value('fechaasignada'),
+                    'horadesde' => Programacionsubcliente::where('accionnombre', $accion)
+                        ->where('clientebancoid', $idCliente)
+                        ->value('horadesde'),
+                    'horahasta' => Programacionsubcliente::where('accionnombre', $accion)
+                        ->where('clientebancoid', $idCliente)
+                        ->value('horahasta'),
+                    'tiempoatencion' => $proveedor->tiempoatencion,
+                    'accion' => $proveedor->accionnombre,
+                    'area' => $proveedor->areanombre,
+                    'precio' => $proveedor->precio,
+                    'preciocompra' => $proveedor->preciocompra,
+                    'programacionid' => Programacionsubcliente::where('accionnombre', $accion)
+                        ->where('clientebancoid', $idCliente)
+                        ->value('id'),
+                ];
+            }
+        }
+
+        $fechasBateria = BateriaSubCliente::where('clienteid', $idCliente)
+            ->distinct()
+            ->pluck('fechabateria');
+
+
+        $accionesPorFechaBateria = [];
+        foreach ($fechasBateria as $fecha) {
+            $accionesBateria = BateriaSubCliente::where('fechabateria', $fecha)
+                ->where('clienteid', $idCliente)
+                ->pluck('accionnombre')
+                ->toArray();
+
+            $accionesPorFechaBateria[$fecha] = $accionesBateria;
+        }
+
+        $accionesDetallesPorFecha = [];
+        foreach ($fechasBateria as $fecha) {
+            $accionesProgramadas = ProgramacionSubCliente::where('fechabateria', $fecha)
+                ->where('clientebancoid', $idCliente)
+                ->get(['id', 'accionnombre','proveedornombre', 'fechaasignada', 'horadesde', 'horahasta', 'horahasta', 'precio']);
+
+            foreach ($accionesProgramadas as $accion) {
+                $accionesDetallesPorFecha[$fecha][$accion->accionnombre] = $accion;
+            }
+        }
+
+        return view('admin.asociados.crearprogramacionclientebanco', compact('esProveedor','accionesDetallesPorFecha','accionesPorFechaBateria','fechasBateria','id','rolusuario', 'clientebanco', 'accionesPorFecha', 'proveedoresDetalles', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente'));
     }
     public function guardarprogramacionclientebanco(StoreProgramacionsubclienteRequest $request)
     {
-        $proveedoresSeleccionados = $request->input('proveedornombre');
+        // Recoge las acciones seleccionadas
+        $accionesSeleccionadas = $request->input('accionesSeleccionadas', []);
         $horaasignada = $request->input('horaasignada');
         $fechaasignada = $request->input('fechaasignada');
-        $accionnombre = $request->input('accionnombre');
-        $precio = $request->input('precio');
+        $clientebancoid = $request->input('clientebancoid');
+        $clientebanconombre = $request->input('clientebanconombre');
+        $fechabateria = $request->input('fechabateria');
+        $horadesde = $request->input('horadesde');
+        $horahasta = $request->input('horahasta');
 
-        if (!is_array($proveedoresSeleccionados)) {
-            $proveedoresSeleccionados = [$proveedoresSeleccionados];
-        }
-        foreach ($proveedoresSeleccionados as $proveedor) {
-                $existente = Programacionsubcliente::where('horaasignada', $horaasignada)
-                ->where('accionnombre', $accionnombre)
-                ->where('proveedornombre', $proveedor)
-                ->where('fechaasignada', $fechaasignada)
+        foreach ($accionesSeleccionadas as $accion) {
+            // Sanitiza el nombre de la acción
+            $accionSanitizada = str_replace([' ', '.'], ['_', '-'], $accion);
+            
+            // Captura los datos específicos de cada acción
+            $proveedornombre = $request->input("proveedor_$accionSanitizada");
+            $areanombre = $request->input("areanombre_$accionSanitizada");
+            $precio = $request->input("precio_$accionSanitizada");
+            $preciocompra = $request->input("preciocompra_$accionSanitizada");
+
+            // Verifica si ya existe la programación
+            $existente = Programacionsubcliente::where('accionnombre', $accion)
+                ->where('fechabateria', $fechabateria)
+                ->where('clientebancoid', $clientebancoid)
                 ->exists();
 
-            if ($existente) {
-                return redirect()->back()->with('error', 'YA EXISTE UN REGISTRO CON EL MISMO PROVEEDOR, HORA Y FECHA');
+            // Solo crea un nuevo registro si no existe
+            if (!$existente) {
+                Programacionsubcliente::create([
+                    'accionnombre' => $accion,
+                    'horaasignada' => $horaasignada,
+                    'fechaasignada' => $fechaasignada,
+                    'proveedornombre' => $proveedornombre,
+                    'clientebancoid' => $clientebancoid,
+                    'clientenombre' => $clientebanconombre,
+                    'horadesde' => $horadesde,
+                    'horahasta' => $horahasta,
+                    'fechabateria' => $fechabateria,
+                    'areanombre' => $areanombre,
+                    'precio' => $precio,
+                    'preciocompra' => $preciocompra,
+                    'usuarioid' => Auth::id(), // ID del usuario autenticado
+                    'usuarioregistro' => Auth::user()->name, // Nombre del usuario autenticado
+                ]);
             }
-            $clienteitaData = $request->except(['proveedornombre', '_token']);
-            $clienteitaData['proveedornombre'] = $proveedor;
-
-            $idCliente = $request->input('clientebancoid');
-            $clientecomun = ClienteBanco::findOrFail($idCliente);
-            $clienteID = $clientecomun->id;
-
-            $clienteitaData['clientebancoid'] = $clienteID;
-            $clienteitaData['accionnombre'] = $accionnombre;
-            $clienteitaData['horaasignada'] = $horaasignada;
-            $clienteitaData['clientenombre'] = $request->input('nombrecompleto');
-            $clienteitaData['fechaasignada'] = $fechaasignada;
-            $clienteitaData['precio'] = $precio;
-            $clienteitaData['fechabateria'] = $request->input('fechabateria');
-
-            $clientecomun = Programacionsubcliente::create($clienteitaData);
         }
 
-        return redirect()->route('admin.asociados.crearprogramacionclientebanco', $request->clientebanco)->with('info', 'La programacion del cliente se creo con éxito');
+        return redirect()->route('admin.asociados.crearprogramacionclientebanco', $request->clientebanco)->with('info', 'La programación del cliente se creó con éxito');
     }
     public function reprogramacionclientebanco(ClienteBanco $clientebanco, Request $request)
     {
@@ -7997,81 +8166,104 @@ class AsociadoController extends Controller
     public function creardocumentacionclientebanco(ClienteBanco $clientebanco, Asociado $asociado)
     {
         $nombreCliente = $clientebanco->nombrecompleto;
-        $accionesCliente = Programacionsubcliente::where('clientenombre', $nombreCliente)
+        $IdCliente = $clientebanco->id;
+
+        $accionesCliente = Programacionsubcliente::where('clientebancoid', $IdCliente)
             ->pluck('accionnombre')
             ->unique();
+
+        $accionesRegistradasPorFecha = Documentacionsubcliente::where('clientebancoid', $IdCliente)
+            ->get(['accion', 'fechabateria'])
+            ->groupBy('fechabateria');
+
+        $accionesNoRegistradasPorFecha = Programacionsubcliente::where('clientebancoid', $IdCliente)
+            ->get(['accionnombre', 'fechabateria'])
+            ->filter(function($accion) use ($accionesRegistradasPorFecha) {
+                $fechabateria = $accion->fechabateria;
+                $accionnombre = $accion->accionnombre;
+                return !isset($accionesRegistradasPorFecha[$fechabateria]) || !in_array($accionnombre, $accionesRegistradasPorFecha[$fechabateria]->pluck('accion')->toArray());
+            })
+            ->groupBy('fechabateria');
+
         $accionesRegistradas = Documentacionsubcliente::whereIn('accion', $accionesCliente)
-            ->where('clientebanconombre', $nombreCliente)
+            ->where('clientebancoid', $IdCliente)
             ->pluck('accion')
             ->toArray();
 
         $id = $clientebanco->nombrecompleto ? ClienteBanco::where('nombrecompleto', $clientebanco->nombrecompleto)->value('id') : null;
 
         $fechasBateriaPorAccion = Programacionsubcliente::whereIn('accionnombre', $accionesCliente)
-            ->where('clientenombre', $nombreCliente)
-            ->distinct()
-            ->pluck('fechabateria', 'accionnombre');
+            ->where('clientebancoid', $IdCliente)
+            ->get(['accionnombre', 'fechabateria', 'proveedornombre'])
+            ->groupBy('fechabateria');
+        
 
-            // Obtener acciones en ESTADOPROGRAMACIONSUBCLIENTE
-        $accionesEnEstado = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesCliente)
-            ->pluck('accionnombre')
-            ->toArray();
         $documentosRegistrados = Documentacionsubcliente::whereIn('accion', $accionesCliente)
-            ->where('clientebanconombre', $nombreCliente)
+            ->where('clientebancoid', $IdCliente)
             ->pluck('accion')->toArray();
 
         $accionesPorFecha = [];
-        foreach ($fechasBateriaPorAccion as $accion => $fecha) {
-            $accionesPorFecha[$fecha][] = $accion;
-        }
-        return view('admin.asociados.creardocumentacionclientebanco', compact('asociado', 'accionesEnEstado','id', 'clientebanco', 'accionesPorFecha', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente', 'documentosRegistrados'));
-    }
-    public function guardardocumentacionclientebanco(StoreDocumentacionsubclienteRequest $request, ClienteBanco $clientebanco)
-    {
-        $archivo_name = null;
-        if ($request->hasFile('archivo')) {
-            $file = $request->file('archivo');
-            
-            $carpetaCliente = public_path("/documentacionclientesbanco/{$clientebanco->id}");
-            if (!file_exists($carpetaCliente)) {
-                mkdir($carpetaCliente, 0755, true);}
-            $archivo_name = time() . '_' . $file->getClientOriginalName();
-            $file->move($carpetaCliente, $archivo_name);
-        }
-        
-        $image_name = null;
-        if ($request->hasFile('picture')) {
-            $file = $request->file('picture');
-            $carpetaCliente = public_path("/documentacionclientesbanco/{$clientebanco->id}");
-            if (!file_exists($carpetaCliente)) {
-                mkdir($carpetaCliente, 0755, true);}
-            $image_name = time() . '_' . $file->getClientOriginalName();
-            $file->move($carpetaCliente, $image_name);
+
+        foreach ($fechasBateriaPorAccion as $fecha => $acciones) {
+            foreach ($acciones as $accion) {
+                $accionesPorFecha[$fecha][] = $accion;
+            }
         }
 
-        $image_name2 = null;
-        if ($request->hasFile('picture2')) {
-            $file = $request->file('picture2');
-            $carpetaCliente = public_path("/documentacionclientesbanco/{$clientebanco->id}");
-            if (!file_exists($carpetaCliente)) {
-                mkdir($carpetaCliente, 0755, true);}
-            $image_name2 = time() . '_' . $file->getClientOriginalName();
-            $file->move($carpetaCliente, $image_name2);
-        }
+        $documentosRegistradosPorFecha = Documentacionsubcliente::where('clientebancoid', $IdCliente)
+            ->get(['accion', 'fechabateria'])
+            ->groupBy('fechabateria');
 
-        $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
-        $accion = $request->input('accion');
-        $nombrecliente = $request->input('nombrecompleto');
-        $documentacioncliente = Documentacionsubcliente::create(
-            $request->except('accion') + [
-                'document' => $archivo_name,
-                'accion' => $accion,
-                'clientebanconombre' => $nombrecliente,
-                'image' => $image_name,
-                'image2' => $image_name2
-            ]
-        );
-        return redirect()->route('admin.asociados.creardocumentacionclientebanco', $request->clientebanco)->with('info', 'El documento se subió con éxito');
+        $accionesPorFecha2 = Programacionsubcliente::where('clientebancoid', $IdCliente)
+            ->get(['accionnombre', 'fechabateria'])
+            ->groupBy('fechabateria');
+
+        $accionesConEstadoPorFecha = [];
+        foreach ($accionesPorFecha as $fecha => $acciones) {
+            foreach ($acciones as $accion) {
+                $registrado = isset($documentosRegistradosPorFecha[$fecha]) && 
+                            in_array($accion->accionnombre, $documentosRegistradosPorFecha[$fecha]->pluck('accion')->toArray());
+
+                $documento = $registrado ? Documentacionsubcliente::where('accion', $accion->accionnombre)
+                                                        ->where('fechabateria', $fecha)
+                                                        ->value('document') : null;
+
+                $image = $registrado ? Documentacionsubcliente::where('accion', $accion->accionnombre)
+                                                        ->where('fechabateria', $fecha)
+                                                        ->value('image') : null;
+
+                $image2 = $registrado ? Documentacionsubcliente::where('accion', $accion->accionnombre)
+                                                        ->where('fechabateria', $fecha)
+                                                        ->value('image2') : null;
+                $id = $registrado ? Documentacionsubcliente::where('accion', $accion->accionnombre)
+                                                        ->where('fechabateria', $fecha)
+                                                        ->value('id') : null;
+
+                $creacionregistro = $registrado ? Documentacionsubcliente::where('accion', $accion->accionnombre) 
+                                                        ->where('fechabateria', $fecha)
+                                                        ->value('created_at') : null;
+                if ($creacionregistro) {
+                    $creacionregistro = \Carbon\Carbon::parse($creacionregistro);
+                    $creacionregistroFormatted = $creacionregistro->format('Y-m-d') . ' - ' . $creacionregistro->format('H:i:s');
+                } else {
+                    $creacionregistroFormatted = null;
+                }
+
+                $proveedor = $accion->proveedornombre;
+
+                $accionesConEstadoPorFecha[$fecha][] = [
+                    'id' => $id,
+                    'accionnombre' => $accion->accionnombre,
+                    'proveedornombre' => $proveedor,
+                    'registrado' => $registrado,
+                    'document' => $documento,
+                    'image' => $image,
+                    'image2' => $image2,
+                    'creacionregistro' => $creacionregistroFormatted
+                ];
+            }
+        }
+        return view('admin.asociados.creardocumentacionclientebanco', compact('accionesConEstadoPorFecha','accionesRegistradasPorFecha','accionesNoRegistradasPorFecha','asociado','id', 'clientebanco', 'accionesPorFecha', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente', 'documentosRegistrados'));
     }
     public function listadodocumentacionclientebanco(ClienteBanco $clientebanco, Request $request)
     {
@@ -8116,6 +8308,66 @@ class AsociadoController extends Controller
             ->simplePaginate(10000);
 
         return view('admin.asociados.documentacionmultipleclientebanco', compact('clientebanco', 'asociado', 'clientes'));
+    }
+    public function guardardocumentacionclientebanco(StoreDocumentacionsubclienteRequest $request, ClienteBanco $clientebanco) 
+    {
+        $archivo_name = null;
+        if ($request->hasFile('archivo')) {
+            $file = $request->file('archivo');
+            $carpetaCliente = public_path("/documentacionclientesbanco/{$clientebanco->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+        }
+
+        $image_name = null;
+        if ($request->hasFile('picture')) {
+            $file = $request->file('picture');
+            $carpetaCliente = public_path("/documentacionclientesbanco/{$clientebanco->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+            $image_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $image_name);
+        }
+
+        $image_name2 = null;
+        if ($request->hasFile('picture2')) {
+            $file = $request->file('picture2');
+            $carpetaCliente = public_path("/documentacionclientesbanco/{$clientebanco->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+            $image_name2 = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $image_name2);
+        }
+
+        $nombrecliente = $request->input('nombrecompleto');
+        $idcliente = $request->input('clientebancoid');
+
+        // Iterar sobre las acciones seleccionadas (enviadas como array)
+        $accionesSeleccionadas = $request->input('acciones', []); // 'acciones' viene de los checkboxes
+        
+        foreach ($accionesSeleccionadas as $accionId) {
+            $accionNombre = Programacionsubcliente::where('id', $accionId)->value('accionnombre');
+
+            // Guardar cada acción con el mismo PDF e imágenes
+            Documentacionsubcliente::create(
+                $request->except('acciones') + [
+                    'document' => $archivo_name,
+                    'accion' => $accionId,  // Guardar el ID de la acción
+                    'accionnombre' => $accionNombre,  // Guardar el nombre de la acción (opcional)
+                    'clientebancoid' => $idcliente,
+                    'clientebanconombre' => $nombrecliente,
+                    'image' => $image_name,
+                    'image2' => $image_name2
+                ]
+            );
+        }
+
+        return redirect()->route('admin.asociados.creardocumentacionclientebanco', $request->clientebanco)->with('info', 'El documento se subió con éxito');
     }
 //
 //CONTACTOS CLIENTE BANCO
@@ -8455,33 +8707,6 @@ class AsociadoController extends Controller
                 'usuarioregistro' => $usuarioNombre,
                 'document' => null, 
             ]);
-        
-            
-            // Buscar el proveedor, precio y precio de compra en BateriaProveedor
-            $bateriaProveedor = BateriaProveedor::where('sucursal', $sucursalCliente)
-                ->where('accion', 'MEDICINA LABORAL')
-                ->first();
-
-            if ($bateriaProveedor) {
-            $programacion = BateriaSubCliente::create([
-                'clienteid' => $clientebancoId,
-                'clientenombre' => $nombreCompleto,
-                'tipoarea' => 'ESPECIALIDAD',
-                'areanombre' => 'MEDICINA LABORAL',
-                'accionnombre' => 'MEDICINA LABORAL',
-                'precio' => $bateriaProveedor->precio,
-                'informe' => 'NO TIENE INFORME',
-                'preciocompra' => $bateriaProveedor->preciocompra,
-                'proveedorasignado' => $bateriaProveedor->proveedor, 
-                'accionid' => $bateriaProveedor->id, 
-                'servicio' => $bateriaProveedor->servicio, 
-                'fechabateria' => now(),
-                'usuarioid' => $usuarioId,
-                'usuarioregistro' => $usuarioNombre,
-            ]);
-            } else {
-
-            }
 
             $data = [
                 'nombres' => $nombres,
@@ -8642,6 +8867,672 @@ class AsociadoController extends Controller
             // Retornar el PDF con el nombre generado
             return $pdf->download($nombreArchivo);
         }
+//
+//CREAR FORMULARIO DE CLIENTE ITA
+    public function crearformularioclientebanco(ClienteBanco $clientebanco)
+    {
+        return view('admin.asociados.crearformularioclientebanco', compact('clientebanco'));
+    }
+    public function generarpdfclientebanco(ClienteBanco $clientebanco, Request $request) 
+    {
+        $request->validate([
+            'fechaatencion' => 'date',
+            'antecedentespatologicos' => '',
+            //IDENTIFICACION DE PELIGROS
+                'preguntas.4.respuesta' => 'nullable|string','detpe4' => 'nullable|string',
+                'preguntas.5.respuesta' => 'nullable|string','detpe5' => 'nullable|string',
+                'preguntas.6.respuesta' => 'nullable|string','detpe6' => 'nullable|string',
+                'preguntas.7.respuesta' => 'nullable|string','detpe7' => 'nullable|string',
+                'preguntas.8.respuesta' => 'nullable|string','detpe8' => 'nullable|string',
+                'preguntas.9.respuesta' => 'nullable|string','detpe9' => 'nullable|string',
+                'preguntas.10.respuesta' => 'nullable|string','detpe10' => 'nullable|string',
+                'preguntas.11.respuesta' => 'nullable|string','detpe11' => 'nullable|string',
+                'otros' => '',
+            //
+            //OFTALMOLOGIA
+                'preguntas.001.respuesta' => 'nullable|string','hacecuanto001' => 'nullable|string','periodotipo001' => 'nullable|string',
+                'preguntas.002.respuesta' => 'nullable|string','hacecuanto002' => 'nullable|string','periodotipo002' => 'nullable|string',
+                'preguntas.003.respuesta' => 'nullable|string','hacecuanto003' => 'nullable|string','periodotipo003' => 'nullable|string',
+                'preguntas.004.respuesta' => 'nullable|string','hacecuanto004' => 'nullable|string','periodotipo004' => 'nullable|string',
+                'preguntas.005.respuesta' => 'nullable|string','hacecuanto005' => 'nullable|string','periodotipo005' => 'nullable|string',
+                'preguntas.006.respuesta' => 'nullable|string','hacecuanto006' => 'nullable|string','periodotipo006' => 'nullable|string',
+            //
+            //OTORRINOLARINGOLOGIA
+                'preguntas.007.respuesta' => 'nullable|string','hacecuanto007' => 'nullable|string','periodotipo007' => 'nullable|string',
+                'preguntas.008.respuesta' => 'nullable|string','hacecuanto008' => 'nullable|string','periodotipo008' => 'nullable|string',
+                'preguntas.009.respuesta' => 'nullable|string','hacecuanto009' => 'nullable|string','periodotipo009' => 'nullable|string',
+                'preguntas.010.respuesta' => 'nullable|string','hacecuanto010' => 'nullable|string','periodotipo010' => 'nullable|string',
+            //
+            //NEUROLOGIA
+                'preguntas.011.respuesta' => 'nullable|string','hacecuanto011' => 'nullable|string','periodotipo011' => 'nullable|string',
+                'preguntas.012.respuesta' => 'nullable|string','hacecuanto012' => 'nullable|string','periodotipo012' => 'nullable|string',
+                'preguntas.013.respuesta' => 'nullable|string','hacecuanto013' => 'nullable|string','periodotipo013' => 'nullable|string',
+                'preguntas.014.respuesta' => 'nullable|string','hacecuanto014' => 'nullable|string','periodotipo014' => 'nullable|string',
+                'preguntas.015.respuesta' => 'nullable|string','hacecuanto015' => 'nullable|string','periodotipo015' => 'nullable|string',
+                'preguntas.016.respuesta' => 'nullable|string','hacecuanto016' => 'nullable|string','periodotipo016' => 'nullable|string',
+                'preguntas.017.respuesta' => 'nullable|string','hacecuanto017' => 'nullable|string','periodotipo017' => 'nullable|string',
+                'preguntas.018.respuesta' => 'nullable|string','hacecuanto018' => 'nullable|string','periodotipo018' => 'nullable|string',
+            //
+            //CARDIOLOGIA
+                'preguntas.019.respuesta' => 'nullable|string','hacecuanto019' => 'nullable|string','periodotipo019' => 'nullable|string',
+                'preguntas.020.respuesta' => 'nullable|string','hacecuanto020' => 'nullable|string','periodotipo020' => 'nullable|string',
+                'preguntas.021.respuesta' => 'nullable|string','hacecuanto021' => 'nullable|string','periodotipo021' => 'nullable|string',
+                'preguntas.022.respuesta' => 'nullable|string','hacecuanto022' => 'nullable|string','periodotipo022' => 'nullable|string',
+                'preguntas.023.respuesta' => 'nullable|string','hacecuanto023' => 'nullable|string','periodotipo023' => 'nullable|string',
+                'preguntas.024.respuesta' => 'nullable|string','hacecuanto024' => 'nullable|string','periodotipo024' => 'nullable|string',
+                'preguntas.025.respuesta' => 'nullable|string','hacecuanto025' => 'nullable|string','periodotipo025' => 'nullable|string',
+                'preguntas.026.respuesta' => 'nullable|string','hacecuanto026' => 'nullable|string','periodotipo026' => 'nullable|string',
+            //
+            //ENDICRONOLOGIA
+                'preguntas.027.respuesta' => 'nullable|string','hacecuanto027' => 'nullable|string','periodotipo027' => 'nullable|string',
+                'preguntas.028.respuesta' => 'nullable|string','hacecuanto028' => 'nullable|string','periodotipo028' => 'nullable|string',
+                'preguntas.029.respuesta' => 'nullable|string','hacecuanto029' => 'nullable|string','periodotipo029' => 'nullable|string',
+                'preguntas.030.respuesta' => 'nullable|string','hacecuanto030' => 'nullable|string','periodotipo030' => 'nullable|string',
+                'preguntas.031.respuesta' => 'nullable|string','hacecuanto031' => 'nullable|string','periodotipo031' => 'nullable|string',
+            //
+            //TRAUMATOLOGIA
+                'preguntas.032.respuesta' => 'nullable|string','hacecuanto032' => 'nullable|string','periodotipo032' => 'nullable|string',
+                'preguntas.033.respuesta' => 'nullable|string','hacecuanto033' => 'nullable|string','periodotipo033' => 'nullable|string',
+                'preguntas.034.respuesta' => 'nullable|string','hacecuanto034' => 'nullable|string','periodotipo034' => 'nullable|string',
+                'preguntas.035.respuesta' => 'nullable|string','hacecuanto035' => 'nullable|string','periodotipo035' => 'nullable|string',
+                'preguntas.036.respuesta' => 'nullable|string','hacecuanto036' => 'nullable|string','periodotipo036' => 'nullable|string',
+                'preguntas.037.respuesta' => 'nullable|string','hacecuanto037' => 'nullable|string','periodotipo037' => 'nullable|string',
+            //
+            //NEUMOLOGIA
+                'preguntas.038.respuesta' => 'nullable|string','hacecuanto038' => 'nullable|string','periodotipo038' => 'nullable|string',
+                'preguntas.039.respuesta' => 'nullable|string','hacecuanto039' => 'nullable|string','periodotipo039' => 'nullable|string',
+                'preguntas.040.respuesta' => 'nullable|string','hacecuanto040' => 'nullable|string','periodotipo040' => 'nullable|string',
+                'preguntas.041.respuesta' => 'nullable|string','hacecuanto041' => 'nullable|string','periodotipo041' => 'nullable|string',
+                'preguntas.042.respuesta' => 'nullable|string','hacecuanto042' => 'nullable|string','periodotipo042' => 'nullable|string',
+            //
+            //GASTROENTEROLOGIA
+                'preguntas.043.respuesta' => 'nullable|string','hacecuanto043' => 'nullable|string','periodotipo043' => 'nullable|string',
+                'preguntas.044.respuesta' => 'nullable|string','hacecuanto044' => 'nullable|string','periodotipo044' => 'nullable|string',
+                'preguntas.045.respuesta' => 'nullable|string','hacecuanto045' => 'nullable|string','periodotipo045' => 'nullable|string',
+                'preguntas.046.respuesta' => 'nullable|string','hacecuanto046' => 'nullable|string','periodotipo046' => 'nullable|string',
+                'preguntas.047.respuesta' => 'nullable|string','hacecuanto047' => 'nullable|string','periodotipo047' => 'nullable|string',
+                'preguntas.048.respuesta' => 'nullable|string','hacecuanto048' => 'nullable|string','periodotipo048' => 'nullable|string',
+                'preguntas.049.respuesta' => 'nullable|string','hacecuanto049' => 'nullable|string','periodotipo049' => 'nullable|string',
+                'preguntas.050.respuesta' => 'nullable|string','hacecuanto050' => 'nullable|string','periodotipo050' => 'nullable|string',
+            //
+            //UROLOGIA / NEFROLOGIA
+                'preguntas.051.respuesta' => 'nullable|string','hacecuanto051' => 'nullable|string','periodotipo051' => 'nullable|string',
+                'preguntas.052.respuesta' => 'nullable|string','hacecuanto052' => 'nullable|string','periodotipo052' => 'nullable|string',
+                'preguntas.053.respuesta' => 'nullable|string','hacecuanto053' => 'nullable|string','periodotipo053' => 'nullable|string',
+                'preguntas.054.respuesta' => 'nullable|string','hacecuanto054' => 'nullable|string','periodotipo054' => 'nullable|string',
+            //
+            //DERMATOLOGIA
+                'preguntas.055.respuesta' => 'nullable|string','hacecuanto055' => 'nullable|string','periodotipo055' => 'nullable|string',
+                'preguntas.056.respuesta' => 'nullable|string','hacecuanto056' => 'nullable|string','periodotipo056' => 'nullable|string',
+                'preguntas.057.respuesta' => 'nullable|string','hacecuanto057' => 'nullable|string','periodotipo057' => 'nullable|string',
+                'preguntas.058.respuesta' => 'nullable|string','hacecuanto058' => 'nullable|string','periodotipo058' => 'nullable|string',
+                'preguntas.059.respuesta' => 'nullable|string','hacecuanto059' => 'nullable|string','periodotipo059' => 'nullable|string',
+                'preguntas.060.respuesta' => 'nullable|string','hacecuanto060' => 'nullable|string','periodotipo060' => 'nullable|string',
+            //
+            //CIRUGIA VASCULAR
+                'preguntas.061.respuesta' => 'nullable|string','hacecuanto061' => 'nullable|string','periodotipo061' => 'nullable|string',
+                'preguntas.062.respuesta' => 'nullable|string','hacecuanto062' => 'nullable|string','periodotipo062' => 'nullable|string',
+                'preguntas.063.respuesta' => 'nullable|string','hacecuanto063' => 'nullable|string','periodotipo063' => 'nullable|string',
+            //
+            //REUMATOLOGIA
+                'preguntas.064.respuesta' => 'nullable|string','hacecuanto064' => 'nullable|string','periodotipo064' => 'nullable|string',
+                'preguntas.065.respuesta' => 'nullable|string','hacecuanto065' => 'nullable|string','periodotipo065' => 'nullable|string',
+                'preguntas.066.respuesta' => 'nullable|string','hacecuanto066' => 'nullable|string','periodotipo066' => 'nullable|string',
+                'preguntas.067.respuesta' => 'nullable|string','hacecuanto067' => 'nullable|string','periodotipo067' => 'nullable|string',
+                'preguntas.068.respuesta' => 'nullable|string','hacecuanto068' => 'nullable|string','periodotipo068' => 'nullable|string',
+                'preguntas.069.respuesta' => 'nullable|string','hacecuanto069' => 'nullable|string','periodotipo069' => 'nullable|string',
+                'preguntas.070.respuesta' => 'nullable|string','hacecuanto070' => 'nullable|string','periodotipo070' => 'nullable|string',
+                'preguntas.071.respuesta' => 'nullable|string','hacecuanto071' => 'nullable|string','periodotipo071' => 'nullable|string',
+            //
+            //ONCOLOGIA
+                'preguntas.072.respuesta' => 'nullable|string','hacecuanto072' => 'nullable|string','periodotipo072' => 'nullable|string',
+            //
+            //CIRUGIA GENERAL
+                'preguntas.073.respuesta' => 'nullable|string','hacecuanto073' => 'nullable|string','periodotipo073' => 'nullable|string',
+                'preguntas.074.respuesta' => 'nullable|string','hacecuanto074' => 'nullable|string','periodotipo074' => 'nullable|string',
+            //
+            //GINECOLOGIA
+                'preguntas.075.respuesta' => 'nullable|string','hacecuanto075' => 'nullable|string','periodotipo075' => 'nullable|string',
+                'preguntas.076.respuesta' => 'nullable|string','hacecuanto076' => 'nullable|string','periodotipo076' => 'nullable|string',
+                'preguntas.077.respuesta' => 'nullable|string','hacecuanto077' => 'nullable|string','periodotipo077' => 'nullable|string',
+                'preguntas.078.respuesta' => 'nullable|string','hacecuanto078' => 'nullable|string','periodotipo078' => 'nullable|string',
+                'preguntas.079.respuesta' => 'nullable|string','hacecuanto079' => 'nullable|string','periodotipo079' => 'nullable|string',
+            //
+            //ANTECEDENTES PATOLOGICOS ADICIONALES
+                'fracturas' => '','alergias' => '','transfusiones' => '','intoxicaciones' => '','enfermedadessexual' => '','alteracionvision' => '','alteracionoido' => '','enfermedaddigestivo' => '','enfermedadurogenital' => '',
+                //ANTECEDENTES PERSONALES NO PATOLOGICOS
+                //CIGARILLOS
+                'estadocigarrillos' => '','suspcigarillos' => '','tiemposuspcigarillos' => '','freccigarillos' => '','tiempofreccigarillos' => '','consumocigarillos' => '','tiempoconscigarillos' => '','numerocigarrillos' => '',
+                //ALCOHOL
+                'estadoalcoholismo' => '','suspensionalcohol' => '','tiemposuspalcohol' => '','frecuenciaalcohol' => '','tiempofrecalcohol' => '','consumoalcohol' => '','tiempoconsalcohol' => '','tipobebida' => '',
+                //COCA
+                'estadococa' => '','consumococa' => '','tiempoconscoca' => '','frecuenciacoca' => '','tiempofreccoca' => '',
+                //MEDICAMENTOS
+                'estadomedicamento' => '','cualesmedicamentos' => '',
+                //ADICIONAL
+                'vivienda' => '','alimentacion' => '','drogas' => '','deporte' => '','catarsis' => '','diuresis' => '','combe' => '',
+                //ANTECEDENTES QUIRURGICOS
+                'preguntas.100.antecedente' => 'nullable|string','preguntas.100.periodotiempo' => 'nullable|string',
+                'preguntas.200.antecedente' => 'nullable|string','preguntas.200.periodotiempo' => 'nullable|string',
+                'preguntas.300.antecedente' => 'nullable|string','preguntas.300.periodotiempo' => 'nullable|string',
+                //ANTECEDENTES TRAUMATICOS
+                'preguntas.1000.antecedente' => 'nullable|string','preguntas.1000.periodotiempo' => 'nullable|string',
+                'preguntas.2000.antecedente' => 'nullable|string','preguntas.2000.periodotiempo' => 'nullable|string',
+                'preguntas.3000.antecedente' => 'nullable|string','preguntas.3000.periodotiempo' => 'nullable|string',
+                //ANTECEDENTES FAMILIARES
+                'estadosaludpadre' => '','edadvivopadre' => '','edadfallecidopadre' => '','causafallecidopadre' => '','enfermedadespadre' => '',
+                'estadosaludmadre' => '','edadvivomadre' => '','edadfallecemadre' => '','causafallecemadre' => '','enfermedadesmadre' => '',
+                'cantidadhermanos' => '','hermanovivo' => '','hermanofallece' => '','caudafallecehermano' => '','enfermedadeshermano' => '',
+                'estadosaludesposo' => '','edadvivoesposo' => '','edadfalleceesposo' => '','causafalleceesposo' => '','enfermedadesesposo' => '',
+                'cantidadhijos' => '','hijosvivo' => '','hijosfallece' => '','causafallecehijos' => '','enfermedadeshijos' => '',
+                //ANTECENTES FAMILIARES ADICIONALES
+                'preguntas.30.respuesta' => 'nullable|string','hacecuanto30' => 'nullable|string','periodotipo30' => 'nullable|string',
+                'preguntas.31.respuesta' => 'nullable|string','hacecuanto31' => 'nullable|string','periodotipo31' => 'nullable|string',
+                'preguntas.32.respuesta' => 'nullable|string','hacecuanto32' => 'nullable|string','periodotipo32' => 'nullable|string',
+                'preguntas.33.respuesta' => 'nullable|string','hacecuanto33' => 'nullable|string','periodotipo33' => 'nullable|string',
+                'preguntas.34.respuesta' => 'nullable|string','hacecuanto34' => 'nullable|string','periodotipo34' => 'nullable|string',
+                'preguntas.35.respuesta' => 'nullable|string','hacecuanto35' => 'nullable|string','periodotipo35' => 'nullable|string',
+                'preguntas.36.respuesta' => 'nullable|string','hacecuanto36' => 'nullable|string','periodotipo36' => 'nullable|string',
+                'preguntas.37.respuesta' => 'nullable|string','hacecuanto37' => 'nullable|string','periodotipo37' => 'nullable|string',
+                'preguntas.38.respuesta' => 'nullable|string','hacecuanto38' => 'nullable|string','periodotipo38' => 'nullable|string',
+                'preguntas.39.respuesta' => 'nullable|string','hacecuanto39' => 'nullable|string','periodotipo39' => 'nullable|string',
+                'preguntas.40.respuesta' => 'nullable|string','hacecuanto40' => 'nullable|string','periodotipo40' => 'nullable|string',
+                'preguntas.41.respuesta' => 'nullable|string','hacecuanto41' => 'nullable|string','periodotipo41' => 'nullable|string',
+                //ANTECEDENTES LABORALES
+                'fechainicioatclab' => '','fechafinalatclab' => '',
+                'preguntas.1.carac' => 'nullable|string','preguntas.1.denun' => 'nullable|string','preguntas.1.aten' => 'nullable|string',
+                'preguntas.2.carac' => 'nullable|string','preguntas.2.denun' => 'nullable|string','preguntas.2.aten' => 'nullable|string',
+                'preguntas.3.carac' => 'nullable|string','preguntas.3.denun' => 'nullable|string','preguntas.3.aten' => 'nullable|string',
+                //HISTORIA DE LA ENFERMEDAD ACTUAL
+                'historiaenfermedad' => '',
+                //EXAMEN FISICO
+                'examenfisicogeneral' => '','llenadocapilar' => '','lateralidad' => '',
+                'pulso' => '','satO2' => '','frespiracion' => '','temperatura' => '','presionarterial' => '',
+                'agudezavisual' => '','usalentes' => '',
+                'peso' => '','estatura' => '','imc' => '',
+                //EXAMEN FISICO SEGMENTADO
+                'exficabeza' => '','exfiojos' => '','exfinariz' => '','exfioidos' => '','exfiboca' => '','exficuello' => '','exfitorax' => '','exficorazon' => '','exfipulmones' => '',
+                'exfiabdomen' => '','exfiextremidadesmmss' => '','exfiextremidadesmmii' => '','exfineurologico' => '','exfivestibulocereboloso' => '','exfimarcha' => '','exficraneoycolumna' => '','exfiexploracionneuro' => '',
+            //
+        ]);
+
+        //IDENTIFICACION DE PELIGROS
+            Session::put('fechaatencion', $request->fechaatencion);
+            Session::put('antecedentespatologicos', $request->antecedentespatologicos);
+            Session::put('peligrosfisicos', $request->input('preguntas.4.respuesta'));
+            Session::put('descripcionpeligrosfisicos', $request->input('detpe4'));
+            Session::put('peligrosquimicos', $request->input('preguntas.5.respuesta'));
+            Session::put('descripcionpeligrosquimicos', $request->input('detpe5'));
+            Session::put('peligrosergonomicos', $request->input('preguntas.6.respuesta'));
+            Session::put('descripcionpeligrosergonomicos', $request->input('detpe6'));
+            Session::put('peligrosepps', $request->input('preguntas.7.respuesta'));
+            Session::put('descripcionpeligrosepps', $request->input('detpe7'));
+            Session::put('peligrosbiologicos', $request->input('preguntas.8.respuesta'));
+            Session::put('descripcionpeligrosbiologicos', $request->input('detpe8'));
+            Session::put('peligrosmecanicos', $request->input('preguntas.9.respuesta'));
+            Session::put('descripcionpeligrosmecanicos', $request->input('detpe9'));
+            Session::put('peligrosambientales', $request->input('preguntas.10.respuesta'));
+            Session::put('descripcionpeligrosambientales', $request->input('detpe10'));
+            Session::put('peligrospsicosociales', $request->input('preguntas.11.respuesta'));
+            Session::put('descripcionpeligrospsicosociales', $request->input('detpe11'));
+            Session::put('otros', $request->otros);
+            //OFTALMOLOGIA
+            Session::put('cefalea', $request->input('preguntas.001.respuesta'));
+            Session::put('hacecuanto001', $request->input('hacecuanto001'));
+            Session::put('periodotipo001', $request->input('periodotipo001'));
+            Session::put('defectovisual', $request->input('preguntas.002.respuesta'));
+            Session::put('hacecuanto002', $request->input('hacecuanto002'));
+            Session::put('periodotipo002', $request->input('periodotipo002'));
+            Session::put('irritacionocular', $request->input('preguntas.003.respuesta'));
+            Session::put('hacecuanto003', $request->input('hacecuanto003'));
+            Session::put('periodotipo003', $request->input('periodotipo003'));
+            Session::put('sequedadocular', $request->input('preguntas.004.respuesta'));
+            Session::put('hacecuanto004', $request->input('hacecuanto004'));
+            Session::put('periodotipo004', $request->input('periodotipo004'));
+            Session::put('lagrimeo', $request->input('preguntas.005.respuesta'));
+            Session::put('hacecuanto005', $request->input('hacecuanto005'));
+            Session::put('periodotipo005', $request->input('periodotipo005'));
+            Session::put('visionborrosa', $request->input('preguntas.006.respuesta'));
+            Session::put('hacecuanto006', $request->input('hacecuanto006'));
+            Session::put('periodotipo006', $request->input('periodotipo006'));
+            //OTORRINOLARINGOLOGIA
+            Session::put('hipoacuasia', $request->input('preguntas.007.respuesta'));
+            Session::put('hacecuanto007', $request->input('hacecuanto007'));
+            Session::put('periodotipo007', $request->input('periodotipo007'));
+            Session::put('otitismedia', $request->input('preguntas.008.respuesta'));
+            Session::put('hacecuanto008', $request->input('hacecuanto008'));
+            Session::put('periodotipo008', $request->input('periodotipo008'));
+            Session::put('sinusitis', $request->input('preguntas.009.respuesta'));
+            Session::put('hacecuanto009', $request->input('hacecuanto009'));
+            Session::put('periodotipo009', $request->input('periodotipo009'));
+            Session::put('tinitus', $request->input('preguntas.010.respuesta'));
+            Session::put('hacecuanto010', $request->input('hacecuanto010'));
+            Session::put('periodotipo010', $request->input('periodotipo010'));
+            //NEUROLOGIA
+            Session::put('convulsiones', $request->input('preguntas.011.respuesta'));
+            Session::put('hacecuanto011', $request->input('hacecuanto011'));
+            Session::put('periodotipo011', $request->input('periodotipo011'));
+            Session::put('epilepsia', $request->input('preguntas.012.respuesta'));
+            Session::put('hacecuanto012', $request->input('hacecuanto012'));
+            Session::put('periodotipo012', $request->input('periodotipo012'));
+            Session::put('lumbalgia', $request->input('preguntas.013.respuesta'));
+            Session::put('hacecuanto013', $request->input('hacecuanto013'));
+            Session::put('periodotipo013', $request->input('periodotipo013'));
+            Session::put('neuropatia', $request->input('preguntas.014.respuesta'));
+            Session::put('hacecuanto014', $request->input('hacecuanto014'));
+            Session::put('periodotipo014', $request->input('periodotipo014'));
+            Session::put('acv', $request->input('preguntas.015.respuesta'));
+            Session::put('hacecuanto015', $request->input('hacecuanto015'));
+            Session::put('periodotipo015', $request->input('periodotipo015'));
+            Session::put('cefaleaneurologia', $request->input('preguntas.016.respuesta'));
+            Session::put('hacecuanto016', $request->input('hacecuanto016'));
+            Session::put('periodotipo016', $request->input('periodotipo016'));
+            Session::put('disformiamuscular', $request->input('preguntas.017.respuesta'));
+            Session::put('hacecuanto017', $request->input('hacecuanto017'));
+            Session::put('periodotipo017', $request->input('periodotipo017'));
+            Session::put('lesionmedulaespinal', $request->input('preguntas.018.respuesta'));
+            Session::put('hacecuanto018', $request->input('hacecuanto018'));
+            Session::put('periodotipo018', $request->input('periodotipo018'));
+            //CARDIOLOGIA
+            Session::put('hta', $request->input('preguntas.019.respuesta'));
+            Session::put('hacecuanto019', $request->input('hacecuanto019'));
+            Session::put('periodotipo019', $request->input('periodotipo019'));
+            Session::put('arritmia', $request->input('preguntas.020.respuesta'));
+            Session::put('hacecuanto020', $request->input('hacecuanto020'));
+            Session::put('periodotipo020', $request->input('periodotipo020'));
+            Session::put('chagas', $request->input('preguntas.021.respuesta'));
+            Session::put('hacecuanto021', $request->input('hacecuanto021'));
+            Session::put('periodotipo021', $request->input('periodotipo021'));
+            Session::put('taquicardia', $request->input('preguntas.022.respuesta'));
+            Session::put('hacecuanto022', $request->input('hacecuanto022'));
+            Session::put('periodotipo022', $request->input('periodotipo022'));
+            Session::put('bradicardia', $request->input('preguntas.023.respuesta'));
+            Session::put('hacecuanto023', $request->input('hacecuanto023'));
+            Session::put('periodotipo023', $request->input('periodotipo023'));
+            Session::put('bloqueoderama', $request->input('preguntas.024.respuesta'));
+            Session::put('hacecuanto024', $request->input('hacecuanto024'));
+            Session::put('periodotipo024', $request->input('periodotipo024'));
+            Session::put('stentcoronario', $request->input('preguntas.025.respuesta'));
+            Session::put('hacecuanto025', $request->input('hacecuanto025'));
+            Session::put('periodotipo025', $request->input('periodotipo025'));
+            Session::put('marcapaso', $request->input('preguntas.026.respuesta'));
+            Session::put('hacecuanto026', $request->input('hacecuanto026'));
+            Session::put('periodotipo026', $request->input('periodotipo026'));
+            //ENDICRONOLOGIA
+            Session::put('dmt2', $request->input('preguntas.027.respuesta'));
+            Session::put('hacecuanto027', $request->input('hacecuanto027'));
+            Session::put('periodotipo027', $request->input('periodotipo027'));
+            Session::put('lupuseritematoso', $request->input('preguntas.028.respuesta'));
+            Session::put('hacecuanto028', $request->input('hacecuanto028'));
+            Session::put('periodotipo028', $request->input('periodotipo028'));
+            Session::put('colesterolelevado', $request->input('preguntas.029.respuesta'));
+            Session::put('hacecuanto029', $request->input('hacecuanto029'));
+            Session::put('periodotipo029', $request->input('periodotipo029'));
+            Session::put('hipotiroidismo', $request->input('preguntas.030.respuesta'));
+            Session::put('hacecuanto030', $request->input('hacecuanto030'));
+            Session::put('periodotipo030', $request->input('periodotipo030'));
+            Session::put('hipertiroidismo', $request->input('preguntas.031.respuesta'));
+            Session::put('hacecuanto031', $request->input('hacecuanto031'));
+            Session::put('periodotipo031', $request->input('periodotipo031'));
+            //TRAUMATOLOGIA
+            Session::put('artritis', $request->input('preguntas.032.respuesta'));
+            Session::put('hacecuanto032', $request->input('hacecuanto032'));
+            Session::put('periodotipo032', $request->input('periodotipo032'));
+            Session::put('doloresarticulares', $request->input('preguntas.033.respuesta'));
+            Session::put('hacecuanto033', $request->input('hacecuanto033'));
+            Session::put('periodotipo033', $request->input('periodotipo033'));
+            Session::put('lumbalgia', $request->input('preguntas.034.respuesta'));
+            Session::put('hacecuanto034', $request->input('hacecuanto034'));
+            Session::put('periodotipo034', $request->input('periodotipo034'));
+            Session::put('cervicalgia', $request->input('preguntas.035.respuesta'));
+            Session::put('hacecuanto035', $request->input('hacecuanto035'));
+            Session::put('periodotipo035', $request->input('periodotipo035'));
+            Session::put('dorsalgia', $request->input('preguntas.036.respuesta'));
+            Session::put('hacecuanto036', $request->input('hacecuanto036'));
+            Session::put('periodotipo036', $request->input('periodotipo036'));
+            Session::put('silicosis', $request->input('preguntas.037.respuesta'));
+            Session::put('hacecuanto037', $request->input('hacecuanto037'));
+            Session::put('periodotipo037', $request->input('periodotipo037'));
+            //NEUMOLOGIA
+            Session::put('bronquitis', $request->input('preguntas.038.respuesta'));
+            Session::put('hacecuanto038', $request->input('hacecuanto038'));
+            Session::put('periodotipo038', $request->input('periodotipo038'));
+            Session::put('asma', $request->input('preguntas.039.respuesta'));
+            Session::put('hacecuanto039', $request->input('hacecuanto039'));
+            Session::put('periodotipo039', $request->input('periodotipo039'));
+            Session::put('tuberculosis', $request->input('preguntas.040.respuesta'));
+            Session::put('hacecuanto040', $request->input('hacecuanto040'));
+            Session::put('periodotipo040', $request->input('periodotipo040'));
+            Session::put('epoc', $request->input('preguntas.041.respuesta'));
+            Session::put('hacecuanto041', $request->input('hacecuanto041'));
+            Session::put('periodotipo041', $request->input('periodotipo041'));
+            Session::put('enfisemapulmonar', $request->input('preguntas.042.respuesta'));
+            Session::put('hacecuanto042', $request->input('hacecuanto042'));
+            Session::put('periodotipo042', $request->input('periodotipo042'));
+            //GASTROENTEROLOGIA
+            Session::put('gastritis', $request->input('preguntas.043.respuesta'));
+            Session::put('hacecuanto043', $request->input('hacecuanto043'));
+            Session::put('periodotipo043', $request->input('periodotipo043'));
+            Session::put('enfacidopeptica', $request->input('preguntas.044.respuesta'));
+            Session::put('hacecuanto044', $request->input('hacecuanto044'));
+            Session::put('periodotipo044', $request->input('periodotipo044'));
+            Session::put('colonirritable', $request->input('preguntas.045.respuesta'));
+            Session::put('hacecuanto045', $request->input('hacecuanto045'));
+            Session::put('periodotipo045', $request->input('periodotipo045'));
+            Session::put('cololetiasis', $request->input('preguntas.046.respuesta'));
+            Session::put('hacecuanto046', $request->input('hacecuanto046'));
+            Session::put('periodotipo046', $request->input('periodotipo046'));
+            Session::put('distencion', $request->input('preguntas.047.respuesta'));
+            Session::put('hacecuanto047', $request->input('hacecuanto047'));
+            Session::put('periodotipo047', $request->input('periodotipo047'));
+            Session::put('calculosbiliares', $request->input('preguntas.048.respuesta'));
+            Session::put('hacecuanto048', $request->input('hacecuanto048'));
+            Session::put('periodotipo048', $request->input('periodotipo048'));
+            Session::put('ulceraintestinal', $request->input('preguntas.049.respuesta'));
+            Session::put('hacecuanto049', $request->input('hacecuanto049'));
+            Session::put('periodotipo049', $request->input('periodotipo049'));
+            Session::put('hepatitis', $request->input('preguntas.050.respuesta'));
+            Session::put('hacecuanto050', $request->input('hacecuanto050'));
+            Session::put('periodotipo050', $request->input('periodotipo050'));
+            //UROLOGIA / NEFROLOGIA
+            Session::put('urolitiasis', $request->input('preguntas.051.respuesta'));
+            Session::put('hacecuanto051', $request->input('hacecuanto051'));
+            Session::put('periodotipo051', $request->input('periodotipo051'));
+            Session::put('infeccionurinaria', $request->input('preguntas.052.respuesta'));
+            Session::put('hacecuanto052', $request->input('hacecuanto052'));
+            Session::put('periodotipo052', $request->input('periodotipo052'));
+            Session::put('prostatitis', $request->input('preguntas.053.respuesta'));
+            Session::put('hacecuanto053', $request->input('hacecuanto053'));
+            Session::put('periodotipo053', $request->input('periodotipo053'));
+            Session::put('varicocele', $request->input('preguntas.054.respuesta'));
+            Session::put('hacecuanto054', $request->input('hacecuanto054'));
+            Session::put('periodotipo054', $request->input('periodotipo054'));
+            //DERMATOLOGIA
+            Session::put('dermatitis', $request->input('preguntas.055.respuesta'));
+            Session::put('hacecuanto055', $request->input('hacecuanto055'));
+            Session::put('periodotipo055', $request->input('periodotipo055'));
+            Session::put('lupuseritematosoder', $request->input('preguntas.056.respuesta'));
+            Session::put('hacecuanto056', $request->input('hacecuanto056'));
+            Session::put('periodotipo056', $request->input('periodotipo056'));
+            Session::put('vitiligo', $request->input('preguntas.057.respuesta'));
+            Session::put('hacecuanto057', $request->input('hacecuanto057'));
+            Session::put('periodotipo057', $request->input('periodotipo057'));
+            Session::put('eccema', $request->input('preguntas.058.respuesta'));
+            Session::put('hacecuanto058', $request->input('hacecuanto058'));
+            Session::put('periodotipo058', $request->input('periodotipo058'));
+            Session::put('impetigo', $request->input('preguntas.059.respuesta'));
+            Session::put('hacecuanto059', $request->input('hacecuanto059'));
+            Session::put('periodotipo059', $request->input('periodotipo059'));
+            Session::put('psoriasis', $request->input('preguntas.060.respuesta'));
+            Session::put('hacecuanto060', $request->input('hacecuanto060'));
+            Session::put('periodotipo060', $request->input('periodotipo060'));
+            //CIRUGIA VASCULAR
+            Session::put('varicesenpiernas', $request->input('preguntas.061.respuesta'));
+            Session::put('hacecuanto061', $request->input('hacecuanto061'));
+            Session::put('periodotipo061', $request->input('periodotipo061'));
+            Session::put('celulitisenmmii', $request->input('preguntas.062.respuesta'));
+            Session::put('hacecuanto062', $request->input('hacecuanto062'));
+            Session::put('periodotipo062', $request->input('periodotipo062'));
+            Session::put('trombosis', $request->input('preguntas.063.respuesta'));
+            Session::put('hacecuanto063', $request->input('hacecuanto063'));
+            Session::put('periodotipo063', $request->input('periodotipo063'));
+            //REUMATOLOGIA
+            Session::put('artritisreumatoidea', $request->input('preguntas.064.respuesta'));
+            Session::put('hacecuanto064', $request->input('hacecuanto064'));
+            Session::put('periodotipo064', $request->input('periodotipo064'));
+            Session::put('artrosisreu', $request->input('preguntas.065.respuesta'));
+            Session::put('hacecuanto065', $request->input('hacecuanto065'));
+            Session::put('periodotipo065', $request->input('periodotipo065'));
+            Session::put('psoriasisreu', $request->input('preguntas.066.respuesta'));
+            Session::put('hacecuanto066', $request->input('hacecuanto066'));
+            Session::put('periodotipo066', $request->input('periodotipo066'));
+            Session::put('lupuseritematosoreu', $request->input('preguntas.067.respuesta'));
+            Session::put('hacecuanto067', $request->input('hacecuanto067'));
+            Session::put('periodotipo067', $request->input('periodotipo067'));
+            Session::put('gota', $request->input('preguntas.068.respuesta'));
+            Session::put('hacecuanto068', $request->input('hacecuanto068'));
+            Session::put('periodotipo068', $request->input('periodotipo068'));
+            Session::put('espondilitisanquilosante', $request->input('preguntas.069.respuesta'));
+            Session::put('hacecuanto069', $request->input('hacecuanto069'));
+            Session::put('periodotipo069', $request->input('periodotipo069'));
+            Session::put('fibromialgia', $request->input('preguntas.070.respuesta'));
+            Session::put('hacecuanto070', $request->input('hacecuanto070'));
+            Session::put('periodotipo070', $request->input('periodotipo070'));
+            Session::put('reumatismo', $request->input('preguntas.071.respuesta'));
+            Session::put('hacecuanto071', $request->input('hacecuanto071'));
+            Session::put('periodotipo071', $request->input('periodotipo071'));
+            //ONCOLOGIA
+            Session::put('cancer', $request->input('preguntas.072.respuesta'));
+            Session::put('hacecuanto072', $request->input('hacecuanto072'));
+            Session::put('periodotipo072', $request->input('periodotipo072'));
+            //CIRUGIA GENERAL
+            Session::put('herniainguinal', $request->input('preguntas.073.respuesta'));
+            Session::put('hacecuanto073', $request->input('hacecuanto073'));
+            Session::put('periodotipo073', $request->input('periodotipo073'));
+            Session::put('herniaumbilical', $request->input('preguntas.074.respuesta'));
+            Session::put('hacecuanto074', $request->input('hacecuanto074'));
+            Session::put('periodotipo074', $request->input('periodotipo074'));
+            //GINECOLOGIA
+            Session::put('endometriosis', $request->input('preguntas.075.respuesta'));
+            Session::put('hacecuanto075', $request->input('hacecuanto075'));
+            Session::put('periodotipo075', $request->input('periodotipo075'));
+            Session::put('miomasuterinos', $request->input('preguntas.076.respuesta'));
+            Session::put('hacecuanto076', $request->input('hacecuanto076'));
+            Session::put('periodotipo076', $request->input('periodotipo076'));
+            Session::put('poliposuterinos', $request->input('preguntas.077.respuesta'));
+            Session::put('hacecuanto077', $request->input('hacecuanto077'));
+            Session::put('periodotipo077', $request->input('periodotipo077'));
+            Session::put('quistesdeovarios', $request->input('preguntas.078.respuesta'));
+            Session::put('hacecuanto078', $request->input('hacecuanto078'));
+            Session::put('periodotipo078', $request->input('periodotipo078'));
+            Session::put('prolapsogenital', $request->input('preguntas.079.respuesta'));
+            Session::put('hacecuanto079', $request->input('hacecuanto079'));
+            Session::put('periodotipo079', $request->input('periodotipo079'));
+            //ANTECEDENTES PATOLOGICOS ADICIONALES
+            Session::put('fracturas', $request->fracturas);
+            Session::put('alergias', $request->alergias);
+            Session::put('transfusiones', $request->transfusiones);
+            Session::put('intoxicaciones', $request->intoxicaciones);
+            Session::put('enfermedadessexual', $request->enfermedadessexual);
+            Session::put('alteracionvision', $request->alteracionvision);
+            Session::put('alteracionoido', $request->alteracionoido);
+            Session::put('enfermedaddigestivo', $request->enfermedaddigestivo);
+            Session::put('enfermedadurogenital', $request->enfermedadurogenital);
+            //ANTECEDENTES PERSONALES NO PATOLOGICOS
+            //CIGARRILLOS
+            Session::put('estadocigarrillos', $request->estadocigarrillos);
+            Session::put('suspcigarillos', $request->suspcigarillos);
+            Session::put('tiemposuspcigarillos', $request->tiemposuspcigarillos);
+            Session::put('freccigarillos', $request->freccigarillos);
+            Session::put('tiempofreccigarillos', $request->tiempofreccigarillos);
+            Session::put('consumocigarillos', $request->consumocigarillos);
+            Session::put('tiempoconscigarillos', $request->tiempoconscigarillos);
+            Session::put('numerocigarrillos', $request->numerocigarrillos);
+            //ALCOHOL
+            Session::put('estadoalcoholismo', $request->estadoalcoholismo);
+            Session::put('suspensionalcohol', $request->suspensionalcohol);
+            Session::put('tiemposuspalcohol', $request->tiemposuspalcohol);
+            Session::put('frecuenciaalcohol', $request->frecuenciaalcohol);
+            Session::put('tiempofrecalcohol', $request->tiempofrecalcohol);
+            Session::put('consumoalcohol', $request->consumoalcohol);
+            Session::put('tiempoconsalcohol', $request->tiempoconsalcohol);
+            Session::put('tipobebida', $request->tipobebida);
+            //COCA
+            Session::put('estadococa', $request->estadococa);
+            Session::put('consumococa', $request->consumococa);
+            Session::put('tiempoconscoca', $request->tiempoconscoca);
+            Session::put('frecuenciacoca', $request->frecuenciacoca);
+            Session::put('tiempofreccoca', $request->tiempofreccoca);
+            //MEDICAMENTOS
+            Session::put('estadomedicamento', $request->estadomedicamento);
+            Session::put('cualesmedicamentos', $request->cualesmedicamentos);
+            //ADICIONAL
+            Session::put('vivienda', $request->vivienda);
+            Session::put('alimentacion', $request->alimentacion);
+            Session::put('drogas', $request->drogas);
+            Session::put('deporte', $request->deporte);
+            Session::put('catarsis', $request->catarsis);
+            Session::put('diuresis', $request->diuresis);
+            Session::put('combe', $request->combe);
+            //ANTECEDENTES QUIRUGICOS
+            Session::put('atcquirurgico1', $request->input('preguntas.100.antecedente'));
+            Session::put('atcperiodo1', $request->input('preguntas.100.periodotiempo'));
+            Session::put('atcquirurgico2', $request->input('preguntas.200.antecedente'));
+            Session::put('atcperiodo2', $request->input('preguntas.200.periodotiempo'));
+            Session::put('atcquirurgico3', $request->input('preguntas.300.antecedente'));
+            Session::put('atcperiodo3', $request->input('preguntas.300.periodotiempo'));
+            //ANTECEDENTES TRAUMATICOS
+            Session::put('atctrau1', $request->input('preguntas.100.antecedente'));
+            Session::put('atctrauperiodo1', $request->input('preguntas.1000.periodotiempo'));
+            Session::put('atctrau2', $request->input('preguntas.200.antecedente'));
+            Session::put('atctrauperiodo2', $request->input('preguntas.2000.periodotiempo'));
+            Session::put('atctrau3', $request->input('preguntas.300.antecedente'));
+            Session::put('atctrauperiodo3', $request->input('preguntas.3000.periodotiempo'));
+            //ANTECEDENTES FAMILIARES
+            Session::put('estadosaludpadre', $request->estadosaludpadre);
+            Session::put('edadvivopadre', $request->edadvivopadre);
+            Session::put('edadfallecidopadre', $request->edadfallecidopadre);
+            Session::put('causafallecidopadre', $request->causafallecidopadre);
+            Session::put('enfermedadespadre', $request->enfermedadespadre);
+            Session::put('estadosaludmadre', $request->estadosaludmadre);
+            Session::put('edadvivomadre', $request->edadvivomadre);
+            Session::put('edadfallecemadre', $request->edadfallecemadre);
+            Session::put('causafallecemadre', $request->causafallecemadre);
+            Session::put('enfermedadesmadre', $request->enfermedadesmadre);
+            Session::put('cantidadhermanos', $request->cantidadhermanos);
+            Session::put('hermanovivo', $request->hermanovivo);
+            Session::put('hermanofallece', $request->hermanofallece);
+            Session::put('caudafallecehermano', $request->caudafallecehermano);
+            Session::put('enfermedadeshermano', $request->enfermedadeshermano);
+            Session::put('estadosaludesposo', $request->estadosaludesposo);
+            Session::put('edadvivoesposo', $request->edadvivoesposo);
+            Session::put('edadfalleceesposo', $request->edadfalleceesposo);
+            Session::put('causafalleceesposo', $request->causafalleceesposo);
+            Session::put('enfermedadesesposo', $request->enfermedadesesposo);
+            Session::put('cantidadhijos', $request->cantidadhijos);
+            Session::put('hijosvivo', $request->hijosvivo);
+            Session::put('hijosfallece', $request->hijosfallece);
+            Session::put('causafallecehijos', $request->causafallecehijos);
+            Session::put('enfermedadeshijos', $request->enfermedadeshijos);
+            //ANTECEDENTES FAMILIARES ADICIONALES
+            Session::put('afhta', $request->input('preguntas.30.respuesta'));
+            Session::put('hacecuanto30', $request->input('hacecuanto30'));
+            Session::put('periodotipo30', $request->input('periodotipo30'));
+            Session::put('afinfarto', $request->input('preguntas.31.respuesta'));
+            Session::put('hacecuanto31', $request->input('hacecuanto31'));
+            Session::put('periodotipo31', $request->input('periodotipo31'));
+            Session::put('afacv', $request->input('preguntas.32.respuesta'));
+            Session::put('hacecuanto32', $request->input('hacecuanto32'));
+            Session::put('periodotipo32', $request->input('periodotipo32'));
+            Session::put('afalergias', $request->input('preguntas.33.respuesta'));
+            Session::put('hacecuanto33', $request->input('hacecuanto33'));
+            Session::put('periodotipo33', $request->input('periodotipo33'));
+            Session::put('afulcerapeptica', $request->input('preguntas.34.respuesta'));
+            Session::put('hacecuanto34', $request->input('hacecuanto34'));
+            Session::put('periodotipo34', $request->input('periodotipo34'));
+            Session::put('afdiabetes', $request->input('preguntas.35.respuesta'));
+            Session::put('hacecuanto35', $request->input('hacecuanto35'));
+            Session::put('periodotipo35', $request->input('periodotipo35'));
+            Session::put('afasma', $request->input('preguntas.36.respuesta'));
+            Session::put('hacecuanto36', $request->input('hacecuanto36'));
+            Session::put('periodotipo36', $request->input('periodotipo36'));
+            Session::put('aftbc', $request->input('preguntas.37.respuesta'));
+            Session::put('hacecuanto37', $request->input('hacecuanto37'));
+            Session::put('periodotipo37', $request->input('periodotipo37'));
+            Session::put('afartritis', $request->input('preguntas.38.respuesta'));
+            Session::put('hacecuanto38', $request->input('hacecuanto38'));
+            Session::put('periodotipo38', $request->input('periodotipo38'));
+            Session::put('afenfermedadmental', $request->input('preguntas.39.respuesta'));
+            Session::put('hacecuanto39', $request->input('hacecuanto39'));
+            Session::put('periodotipo39', $request->input('periodotipo39'));
+            Session::put('afcancer', $request->input('preguntas.40.respuesta'));
+            Session::put('hacecuanto40', $request->input('hacecuanto40'));
+            Session::put('periodotipo40', $request->input('periodotipo40'));
+            Session::put('afotros', $request->input('preguntas.41.respuesta'));
+            Session::put('hacecuanto41', $request->input('hacecuanto41'));
+            Session::put('periodotipo41', $request->input('periodotipo41'));
+            //ANTECEDENTES LABORALES
+            Session::put('fechainicioatclab', $request->fechainicioatclab);
+            Session::put('fechafinalatclab', $request->fechafinalatclab);
+            Session::put('caracatclaboral1', $request->input('preguntas.1.carac'));
+            Session::put('denunatclaboral1', $request->input('preguntas.1.denun'));
+            Session::put('atenatclaboral1', $request->input('preguntas.1.aten'));
+            Session::put('caracatclaboral2', $request->input('preguntas.2.carac'));
+            Session::put('denunatclaboral2', $request->input('preguntas.2.denun'));
+            Session::put('atenatclaboral2', $request->input('preguntas.2.aten'));
+            Session::put('caracatclaboral3', $request->input('preguntas.3.carac'));
+            Session::put('denunatclaboral3', $request->input('preguntas.3.denun'));
+            Session::put('atenatclaboral3', $request->input('preguntas.3.aten'));
+            //HISTORIA DE LA ENFERMEDAD ACTUAL
+            Session::put('historiaenfermedad', $request->historiaenfermedad);
+            //SIGNOS VITALES
+            Session::put('examenfisicogeneral', $request->examenfisicogeneral);
+            Session::put('llenadocapilar', $request->llenadocapilar);
+            Session::put('lateralidad', $request->lateralidad);
+            Session::put('pulso', $request->pulso);
+            Session::put('satO2', $request->satO2);
+            Session::put('frespiracion', $request->frespiracion);
+            Session::put('temperatura', $request->temperatura);
+            Session::put('presionarterial', $request->presionarterial);
+            Session::put('agudezavisual', $request->agudezavisual);
+            Session::put('usalentes', $request->usalentes);
+            Session::put('peso', $request->peso);
+            Session::put('estatura', $request->estatura);
+            Session::put('imc', $request->imc);
+            //EXAMEN FISICO SEGMENTADO
+            Session::put('exficabeza', $request->exficabeza);
+            Session::put('exfiojos', $request->exfiojos);
+            Session::put('exfinariz', $request->exfinariz);
+            Session::put('exfioidos', $request->exfioidos);
+            Session::put('exfiboca', $request->exfiboca);
+            Session::put('exficuello', $request->exficuello);
+            Session::put('exfitorax', $request->exfitorax);
+            Session::put('exficorazon', $request->exficorazon);
+            Session::put('exfipulmones', $request->exfipulmones);
+            Session::put('exfiabdomen', $request->exfiabdomen);
+            Session::put('exfiextremidadesmmss', $request->exfiextremidadesmmss);
+            Session::put('exfiextremidadesmmii', $request->exfiextremidadesmmii);
+            Session::put('exfineurologico', $request->exfineurologico);
+            Session::put('exfivestibulocereboloso', $request->exfivestibulocereboloso);
+            Session::put('exfimarcha', $request->exfimarcha);
+            Session::put('exficraneoycolumna', $request->exficraneoycolumna);
+            Session::put('exfiexploracionneuro', $request->exfiexploracionneuro);
+        //
+
+        $pdf = PDF::loadView('admin.asociados.fichamedicaclientebanco', compact('clientebanco'));
+        $pdfName = 'Fichamedica_'. $clientebanco->nombrecompleto;
+        $pdfName .= '.pdf';
+
+
+        $usuario = auth()->user();
+        $clientFolder = public_path('fichamedicaclientesbanco/' . $clientebanco->id);
+        $pdfPath = $clientFolder . '/' . $pdfName;
+        if (!file_exists($clientFolder)) {
+            mkdir($clientFolder, 0755, true);
+        }
+        $pdf->save($pdfPath);
+        Fichamedicasubcliente::create([
+            'clientebancoid' => $clientebanco->id,
+            'clientebanconombre' => $clientebanco->nombrecompleto,
+            'document' =>$pdfName,
+            'detalle' =>'FICHA MEDICA',
+            'usuarioid' => $usuario->id,
+            'usuarioregistro' => $usuario->name,
+        ]);
+
+        return $pdf->download($pdfName);
+        
+
+        /* return view('admin.asociados.fichamedicaclienteita', compact('cliente')); */
+    }
+    /* public function guardarformularioclienteita(Cliente $cliente)
+    {
+        return view('admin.asociados.crearformularioclienteita');
+    }
+    public function regresarclientes()
+    {
+        return view('admin.asociados.index');
+    } */
 //
 
 

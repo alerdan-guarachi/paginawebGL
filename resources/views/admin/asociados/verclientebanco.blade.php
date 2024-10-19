@@ -23,8 +23,7 @@
     <div class="card">
         <div class="card-body">
             <div class="row">
-                <div class="">
-                    <!-- Modal -->
+                @if($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR'|| $rolusuario === 'OPERATIVO')
                     <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="ventanaModalLabel" aria-hidden="true">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
@@ -62,7 +61,7 @@
                                         </div>
                                         <div class="row text-center">
                                             @can('admin.asociados.crearbateriaclientebanco')
-                                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                     <a href="{{ route('admin.asociados.crearbateriaclientebanco', $clientebanco) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
                                                         <i class="fas fa-charging-station"></i>
                                                         <strong>BATERIA</strong>
@@ -71,14 +70,14 @@
                                             @endcan
                                             @can('admin.asociados.crearprogramacionclientebanco')
                                                 @if ($tieneBateria)
-                                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                     <a href="{{ route('admin.asociados.crearprogramacionclientebanco', $clientebanco) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
                                                         <i class="fas fa-calendar-alt"></i>
                                                         <strong>PROG.</strong>
                                                     </a>
                                                 </div>
                                                 @else
-                                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                     <a href="#" class="btn btn-etapa1 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
                                                         <i class="fas fa-calendar-alt"></i>
                                                         <strong>PROG.</strong>
@@ -86,6 +85,14 @@
                                                 </div>
                                                 @endif
                                             @endcan
+                                            {{-- @can('admin.asociados.crearbateriaclientebanco') --}}
+                                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                    <a href="{{ route('admin.asociados.generarchecklistclientebanco', $clientebanco) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CONSENTIMINETO INFORMADO">
+                                                        <i class="fas fa-file-archive"></i>
+                                                        <strong>CONSENT.</strong>
+                                                    </a>
+                                                </div>
+                                            {{-- @endcan --}}
                                         </div>
                                     </div>
                                     <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
@@ -111,9 +118,9 @@
                                                 @endif
                                             @endcan --}}
                                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                                <a href="{{ route('admin.asociados.formularios.declaracionesmedico', $clientebanco) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="DECLARACION MEDICA">
+                                                <a href="{{ route('admin.asociados.formularios.declaracionesmedico', $clientebanco) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="DECLARACION JURADA">
                                                     <i class="fas fa-lungs-virus"></i>
-                                                    <strong>DEC. MED.</strong>
+                                                    <strong>DEC. JUR.</strong>
                                                 </a>
                                             </div>
                                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
@@ -123,7 +130,7 @@
                                                 </a>
                                             </div>
                                             @can('admin.asociados.creardocumentacionclientebanco')
-                                            @if ($tieneProgramacionatentido)
+                                           
                                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                     <a href="{{ route('admin.asociados.creardocumentacionclientebanco', $clientebanco) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
                                                         <i class="fas fa-list-alt"></i>
@@ -138,7 +145,6 @@
                                                     </a>
                                                 </div>
                                                 @endif
-                                            @endcan
                                         </div>
                                     </div>
                                     <div style="margin-top: 10px; background-color: #fff0e3;  border-radius: 40px;">
@@ -163,8 +169,84 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                
+                @endif
+
+                @if($rolusuario === 'ASOCIADO')
+                    <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="ventanaModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <strong style="text-align: center; font-size:20px; margin-top: 50px; margin-bottom: 20px;">ACCIONES DEL CLIENTE</strong>
+                                <style>
+                                    .bordeetapa1 {
+                                        border-top: 2px solid #26a1c0;
+                                        border-bottom: 2px solid #26a1c0;
+                                        border-right: 2px solid #26a1c0;
+                                        border-left: 2px solid #26a1c0;
+                                    }
+                                    .bordeetapa2 {
+                                        border-top: 2px solid #409c3e;
+                                        border-bottom: 2px solid #409c3e;
+                                        border-right: 2px solid #409c3e;
+                                        border-left: 2px solid #409c3e;
+                                    }
+                                    .bordeetapa3 {
+                                        border-top: 2px solid #a3bc35;
+                                        border-bottom: 2px solid #a3bc35;
+                                        border-right: 2px solid #a3bc35;
+                                        border-left: 2px solid #a3bc35;
+                                    }
+                                    .otros {
+                                        border-top: 2px solid #c47a35;
+                                        border-bottom: 2px solid #c47a35;
+                                        border-right: 2px solid #c47a35;
+                                        border-left: 2px solid #c47a35;
+                                    }
+                                </style>
+                                <div class="modal-body">
+                                    <div style="background-color: #e9fbff;  border-radius: 40px;">
+                                        <div style="text-align: center;padding: 1.5px;">
+                                            <strong style="color: #26a1c0; font-size:20px;">BATERIA E INFORMES</strong>
+                                        </div>
+                                        <div class="row text-center">
+                                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.crearbateriaclientebanco', $clientebanco) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
+                                                    <i class="fas fa-charging-station"></i>
+                                                    <strong>BATERIA</strong>
+                                                </a>
+                                            </div>
+                                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.creardocumentacionclientebanco', $clientebanco) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                                    <i class="fas fa-list-alt"></i>
+                                                    <strong>INFORMES</strong>
+                                                </a>
+                                            </div>  
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="margin-top: 10px; background-color: #fff0e3;  border-radius: 40px;">
+                                        <div style="text-align: center; padding: 1.5px;">
+                                            <strong  style="color: #c47a35; font-size:20px;">OTROS</strong>
+                                        </div>
+                                        <div class="row text-center">
+                                            @can('admin.asociados.editarclientebanco')
+                                            <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.editarclientebanco', $clientebanco) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
+                                                    <i class="fas fa-edit"></i>
+                                                    <strong>EDITAR</strong>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="col-lg-6">
                     <div class="profile-feed">
                         <div class="d-flex align-items-start profile-feed-item">

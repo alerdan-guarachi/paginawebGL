@@ -26,7 +26,7 @@
     <div class="card-body">
         <h3 style="text-align: center;" style="">DECLARACIONES HECHAS AL MEDICO EXAMINADOR</h3>
         
-        <div class="container">
+        {{-- <div class="container"> --}}
 
             <div class="row">
                 <div class="col-lg-12">
@@ -71,7 +71,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        {{-- </div> --}}
 
             <p><strong><span style="font-size: larger;">POR FAVOR CONTESTE A SU MEJOR SABER Y ENTENDER</span></strong></p>
             <div class="row">
@@ -122,7 +122,7 @@
 
 
 
-<div class="row">
+{{-- <div class="row">
     <div class="col-lg-12">
         <div class="form-group">
             <button id="mostrarQR" class="btn btn-primary">Mostrar QR</button>
@@ -133,12 +133,12 @@
         <div class="col-lg-12">
             <div class="form-group">
             <label>Código QR:</label>
-            {{-- <div>{!! QrCode::size(200)->generate($data); !!}</div> --}}
+           
             <div id="qr-code">{!! QrCode::size(200)->generate($data); !!}</div>
 
         </div>
     </div>
-</div>
+</div> --}}
 
 <script>
     document.getElementById("mostrarQR").addEventListener("click", function() {

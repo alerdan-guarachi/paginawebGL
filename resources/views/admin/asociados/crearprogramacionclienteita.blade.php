@@ -120,7 +120,6 @@
                         
                         
                         @foreach($accionesPorFecha as $fecha => $acciones)     
-                            {{-- <div class="row"> --}}
                                 <div class="acciones-{{ $fecha }}" style="display:none;">
                                     <div class="row" style="margin-top: 5px; margin-bottom: 20px; align-items: center;">
                                         <div class="col-lg-8">
@@ -143,8 +142,6 @@
                                                 $proveedorAjeno = 'PROVEEDOR AJENO';
                                                 $proveedor = isset($proveedoresDetalles[$accion]) ? $proveedoresDetalles[$accion] : null;
                                                 $registrada = isset($accionesRegistradas[$fecha]) && in_array($accion, $accionesRegistradas[$fecha]);
-                                                
-                                                // Reemplaza espacios por guiones bajos y puntos por guiones
                                                 $accionSanitizada = str_replace([' ', '.'], ['_', '-'], $accion);
                                             @endphp
                                             
@@ -166,10 +163,8 @@
                                         @endforeach
                                     </div>
                                 </div>
-                            {{-- </div> --}}
                         @endforeach
 
-                        <!-- Script para el filtrado y seleccionar todo -->
                         <script>
                             document.querySelectorAll('[id^="search-"]').forEach(function(searchInput) {
                                 searchInput.addEventListener('keyup', function() {

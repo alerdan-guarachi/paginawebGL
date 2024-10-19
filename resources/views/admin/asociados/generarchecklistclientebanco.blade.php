@@ -5,7 +5,7 @@
 {{-- <a class="btn btn-sm float-right btn-subirrequisitos" href="{{ route('admin.asociados.subirdocrequisitos', $clientebanco) }}">SUBIR REQUISITOS</a> --}}
     
 
-<h5>REQUISITO PARA INICIO DE BATERIA DE:</h5>
+<h5>CONSENTIMIENTO DE:</h5>
 <h3>{{$clientebanco->nombrecompleto}}</h3>
 @stop
 @section('content')
@@ -22,65 +22,49 @@
 
 <div class="card"> 
     <div class="card-body">
-        <div class="row"> 
+        <div class="row">  
             <div class="col-lg-12">
-                <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px; margin-top: 20px;">ATENCIÓN MÉDICA</h4>
+                <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px; margin-top: 20px;">CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS</h4>
                 @if (!$registroExistente && !$registroaprobadoExistente)
-                    
                     <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'generar.pdf.consentimientobanco', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                        {!! Form::open(['route' => 'generar.pdf.consentimientobanco', 'method' => 'post', 'enctype' => 'multipart/form-data', 'id' => 'consentimientoForm']) !!}
                             {!! Form::hidden('clientebancoid', $clientebanco->id, ['class' => 'form-control']) !!}
                             {!! Form::hidden('nombres', $clientebanco->nombrecompleto, ['class' => 'form-control']) !!}
                             {!! Form::hidden('ci', $clientebanco->ci, ['class' => 'form-control']) !!}
                             {!! Form::hidden('sucursal', $clientebanco->sucursal, ['class' => 'form-control']) !!}
-                            {!! Form::submit('DERIVAR A MEDICINA LABORAL', ['class' => 'btn btn-derivar']) !!}
+                            {!! Form::submit('GENERAR CONSENTIMIENTO', ['class' => 'btn btn-derivar', 'id' => 'submitBtn']) !!}
                         {!! Form::close() !!}
                     </div>
-
-                    <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'generar.pdf.soloconsentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                            <a class="btn btn-consen btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">GENERAR SOLO CONSENTIMIENTO</a>
-                            {!! Form::hidden('clientebancoid', $clientebanco->id, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('nombres', $clientebanco->nombrecompleto, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('ci', $clientebanco->ci, ['class' => 'form-control']) !!}
-                        {!! Form::close() !!}
-                    </div>
-
-                    @if($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
-                        <div class="form-group" style="display: flex; gap: 5px;">
-                                {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                                    {!! Form::hidden('clientebancoid', $clientebanco->id, ['class' => 'form-control']) !!}
-                                    {!! Form::hidden('nombres', $clientebanco->nombrecompleto, ['class' => 'form-control']) !!}
-                        
-                                    {!! Form::submit('APROBAR INICIAR BATERIA SIN CONSENTIMIENTO', [
-                                        'class' => 'btn btn-aprobarbateria'
-                                    ]) !!}
-                                {!! Form::close() !!}
-                        </div>
-                    @endif
-                    
                 @elseif ($registroExistente)
                     <p></p>
                 @elseif ($registroaprobadoExistente)
                     <p>APROBADO PARA CREAR BATERÍA</p>
                 @endif
-
             </div>
         </div>
+        
+        <script>
+            document.getElementById('consentimientoForm').addEventListener('submit', function() {
+                setTimeout(function() {
+                    window.location.reload();
+                }, 1000);
+            });
+        </script>
+        
 
         @if ($registroExistente && is_object($registroExistente))
         <div class="row justify-content-center my-5"> 
             <div class="col-lg-8 col-md-10">
                 <div class="form-group bg-light p-5 rounded-lg border text-center">
                     <label class="d-block font-weight-bold mb-4 h5" style="font-weight: 600; color: #94c93b;">
-                        Consentimiento informado para evaluación inicial
+                        Consentimiento informado
                     </label>
                     
                     @if ($registroExistente->document)
                         <div class="text-center">
                             <a href="{{ asset('cotizacionesaprobadasbanco/' . $clientebanco->id . '/' . $registroExistente->document) }}" 
                                class="btn btn-crear btn-lg px-5 py-2 font-weight-bold" target="_blank">
-                                Ver Consentimiento
+                                Ver
                             </a>
                         </div>
                     @else
