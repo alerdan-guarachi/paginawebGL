@@ -85,14 +85,21 @@
                                                 </div>
                                                 @endif
                                             @endcan
-                                            {{-- @can('admin.asociados.crearbateriaclientebanco') --}}
+                                            @if ($tieneProgramacion)
                                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                     <a href="{{ route('admin.asociados.generarchecklistclientebanco', $clientebanco) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CONSENTIMINETO INFORMADO">
                                                         <i class="fas fa-file-archive"></i>
                                                         <strong>CONSENT.</strong>
                                                     </a>
                                                 </div>
-                                            {{-- @endcan --}}
+                                            @else
+                                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                    <a href="#" class="btn btn-etapa1 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="CONSENTIMIENTO INFORMADO" aria-disabled="true">
+                                                        <i class="fas fa-lungs-virus"></i>
+                                                        <strong>CONSENT.</strong>
+                                                    </a>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                     <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
@@ -117,20 +124,38 @@
                                                     </div>
                                                 @endif
                                             @endcan --}}
+                                            @if ($consentimientoinformado)
                                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                 <a href="{{ route('admin.asociados.formularios.declaracionesmedico', $clientebanco) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="DECLARACION JURADA">
                                                     <i class="fas fa-lungs-virus"></i>
                                                     <strong>DEC. JUR.</strong>
                                                 </a>
                                             </div>
+                                            @else
+                                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                    <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="DECLARACION JURADA" aria-disabled="true">
+                                                        <i class="fas fa-lungs-virus"></i>
+                                                        <strong>DEC. JUR.</strong>
+                                                    </a>
+                                                </div>
+                                            @endif
+                                            @if ($declaracionmedica)
                                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                 <a href="{{ route('admin.asociados.crearformularioclientebanco', $clientebanco) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="FICHA MEDICA">
                                                     <i class="fas fa-file-signature"></i>
                                                     <strong>FICHA MED.</strong>
                                                 </a>
                                             </div>
+                                            @else
+                                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                    <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="FICHA MEDICA" aria-disabled="true">
+                                                        <i class="fas fa-file-signature"></i>
+                                                        <strong>FICHA MED.</strong>
+                                                    </a>
+                                                </div>
+                                            @endif
                                             @can('admin.asociados.creardocumentacionclientebanco')
-                                           
+                                                @if ($fichamedica)
                                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                     <a href="{{ route('admin.asociados.creardocumentacionclientebanco', $clientebanco) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
                                                         <i class="fas fa-list-alt"></i>
@@ -145,6 +170,7 @@
                                                     </a>
                                                 </div>
                                                 @endif
+                                            @endcan
                                         </div>
                                     </div>
                                     <div style="margin-top: 10px; background-color: #fff0e3;  border-radius: 40px;">
@@ -215,7 +241,7 @@
                                                 </a>
                                             </div>
                                             <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                                <a href="{{ route('admin.asociados.creardocumentacionclientebanco', $clientebanco) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                                <a href="{{ route('admin.asociados.listadodocumentacionclientebanco', $clientebanco) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
                                                     <i class="fas fa-list-alt"></i>
                                                     <strong>INFORMES</strong>
                                                 </a>

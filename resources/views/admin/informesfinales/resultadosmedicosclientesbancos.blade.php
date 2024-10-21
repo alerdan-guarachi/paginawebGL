@@ -23,10 +23,10 @@
     </script>
 @endif
 <div class="card">
-    {{-- <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg">
         <div class="container-fluid justify-content-end">
             <div class="d-flex flex-wrap align-items-center">
-                <form id="search-form" action="{{ route('buscarprogramacionescomclientebanco') }}" method="get" class="form-inline">
+                <form id="search-form" action="{{ route('buscarresultadosclientebanco') }}" method="get" class="form-inline">
                     <div class="flex-grow-1">
                         <input type="text" name="buscarporcliente" class="form-control mr-sm-2" placeholder="Nombre del Cliente">
                     </div>
@@ -39,7 +39,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('btn-mostrar-todo').addEventListener('click', function() {
-                window.location.href = "{{ route('buscarprogramacionescomclientebanco') }}";
+                window.location.href = "{{ route('buscarresultadosclientebanco') }}";
             });
     
             const activeTabId = localStorage.getItem('activeTab') || 'tab-1';
@@ -55,12 +55,22 @@
                 });
             });
         });
-    </script> --}}
+    </script>
     
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" id="myTabs">
 
-            @if($userRole === 'MAESTRO' || $userRole === 'ADMINISTRADOR' || $userRole === 'OPERATIVO')
+            @if($userRole === 'ASOCIADO')
+            <li class="nav-item">
+                <a class="nav-link active" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
+                    RESULT. MEDICOS COMPLETOS
+                    <?php if ($completosCount > 0): ?>
+                        <span class="circle"><?= $completosCount ?></span>
+                    <?php endif; ?>
+                </a>
+            </li> 
+            @endif
+            @if($userRole !== 'ASOCIADO')
             <li class="nav-item">
                 <a class="nav-link active" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
                     100% COMPLETOS
@@ -72,23 +82,16 @@
             
             <li class="nav-item">
                 <a class="nav-link" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
-                    INFORME FINAL PENDIENTE
+                    INFORME MEDICO PENDIENTE
                     <?php if ($resultadosCount > 0): ?>
                         <span class="circle"><?= $resultadosCount ?></span>
                     <?php endif; ?>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
-                    RESULT. MÉDICOS COMPLETOS
-                    <?php if ($documentosCount > 0): ?>
-                        <span class="circle"><?= $documentosCount ?></span>
-                    <?php endif; ?>
-                </a>
-            </li> 
+            
             <li class="nav-item">
                 <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
-                    INCOMPLETOS
+                    RESULT. MÉDICOS INCOMPLETOS
                     <?php if ($incompletosCount > 0): ?>
                         <span class="circle"><?= $incompletosCount ?></span>
                     <?php endif; ?>
@@ -99,7 +102,6 @@
     </div>
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
-
             {{-- 100% COMPLETOS --}}
             <div class="tab-pane fade show active" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
                 <div class="table-responsive">
@@ -108,369 +110,17 @@
                             <tr>
                                 <th style="width: 5%;">ID</th>
                                 <th style="width: 25%;">Cliente</th>
-                                <th style="width: 10%;">Banco</th>
-                                <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 10%;">Fecha Bat.</th>
-                                <th style="width: 10%;">Res. Médicos</th>
-                                <th style="width: 10%;">Ficha Médica</th>
-                                <th style="width: 10%;">Decla. Médica</th>
-                                <th style="width: 10%;">Inf. Final</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($result as $item)
-                            @if ($item['estado'] === 'COMPLETO')
-                                <tr>
-                                    {{-- ID DEL CLIENTE --}}
-                                    <td>{{ $item['clientebancoid'] }}</td>
-
-                                    {{-- CLIENTE --}}
-                                    <td>
-                                        <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        {{ $item['clientebanconombre'] }}
-                                    </td>
-
-                                    {{-- BANCO --}}
-                                    <td>{{ $item['empresaregistro'] }}</td>
-
-                                    {{-- USUARIO REGISTRO --}}
-                                    <td>{{ $item['usuarioregistro'] }}</td>
-
-                                    {{-- CELULAR DE PROVEEDOR --}}
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
-                                        @endif
-                                    </td>
-
-                                    {{-- FECHA DE BATERIA --}}
-                                    <td>{{ $item['fechabateria'] }}</td>
-
-                                    {{-- RESULTADOS MEDICOS --}}
-                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></button>
-                                        </abbr>
-                                    </td>
-
-                                    {{-- FICHA MEDICA --}}
-                                    <td>
-                                        @if ($item['fichamedica'])
-                                        <p class="text-completo">VER
-                                        <abbr title="VER FICHA MÉDICA">
-                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['fichamedica']) }}" class="btn btn-completo" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr></p>
-                                        @else
-                                        <p class="text-incompleto">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-
-                                    {{-- DECLARACION MEDICA --}}
-                                    <td>
-                                        @if ($item['declaracionmedica'])
-                                        <p class="text-completo">VER
-                                        <abbr title="VER DECLARACION MEDICA">
-                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['declaracionmedica']) }}" class="btn btn-completo" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr></p>
-                                        @else
-                                        <p class="text-incompleto">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-
-                                    {{-- INFORME FINAL --}}
-                                    <td>
-                                        @if ($item['informefinal'])
-                                        <p class="text-completo">VER
-                                        <abbr title="VER INFORME FINAL">
-                                            <a href="{{ asset('/informesfinalesclientesbanco/' . $item['clientebancoid'] . '/' . $item['informefinal']) }}" class="btn btn-completo" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr></p>
-                                        @else
-                                        <p class="text-incompleto">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endif
-                            @endforeach
-
-                        </tbody> 
-                    </table>
-                </div>
-            </div>
-
-            @if($userRole === 'MAESTRO' || $userRole === 'ADMINISTRADOR' || $userRole === 'OPERATIVO')
-            {{-- INFORME FINAL PENDIENTE --}}
-            <div class="tab-pane fade" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr> 
-                                <tr>
-                                    <th style="width: 5%;">ID</th>
-                                    <th style="width: 25%;">Cliente</th>
-                                    <th style="width: 10%;">Banco</th>
-                                    <th style="width: 10%;">Sucursal</th>
-                                    <th style="width: 10%;">Fecha Bat.</th>
-                                    <th style="width: 10%;">Res. Médicos</th>
-                                    <th style="width: 10%;">Ficha Médica</th>
-                                    <th style="width: 10%;">Decla. Médica</th>
-                                    <th style="width: 10%;">Inf. Final</th>
-                                </tr>
-                            </tr>                            
-                        </thead>
-                        <tbody>
-                            @foreach ($result as $item)
-                            {{-- @if ($item['estado'] === 'COMPLETO' && $item['estadoGeneral'] === 'PENDIENTE' || $item['estadoGeneralauditoria'] === 'PENDIENTE') --}}
-                            @if ($item['estado'] === 'COMPLETO')
-
-                            <tr>
-                                    {{-- ID DEL CLIENTE --}}
-                                    <td>{{ $item['clientebancoid'] }}</td>
-
-                                    {{-- CLIENTE --}}
-                                    <td>
-                                        <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        {{ $item['clientebanconombre'] }}
-                                    </td>
-
-                                    {{-- BANCO --}}
-                                    <td>{{ $item['empresaregistro'] }}</td>
-
-                                    {{-- USUARIO REGISTRO --}}
-                                    <td>{{ $item['usuarioregistro'] }}</td>
-
-                                    {{-- CELULAR DE PROVEEDOR --}}
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
-                                        @endif
-                                    </td>
-
-                                    {{-- FECHA DE BATERIA Y SERVICIO--}}
-                                    <td>{{ $item['fechabateria'] }}</td>
-
-
-                                    {{-- RESULTADOS MEDICOS --}}
-                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn btn-veracciones {{ $item['estado'] === 'INCOMPLETO' ? 'btn-danger' : '' }}" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></button>
-                                        </abbr>
-                                    </td>
-                                    <style>
-                                        .btn-danger {
-                                                background-color:  #ffffff;
-                                                color: red;
-                                                border-color: red;
-                                                border-radius: 5px;
-                                                padding: 2px 10px;
-                                                }
-                                            .btn-danger:hover {
-                                                background-color: red;
-                                                color: #ffffff;
-                                                }
-                                    </style>
-
-                                    {{-- FICHA MEDICA --}}
-                                    <td>
-                                        @if ($item['fichamedica'])
-                                        <p class="text-completo">VER
-                                        <abbr title="VER FICHA MÉDICA">
-                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['fichamedica']) }}" class="btn btn-completo" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr></p>
-                                        @else
-                                        <p class="text-incompleto">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-
-                                    {{-- DECLARACION MEDICA --}}
-                                    <td>
-                                        @if ($item['declaracionmedica'])
-                                        <p class="text-completo">VER
-                                        <abbr title="VER DECLARACION MEDICA">
-                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['declaracionmedica']) }}" class="btn btn-completo" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr></p>
-                                        @else
-                                        <p class="text-incompleto">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-
-                                    {{-- INFORME FINAL --}}
-                                    <td>
-                                        @if ($item['informefinal'])
-                                        <p class="text-completo">VER
-                                        <abbr title="VER INFORME FINAL">
-                                            <a href="{{ asset('/informesfinalesclientesbanco/' . $item['clientebancoid'] . '/' . $item['informefinal']) }}" class="btn btn-completo" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr></p>
-                                        @else
-                                        <p class="text-incompleto">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endif
-                            @endforeach
-                        </tbody> 
-                    </table>
-                </div>
-            </div>
-
-            {{-- RESULT. MÉDICOS COMPLETOS --}}
-            <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th style="width: 5%;">ID</th>
-                                <th style="width: 25%;">Cliente</th>
-                                <th style="width: 10%;">Banco</th>
-                                <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 10%;">Fecha Bat.</th>
-                                <th style="width: 10%;">Res. Médicos</th>
-                                <th style="width: 10%;">Ficha Médica</th>
-                                <th style="width: 10%;">Decla. Médica</th>
-                                <th style="width: 10%;">Inf. Final</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($result as $item)
-                            @if ($item['estado'] === 'COMPLETO')
-                                <tr>
-                                    {{-- ID DEL CLIENTE --}}
-                                    <td>{{ $item['clientebancoid'] }}</td>
-
-                                    {{-- CLIENTE --}}
-                                    <td>
-                                        <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        {{ $item['clientebanconombre'] }}
-                                    </td>
-
-                                    {{-- BANCO --}}
-                                    <td>{{ $item['empresaregistro'] }}</td>
-
-                                    {{-- USUARIO REGISTRO --}}
-                                    <td>{{ $item['usuarioregistro'] }}</td>
-
-                                    {{-- CELULAR DE PROVEEDOR --}}
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
-                                        @endif
-                                    </td>
-
-                                    {{-- FECHA DE BATERIA --}}
-                                    <td>{{ $item['fechabateria'] }}</td>
-
-
-                                    {{-- RESULTADOS MEDICOS --}}
-                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn btn-veracciones {{ $item['estado'] === 'INCOMPLETO' ? 'btn-danger' : '' }}" data-toggle="modal" data-target="#modal{{ $loop->index }}">
-                                                <i class="fas fa-file-medical-alt"></i>
-                                            </button>
-                                        </abbr>
-                                    </td>
-                                    <style>
-                                        .btn-danger {
-                                                background-color:  #ffffff;
-                                                color: red;
-                                                border-color: red;
-                                                border-radius: 5px;
-                                                padding: 2px 10px;
-                                                }
-                                            .btn-danger:hover {
-                                                background-color: red;
-                                                color: #ffffff;
-                                                }
-                                    </style>
-                                
-                                    {{-- FICHA MEDICA --}}
-                                    <td>
-                                        @if ($item['fichamedica'])
-                                        <p class="text-completo">VER
-                                        <abbr title="VER FICHA MÉDICA">
-                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['fichamedica']) }}" class="btn btn-completo" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr></p>
-                                        @else
-                                        <p class="text-incompleto">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-                                    
-                                    {{-- DECLARACION MEDICA --}}
-                                    <td>
-                                        @if ($item['declaracionmedica'])
-                                        <p class="text-completo">VER
-                                        <abbr title="VER DECLARACION MEDICA">
-                                            <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['declaracionmedica']) }}" class="btn btn-completo" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr></p>
-                                        @else
-                                        <p class="text-incompleto">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-
-                                    {{-- INFORME FINAL --}}
-                                    <td>
-                                        @if ($item['informefinal'])
-                                        <p class="text-completo">VER
-                                        <abbr title="VER INFORME FINAL">
-                                            <a href="{{ asset('/informesfinalesclientesbanco/' . $item['clientebancoid'] . '/' . $item['informefinal']) }}" class="btn btn-completo" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr></p>
-                                        @else
-                                        <p class="text-incompleto">NO REGISTRADO</p>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endif
-                            @endforeach
-                        </tbody> 
-                    </table>
-                </div>
-            </div>
-
-            {{-- INCOMPLETOS --}}
-            <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th style="width: 5%;">ID</th>
-                                <th style="width: 20%;">Cliente</th>
-                                <th style="width: 10%;">Banco</th>
+                                <th style="width: 15%;">Banco</th>
                                 <th style="width: 10%;">Sucursal</th>
                                 <th style="width: 10%;">Atención</th>
                                 <th style="width: 15%;">Res. Médicos</th>
                                 <th style="width: 15%;">Doc. Adicional</th>
-                                <th style="width: 10%;">Inf. Médico</th>
                                 <th style="width: 5%;">Conciliación</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
-                            @if ($item['estado'] === 'INCOMPLETO')
+                            @if ($item['estado'] === 'COMPLETO' && $item['declaracionmedica'] && $item['fichamedica'] && $item['consentimiento'] && $item['informefinal'])
                                 <tr>
                                     {{-- ID DEL CLIENTE --}}
                                     <td>{{ $item['clientebancoid'] }}</td>
@@ -504,65 +154,184 @@
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER RESULTADOS MÉDICOS">
+                                            <button class="btn {{ $item['estado'] === 'COMPLETO' ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#modal{{ $loop->index }}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </abbr>
+                                    </td>
+
+                                    {{-- DOCUMENTOS ADICIONALES --}}
+                                    <td class="{{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'text-completo' : 'text-incompleto' }}">
+                                        {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                    
+                                        @if (isset($item['fichamedica']) || isset($item['consentimiento']) || isset($item['declaracionmedica']))
+                                            <abbr title="VER OTRO CONTENIDO">
+                                                <button class="btn {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </abbr>
+                                        @endif
+                                    </td>
+
+                                    {{-- CONSILIACIÓN --}}
+                                    <td>  
+                                        <a class="btn btn-sm btn-consiliacion" 
+                                        href="{{ route('admin.asociados.generarpdfcotizacionclientebanco', ['clientebanco' => $clientebancoid]) }}"
+                                           onclick="confirmarGeneracionPdf(event)">
+                                           <i class="fas fa-donate"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            @if($userRole !== 'ASOCIADO')
+            {{-- INFORME MEDICO PENDIENTE --}}
+            <div class="tab-pane fade" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">ID</th>
+                                <th style="width: 25%;">Cliente</th>
+                                <th style="width: 20%;">Banco</th>
+                                <th style="width: 10%;">Sucursal</th>
+                                <th style="width: 10%;">Atención</th>
+                                <th style="width: 15%;">Res. Médicos</th>
+                                <th style="width: 15%;">Doc. Adicional</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($result as $item)
+                            @if ($item['estado'] === 'COMPLETO' && $item['declaracionmedica'] && $item['fichamedica'] && $item['consentimiento'] && !$item['informefinal'] )
+                                <tr>
+                                    {{-- ID DEL CLIENTE --}}
+                                    <td>{{ $item['clientebancoid'] }}</td>
+
+                                    {{-- CLIENTE --}}
+                                    <td>
+                                        <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {{ $item['clientebanconombre'] }}
+                                    </td>
+
+                                    {{-- EMPRESA --}}
+                                    <td>{{ $item['empresaregistro'] }}</td>
+
+                                    {{-- USUARIO REGISTRO --}}
+                                    <td>{{ $item['usuarioregistro'] }}</td>
+                                    
+                                    {{-- CELULAR DE PROVEEDOR --}}
+                                    <td hidden>
+                                        @if ($item['proveedornombre'])
+                                            {{ $item['celularproveedor'] }}
+                                        @endif
+                                    </td>
+
+                                    {{-- FECHA DE BATERIA --}}
+                                    <td>{{ $item['fechabateria'] }}</td>
+                                    
+                                    {{-- ESTADO DE INFORMES --}}
+                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
+                                        {{ $item['estado'] }}
+                                        <abbr title="VER RESULTADOS MÉDICOS">
+                                            <button class="btn {{ $item['estado'] === 'COMPLETO' ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#modal{{ $loop->index }}">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </abbr>
+                                    </td>
+
+                                    {{-- DOCUMENTOS ADICIONALES --}}
+                                    <td class="{{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'text-completo' : 'text-incompleto' }}">
+                                        {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                    
+                                        @if (isset($item['fichamedica']) || isset($item['consentimiento']) || isset($item['declaracionmedica']))
+                                            <abbr title="VER OTRO CONTENIDO">
+                                                <button class="btn {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </abbr>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- INCOMPLETOS --}}
+            <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;">ID</th>
+                                <th style="width: 25%;">Cliente</th>
+                                <th style="width: 20%;">Banco</th>
+                                <th style="width: 10%;">Sucursal</th>
+                                <th style="width: 10%;">Atención</th>
+                                <th style="width: 15%;">Res. Médicos</th>
+                                <th style="width: 15%;">Doc. Adicional</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($result as $item)
+                            @if ($item['estado'] === 'INCOMPLETO' || !$item['declaracionmedica'] && !$item['fichamedica'] && !$item['consentimiento'])
+                                <tr>
+                                    {{-- ID DEL CLIENTE --}}
+                                    <td>{{ $item['clientebancoid'] }}</td>
+
+                                    {{-- CLIENTE --}}
+                                    <td>
+                                        <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {{ $item['clientebanconombre'] }}
+                                    </td>
+
+                                    {{-- EMPRESA --}}
+                                    <td>{{ $item['empresaregistro'] }}</td>
+
+                                    {{-- USUARIO REGISTRO --}}
+                                    <td>{{ $item['usuarioregistro'] }}</td>
+                                    
+                                    {{-- CELULAR DE PROVEEDOR --}}
+                                    <td hidden>
+                                        @if ($item['proveedornombre'])
+                                            {{ $item['celularproveedor'] }}
+                                        @endif
+                                    </td>
+
+                                    {{-- FECHA DE BATERIA --}}
+                                    <td>{{ $item['fechabateria'] }}</td>
+                                    
+                                    {{-- ESTADO DE INFORMES --}}
+                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
+                                        {{ $item['estado'] }}
+                                        <abbr title="VER RESULTADOS MÉDICOS">
                                             <button class="btn btn-veracciones2 btn-sm" data-toggle="modal" data-target="#modal{{ $loop->index }}">
                                                 <i class="fas fa-eye"></i></button>
                                         </abbr>
                                     </td>
 
                                     {{-- DOCUMENTOS ADICIONALES --}}
-                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER OTRO CONTENIDO">
-                                            <button class="btn btn-veracciones2 btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                        </abbr>
-                                    </td>
-
-                                    {{-- INFORME MEDICO --}}
-                                    <td>
-                                        @if ($item['informefinal'])
-                                            <p class="text-completo">VER
-                                                <abbr title="VER INFORME FINAL">
-                                                    <a href="{{ asset('/informesfinalesclientesbanco/' . $item['clientebancoid'] . '/' . $item['informefinal']) }}" class="btn btn-completo" target="_blank">
-                                                        <i class="fas fa-book-medical"></i>
-                                                    </a>
-                                                </abbr>
-                                            </p>
-                                        @else
-                                            <button type="button" class="btn btn-primary btn-sm btn-bateria" title="SUBIR INFORME FINAL" data-toggle="modal" data-target="#uploadModal{{ $item['clientebancoid'] }}">
-                                                <i class="fas fa-upload"></i>
-                                            </button>
-
-                                            <div class="modal fade" id="uploadModal{{ $item['clientebancoid'] }}" tabindex="-1" aria-labelledby="uploadModalLabel{{ $item['clientebancoid'] }}" aria-hidden="true">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title" id="uploadModalLabel{{ $item['clientebancoid'] }}">Subir Informe Final</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            <form action="{{ route('admin.informes.subir', $item['clientebancoid']) }}" method="POST" enctype="multipart/form-data">
-                                                                @csrf
-                                                                <div class="mb-3">
-                                                                    <label for="informe_final" class="form-label">Selecciona el PDF del Informe Final</label>
-                                                                    <input type="file" class="form-control dropify" name="informe_final" id="informe_final" accept="application/pdf" required>
-                                                                </div>
-                                                                <button type="submit" class="btn btn-success">Subir</button>
-                                                            </form>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                    <td class="{{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'text-completo' : 'text-incompleto' }}">
+                                        {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                    
+                                        @if (isset($item['fichamedica']) || isset($item['consentimiento']) || isset($item['declaracionmedica']))
+                                            <abbr title="VER OTRO CONTENIDO">
+                                                <button class="btn {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </abbr>
                                         @endif
-                                    </td>
-                                    {{-- CONSILIACIÓN --}}
-                                    <td>  
-                                        <a class="btn btn-sm btn-bateria" 
-                                        href="{{ route('admin.asociados.generarpdfcotizacionclientebanco', ['clientebanco' => $clientebancoid]) }}"
-                                           onclick="confirmarGeneracionPdf(event)">
-                                           <i class="fas fa-donate"></i>
-                                        </a>
                                     </td>
                                 </tr>
                                 @endif
@@ -589,7 +358,6 @@
     });
 </script>
 @foreach ($result as $item)
-
     {{-- RESULTADOS MEDICOS --}}
     <div class="modal fade" id="modal{{ $loop->index }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ $loop->index }}" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
@@ -601,12 +369,65 @@
                     </button>
                 </div>
                 <div class="modal-body">
+                    @if ($item['estado'] === 'COMPLETO' || $item['declaracionmedica'] && $item['fichamedica'] && $item['consentimiento'])
+                        <div class="container my-4 p-2 border border-success rounded shadow-sm"  style="background-color: #fff7eb; border-width: 10px;">
+                            <div class="row align-items-center">
+                                <div class="col-md-4 text-center">
+                                    <h6 class="text-muted m-0">Informe</h6>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <h6 class="text-muted m-0">Estado</h6>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <h6 class="text-muted m-0">Acciones</h6>
+                                </div>
+                            </div>
+
+                            <div class="row align-items-center">
+                                <div class="col-md-4 text-center">
+                                    <h5 class="m-0"></i> Informe Médico</h5>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    @if ($item['informefinal'])
+                                        <span class="badge badge-success px-3 py-1">Completo</span>
+                                    @else
+                                        <span class="badge badge-danger px-3 py-1">Pendiente</span>
+                                    @endif
+                                </div>
+                        
+                                <div class="col-md-4">
+                                    @if ($item['informefinal'])
+                                    <div class="d-flex justify-content-center">
+                                        <a href="{{ asset('/informesfinalesclientesbanco/' . $item['clientebancoid'] . '/' . $item['informefinal']) }}" class="btn btn-bateria btn-sm" target="_blank">
+                                            <i class="fas fa-book-medical"></i> VER INFORME MEDICO
+                                        </a>
+                                    </div>
+                                    @else
+                                        <form action="{{ route('admin.informesfinales.guardarinformefinalclientebanco', $item['clientebancoid']) }}" method="POST" enctype="multipart/form-data" class="d-flex justify-content-center align-items-center">
+                                            @csrf
+                                            <input type="hidden" name="fechabateria" id="fechabateria" value="{{ $item['fechabateria'] }}">
+                                            <div class="form-group mb-0" style="flex-grow: 1; max-width: 70%;">
+                                                <input type="file" class="form-control form-control-sm" name="document" id="document" accept="application/pdf" required style="height: 35px;">
+                                            </div>
+                                            <button type="submit" class="btn btn-bateria btn-sm ml-2" style="height: 35px;" title="SUBIR INFORME MEDICO">
+                                                <i class="fas fa-upload"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    
                     <div class="table-responsive d-block d-md-none">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
                                     <th>Estudio / Especialidad</th>
+                                    @if($userRole !== 'ASOCIADO')
                                     <th>Proveedor</th>
+                                    @endif
                                     <th>Fecha atención</th>
                                     <th>Result. Médico</th>
                                 </tr>
@@ -615,7 +436,9 @@
                                 @foreach ($item['acciones'] as $accion)
                                     <tr>
                                         <td>{{ $accion['accion'] }}</td>
+                                        @if($userRole !== 'ASOCIADO')
                                         <td>{{ $accion['proveedornombre'] }}</td>
+                                        @endif
                                         <td>{{ $accion['fechaasignada'] }}</td>   
                                         <td>
                                             @if ($accion['estado'] === 'COMPLETO')
@@ -711,6 +534,7 @@
                             </tbody>
                         </table>
                     </div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
@@ -771,7 +595,7 @@
 
                                 <!-- Declaración Médica -->
                                 <tr>
-                                    <td>DECLARACIÓN MÉDICA</td>
+                                    <td>DECLARACIÓN JURADA</td>
                                     <td>
                                         @if ($item['declaracionmedica'])
                                             <span class="text-completo">COMPLETO</span>
@@ -824,8 +648,6 @@
             </div>
         </div>
     </div>
-    
-  
 @endforeach
 
 @stop
@@ -843,6 +665,16 @@
         background-color: #94c93b;
         color: #ffffff;
     }
+    .btn-consiliacion {
+        background-color:  #ffffff;
+        color: #993ed2;
+        border-color: #993ed2;
+        border-radius: 5px;
+    }
+    .btn-consiliacion:hover {
+        background-color: #993ed2;
+        color: #ffffff;
+    }
     .verdoc {
         color:#94c93b; 
         font-family: "Segoe UI";
@@ -854,62 +686,62 @@
         font-weight: 700;
     }
     /* Estilo para el contenedor del botón y menú desplegable */
-.dropdown-container {
-    position: relative;
-    display: inline-block;
-}
+    .dropdown-container {
+        position: relative;
+        display: inline-block;
+    }
 
-/* Estilo para el botón que abre el menú */
-.btn-dropdown {
-margin-top: -10px;
-    color: #94c93b;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-}
+    /* Estilo para el botón que abre el menú */
+    .btn-dropdown {
+    margin-top: -10px;
+        color: #94c93b;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex;
+    }
 
 
-/* Estilo para el menú desplegable */
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    border-radius: 5px;
-    z-index: 1;
-    top: 100%;
-    left: 100%;
-    margin-left: 5px; /* Espacio entre el botón y el menú */
-    padding: 5px;
-    opacity: 0;
-    background: #f7ffea;
-    display: flex;
-    flex-direction: row; /* Alineación horizontal de los botones */
-    white-space: nowrap; /* Evita que los botones se envuelvan */
-    min-width: 50px; /* Ancho mínimo del menú */
-    width: auto; /* Ancho automático según el contenido */
-    max-width: 300px; /* Opcional: Ajusta el máximo ancho según sea necesario */
-    transition: opacity 0.3s ease; /* Transición suave */
-    margin-top: -38px;
-}
+    /* Estilo para el menú desplegable */
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        border-radius: 5px;
+        z-index: 1;
+        top: 100%;
+        left: 100%;
+        margin-left: 5px; /* Espacio entre el botón y el menú */
+        padding: 5px;
+        opacity: 0;
+        background: #f7ffea;
+        display: flex;
+        flex-direction: row; /* Alineación horizontal de los botones */
+        white-space: nowrap; /* Evita que los botones se envuelvan */
+        min-width: 50px; /* Ancho mínimo del menú */
+        width: auto; /* Ancho automático según el contenido */
+        max-width: 300px; /* Opcional: Ajusta el máximo ancho según sea necesario */
+        transition: opacity 0.3s ease; /* Transición suave */
+        margin-top: -38px;
+    }
 
-/* Mostrar el menú desplegable al pasar el cursor sobre el contenedor */
-.dropdown-container:hover .dropdown-menu {
-    display: flex;
-    opacity: 1;
-    visibility: visible;
-}
+    /* Mostrar el menú desplegable al pasar el cursor sobre el contenedor */
+    .dropdown-container:hover .dropdown-menu {
+        display: flex;
+        opacity: 1;
+        visibility: visible;
+    }
 
-/* Estilo para los enlaces dentro del menú desplegable */
-.dropdown-menu a {
-    padding: 10px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 10px; /* Espaciado entre los botones */
-    margin-left: 10px;
-}
+    /* Estilo para los enlaces dentro del menú desplegable */
+    .dropdown-menu a {
+        padding: 10px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px; /* Espaciado entre los botones */
+        margin-left: 10px;
+    }
 
 
 </style>
@@ -930,7 +762,7 @@ margin-top: -10px;
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 2px 10px;
+        padding: 5px 8px;
         }
     .btn-completo:hover {
         background-color: #94c93b;
@@ -941,7 +773,7 @@ margin-top: -10px;
         color: red;
         border-color: red;
         border-radius: 5px;
-        padding: 2px 10px;
+        padding: 5px 8px;
         }
     .btn-incompleto:hover {
         background-color: red;

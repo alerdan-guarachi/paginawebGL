@@ -20,6 +20,7 @@ class Fichamedicasubcliente extends Model
         'usuarioid' => '',
         'usuarioregistro' => '',
         'detalle' => '',
+        'tipodocumento' => '',
         'clientebancoid' => '',
         'clientebanconombre' => '',
     ]; 
@@ -32,6 +33,7 @@ class Fichamedicasubcliente extends Model
         'usuarioid',
         'usuarioregistro',
         'detalle',
+        'tipodocumento',
         'clientebancoid',
         'clientebanconombre',
     ];

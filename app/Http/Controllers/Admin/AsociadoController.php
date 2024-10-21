@@ -7360,7 +7360,7 @@ class AsociadoController extends Controller
         return view('admin.asociados.formularios.declaracionesmedico', compact('clientebanco'));
     }
 
-    public function guardardeclaracion(Request $request, ClienteBanco $clientebanco)
+    /* public function guardardeclaracion(Request $request, ClienteBanco $clientebanco)
     {
         $preguntas = $request->input('preguntas');
 
@@ -7439,7 +7439,7 @@ class AsociadoController extends Controller
         }
 
         return redirect()->route('admin.asociados.formularios.declaracionesmedico', $clientebanco)->with('info', 'Los formularios se registraron con éxito');
-    }
+    } */
     public function generarQR(Request $request, Cliente $cliente)
             {
                 $datosFormulario = $request->except('_token');
@@ -7550,6 +7550,17 @@ class AsociadoController extends Controller
         $tieneProgramacion = Programacionsubcliente::where('clientebancoid', $clientebanco->id)->exists();
         $tieneProgramacionatentido = Estadoprogramacionsubcliente::where('clientebancoid', $clientebanco->id)->exists();
 
+        $fichamedica = Fichamedicasubcliente::where('clientebancoid', $clientebanco->id)
+                ->where('detalle', 'FICHA MEDICA')
+                ->exists();
+        $declaracionmedica = Fichamedicasubcliente::where('clientebancoid', $clientebanco->id)
+                ->where('detalle', 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR')
+                ->exists();
+        $consentimientoinformado = Estadocotizacionsubcliente::where('clientebancoid', $clientebanco->id)
+                ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+                ->whereNotNull('document')
+                ->exists();
+
         $tienerequisitosapelacion = RequisitoSubCliente::where('clientebancoid', $clientebanco->id)->exists();
         $tienerequisitossegundasolicitud = RequisitoSubCliente::where('clientebancoid', $clientebanco->id)->exists();
 
@@ -7592,7 +7603,7 @@ class AsociadoController extends Controller
             $accionesPorFecha[$fecha][] = $accion;
         }
 
-        return view('admin.asociados.verclientebanco', compact('rolusuario','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'clientebanco', 'tieneRequisitos', 'documentacion'));
+        return view('admin.asociados.verclientebanco', compact('fichamedica','declaracionmedica','consentimientoinformado','rolusuario','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'clientebanco', 'tieneRequisitos', 'documentacion'));
     }
     public function editarclientebanco(ClienteBanco $clientebanco)
     {
@@ -7780,53 +7791,53 @@ class AsociadoController extends Controller
         return $this->aprobacioncotizacionclientebanco($clientebanco, $request);
     }
     /* public function generarpdfcotizacionclientebanco(ClienteBanco $clientebanco, Request $request)
-{
-    // Obtener la última fechabateria del cliente
-    $ultimaFechaBateria = ProgramacionsubCliente::where('clientebancoid', $clientebanco->id)
-        ->orderBy('fechabateria', 'desc')
-        ->first()->fechabateria;
+    {
+        // Obtener la última fechabateria del cliente
+        $ultimaFechaBateria = ProgramacionsubCliente::where('clientebancoid', $clientebanco->id)
+            ->orderBy('fechabateria', 'desc')
+            ->first()->fechabateria;
 
-    // Obtener las acciones asociadas a la última fechabateria
-    $bateriasubclientes = ProgramacionsubCliente::where('clientebancoid', $clientebanco->id)
-        ->where('fechabateria', $ultimaFechaBateria)
-        ->get();
+        // Obtener las acciones asociadas a la última fechabateria
+        $bateriasubclientes = ProgramacionsubCliente::where('clientebancoid', $clientebanco->id)
+            ->where('fechabateria', $ultimaFechaBateria)
+            ->get();
 
-    // Calcular el total de los precios
-    $total = $bateriasubclientes->sum('precio');
+        // Calcular el total de los precios
+        $total = $bateriasubclientes->sum('precio');
 
-    // Generar el PDF con la información del cliente y las acciones
-    $pdf = PDF::loadView('admin.asociados.pdfcotizacionclientebanco', compact('clientebanco', 'bateriasubclientes', 'total'));
+        // Generar el PDF con la información del cliente y las acciones
+        $pdf = PDF::loadView('admin.asociados.pdfcotizacionclientebanco', compact('clientebanco', 'bateriasubclientes', 'total'));
 
-    // Crear un nombre dinámico para el archivo PDF
-    $pdfName = 'Cotización_' . $clientebanco->nombrecompleto . '.pdf';
-    
-    // Descargar el PDF
-    return $pdf->download($pdfName);
-} */
-public function generarpdfcotizacionclientebanco(ClienteBanco $clientebanco, Request $request) 
-{
-    // Obtener la última fechabateria del cliente
-    $ultimaFechaBateria = Bateriasubcliente::where('clienteid', $clientebanco->id)
-        ->orderBy('fechabateria', 'desc')
-        ->first()->fechabateria;
+        // Crear un nombre dinámico para el archivo PDF
+        $pdfName = 'Cotización_' . $clientebanco->nombrecompleto . '.pdf';
+        
+        // Descargar el PDF
+        return $pdf->download($pdfName);
+    } */
+    public function generarpdfcotizacionclientebanco(ClienteBanco $clientebanco, Request $request) 
+    {
+        // Obtener la última fechabateria del cliente
+        $ultimaFechaBateria = Bateriasubcliente::where('clienteid', $clientebanco->id)
+            ->orderBy('fechabateria', 'desc')
+            ->first()->fechabateria;
 
-    // Obtener las acciones asociadas a la última fechabateria
-    $bateriasubclientes = Bateriasubcliente::where('clienteid', $clientebanco->id)
-        ->where('fechabateria', $ultimaFechaBateria)
-        ->get();
+        // Obtener las acciones asociadas a la última fechabateria
+        $bateriasubclientes = Bateriasubcliente::where('clienteid', $clientebanco->id)
+            ->where('fechabateria', $ultimaFechaBateria)
+            ->get();
 
-    // Calcular el total de los precios
-    $total = $bateriasubclientes->sum('precio');
+        // Calcular el total de los precios
+        $total = $bateriasubclientes->sum('precio');
 
-    // Generar el PDF con la información del cliente y las acciones
-    $pdf = PDF::loadView('admin.asociados.pdfcotizacionclientebanco', compact('clientebanco', 'bateriasubclientes', 'total'));
+        // Generar el PDF con la información del cliente y las acciones
+        $pdf = PDF::loadView('admin.asociados.pdfcotizacionclientebanco', compact('clientebanco', 'bateriasubclientes', 'total'));
 
-    // Crear un nombre dinámico para el archivo PDF
-    $pdfName = 'Cotización_' . $clientebanco->nombrecompleto . '.pdf';
-    
-    // Retornar la vista en lugar de descargar
-    return $pdf->stream($pdfName); // Usamos stream() para mostrar el PDF en lugar de descargarlo
-}
+        // Crear un nombre dinámico para el archivo PDF
+        $pdfName = 'Cotización_' . $clientebanco->nombrecompleto . '.pdf';
+        
+        // Retornar la vista en lugar de descargar
+        return $pdf->stream($pdfName); // Usamos stream() para mostrar el PDF en lugar de descargarlo
+    }
 
     public function aprobarcotizacionprogramacionclientebanco(ClienteBanco $clientebanco)
     {
@@ -9533,6 +9544,233 @@ public function generarpdfcotizacionclientebanco(ClienteBanco $clientebanco, Req
     {
         return view('admin.asociados.index');
     } */
+    public function guardardeclaracion(Request $request, ClienteBanco $clientebanco)
+    {
+        // Capturar si el documento es digital o físico
+        $tipodocumento = $request->input('tipodocumento');
+
+        // Si el documento es físico, manejar la carga del PDF
+        if ($tipodocumento == 'FISICO') {
+            if ($request->hasFile('pdf_fisico')) {
+                $file = $request->file('pdf_fisico');
+                $pdfName = 'DeclaracionMedicaFisica_' . $clientebanco->nombrecompleto . '.' . $file->getClientOriginalExtension();
+                $clientFolder = public_path('fichamedicasclientebanco/' . $clientebanco->id);
+
+                if (!file_exists($clientFolder)) {
+                    mkdir($clientFolder, 0755, true);
+                }
+
+                // Mover el archivo PDF a la carpeta correspondiente
+                $file->move($clientFolder, $pdfName);
+
+                // Guardar el registro en la base de datos
+                Fichamedicasubcliente::create([
+                    'clienteid' => $clientebanco->id,
+                    'nombrecompleto' => $clientebanco->nombrecompleto,
+                    'document' => $pdfName,
+                    'usuarioid' => auth()->user()->id,
+                    'usuarioregistro' => auth()->user()->name,
+                    'detalle' => 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR',
+                    'tipodocumento' => 'FISICO',
+                    'clientebancoid' => $clientebanco->id,
+                    'clientebanconombre' => $clientebanco->nombrecompleto
+                ]);
+
+                // Redirigir o mostrar un mensaje de éxito
+                return back()->with('success', 'PDF Físico subido y registrado correctamente.');
+            } else {
+                return back()->withErrors(['pdf_fisico' => 'Por favor, selecciona un archivo PDF para subir.']);
+            }
+        }
+
+        // Proceso para el documento digital
+        $preguntas = $request->input('preguntas', []);  // Asegurarse de que $preguntas sea un array
+
+        foreach ($preguntas as $pregunta) {
+            if (array_key_exists('respuesta', $pregunta) && !empty($pregunta['respuesta'])) {
+                $respuesta = $pregunta['respuesta'];
+
+                if ($respuesta == 'si') {
+                    $formulario = new Formulario();
+                    $formulario->cliente_id = $pregunta['cliente_id'] ?? null;
+                    $formulario->pregunta_id = $pregunta['pregunta_id'] ?? null;
+                    $formulario->pregunta_nombre = $pregunta['pregunta_nombre'] ?? null;
+
+                    if ($pregunta['pregunta_id'] == 29) {
+                        $formulario->detallescompletos = $pregunta['detallescompletos'] ?? null;
+                    } else {
+                        // Campos para otras preguntas
+                        $formulario->diagnostico = $pregunta['diagnostico'] ?? null;
+                        $formulario->fecha = $pregunta['fecha'] ?? null;
+                        $formulario->tiempo = $pregunta['tiempo'] ?? null;
+                        $formulario->gradorecuperacion = $pregunta['gradorecuperacion'] ?? null;
+                        $formulario->medico = $pregunta['medico'] ?? null;
+                        $formulario->direccionmedico = $pregunta['direccionmedico'] ?? null;
+                        $formulario->diagnostico2 = $pregunta['diagnostico2'] ?? null;
+                        $formulario->fecha2 = $pregunta['fecha2'] ?? null;
+                        $formulario->tiempo2 = $pregunta['tiempo2'] ?? null;
+                        $formulario->gradorecuperacion2 = $pregunta['gradorecuperacion2'] ?? null;
+                        $formulario->medico2 = $pregunta['medico2'] ?? null;
+                        $formulario->direccionmedico2 = $pregunta['direccionmedico2'] ?? null;
+                        $formulario->hacecuanto = $pregunta['hacecuanto'] ?? null;
+                        $formulario->cadacuanto = $pregunta['cadacuanto'] ?? null;
+                        $formulario->parentesco2 = $pregunta['parentesco2'] ?? null;
+                        $formulario->cuantosmeses = $pregunta['cuantosmeses'] ?? null;
+                        $formulario->detallescompletos = $pregunta['detallescompletos'] ?? null;
+                    }
+
+                    // Guardar el formulario
+                    $formulario->save();
+                }
+            }
+        }
+
+        // Capturar los campos adicionales para familiares
+        $familiares = $request->input('familiares', []);  // Asegurarse de que sea un array
+
+        // Capturar los campos adicionales
+        $nombre_medico = $request->input('ND');
+        $fecha_consulta = $request->input('FC');
+        $tratamiento_medico = $request->input('TM');
+
+        // Capturar estatura y peso
+        $estatura = $request->input('estatura');
+        $peso = $request->input('peso');
+
+        // Capturar los datos de firma
+        $lugar = $request->input('lugar');
+        $dia = $request->input('dia');
+        $mes = $request->input('mes');
+        $anio = $request->input('anio');
+
+        // Cargar la vista del PDF con los datos del cliente, preguntas y campos adicionales
+        $pdf = PDF::loadView('admin.asociados.formularios.declaracionpdfmedico', compact('clientebanco', 'preguntas', 'nombre_medico', 'fecha_consulta', 'tratamiento_medico', 'familiares', 'estatura', 'peso', 'lugar', 'dia', 'mes', 'anio'));
+
+        // Crear el nombre del archivo PDF
+        $pdfName = 'DeclaracionMedica_' . $clientebanco->nombrecompleto;
+        if ($clientebanco->apepaterno) {
+            $pdfName .= ' ' . $clientebanco->apepaterno;
+        }
+        if ($clientebanco->apematerno) {
+            $pdfName .= ' ' . $clientebanco->apematerno;
+        }
+        $pdfName .= '.pdf';
+
+        // Generación del PDF
+        $pdfName = 'DeclaracionMedica_' . $clientebanco->nombrecompleto . '.pdf';
+        $clientFolder = public_path('fichamedicasclientebanco/' . $clientebanco->id);
+
+        if (!file_exists($clientFolder)) {
+            mkdir($clientFolder, 0755, true);
+        }
+
+        $pdf->save($clientFolder . '/' . $pdfName);
+
+        // Guardar el PDF en la base de datos con los datos adicionales
+        Fichamedicasubcliente::create([
+            'clienteid' => $clientebanco->id,  // ID del cliente
+            'nombrecompleto' => $clientebanco->nombrecompleto,  // Nombre completo del cliente
+            'document' => $pdfName,  // Nombre del archivo PDF
+            'usuarioid' => auth()->user()->id,  // ID del usuario actual
+            'usuarioregistro' => auth()->user()->name,  // Nombre del usuario que hace el registro
+            'detalle' => 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR',  // Detalle del registro
+            'tipodocumento' => $tipodocumento,  // Tipo de documento (DIGITAL o FISICO)
+            'clientebancoid' => $clientebanco->id,  // ID del cliente banco
+            'clientebanconombre' => $clientebanco->nombrecompleto  // Nombre completo del cliente banco
+        ]);
+
+        // Retornar el PDF descargable
+        return $pdf->download($pdfName);
+    }
+
+    public function guardarSOLOdeclaracion(Request $request, ClienteBanco $clientebanco)
+    {
+        // Proceso para el documento digital
+        $preguntas = $request->input('preguntas', []);  // Asegurarse de que $preguntas sea un array
+
+        foreach ($preguntas as $pregunta) {
+            if (array_key_exists('respuesta', $pregunta) && !empty($pregunta['respuesta'])) {
+                $respuesta = $pregunta['respuesta'];
+
+                if ($respuesta == 'si') {
+                    $formulario = new Formulario();
+                    $formulario->cliente_id = $pregunta['cliente_id'] ?? null;
+                    $formulario->pregunta_id = $pregunta['pregunta_id'] ?? null;
+                    $formulario->pregunta_nombre = $pregunta['pregunta_nombre'] ?? null;
+
+                    if ($pregunta['pregunta_id'] == 29) {
+                        $formulario->detallescompletos = $pregunta['detallescompletos'] ?? null;
+                    } else {
+                        // Campos para otras preguntas
+                        $formulario->diagnostico = $pregunta['diagnostico'] ?? null;
+                        $formulario->fecha = $pregunta['fecha'] ?? null;
+                        $formulario->tiempo = $pregunta['tiempo'] ?? null;
+                        $formulario->gradorecuperacion = $pregunta['gradorecuperacion'] ?? null;
+                        $formulario->medico = $pregunta['medico'] ?? null;
+                        $formulario->direccionmedico = $pregunta['direccionmedico'] ?? null;
+                        $formulario->diagnostico2 = $pregunta['diagnostico2'] ?? null;
+                        $formulario->fecha2 = $pregunta['fecha2'] ?? null;
+                        $formulario->tiempo2 = $pregunta['tiempo2'] ?? null;
+                        $formulario->gradorecuperacion2 = $pregunta['gradorecuperacion2'] ?? null;
+                        $formulario->medico2 = $pregunta['medico2'] ?? null;
+                        $formulario->direccionmedico2 = $pregunta['direccionmedico2'] ?? null;
+                        $formulario->hacecuanto = $pregunta['hacecuanto'] ?? null;
+                        $formulario->cadacuanto = $pregunta['cadacuanto'] ?? null;
+                        $formulario->parentesco2 = $pregunta['parentesco2'] ?? null;
+                        $formulario->cuantosmeses = $pregunta['cuantosmeses'] ?? null;
+                        $formulario->detallescompletos = $pregunta['detallescompletos'] ?? null;
+                    }
+
+                    // Guardar el formulario
+                    $formulario->save();
+                }
+            }
+        }
+
+        // Capturar los campos adicionales para familiares
+        $familiares = $request->input('familiares', []);  // Asegurarse de que sea un array
+
+        // Capturar los campos adicionales
+        $nombre_medico = $request->input('ND');
+        $fecha_consulta = $request->input('FC');
+        $tratamiento_medico = $request->input('TM');
+
+        // Capturar estatura y peso
+        $estatura = $request->input('estatura');
+        $peso = $request->input('peso');
+
+        // Capturar los datos de firma
+        $lugar = $request->input('lugar');
+        $dia = $request->input('dia');
+        $mes = $request->input('mes');
+        $anio = $request->input('anio');
+
+        // Cargar la vista del PDF con los datos del cliente, preguntas y campos adicionales
+        $pdf = PDF::loadView('admin.asociados.formularios.declaracionpdfmedico', compact('clientebanco', 'preguntas', 'nombre_medico', 'fecha_consulta', 'tratamiento_medico', 'familiares', 'estatura', 'peso', 'lugar', 'dia', 'mes', 'anio'));
+
+        // Crear el nombre del archivo PDF
+        $pdfName = 'DeclaracionMedica_' . $clientebanco->nombrecompleto;
+        if ($clientebanco->apepaterno) {
+            $pdfName .= ' ' . $clientebanco->apepaterno;
+        }
+        if ($clientebanco->apematerno) {
+            $pdfName .= ' ' . $clientebanco->apematerno;
+        }
+        $pdfName .= '.pdf';
+
+        // Generación del PDF
+        $pdfName = 'DeclaracionMedica_' . $clientebanco->nombrecompleto . '.pdf';
+        $clientFolder = public_path('fichamedicasclientebanco/' . $clientebanco->id);
+
+        if (!file_exists($clientFolder)) {
+            mkdir($clientFolder, 0755, true);
+        }
+
+        $pdf->save($clientFolder . '/' . $pdfName);
+
+        // Retornar el PDF descargable
+        return $pdf->download($pdfName);
+    }
 //
 
 

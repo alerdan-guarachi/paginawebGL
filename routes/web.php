@@ -83,6 +83,8 @@ Route::post('informesfinales/guardarproveedorinformefinal/{item}', 'App\Http\Con
 Route::post('informesfinales/guardarinformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardarinformefinal')->name('admin.informesfinales.guardarinformefinal');
 Route::delete('informesfinales/solrevisioninformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@solrevisioninformefinal')->name('admin.informesfinales.solrevisioninformefinal');
 Route::put('informesfinales/aprobarinformefinalfs/{item}', 'App\Http\Controllers\Admin\InformeFinalController@aprobarinformefinalfs')->name('admin.informesfinales.aprobarinformefinalfs');
+Route::get('/buscarresultadosclientebanco', 'App\Http\Controllers\Admin\InformeFinalController@buscarresultadosclientebanco')->name('buscarresultadosclientebanco');
+Route::get('/buscarconsiliacionclientebanco', 'App\Http\Controllers\Admin\InformeFinalController@buscarconsiliacionclientebanco')->name('buscarconsiliacionclientebanco');
 
 Route::post('/update-observacion', [InformeFinalController::class, 'updateObservacion'])->name('updateObservacion');
 // En routes/web.php
@@ -105,6 +107,7 @@ Route::get('informesfinales/resultadosmedicosclientesauditoria/8', 'App\Http\Con
 Route::get('informesfinales/resultadosmedicosclientesbancos/9', 'App\Http\Controllers\Admin\InformeFinalController@resultadosmedicosclientesbancos')->name('admin.informesfinales.resultadosmedicosclientesbancos');
 Route::get('admprogramaciones/controlregistros/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@controlregistros')->name('admin.admprogramaciones.controlregistros');
 Route::get('informesfinales/reservasmedicas/8', 'App\Http\Controllers\Admin\InformeFinalController@reservasmedicas')->name('admin.informesfinales.reservasmedicas');
+Route::get('informesfinales/consiliacionesclientesbanco/10', 'App\Http\Controllers\Admin\InformeFinalController@consiliacionesclientesbanco')->name('admin.informesfinales.consiliacionesclientesbanco');
 
 Route::post('tramites/guardartramitesclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardartramitesclienteita')->name('admin.tramites.guardartramitesclienteita');
 Route::post('tramites/guardariniciotramiteclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardariniciotramiteclienteita')->name('admin.tramites.guardariniciotramiteclienteita');
@@ -415,6 +418,10 @@ Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\
         Route::post('/generar-pdf-conocinforbanco', [AsociadoController::class, 'generarPDFconsentimientoinformadobanco'])->name('generar.pdf.consentimientoinformadobanco');
         Route::post('/aprobariniciarcrearbateribanco', [AsociadoController::class, 'aprobariniciarcrearbateriabanco'])->name('aprobariniciarcrearbateriabanco');
 
+        Route::post('informesfinales/guardarinformefinalclientebanco/{clientebanco}', 'App\Http\Controllers\Admin\InformeFinalController@guardarinformefinalclientebanco')->name('admin.informesfinales.guardarinformefinalclientebanco');
+        Route::post('informesfinales/guardarconsiliacionclientebanco/{clientebanco}', 'App\Http\Controllers\Admin\InformeFinalController@guardarconsiliacionclientebanco')->name('admin.informesfinales.guardarconsiliacionclientebanco');
+
+        Route::post('asociados/formularios/guardarSOLOdeclaracion/{clientebanco}', 'App\Http\Controllers\Admin\AsociadoController@guardarSOLOdeclaracion')->name('admin.asociados.formularios.guardarSOLOdeclaracion');
 //
 
 //PROVEEDORES

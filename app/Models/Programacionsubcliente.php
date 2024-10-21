@@ -135,4 +135,8 @@ class Programacionsubcliente extends Model
     {
         return $this->hasMany(Informefinal::class, 'clienteitaid', 'clienteitaid');
     }
+    public function documentacionsubclientebanco()
+    {
+        return $this->hasMany(Documentacionsubcliente::class, 'clientebancoid', 'clientebancoid');
+    }
 }

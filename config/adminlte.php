@@ -502,6 +502,19 @@ return [
             ],
         ],
         [
+            'text' => 'Consiliaciones',
+            'icon' => 'fas fa-fw fas fa-comment-dollar',
+            'can'  => 'admin.informesfinales.consiliacionesgenerales',
+            'submenu' => [
+                [
+                    'text' => 'Consiliacion general',
+                    'route'  => 'admin.informesfinales.consiliacionesclientesbanco',
+                    'icon' => 'fas fa-fw fas fa-donate',
+                    'can'  => 'admin.informesfinales.consiliacionesclientesbanco',
+                ],
+            ],
+        ],
+        [
             'text' => 'Prestaciones',
             'icon' => 'fas fa-fw fas fa-toolbox',
             'can'  => 'admin.tramites.index',

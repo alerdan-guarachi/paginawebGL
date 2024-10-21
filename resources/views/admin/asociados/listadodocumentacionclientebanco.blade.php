@@ -25,7 +25,7 @@
                     <form action="{{ route('buscardocumentoclientebanco', $clientebanco) }}" method="get" class="form-inline">
                         <div class="flex-grow-1">
                             <select name="buscarpor" class="form-control mr-sm-2">
-                                <option value="" disabled selected>Fecha de Bateria</option>
+                                <option value="" disabled selected>Fecha de Atención</option>
                                 @foreach($fechas as $fecha)
                                     <option value="{{ $fecha }}">{{ $fecha }}</option>
                                 @endforeach
@@ -40,7 +40,7 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Fecha de bateria</th>
+                        <th>Fecha de atención</th>
                         <th>Accion</th>
                         <th>Documento</th>
                         <th>Imagen 1</th>
