@@ -394,23 +394,14 @@
         <!-- Línea de firma izquierda y derecha con bordes asegurados -->
         <tr>
             <td class="firma-izquierda" colspan="4">
-                @if(file_exists($medicoSignaturePath))
-                    <img src="{{ $medicoSignaturePath }}" alt="Firma del Médico Examinador" style="max-width: 150px; max-height: 50px;">
-                @else
-                    <p></p>
-                @endif
+                <p></p>
                 <p>Firma del Médico Examinador</p>
             </td>
             <td class="firma-derecha" colspan="4">
-                @if(file_exists($propuestoSignaturePath))
-                    <img src="{{ $propuestoSignaturePath }}" alt="Firma del Propuesto Asegurado" style="max-width: 150px; max-height: 50px;">
-                @else
-                    <p></p>
-                @endif
+                <p></p>
                 <p>Firma del Propuesto Asegurado</p>
             </td>
-        </tr>
-                   
+        </tr> 
 
     </table>
 </body>

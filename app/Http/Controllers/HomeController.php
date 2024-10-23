@@ -160,7 +160,9 @@ class HomeController extends Controller
         ];
         });
 
-        return view('home', compact('mensajesPrincipales','mensajes','programacionclientebancos','programacionclienteitas','programacionclientecomunes', 'programacionclienteauditorias','clientesComunesCount', 'clientesBancosCount', 'clientesITACount', 'clientesAuditoriasCount', 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+
+        return view('home', compact('userRole','mensajesPrincipales','mensajes','programacionclientebancos','programacionclienteitas','programacionclientecomunes', 'programacionclienteauditorias','clientesComunesCount', 'clientesBancosCount', 'clientesITACount', 'clientesAuditoriasCount', 
         'accionesPorAreasAuditoria', 'accionesPorAreaAuditoria', 'accionesDisponiblesAuditoria', 'clienteauditoria', 'idAuditoria', 'accionesClienteAuditoria', 'estadoRegistradosAuditoria',
         'accionesPorAreasComun', 'accionesPorAreaComun', 'accionesDisponiblesComun', 'clientecomun', 'idComun', 'accionesClienteComun', 'estadoRegistradosComun',
         'accionesPorAreasIta', 'accionesPorAreaIta', 'accionesDisponiblesIta', 'cliente', 'idIta', 'accionesClienteIta', 'estadoRegistradosIta',

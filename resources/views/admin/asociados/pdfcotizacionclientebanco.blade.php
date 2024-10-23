@@ -40,13 +40,13 @@
             h1 {
                 color: #94c93b; 
                 font-weight: 900;
-                font-size: 25px;
+                font-size: 22px;
                 margin-bottom: 0px;
             }
             h2 {
                 color: #94c93b; 
                 font-weight: 900;
-                font-size: 30px;
+                font-size:25px;
                 margin-top: 5px;
             }
             p {

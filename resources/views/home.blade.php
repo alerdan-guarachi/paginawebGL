@@ -423,6 +423,12 @@
             @enderror
         </div>
         @endcan
+
+        @if($userRole === 'ASOCIADO')
+
+        <div class="titulo">BIENVENIDO ALIANZA SEGUROS</div>
+
+        @endif
     </div>
 </div>
 @endsection

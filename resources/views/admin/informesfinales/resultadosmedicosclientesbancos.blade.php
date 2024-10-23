@@ -64,9 +64,6 @@
             <li class="nav-item">
                 <a class="nav-link active" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
                     RESULT. MEDICOS COMPLETOS
-                    <?php if ($completosCount > 0): ?>
-                        <span class="circle"><?= $completosCount ?></span>
-                    <?php endif; ?>
                 </a>
             </li> 
             @endif
@@ -120,68 +117,150 @@
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
-                            @if ($item['estado'] === 'COMPLETO' && $item['declaracionmedica'] && $item['fichamedica'] && $item['consentimiento'] && $item['informefinal'])
-                                <tr>
-                                    {{-- ID DEL CLIENTE --}}
-                                    <td>{{ $item['clientebancoid'] }}</td>
+                                @if($userRole === 'ASOCIADO')
+                                    @if($item['empresaregistro'] === $empresaUsuario)
+                                        @if ($item['estado'] === 'COMPLETO' && $item['declaracionmedica'] && $item['fichamedica'] && $item['consentimiento'] && $item['informefinal'])
+                                            <tr>
+                                                {{-- ID DEL CLIENTE --}}
+                                                <td>{{ $item['clientebancoid'] }}</td>
 
-                                    {{-- CLIENTE --}}
-                                    <td>
-                                        <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        {{ $item['clientebanconombre'] }}
-                                    </td>
+                                                {{-- CLIENTE --}}
+                                                <td>
+                                                    <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    {{ $item['clientebanconombre'] }}
+                                                </td>
 
+                                                {{-- EMPRESA --}}
+                                                <td>{{ $item['empresaregistro'] }}</td>
 
-                                    {{-- EMPRESA --}}
-                                    <td>{{ $item['empresaregistro'] }}</td>
+                                                {{-- USUARIO REGISTRO --}}
+                                                <td>{{ $item['usuarioregistro'] }}</td>
+                                                
+                                                {{-- CELULAR DE PROVEEDOR --}}
+                                                <td hidden>
+                                                    @if ($item['proveedornombre'])
+                                                        {{ $item['celularproveedor'] }}
+                                                    @endif
+                                                </td>
 
-                                    {{-- USUARIO REGISTRO --}}
-                                    <td>{{ $item['usuarioregistro'] }}</td>
-                                    
-                                    {{-- CELULAR DE PROVEEDOR --}}
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
+                                                {{-- FECHA DE BATERIA --}}
+                                                <td>{{ $item['fechabateria'] }}</td>
+                                                
+                                                {{-- ESTADO DE INFORMES --}}
+                                                <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
+                                                    {{ $item['estado'] }}
+                                                    <abbr title="VER RESULTADOS MÉDICOS">
+                                                        <button class="btn {{ $item['estado'] === 'COMPLETO' ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#modal{{ $loop->index }}">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                    </abbr>
+                                                </td>
+
+                                                {{-- DOCUMENTOS ADICIONALES --}}
+                                                <td class="{{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'text-completo' : 'text-incompleto' }}">
+                                                    {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                                
+                                                    @if (isset($item['fichamedica']) || isset($item['consentimiento']) || isset($item['declaracionmedica']) || isset($item['declaracionmedicafisica']))
+                                                        <abbr title="VER OTRO CONTENIDO">
+                                                            <button class="btn {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </abbr>
+                                                    @endif
+                                                </td>
+
+                                                {{-- CONSILIACIÓN --}}
+                                                {{-- <td>  
+                                                    <a class="btn btn-sm btn-consiliacion" 
+                                                    href="{{ route('admin.asociados.generarpdfcotizacionclientebanco', ['clientebanco' => $item['clientebancoid']]) }}"
+                                                    onclick="confirmarGeneracionPdf(event)">
+                                                    <i class="fas fa-donate"></i>
+                                                    </a>
+                                                </td> --}}
+                                                <td>  
+                                                    <a class="btn btn-sm btn-consiliacion" 
+                                                    href="{{ route('admin.asociados.generarpdfcotizacionclientebanco', ['clientebanco' => $item['clientebancoid']]) }}"
+                                                    target="_blank"
+                                                    onclick="confirmarGeneracionPdf(event)">
+                                                    <i class="fas fa-donate"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
                                         @endif
-                                    </td>
+                                    @endif
+                                @else
+                                    @if ($item['estado'] === 'COMPLETO' && $item['declaracionmedica'] && $item['fichamedica'] && $item['consentimiento'] && $item['informefinal'])
+                                        <tr>
+                                            {{-- ID DEL CLIENTE --}}
+                                            <td>{{ $item['clientebancoid'] }}</td>
 
-                                    {{-- FECHA DE BATERIA --}}
-                                    <td>{{ $item['fechabateria'] }}</td>
-                                    
-                                    {{-- ESTADO DE INFORMES --}}
-                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn {{ $item['estado'] === 'COMPLETO' ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#modal{{ $loop->index }}">
-                                                <i class="fas fa-eye"></i>
-                                            </button>
-                                        </abbr>
-                                    </td>
-
-                                    {{-- DOCUMENTOS ADICIONALES --}}
-                                    <td class="{{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'COMPLETO' : 'INCOMPLETO' }}
-                                    
-                                        @if (isset($item['fichamedica']) || isset($item['consentimiento']) || isset($item['declaracionmedica']))
-                                            <abbr title="VER OTRO CONTENIDO">
-                                                <button class="btn {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
+                                            {{-- CLIENTE --}}
+                                            <td>
+                                                <a class="btn btn-sm btn-bateria" title="VER CLIENTE" href="{{ route('admin.asociados.verclientebanco', ['clientebanco' => $item['clientebancoid']]) }}">
                                                     <i class="fas fa-eye"></i>
-                                                </button>
-                                            </abbr>
-                                        @endif
-                                    </td>
+                                                </a>
+                                                {{ $item['clientebanconombre'] }}
+                                            </td>
 
-                                    {{-- CONSILIACIÓN --}}
-                                    <td>  
-                                        <a class="btn btn-sm btn-consiliacion" 
-                                        href="{{ route('admin.asociados.generarpdfcotizacionclientebanco', ['clientebanco' => $clientebancoid]) }}"
-                                           onclick="confirmarGeneracionPdf(event)">
-                                           <i class="fas fa-donate"></i>
-                                        </a>
-                                    </td>
-                                </tr>
+                                            {{-- EMPRESA --}}
+                                            <td>{{ $item['empresaregistro'] }}</td>
+
+                                            {{-- USUARIO REGISTRO --}}
+                                            <td>{{ $item['usuarioregistro'] }}</td>
+                                            
+                                            {{-- CELULAR DE PROVEEDOR --}}
+                                            <td hidden>
+                                                @if ($item['proveedornombre'])
+                                                    {{ $item['celularproveedor'] }}
+                                                @endif
+                                            </td>
+
+                                            {{-- FECHA DE BATERIA --}}
+                                            <td>{{ $item['fechabateria'] }}</td>
+                                            
+                                            {{-- ESTADO DE INFORMES --}}
+                                            <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
+                                                {{ $item['estado'] }}
+                                                <abbr title="VER RESULTADOS MÉDICOS">
+                                                    <button class="btn {{ $item['estado'] === 'COMPLETO' ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#modal{{ $loop->index }}">
+                                                        <i class="fas fa-eye"></i>
+                                                    </button>
+                                                </abbr>
+                                            </td>
+
+                                            {{-- DOCUMENTOS ADICIONALES --}}
+                                            <td class="{{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'text-completo' : 'text-incompleto' }}">
+                                                {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                            
+                                                @if (isset($item['fichamedica']) || isset($item['consentimiento']) || isset($item['declaracionmedica']) || isset($item['declaracionmedicafisica']))
+                                                    <abbr title="VER OTRO CONTENIDO">
+                                                        <button class="btn {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
+                                                            <i class="fas fa-eye"></i>
+                                                        </button>
+                                                    </abbr>
+                                                @endif
+                                            </td>
+
+                                            {{-- CONSILIACIÓN --}}
+                                            {{-- <td>  
+                                                <a class="btn btn-sm btn-consiliacion" 
+                                                href="{{ route('admin.asociados.generarpdfcotizacionclientebanco', ['clientebanco' => $item['clientebancoid']]) }}"
+                                                onclick="confirmarGeneracionPdf(event)">
+                                                <i class="fas fa-donate"></i>
+                                                </a>
+                                            </td> --}}
+                                            <td>  
+                                                <a class="btn btn-sm btn-consiliacion" 
+                                                href="{{ route('admin.asociados.generarpdfcotizacionclientebanco', ['clientebanco' => $item['clientebancoid']]) }}"
+                                                target="_blank"
+                                                onclick="confirmarGeneracionPdf(event)">
+                                                <i class="fas fa-donate"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endif
                                 @endif
                             @endforeach
                         </tbody>
@@ -247,12 +326,12 @@
                                     </td>
 
                                     {{-- DOCUMENTOS ADICIONALES --}}
-                                    <td class="{{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                    <td class="{{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'text-completo' : 'text-incompleto' }}">
+                                        {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'COMPLETO' : 'INCOMPLETO' }}
                                     
-                                        @if (isset($item['fichamedica']) || isset($item['consentimiento']) || isset($item['declaracionmedica']))
+                                        @if (isset($item['fichamedica']) || isset($item['consentimiento']) || isset($item['declaracionmedica']) || isset($item['declaracionmedicafisica']))
                                             <abbr title="VER OTRO CONTENIDO">
-                                                <button class="btn {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
+                                                <button class="btn {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
                                             </abbr>
@@ -322,12 +401,12 @@
                                     </td>
 
                                     {{-- DOCUMENTOS ADICIONALES --}}
-                                    <td class="{{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                    <td class="{{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'text-completo' : 'text-incompleto' }}">
+                                        {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'COMPLETO' : 'INCOMPLETO' }}
                                     
-                                        @if (isset($item['fichamedica']) || isset($item['consentimiento']) || isset($item['declaracionmedica']))
+                                        @if (isset($item['fichamedica']) || isset($item['consentimiento']) || isset($item['declaracionmedica']) || isset($item['declaracionmedicafisica']))
                                             <abbr title="VER OTRO CONTENIDO">
-                                                <button class="btn {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
+                                                <button class="btn {{ isset($item['fichamedica']) && isset($item['consentimiento']) && isset($item['declaracionmedica']) && isset($item['declaracionmedicafisica']) ? 'btn-completo' : 'btn-incompleto' }} btn-sm" data-toggle="modal" data-target="#nuevoModal{{ $loop->index }}">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
                                             </abbr>
@@ -418,7 +497,6 @@
                             </div>
                         </div>
                     @endif
-
                     
                     <div class="table-responsive d-block d-md-none">
                         <table class="table table-striped">
@@ -595,7 +673,7 @@
 
                                 <!-- Declaración Médica -->
                                 <tr>
-                                    <td>DECLARACIÓN JURADA</td>
+                                    <td>DECLARACIÓN JURADA DIGITAL</td>
                                     <td>
                                         @if ($item['declaracionmedica'])
                                             <span class="text-completo">COMPLETO</span>
@@ -607,6 +685,28 @@
                                         @if ($item['declaracionmedica'])
                                             <abbr title="Ver Declaración Médica">
                                                 <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['declaracionmedica']) }}" class="btn btn-completo" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </abbr>
+                                        @else
+                                            <span class="text-incompleto">PENDIENTE</span>
+                                        @endif
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>DECLARACIÓN JURADA FISICO</td>
+                                    <td>
+                                        @if ($item['declaracionmedicafisica'])
+                                            <span class="text-completo">COMPLETO</span>
+                                        @else
+                                            <span class="text-incompleto">PENDIENTE</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($item['declaracionmedicafisica'])
+                                            <abbr title="Ver Declaración Médica">
+                                                <a href="{{ asset('/fichamedicaclientesbanco/' . $item['clientebancoid'] . '/' . $item['declaracionmedicafisica']) }}" class="btn btn-completo" target="_blank">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                             </abbr>

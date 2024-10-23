@@ -27,7 +27,7 @@
 
             <h3 style="text-align: center;" style="">DECLARACIONES HECHAS AL MEDICO EXAMINADOR</h3>
 
-            <div class="">
+            <div class="container">
 
                 <div class="row">
                     <div class="col-lg-12">
@@ -130,97 +130,16 @@
                 </div>
             </div>
 
-            @php
-                $data =
-                    'DECLARACIONES HECHAS AL MEDICO EXAMINADOR' .
-                    "\n\n" .
-                    'Nombres: ' .
-                    strtoupper($clientebanco->nombrecompleto) .
-                    "\n" .
-                    'Ocupación: ' .
-                    strtoupper($clientebanco->ocupacionprofesion) .
-                    "\n" .
-                    'Fecha de Nacimiento: ' .
-                    strtoupper($clientebanco->fechanacimiento) .
-                    "\n" .
-                    'Género: ' .
-                    strtoupper($clientebanco->genero) .
-                    "\n" .
-                    'Estado Civil: ' .
-                    strtoupper($clientebanco->estadocivil) .
-                    "\n" .
-                    'CI: ' .
-                    strtoupper($clientebanco->ci) .
-                    "\n\n";
-                // Agregar campos adicionales si tienen datos
-                if (!empty(request('ND'))) {
-                    $data .= 'Nombre y dirección de su medico particular: ' . strtoupper(request('ND')) . "\n";
-                }
-                if (!empty(request('FC'))) {
-                    $data .= 'Fecha y motivo de la consulta reciente: ' . strtoupper(request('FC')) . "\n";
-                }
-                if (!empty(request('TM'))) {
-                    $data .= 'Que tratamiento o medicación se transcribió: ' . strtoupper(request('TM')) . "\n";
-                }
-            @endphp
-
-
-
-           {{--  <div class="row">
-                <div class="col-lg-12">
-                    <div class="form-group">
-                        <button id="mostrarQR" class="btn btn-primary">Mostrar QR</button>
-                    </div>
-                </div>
-            </div>
-            <div class="row" id="contenedorQR" style="display: none;">
-                <div class="col-lg-12">
-                    <div class="form-group">
-                        <label>Código QR:</label>
-                        <div id="qr-code">{!! QrCode::size(200)->generate($data) !!}</div>
-
-                    </div>
-                </div>
-            </div> --}}
-
-            <script>
-                document.getElementById("mostrarQR").addEventListener("click", function() {
-                    var contenedorQR = document.getElementById("contenedorQR");
-                    if (contenedorQR.style.display === "none") {
-                        contenedorQR.style.display = "block";
-                    } else {
-                        contenedorQR.style.display = "none";
-                    }
-                });
-
-
-                // Función para actualizar el código QR
-                function actualizarQR() {
-                    // Obtener los valores de los campos
-                    var nombreDireccion = document.getElementById('ND').value;
-                    var fechaConsulta = document.getElementById('FC').value;
-                    var tratamiento = document.getElementById('TM').value;
-
-                    // Actualizar los datos
-                    var newData = `Nombre y dirección de su medico particular: ${nombreDireccion}\n
-        Fecha y motivo de la consulta reciente: ${fechaConsulta}\n
-        Que tratamiento o medicación se transcribió: ${tratamiento}\n`;
-
-                    // Actualizar el contenido del QR
-                    document.getElementById('qr-code').innerHTML = '';
-                    new QRCode(document.getElementById('qr-code'), newData);
-                }
-
-                // Escuchar el evento de cambio en los campos relevantes
-                document.getElementById('ND').addEventListener('input', actualizarQR);
-                document.getElementById('FC').addEventListener('input', actualizarQR);
-                document.getElementById('TM').addEventListener('input', actualizarQR);
-            </script>
             <p><strong><span style="font-size: larger;">HA SIDO TRATADO O TIENE CONOCIMIENTO DE HABER PADECIDO DE LAS
                         SIGUIENTES ENFERMEDADES</span></strong></p>
-            {!! Form::open([
+            {{-- {!! Form::open([
                 'route' => ['admin.asociados.formularios.guardardeclaracion', $clientebanco],
                 'method' => 'POST',
+                'files' => true,
+            ]) !!} --}}
+            {!! Form::open([ 
+                'method' => 'POST',
+                'files' => true,
             ]) !!}
 
 
@@ -5248,7 +5167,7 @@
                 </div>
                 <br><br>
 
-                <div class="firm-container" style="margin-top: 40px">
+                {{-- <div class="firm-container" style="margin-top: 40px">
                     <div class="firm-column">
                         <div class="firm-line">
                             <input type="text" id="medico" name="medico" readonly>
@@ -5256,11 +5175,13 @@
                         <div class="title-line"></div>
                         <div class="firm-line">
                             <div class="title">
-                                <button onclick="document.getElementById('medico_signature').click()">Seleccionar
+                                <button type="button"
+                                    onclick="document.getElementById('medico_signature').click()">Seleccionar
                                     imagen</button>
                                 <span>FIRMA DEL MEDICO EXAMINADOR</span>
-                                <input type="file" id="medico_signature" name="medico_signature"
-                                    style="display: none;" onchange="displayImage(this, 'medico_signature_preview')">
+                                <input type="file" id="medico_signature" name="medico_signature" accept="image/*" onchange="displayImage(this, 'medico_signature_preview')">
+                                <img id="medico_signature_preview"
+                                    style="display: none; max-width: 150px; max-height: 50px;" />
                             </div>
                         </div>
                         <div class="title-line"></div>
@@ -5274,43 +5195,202 @@
                         <div class="title-line"></div>
                         <div class="firm-line">
                             <div class="title">
-                                <button onclick="document.getElementById('propuesto_signature').click()">Seleccionar
+                                <button type="button"
+                                    onclick="document.getElementById('propuesto_signature').click()">Seleccionar
                                     imagen</button>
                                 <span>FIRMA DEL PROPUESTO ASEGURADO</span>
-                                <input type="file" id="propuesto_signature" name="propuesto_signature"
-                                    style="display: none;" onchange="displayImage(this, 'propuesto_signature_preview')">
+                                <input type="file" id="propuesto_signature" name="propuesto_signature" accept="image/*" onchange="displayImage(this, 'propuesto_signature_preview')">
+                                <img id="propuesto_signature_preview"
+                                    style="display: none; max-width: 150px; max-height: 50px;" />
                             </div>
                         </div>
                         <div class="title-line"></div>
                         <img id="propuesto_signature_preview" src=""
                             style="display: none; max-width: 200px; margin-top: 10px;">
                     </div>
-                </div>
-
-                <!-- Botón para generar el PDF con firma física (descargar) -->
-                {{-- <div style="text-align: center; margin-bottom: 10px;">
-                    {!! Form::open([
-                        'route' => ['admin.asociados.formularios.guardarSOLOdeclaracion', $clientebanco],
-                        'method' => 'POST',
-                    ]) !!}
-                    {!! Form::hidden('accion', 'descargar_pdf_fisico') !!}
-                    {!! Form::submit('Generar y Descargar PDF Físico', ['class' => 'btn btn-primary']) !!}
-                    {!! Form::close() !!}
                 </div> --}}
 
                 <!-- Botón para generar el PDF con firma digital -->
-                <div style="text-align: center; margin-bottom: 10px;">
+                {{-- <div style="text-align: center; margin-bottom: 10px;">
                     {!! Form::open([
                         'route' => ['admin.asociados.formularios.guardardeclaracion', $clientebanco],
                         'method' => 'POST',
+                        'files' => true,
+                        'onsubmit' => 'return validateSignatures()',
                     ]) !!}
                     {!! Form::hidden('tipodocumento', 'DIGITAL') !!}
-                    {!! Form::submit('Crear formulario con Firma Digital', ['class' => 'btn btn-secondary']) !!}
+                    {!! Form::submit('Crear formulario con Firma Digital', [
+                        'class' => 'btn btn-secondary',
+                        'id' => 'generate_pdf_button',
+                        'disabled' => true,
+                    ]) !!}
+                    {!! Form::close() !!}
+                </div> --}}
+                <div class="firm-container">
+                    <div class="firm-column">
+                        <div class="image-container">
+                            <img id="medico_signature_preview" style="display: none; width: 100%; height: 100%;" />
+                        </div>
+                        <div class="firm-line">
+                            <input type="text" id="medico" name="medico" readonly>
+                        </div>
+                        <div class="title-line"></div>
+                        <div class="firm-line">
+                            <div class="title">
+                                <button type="button" onclick="document.getElementById('medico_signature').click()"><i class="fas fa-upload"></i></button>
+                                <span>FIRMA DEL MEDICO EXAMINADOR</span>
+                                <input type="file" id="medico_signature" name="medico_signature" accept="image/*" style="display: none;" onchange="displayImage(this, 'medico_signature_preview')">
+                            </div>
+                        </div>
+                        <div class="title-line"></div>
+                    </div>
+                    <div class="firm-column">
+                        <div class="image-container">
+                            <img id="propuesto_signature_preview" style="display: none; width: 100%; height: 100%;" />
+                        </div>
+                        <div class="firm-line">
+                            <input type="text" id="propuesto" name="propuesto" readonly>
+                        </div>
+                        <div class="title-line"></div>
+                        <div class="firm-line">
+                            <div class="title">
+                                <button type="button" onclick="document.getElementById('propuesto_signature').click()"><i class="fas fa-upload"></i></button>
+                                <span>FIRMA DEL PROPUESTO ASEGURADO</span>
+                                <input type="file" id="propuesto_signature" name="propuesto_signature" accept="image/*" style="display: none;" onchange="displayImage(this, 'propuesto_signature_preview')">
+                            </div>
+                        </div>
+                        <div class="title-line"></div>
+                    </div>
+                </div>
+                
+                <style> 
+                    .firm-container {
+                        width: 80%;
+                        margin: auto;
+                        display: flex;
+                        justify-content: space-around;
+                        align-items: flex-start; /* Alinea los elementos al inicio */
+                        margin-top: 40px;
+                    }
+                
+                    .firm-column {
+                        flex: 1;
+                        text-align: center;
+                    }
+                
+                    .image-container {
+                        width: 300px; /* Ancho fijo para la imagen */
+                        height: 150px; /* Alto fijo para la imagen */
+                        display: flex;
+                        justify-content: center; /* Centrar horizontalmente */
+                        align-items: center; /* Centrar verticalmente */
+                        overflow: hidden; /* Ocultar la parte de la imagen que sobresale */
+                        margin: 0 auto; /* Centrando el contenedor de la imagen */
+                    }
+                
+                    .firm-line {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        margin-bottom: 20px;
+                    }
+                
+                    .title {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center; /* Asegura que el contenido de la cabecera esté centrado */
+                    }
+                
+                    .title img {
+                        margin-right: 10px;
+                    }
+                
+                    .title span {
+                        font-weight: bold;
+                        font-size: 16px;
+                        margin: 0;
+                    }
+                
+                    .firm-line input {
+                        border: none;
+                        border-bottom: 1px solid #000;
+                        outline: none;
+                        text-align: center;
+                        width: 90%;
+                        font-size: 16px;
+                    }
+                
+                    .title-line {
+                        width: 90%;
+                        margin-top: 5px;
+                        border: none; /* Corregir border */
+                    }
+                </style>
+                
+                
+                
+                
+                <!-- Botón para generar el PDF con firma digital -->
+                <div style="text-align: center; margin-bottom: 10px;">
+                    {!! Form::hidden('tipodocumento', 'DIGITAL') !!}
+                    {{-- {!! Form::submit('Crear formulario con Firma Digital', [
+                        'class' => 'btn btn-secondary',
+                        'id' => 'generate_pdf_button',
+                        'disabled' => true,
+                    ]) !!} --}}
+                     <!-- Botón para crear formulario con firma digital -->
+    {!! Form::submit('Crear formulario con Firma Digital', [
+        'class' => 'btn btn-secondary',
+        'formaction' => route('admin.asociados.formularios.guardardeclaracion', $clientebanco),
+    ]) !!}
+                    {!! Form::close() !!}
+                </div>
+                
+                <script>
+                    // Función para mostrar la vista previa de las imágenes seleccionadas y validar
+                    function displayImage(input, previewId) {
+                        if (input.files && input.files[0]) {
+                            var reader = new FileReader();
+                            reader.onload = function(e) {
+                                var imgPreview = document.getElementById(previewId);
+                                imgPreview.src = e.target.result;
+                                imgPreview.style.display = 'block'; // Mostrar la imagen en la vista previa
+                
+                                // Validar si ambas firmas están seleccionadas
+                                validateSignatures();
+                            };
+                            reader.readAsDataURL(input.files[0]);
+                        }
+                    }
+                
+                    // Función para validar que ambas firmas estén seleccionadas
+                    function validateSignatures() {
+                        var medicoSignature = document.getElementById('medico_signature').files.length > 0;
+                        var propuestoSignature = document.getElementById('propuesto_signature').files.length > 0;
+                
+                        // Habilitar el botón solo si ambas firmas están seleccionadas
+                        document.getElementById('generate_pdf_button').disabled = !(medicoSignature && propuestoSignature);
+                    }
+                </script>
+                
+
+                <!-- Botón para generar el PDF sin firma (solo descarga) -->
+                <div style="text-align: center; margin-bottom: 10px;">
+                    {{-- {!! Form::open([
+                        'route' => ['admin.asociados.formularios.guardarSOLOdeclaracion', $clientebanco],
+                        'method' => 'POST',
+                    ]) !!} --}}
+                    {!! Form::hidden('accion', 'descargar_pdf_fisico') !!}
+                    {{-- {!! Form::submit('Generar y Descargar PDF Físico', ['class' => 'btn btn-primary']) !!} --}}
+                    {!! Form::submit('Guardar SOLO Declaración', [
+        'class' => 'btn btn-secondary',
+        'formaction' => route('admin.asociados.formularios.guardarSOLOdeclaracion', $clientebanco),
+    ]) !!}
                     {!! Form::close() !!}
                 </div>
 
                 <!-- Botón para subir un PDF escaneado (físico) -->
-                <div style="text-align: center; margin-bottom: 10px;">
+                {{-- <div style="text-align: center; margin-bottom: 10px;">
                     {!! Form::open([
                         'route' => ['admin.asociados.formularios.guardardeclaracion', $clientebanco],
                         'method' => 'POST',
@@ -5332,7 +5412,38 @@
                     </div>
 
                     {!! Form::close() !!}
-                </div>
+                </div> --}}
+
+                {{-- <script>
+                    // Función para mostrar la vista previa de las imágenes seleccionadas y validar
+                    function displayImage(input, previewId) {
+                        if (input.files && input.files[0]) {
+                            var reader = new FileReader();
+                            reader.onload = function(e) {
+                                var imgPreview = document.getElementById(previewId);
+                                imgPreview.src = e.target.result;
+                                imgPreview.style.display = 'block'; // Mostrar la imagen en la vista previa
+
+                                // Validar si ambas firmas están seleccionadas
+                                validateSignatures();
+                            };
+                            reader.readAsDataURL(input.files[0]);
+                        }
+                    }
+
+                    // Función para validar que ambas firmas estén seleccionadas
+                    function validateSignatures() {
+                        var medicoSignature = document.getElementById('medico_signature').files.length > 0;
+                        var propuestoSignature = document.getElementById('propuesto_signature').files.length > 0;
+
+                        // Habilitar el botón solo si ambas firmas están seleccionadas
+                        if (medicoSignature && propuestoSignature) {
+                            document.getElementById('generate_pdf_button').disabled = false;
+                        } else {
+                            document.getElementById('generate_pdf_button').disabled = true;
+                        }
+                    }
+                </script> --}}
 
                 {{-- <form action="{{ route('generar.qr') }}" method="POST">
                 <!-- Aquí van los campos del formulario -->
@@ -5360,58 +5471,7 @@
             }
             </script> --}}
 
-                <style>
-                    .firm-container {
-                        width: 80%;
-                        margin: auto;
-                        display: flex;
-                        justify-content: space-around;
-                        align-items: center;
-                        margin-top: 40px;
-                    }
-
-                    .firm-column {
-                        flex: 1;
-                        text-align: center;
-                    }
-
-                    .firm-line {
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        margin-bottom: 20px;
-                    }
-
-                    .title {
-                        display: flex;
-                        align-items: center;
-                    }
-
-                    .title img {
-                        margin-right: 10px;
-                    }
-
-                    .title span {
-                        font-weight: bold;
-                        font-size: 16px;
-                        margin: 0;
-                    }
-
-                    .firm-line input {
-                        border: none;
-                        border-bottom: 1px solid #000;
-                        outline: none;
-                        text-align: center;
-                        width: 90%;
-                        font-size: 16px;
-                    }
-
-                    .title-line {
-                        width: 90%;
-                        margin-top: 5px;
-                        border
-                    }
-                </style>
+                
             </div>
         </div>
     </div>

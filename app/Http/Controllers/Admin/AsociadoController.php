@@ -8879,7 +8879,7 @@ class AsociadoController extends Controller
             return $pdf->download($nombreArchivo);
         }
 //
-//CREAR FORMULARIO DE CLIENTE ITA
+//CREAR FORMULARIO DE CLIENTE BANCO
     public function crearformularioclientebanco(ClienteBanco $clientebanco)
     {
         return view('admin.asociados.crearformularioclientebanco', compact('clientebanco'));
@@ -9554,7 +9554,7 @@ class AsociadoController extends Controller
             if ($request->hasFile('pdf_fisico')) {
                 $file = $request->file('pdf_fisico');
                 $pdfName = 'DeclaracionMedicaFisica_' . $clientebanco->nombrecompleto . '.' . $file->getClientOriginalExtension();
-                $clientFolder = public_path('fichamedicasclientebanco/' . $clientebanco->id);
+                $clientFolder = public_path('fichamedicaclientesbanco/' . $clientebanco->id);
 
                 if (!file_exists($clientFolder)) {
                     mkdir($clientFolder, 0755, true);
@@ -9570,7 +9570,7 @@ class AsociadoController extends Controller
                     'document' => $pdfName,
                     'usuarioid' => auth()->user()->id,
                     'usuarioregistro' => auth()->user()->name,
-                    'detalle' => 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR',
+                    'detalles' => 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR',
                     'tipodocumento' => 'FISICO',
                     'clientebancoid' => $clientebanco->id,
                     'clientebanconombre' => $clientebanco->nombrecompleto
@@ -9643,11 +9643,50 @@ class AsociadoController extends Controller
         $mes = $request->input('mes');
         $anio = $request->input('anio');
 
+        // Capturar las imágenes de las firmas
+        $medicoSignature = $request->file('medico_signature');
+        $propuestoSignature = $request->file('propuesto_signature');
+
+        // Crear la carpeta del cliente si no existe
+        $clientFolder = public_path('fichamedicaclientesbanco/' . $clientebanco->id);
+        if (!file_exists($clientFolder)) {
+            mkdir($clientFolder, 0755, true);
+        }
+
+        // Capturar las imágenes de las firmas
+        $medicoSignature = $request->file('medico_signature');
+        $propuestoSignature = $request->file('propuesto_signature');
+
+        // Verificar si las firmas fueron subidas
+        if (!$medicoSignature || !$propuestoSignature) {
+            return back()->withErrors(['error' => 'Por favor, selecciona ambas firmas antes de generar el PDF.']);
+        }
+
+        // Guardar las imágenes temporalmente en la carpeta del cliente
+        $medicoSignaturePath = $clientFolder . '/medico_signature.png';
+        $propuestoSignaturePath = $clientFolder . '/propuesto_signature.png';
+
+        // Guardar la firma del médico
+        if ($medicoSignature) {
+            $medicoSignature->move($clientFolder, 'medico_signature.png');
+            if (!file_exists($medicoSignaturePath)) {
+                return back()->withErrors(['error' => 'Error al guardar la firma del médico.']);
+            }
+        }
+
+        // Guardar la firma del propuesto asegurado
+        if ($propuestoSignature) {
+            $propuestoSignature->move($clientFolder, 'propuesto_signature.png');
+            if (!file_exists($propuestoSignaturePath)) {
+                return back()->withErrors(['error' => 'Error al guardar la firma del propuesto asegurado.']);
+            }
+        }
+
         // Cargar la vista del PDF con los datos del cliente, preguntas y campos adicionales
-        $pdf = PDF::loadView('admin.asociados.formularios.declaracionpdfmedico', compact('clientebanco', 'preguntas', 'nombre_medico', 'fecha_consulta', 'tratamiento_medico', 'familiares', 'estatura', 'peso', 'lugar', 'dia', 'mes', 'anio'));
+        $pdf = PDF::loadView('admin.asociados.formularios.declaracionpdfmedico', compact('clientebanco', 'preguntas', 'nombre_medico', 'fecha_consulta', 'tratamiento_medico', 'familiares', 'estatura', 'peso', 'lugar', 'dia', 'mes', 'anio', 'medicoSignaturePath', 'propuestoSignaturePath'));
 
         // Crear el nombre del archivo PDF
-        $pdfName = 'DeclaracionMedica_' . $clientebanco->nombrecompleto;
+        $pdfName = 'DeclaracionMedicaDigital_' . $clientebanco->nombrecompleto;
         if ($clientebanco->apepaterno) {
             $pdfName .= ' ' . $clientebanco->apepaterno;
         }
@@ -9657,14 +9696,22 @@ class AsociadoController extends Controller
         $pdfName .= '.pdf';
 
         // Generación del PDF
-        $pdfName = 'DeclaracionMedica_' . $clientebanco->nombrecompleto . '.pdf';
-        $clientFolder = public_path('fichamedicasclientebanco/' . $clientebanco->id);
+        $pdfName = 'DeclaracionMedicaDigital_' . $clientebanco->nombrecompleto . '.pdf';
+        $clientFolder = public_path('fichamedicaclientesbanco/' . $clientebanco->id);
 
         if (!file_exists($clientFolder)) {
             mkdir($clientFolder, 0755, true);
         }
 
         $pdf->save($clientFolder . '/' . $pdfName);
+
+        // Eliminar las imágenes temporales después de generar el PDF
+        if (file_exists($medicoSignaturePath)) {
+            unlink($medicoSignaturePath);
+        }
+        if (file_exists($propuestoSignaturePath)) {
+            unlink($propuestoSignaturePath);
+        }
 
         // Guardar el PDF en la base de datos con los datos adicionales
         Fichamedicasubcliente::create([
@@ -9673,7 +9720,7 @@ class AsociadoController extends Controller
             'document' => $pdfName,  // Nombre del archivo PDF
             'usuarioid' => auth()->user()->id,  // ID del usuario actual
             'usuarioregistro' => auth()->user()->name,  // Nombre del usuario que hace el registro
-            'detalle' => 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR',  // Detalle del registro
+            'detalles' => 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR',  // Detalle del registro
             'tipodocumento' => $tipodocumento,  // Tipo de documento (DIGITAL o FISICO)
             'clientebancoid' => $clientebanco->id,  // ID del cliente banco
             'clientebanconombre' => $clientebanco->nombrecompleto  // Nombre completo del cliente banco
@@ -9682,11 +9729,10 @@ class AsociadoController extends Controller
         // Retornar el PDF descargable
         return $pdf->download($pdfName);
     }
-
     public function guardarSOLOdeclaracion(Request $request, ClienteBanco $clientebanco)
     {
-        // Proceso para el documento digital
-        $preguntas = $request->input('preguntas', []);  // Asegurarse de que $preguntas sea un array
+        // Proceso para capturar preguntas y otros datos (igual que en guardarDigitalDeclaracion)
+        $preguntas = $request->input('preguntas', []);
 
         foreach ($preguntas as $pregunta) {
             if (array_key_exists('respuesta', $pregunta) && !empty($pregunta['respuesta'])) {
@@ -9727,40 +9773,23 @@ class AsociadoController extends Controller
             }
         }
 
-        // Capturar los campos adicionales para familiares
-        $familiares = $request->input('familiares', []);  // Asegurarse de que sea un array
-
-        // Capturar los campos adicionales
+        // Capturar los mismos campos adicionales
+        $familiares = $request->input('familiares', []);
         $nombre_medico = $request->input('ND');
         $fecha_consulta = $request->input('FC');
         $tratamiento_medico = $request->input('TM');
-
-        // Capturar estatura y peso
         $estatura = $request->input('estatura');
         $peso = $request->input('peso');
-
-        // Capturar los datos de firma
         $lugar = $request->input('lugar');
         $dia = $request->input('dia');
         $mes = $request->input('mes');
         $anio = $request->input('anio');
 
-        // Cargar la vista del PDF con los datos del cliente, preguntas y campos adicionales
-        $pdf = PDF::loadView('admin.asociados.formularios.declaracionpdfmedico', compact('clientebanco', 'preguntas', 'nombre_medico', 'fecha_consulta', 'tratamiento_medico', 'familiares', 'estatura', 'peso', 'lugar', 'dia', 'mes', 'anio'));
+        // Generar el PDF sin las firmas
+        $pdf = PDF::loadView('admin.asociados.formularios.declaracionpdfmedico2', compact('clientebanco', 'preguntas', 'nombre_medico', 'fecha_consulta', 'tratamiento_medico', 'familiares', 'estatura', 'peso', 'lugar', 'dia', 'mes', 'anio'));
 
-        // Crear el nombre del archivo PDF
-        $pdfName = 'DeclaracionMedica_' . $clientebanco->nombrecompleto;
-        if ($clientebanco->apepaterno) {
-            $pdfName .= ' ' . $clientebanco->apepaterno;
-        }
-        if ($clientebanco->apematerno) {
-            $pdfName .= ' ' . $clientebanco->apematerno;
-        }
-        $pdfName .= '.pdf';
-
-        // Generación del PDF
-        $pdfName = 'DeclaracionMedica_' . $clientebanco->nombrecompleto . '.pdf';
-        $clientFolder = public_path('fichamedicasclientebanco/' . $clientebanco->id);
+        $pdfName = 'DeclaracionMedicaFisica_' . $clientebanco->nombrecompleto . '.pdf';
+        $clientFolder = public_path('fichamedicaclientesbanco/' . $clientebanco->id);
 
         if (!file_exists($clientFolder)) {
             mkdir($clientFolder, 0755, true);
@@ -9768,9 +9797,10 @@ class AsociadoController extends Controller
 
         $pdf->save($clientFolder . '/' . $pdfName);
 
-        // Retornar el PDF descargable
+        // Descargar el PDF
         return $pdf->download($pdfName);
     }
+
 //
 
 

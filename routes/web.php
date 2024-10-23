@@ -422,6 +422,12 @@ Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\
         Route::post('informesfinales/guardarconsiliacionclientebanco/{clientebanco}', 'App\Http\Controllers\Admin\InformeFinalController@guardarconsiliacionclientebanco')->name('admin.informesfinales.guardarconsiliacionclientebanco');
 
         Route::post('asociados/formularios/guardarSOLOdeclaracion/{clientebanco}', 'App\Http\Controllers\Admin\AsociadoController@guardarSOLOdeclaracion')->name('admin.asociados.formularios.guardarSOLOdeclaracion');
+
+        Route::get('informesfinales/generarordenventaclientebanco/{clientebanco}', 'App\Http\Controllers\Admin\InformeFinalController@generarordenventaclientebanco')->name('admin.informesfinales.ordenes.generarordenventaclientebanco');
+
+
+        Route::post('asociados/guardar-firma', [AsociadoController::class, 'guardarFirma']);
+
 //
 
 //PROVEEDORES

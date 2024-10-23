@@ -3,11 +3,11 @@
 @section('content_header')
 
 @if($userRole === 'ASOCIADO')
-<h1>CONSILIACIONES</h1>
+<h1>ORDENES</h1>
 @endif
 
 @if($userRole !== 'ASOCIADO')
-<h1>CONSILIACIONES GENERALES</h1>
+<h1>ORDENES GENERALES</h1>
 @endif
 @stop
 
@@ -63,19 +63,13 @@
             @if($userRole === 'ASOCIADO')
             <li class="nav-item">
                 <a class="nav-link active" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
-                    CONSILIACIONES PENDIENTES
-                    <?php if ($incompletosCount > 0): ?>
-                        <span class="circle"><?= $incompletosCount ?></span>
-                    <?php endif; ?>
+                    ORDENES PENDIENTES
                 </a>
             </li> 
 
             <li class="nav-item">
                 <a class="nav-link" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
-                    CONSILIACIONES COMPLETAS
-                    <?php if ($completosCount > 0): ?>
-                        <span class="circle"><?= $completosCount ?></span>
-                    <?php endif; ?>
+                    ORDENES COMPLETAS
                 </a>
             </li>
 
@@ -83,7 +77,7 @@
             @if($userRole !== 'ASOCIADO')
             <li class="nav-item">
                 <a class="nav-link active" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
-                    CONSILIACIONES PENDIENTES
+                    ORDENES PENDIENTES
                     <?php if ($incompletosCount > 0): ?>
                         <span class="circle"><?= $incompletosCount ?></span>
                     <?php endif; ?>
@@ -91,7 +85,7 @@
             </li> 
             <li class="nav-item">
                 <a class="nav-link" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
-                    CONSILIACIONES COMPLETAS
+                    ORDENES COMPLETAS
                     <?php if ($completosCount > 0): ?>
                         <span class="circle"><?= $completosCount ?></span>
                     <?php endif; ?>
@@ -102,7 +96,7 @@
     </div>
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
-            {{-- CONSILIACIONES PENDIENTES --}}
+            {{-- ORDENES PENDIENTES --}}
             <div class="tab-pane fade show active" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
                 <div class="table-responsive">
                     <table class="table table-striped">
@@ -114,87 +108,186 @@
                                 <th style="width: 10%;">Sucursal</th>
                                 <th style="width: 10%;">Atención</th>
                                 <th style="width: 10%;">Consolidado</th>
+                                @if($userRole !== 'ASOCIADO')
                                 <th style="width: 10%;">Orden</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
-                            @if (!$item['consiliacion'])
-                                <tr>
-                                    {{-- ID DEL CLIENTE --}}
-                                    <td>{{ $item['clientebancoid'] }}</td>
+                                @if($userRole === 'ASOCIADO')
+                                    @if($item['empresaregistro'] === $empresaUsuario)
+                                        @if (!$item['consiliacion'])
+                                            <tr>
+                                                {{-- ID DEL CLIENTE --}}
+                                                <td>{{ $item['clientebancoid'] }}</td>
 
-                                    {{-- CLIENTE --}}
-                                    <td>
-                                        {{ $item['clientebanconombre'] }}
-                                    </td>
+                                                {{-- CLIENTE --}}
+                                                <td>
+                                                    {{ $item['clientebanconombre'] }}
+                                                </td>
 
-                                    {{-- EMPRESA --}}
-                                    <td>{{ $item['empresaregistro'] }}</td>
+                                                {{-- EMPRESA --}}
+                                                <td>{{ $item['empresaregistro'] }}</td>
 
-                                    {{-- USUARIO REGISTRO --}}
-                                    <td>{{ $item['usuarioregistro'] }}</td>
-                                    
-                                    {{-- CELULAR DE PROVEEDOR --}}
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
-                                        @endif
-                                    </td>
+                                                {{-- USUARIO REGISTRO --}}
+                                                <td>{{ $item['usuarioregistro'] }}</td>
+                                                
+                                                {{-- CELULAR DE PROVEEDOR --}}
+                                                <td hidden>
+                                                    @if ($item['proveedornombre'])
+                                                        {{ $item['celularproveedor'] }}
+                                                    @endif
+                                                </td>
 
-                                    {{-- FECHA DE BATERIA --}}
-                                    <td>{{ $item['fechabateria'] }}</td>
-                                    
-                                    {{-- ESTADO DE INFORMES --}}
-                                    <td class="{{ isset($item['consiliacion']) ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ isset($item['consiliacion']) ? 'COMPLETO' : 'INCOMPLETO' }}
-                                    </td>
+                                                {{-- FECHA DE BATERIA --}}
+                                                <td>{{ $item['fechabateria'] }}</td>
+                                                
+                                                {{-- ESTADO DE INFORMES --}}
+                                                <td class="{{ isset($item['consiliacion']) ? 'text-completo' : 'text-incompleto' }}">
+                                                    {{ isset($item['consiliacion']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                                </td>
 
-                                    {{-- CONSILIACIÓN --}}
-                                    <td>   
-                                        <a class="btn btn-sm btn-consiliacion" 
-                                           href="{{ route('admin.asociados.generarpdfcotizacionclientebanco', ['clientebanco' => $clientebancoid]) }}"
-                                           onclick="confirmarGeneracionPdf(event)">
-                                           <i class="fas fa-donate"></i>
-                                        </a>
-                                    
-                                        @if ($item['consiliacion'])
-                                            <a href="{{ asset('/cotizacionesaprobadasbanco/' . $item['clientebancoid'] . '/' . $item['consiliacion']) }}" class="btn btn-bateria btn-sm" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @else
-                                        @if($userRole !== 'ASOCIADO')
-                                            <a class="btn btn-sm btn-bateria" data-toggle="modal" data-target="#uploadPdfModal" title="SUBIR CONSILIACION">
-                                                <i class="fas fa-upload"></i>
-                                            </a>
-                                        @endif
-                                        @endif
-                                    </td>
-                                    <!-- Modal para subir PDF -->
-                                    <div class="modal fade" id="uploadPdfModal" tabindex="-1" role="dialog" aria-labelledby="uploadPdfModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="uploadPdfModalLabel">Subir PDF</h5>
-                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <form action="{{ route('admin.informesfinales.guardarconsiliacionclientebanco', $item['clientebancoid']) }}" method="POST" enctype="multipart/form-data" class="d-flex justify-content-center align-items-center">
-                                                        @csrf
-                                                        <div class="form-group">
-                                                            <input type="hidden" name="fechabateria" id="fechabateria" value="{{ $item['fechabateria'] }}">
-                                                            <label for="document">Selecciona un archivo PDF</label>
-                                                            <input type="file" class="form-control" id="document" name="document" accept="application/pdf" required>
+                                                {{-- CONSILIACIÓN --}}
+                                                @if($userRole !== 'ASOCIADO')
+                                                <td>   
+                                                        <a class="btn btn-sm btn-consiliacion" 
+                                                        href="{{ route('admin.informesfinales.ordenes.generarordenventaclientebanco', ['clientebanco' => $item['clientebancoid']]) }}"
+                                                        target="_blank"
+                                                        onclick="confirmarGeneracionPdf(event)">
+                                                        <i class="fas fa-donate"></i>
+                                                        </a>
+                                                
+                                                    @if ($item['consiliacion'])
+                                                        <a href="{{ asset('/cotizacionesaprobadasbanco/' . $item['clientebancoid'] . '/' . $item['consiliacion']) }}" class="btn btn-bateria btn-sm" target="_blank">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    @else
+                                                    @if($userRole !== 'ASOCIADO')
+                                                        <a class="btn btn-sm btn-bateria" data-toggle="modal" data-target="#uploadPdfModal" title="SUBIR CONSILIACION">
+                                                            <i class="fas fa-upload"></i>
+                                                        </a>
+                                                    @endif
+                                                    @endif
+                                                </td>
+                                                @endif
+                                                <!-- Modal para subir PDF -->
+                                                <div class="modal fade" id="uploadPdfModal" tabindex="-1" role="dialog" aria-labelledby="uploadPdfModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="uploadPdfModalLabel">Subir PDF</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <form action="{{ route('admin.informesfinales.guardarconsiliacionclientebanco', $item['clientebancoid']) }}" method="POST" enctype="multipart/form-data" class="d-flex justify-content-center align-items-center">
+                                                                    @csrf
+                                                                    <div class="form-group">
+                                                                        <input type="hidden" name="fechabateria" id="fechabateria" value="{{ $item['fechabateria'] }}">
+                                                                        <label for="document">Selecciona un archivo PDF</label>
+                                                                        <input type="file" class="form-control" id="document" name="document" accept="application/pdf" required>
+                                                                    </div>
+                                                                    <button type="submit" class="btn btn-primary">Subir</button>
+                                                                </form>
+                                                            </div>
                                                         </div>
-                                                        <button type="submit" class="btn btn-primary">Subir</button>
-                                                    </form>
+                                                    </div>
+                                                </div>
+                                            </tr>
+                                        @endif
+                                    @endif
+                                @else
+                                    @if (!$item['consiliacion'])
+                                        <tr>
+                                            {{-- ID DEL CLIENTE --}}
+                                            <td>{{ $item['clientebancoid'] }}</td>
+
+                                            {{-- CLIENTE --}}
+                                            <td>
+                                                {{ $item['clientebanconombre'] }}
+                                            </td>
+
+                                            {{-- EMPRESA --}}
+                                            <td>{{ $item['empresaregistro'] }}</td>
+
+                                            {{-- USUARIO REGISTRO --}}
+                                            <td>{{ $item['usuarioregistro'] }}</td>
+                                            
+                                            {{-- CELULAR DE PROVEEDOR --}}
+                                            <td hidden>
+                                                @if ($item['proveedornombre'])
+                                                    {{ $item['celularproveedor'] }}
+                                                @endif
+                                            </td>
+
+                                            {{-- FECHA DE BATERIA --}}
+                                            <td>{{ $item['fechabateria'] }}</td>
+                                            
+                                            {{-- ESTADO DE INFORMES --}}
+                                            <td class="{{ isset($item['consiliacion']) ? 'text-completo' : 'text-incompleto' }}">
+                                                {{ isset($item['consiliacion']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                            </td>
+
+                                            {{-- CONSILIACIÓN --}}
+                                            @if($userRole !== 'ASOCIADO')
+                                            <td>   
+                                                    <a class="btn btn-sm btn-consiliacion" 
+                                                    href="{{ route('admin.informesfinales.ordenes.generarordenventaclientebanco', ['clientebanco' => $item['clientebancoid']]) }}"
+                                                    target="_blank"
+                                                    onclick="confirmarGeneracionPdf(event)">
+                                                    <i class="fas fa-donate"></i>
+                                                    </a>
+                                            
+                                                @if ($item['consiliacion'])
+                                                    <a href="{{ asset('/cotizacionesaprobadasbanco/' . $item['clientebancoid'] . '/' . $item['consiliacion']) }}" class="btn btn-bateria btn-sm" target="_blank">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                @else
+                                                    @if($userRole !== 'ASOCIADO')
+                                                        <a class="btn btn-sm btn-bateria" 
+                                                            data-toggle="modal" 
+                                                            data-target="#uploadPdfModal-{{ $item['clientebancoid'] }}" 
+                                                            data-clientebancoid="{{ $item['clientebancoid'] }}" 
+                                                            data-clientebanconombre="{{ $item['clientebanconombre'] }}" 
+                                                            data-fechabateria="{{ $item['fechabateria'] }}" 
+                                                            title="SUBIR CONSILIACION">
+                                                            <i class="fas fa-upload"></i>
+                                                        </a>
+                                                    @endif
+                                                @endif
+                                            
+                                            @endif
+                                        </td>
+                                            <!-- Modal para subir PDF con identificador único -->
+                                            <div class="modal fade" id="uploadPdfModal-{{ $item['clientebancoid'] }}" tabindex="-1" role="dialog" aria-labelledby="uploadPdfModalLabel-{{ $item['clientebancoid'] }}" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="uploadPdfModalLabel-{{ $item['clientebancoid'] }}">Subir PDF</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <form action="{{ route('admin.informesfinales.guardarconsiliacionclientebanco', $item['clientebancoid']) }}" method="POST" enctype="multipart/form-data">
+                                                                @csrf
+                                                                <div class="form-group">
+                                                                    <input type="hidden" name="clientebancoid" value="{{ $item['clientebancoid'] }}">
+                                                                    <input type="hidden" name="clientebanconombre" value="{{ $item['clientebanconombre'] }}">
+                                                                    <input type="hidden" name="fechabateria" value="{{ $item['fechabateria'] }}">
+                                                                    <label for="document">Selecciona un archivo PDF</label>
+                                                                    <input type="file" class="form-control" name="document" accept="application/pdf" required>
+                                                                </div>
+                                                                <button type="submit" class="btn btn-primary">Subir</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </tr>
+                                        </tr>
+                                    @endif
                                 @endif
                             @endforeach
                         </tbody>
@@ -202,7 +295,7 @@
                 </div>
             </div>
 
-            {{-- CONSILIACIONES COMPLETAS --}}
+            {{-- ORDENES COMPLETAS --}}
             <div class="tab-pane fade" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
                 <div class="table-responsive">
                     <table class="table table-striped">
@@ -219,83 +312,158 @@
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
-                            @if ($item['consiliacion'])
-                            <tr>
-                                {{-- ID DEL CLIENTE --}}
-                                <td>{{ $item['clientebancoid'] }}</td>
+                                @if($userRole === 'ASOCIADO')
+                                    @if($item['empresaregistro'] === $empresaUsuario)
+                                        @if ($item['consiliacion'])
+                                            <tr>
+                                                {{-- ID DEL CLIENTE --}}
+                                                <td>{{ $item['clientebancoid'] }}</td>
 
-                                {{-- CLIENTE --}}
-                                <td>
-                                    {{ $item['clientebanconombre'] }}
-                                </td>
+                                                {{-- CLIENTE --}}
+                                                <td>
+                                                    {{ $item['clientebanconombre'] }}
+                                                </td>
 
-                                {{-- EMPRESA --}}
-                                <td>{{ $item['empresaregistro'] }}</td>
+                                                {{-- EMPRESA --}}
+                                                <td>{{ $item['empresaregistro'] }}</td>
 
-                                {{-- USUARIO REGISTRO --}}
-                                <td>{{ $item['usuarioregistro'] }}</td>
-                                
-                                {{-- CELULAR DE PROVEEDOR --}}
-                                <td hidden>
-                                    @if ($item['proveedornombre'])
-                                        {{ $item['celularproveedor'] }}
-                                    @endif
-                                </td>
+                                                {{-- USUARIO REGISTRO --}}
+                                                <td>{{ $item['usuarioregistro'] }}</td>
+                                                
+                                                {{-- CELULAR DE PROVEEDOR --}}
+                                                <td hidden>
+                                                    @if ($item['proveedornombre'])
+                                                        {{ $item['celularproveedor'] }}
+                                                    @endif
+                                                </td>
 
-                                {{-- FECHA DE BATERIA --}}
-                                <td>{{ $item['fechabateria'] }}</td>
-                                
-                                {{-- ESTADO DE INFORMES --}}
-                                <td class="{{ isset($item['consiliacion']) ? 'text-completo' : 'text-incompleto' }}">
-                                    {{ isset($item['consiliacion']) ? 'COMPLETO' : 'INCOMPLETO' }}
-                                </td>
+                                                {{-- FECHA DE BATERIA --}}
+                                                <td>{{ $item['fechabateria'] }}</td>
+                                                
+                                                {{-- ESTADO DE INFORMES --}}
+                                                <td class="{{ isset($item['consiliacion']) ? 'text-completo' : 'text-incompleto' }}">
+                                                    {{ isset($item['consiliacion']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                                </td>
 
-                                {{-- CONSILIACIÓN --}}
-                                <td>   
-                                    @if ($item['consiliacion'])
-                                        <a href="{{ asset('/cotizacionesaprobadasbanco/' . $item['clientebancoid'] . '/' . $item['consiliacion']) }}" class="btn btn-bateria btn-sm" target="_blank">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    @else
-                                    @if($userRole !== 'ASOCIADO')
-                                        <a class="btn btn-sm btn-bateria" data-toggle="modal" data-target="#uploadPdfModal" title="SUBIR CONSILIACION">
-                                            <i class="fas fa-upload"></i>
-                                        </a>
-                                    @endif
-                                    @endif
-                                </td>
-                                <!-- Modal para subir PDF -->
-                                <div class="modal fade" id="uploadPdfModal" tabindex="-1" role="dialog" aria-labelledby="uploadPdfModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="uploadPdfModalLabel">Subir PDF</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form action="{{ route('admin.informesfinales.guardarconsiliacionclientebanco', $item['clientebancoid']) }}" method="POST" enctype="multipart/form-data" class="d-flex justify-content-center align-items-center">
-                                                    @csrf
-                                                    <div class="form-group">
-                                                        <input type="hidden" name="fechabateria" id="fechabateria" value="{{ $item['fechabateria'] }}">
-                                                        <label for="document">Selecciona un archivo PDF</label>
-                                                        <input type="file" class="form-control" id="document" name="document" accept="application/pdf" required>
+                                                {{-- CONSILIACIÓN --}}
+                                                <td>   
+                                                    @if ($item['consiliacion'])
+                                                        <a href="{{ asset('/cotizacionesaprobadasbanco/' . $item['clientebancoid'] . '/' . $item['consiliacion']) }}" class="btn btn-bateria btn-sm" target="_blank">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    @else
+                                                    @if($userRole !== 'ASOCIADO')
+                                                        <a class="btn btn-sm btn-bateria" data-toggle="modal" data-target="#uploadPdfModal" title="SUBIR CONSILIACION">
+                                                            <i class="fas fa-upload"></i>
+                                                        </a>
+                                                    @endif
+                                                    @endif
+                                                </td>
+                                                <!-- Modal para subir PDF -->
+                                                <div class="modal fade" id="uploadPdfModal" tabindex="-1" role="dialog" aria-labelledby="uploadPdfModalLabel" aria-hidden="true">
+                                                    <div class="modal-dialog" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="uploadPdfModalLabel">Subir PDF</h5>
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <form action="{{ route('admin.informesfinales.guardarconsiliacionclientebanco', $item['clientebancoid']) }}" method="POST" enctype="multipart/form-data" class="d-flex justify-content-center align-items-center">
+                                                                    @csrf
+                                                                    <div class="form-group">
+                                                                        <input type="hidden" name="fechabateria" id="fechabateria" value="{{ $item['fechabateria'] }}">
+                                                                        <label for="document">Selecciona un archivo PDF</label>
+                                                                        <input type="file" class="form-control" id="document" name="document" accept="application/pdf" required>
+                                                                    </div>
+                                                                    <button type="submit" class="btn btn-primary">Subir</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                    <button type="submit" class="btn btn-primary">Subir</button>
-                                                </form>
+                                                </div>
+                                            </tr>
+                                        @endif
+                                    @endif
+                                @else
+                                    @if ($item['consiliacion'])
+                                        <tr>
+                                            {{-- ID DEL CLIENTE --}}
+                                            <td>{{ $item['clientebancoid'] }}</td>
+
+                                            {{-- CLIENTE --}}
+                                            <td>
+                                                {{ $item['clientebanconombre'] }}
+                                            </td>
+
+                                            {{-- EMPRESA --}}
+                                            <td>{{ $item['empresaregistro'] }}</td>
+
+                                            {{-- USUARIO REGISTRO --}}
+                                            <td>{{ $item['usuarioregistro'] }}</td>
+                                            
+                                            {{-- CELULAR DE PROVEEDOR --}}
+                                            <td hidden>
+                                                @if ($item['proveedornombre'])
+                                                    {{ $item['celularproveedor'] }}
+                                                @endif
+                                            </td>
+
+                                            {{-- FECHA DE BATERIA --}}
+                                            <td>{{ $item['fechabateria'] }}</td>
+                                            
+                                            {{-- ESTADO DE INFORMES --}}
+                                            <td class="{{ isset($item['consiliacion']) ? 'text-completo' : 'text-incompleto' }}">
+                                                {{ isset($item['consiliacion']) ? 'COMPLETO' : 'INCOMPLETO' }}
+                                            </td>
+
+                                            {{-- CONSILIACIÓN --}}
+                                            <td>   
+                                                @if ($item['consiliacion'])
+                                                    <a href="{{ asset('/cotizacionesaprobadasbanco/' . $item['clientebancoid'] . '/' . $item['consiliacion']) }}" class="btn btn-bateria btn-sm" target="_blank">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                @else
+                                                    @if($userRole !== 'ASOCIADO')
+                                                        <a class="btn btn-sm btn-bateria" data-toggle="modal" data-target="#uploadPdfModal" title="SUBIR CONSILIACION">
+                                                            <i class="fas fa-upload"></i>
+                                                        </a>
+                                                    @endif
+                                                @endif
+                                            </td>
+                                            <!-- Modal para subir PDF -->
+                                            <div class="modal fade" id="uploadPdfModal" tabindex="-1" role="dialog" aria-labelledby="uploadPdfModalLabel" aria-hidden="true">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="uploadPdfModalLabel">Subir PDF</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <form action="{{ route('admin.informesfinales.guardarconsiliacionclientebanco', $item['clientebancoid']) }}" method="POST" enctype="multipart/form-data" class="d-flex justify-content-center align-items-center">
+                                                                @csrf
+                                                                <div class="form-group">
+                                                                    <input type="hidden" name="fechabateria" id="fechabateria" value="{{ $item['fechabateria'] }}">
+                                                                    <label for="document">Selecciona un archivo PDF</label>
+                                                                    <input type="file" class="form-control" id="document" name="document" accept="application/pdf" required>
+                                                                </div>
+                                                                <button type="submit" class="btn btn-primary">Subir</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </tr>
+                                        </tr>
+                                    @endif
                                 @endif
                             @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
 </div>

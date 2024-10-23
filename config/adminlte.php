@@ -374,6 +374,41 @@ return [
                 
             ],
         ],
+
+        [
+            'text' => 'Administrar Asociados',
+            'icon' => 'fas fa-fw fas fa-users',
+            'can'  => 'admin.asociados.index',
+            'submenu' => [
+                [
+                    'text' => 'Asociados',
+                    'route'  => 'admin.asociados.index',
+                    'icon' => 'fas fa-fw fas fa-user-plus',
+                    'can'  => 'admin.asociados.index',
+                ],
+                [
+                    'text' => 'Proveedores',
+                    'route'  => 'admin.proveedores.index',
+                    'icon' => 'fas fa-fw fas fa-address-card',
+                    'can'  => 'admin.proveedores.index',
+                ],
+                [
+                    'text' => 'Empresas',
+                    'route'  => 'admin.empresas.index',
+                    'icon' => 'fas fa-fw fas fa-building',
+                    'can'  => 'admin.empresas.index',
+                ],
+                [
+                    'text' => 'Requisitos',
+                    'route'  => 'admin.serviciosrequisitos.index',
+                    'icon' => 'fas fa-fw fas fa-thumbtack',
+                    'can'  => 'admin.empresas.index',
+                ],
+                
+
+            ],
+        ],
+        
         [
             'text' => 'Programación y Doc.',
             'icon' => 'fas fa-fw fas fa-cogs',
@@ -468,46 +503,14 @@ return [
                 ],
             ],
         ],
+        
         [
-            'text' => 'Administrar Asociados',
-            'icon' => 'fas fa-fw fas fa-users',
-            'can'  => 'admin.asociados.index',
-            'submenu' => [
-                [
-                    'text' => 'Asociados',
-                    'route'  => 'admin.asociados.index',
-                    'icon' => 'fas fa-fw fas fa-user-plus',
-                    'can'  => 'admin.asociados.index',
-                ],
-                [
-                    'text' => 'Proveedores',
-                    'route'  => 'admin.proveedores.index',
-                    'icon' => 'fas fa-fw fas fa-address-card',
-                    'can'  => 'admin.proveedores.index',
-                ],
-                [
-                    'text' => 'Empresas',
-                    'route'  => 'admin.empresas.index',
-                    'icon' => 'fas fa-fw fas fa-building',
-                    'can'  => 'admin.empresas.index',
-                ],
-                [
-                    'text' => 'Requisitos',
-                    'route'  => 'admin.serviciosrequisitos.index',
-                    'icon' => 'fas fa-fw fas fa-thumbtack',
-                    'can'  => 'admin.empresas.index',
-                ],
-                
-
-            ],
-        ],
-        [
-            'text' => 'Consiliaciones',
+            'text' => 'Ordenes de Venta',
             'icon' => 'fas fa-fw fas fa-comment-dollar',
             'can'  => 'admin.informesfinales.consiliacionesgenerales',
             'submenu' => [
                 [
-                    'text' => 'Consiliacion general',
+                    'text' => 'Ordenes general',
                     'route'  => 'admin.informesfinales.consiliacionesclientesbanco',
                     'icon' => 'fas fa-fw fas fa-donate',
                     'can'  => 'admin.informesfinales.consiliacionesclientesbanco',

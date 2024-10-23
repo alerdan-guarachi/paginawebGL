@@ -1228,7 +1228,8 @@ class InformeFinalController extends Controller
         $usuarioAutenticado = auth()->user()->name;
         $esProveedor = $usuarioAutenticado->role ?? null;
         $userRole = auth()->user()->getRoleNames()->first(); 
-        
+        $empresaUsuario = auth()->user()->empresa;
+
         $query = Programacionsubcliente::with(['documentacionsubclientebanco', 'requisitosclienteauditoriamedica', 'requisitosubcliente', 'bateriasubcliente', 'estadoprogramacionsubcliente', 'documentacionsubcliente', 'proveedorinformesfinales', 'informesfinales'])
             ->whereNotNull('clientebancoid');
 
@@ -1270,6 +1271,13 @@ class InformeFinalController extends Controller
             $declaracionmedica = Fichamedicasubcliente::withTrashed()
                 ->where('clientebancoid', $items->first()->clientebancoid)
                 ->where('detalle', 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR')
+                ->where('tipodocumento', 'DIGITAL')
+                ->first();
+
+            $declaracionmedicafisica = Fichamedicasubcliente::withTrashed()
+                ->where('clientebancoid', $items->first()->clientebancoid)
+                ->where('detalle', 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR')
+                ->where('tipodocumento', 'FISICO')
                 ->first();
 
             $consentimientoinformado = Estadocotizacionsubcliente::withTrashed()
@@ -1291,6 +1299,7 @@ class InformeFinalController extends Controller
 
             $fichamedicaclientebanco = $fichamedica ? $fichamedica->document : null;
             $declaracionmedicaclientebanco = $declaracionmedica ? $declaracionmedica->document : null;
+            $declaracionmedicaclientebancofisica = $declaracionmedicafisica ? $declaracionmedicafisica->document : null;
             $consentimiento = $consentimientoinformado ? $consentimientoinformado->document : null;
             $informefinalclientebanco = $informefinal ? $informefinal->document : null;
             $usuarioregistro = $usuarioRegistro ? $usuarioRegistro->sucursal : null;
@@ -1359,6 +1368,7 @@ class InformeFinalController extends Controller
                 'usuarioregistro' => $usuarioregistro,
                 'empresaregistro' => $empresaregistro,
                 'declaracionmedica' => $declaracionmedicaclientebanco,
+                'declaracionmedicafisica' => $declaracionmedicaclientebancofisica,
                 'informefinal' => $informefinalclientebanco,
                 'consentimiento' => $consentimiento,
             ];
@@ -1392,7 +1402,7 @@ class InformeFinalController extends Controller
             return $count;
         }, 0);
 
-        return view('admin.informesfinales.resultadosmedicosclientesbancos', compact('clientebancoid','documentosCount','resultadosCount','userRole','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'clientebanco', 'fechas', 'aprobaciones'));
+        return view('admin.informesfinales.resultadosmedicosclientesbancos', compact('empresaUsuario','clientebancoid','documentosCount','resultadosCount','userRole','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'clientebanco', 'fechas', 'aprobaciones'));
     }
     public function buscarresultadosclientebanco(ClienteBanco $clientebanco, Request $request)
     {
@@ -1441,6 +1451,7 @@ class InformeFinalController extends Controller
         $usuarioAutenticado = auth()->user()->name;
         $esProveedor = $usuarioAutenticado->role ?? null;
         $userRole = auth()->user()->getRoleNames()->first(); 
+        $empresaUsuario = auth()->user()->empresa;
         
         $query = Programacionsubcliente::with(['documentacionsubclientebanco', 'requisitosclienteauditoriamedica', 'requisitosubcliente', 'bateriasubcliente', 'estadoprogramacionsubcliente', 'documentacionsubcliente', 'proveedorinformesfinales', 'informesfinales'])
             ->whereNotNull('clientebancoid');
@@ -1613,7 +1624,7 @@ class InformeFinalController extends Controller
             return $count;
         }, 0);
 
-        return view('admin.informesfinales.consiliacionesclientesbanco', compact('clientebancoid','documentosCount','resultadosCount','userRole','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'clientebanco', 'fechas', 'aprobaciones'));
+        return view('admin.informesfinales.consiliacionesclientesbanco', compact('empresaUsuario','clientebancoid','documentosCount','resultadosCount','userRole','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'clientebanco', 'fechas', 'aprobaciones'));
     }
     public function buscarconsiliacionclientebanco(ClienteBanco $clientebanco, Request $request)
     {
@@ -1621,8 +1632,8 @@ class InformeFinalController extends Controller
     }
     public function guardarconsiliacionclientebanco(StoreInformefinalRequest $request, ClienteBanco $clientebanco)
     {
-        $clientebancoid = $clientebanco->id;
-        $clientebanconombre = $clientebanco->nombrecompleto;
+        $clientebancoid = $request->input('clientebancoid');
+        $clientebanconombre = $request->input('clientebanconombre');
         $fechabateria = $request->input('fechabateria');
 
         $archivo_name = null;
@@ -1653,6 +1664,31 @@ class InformeFinalController extends Controller
         return redirect()->route('admin.informesfinales.consiliacionesclientesbanco')->with('info', 'Documento subido exitosamente.');
     } 
 
+    public function generarordenventaclientebanco(ClienteBanco $clientebanco, Request $request) 
+    {
+        $clientebanconombre = $clientebanco->nombrecompleto;
+        // Obtener la última fechabateria del cliente
+        $ultimaFechaBateria = Bateriasubcliente::where('clienteid', $clientebanco->id)
+            ->orderBy('fechabateria', 'desc')
+            ->first()->fechabateria;
+
+        // Obtener las acciones asociadas a la última fechabateria
+        $bateriasubclientes = Bateriasubcliente::where('clienteid', $clientebanco->id)
+            ->where('fechabateria', $ultimaFechaBateria)
+            ->get();
+
+        // Calcular el total de los precios
+        $total = $bateriasubclientes->sum('precio');
+
+        // Generar el PDF con la información del cliente y las acciones
+        $pdf = PDF::loadView('admin.informesfinales.ordenes.pdfordenventaclientebanco', compact('clientebanconombre', 'clientebanco', 'bateriasubclientes', 'total'));
+
+        // Crear un nombre dinámico para el archivo PDF
+        $pdfName = 'Cotización_' . $clientebanco->nombrecompleto . '.pdf';
+        
+        // Retornar la vista en lugar de descargar
+        return $pdf->stream($pdfName); // Usamos stream() para mostrar el PDF en lugar de descargarlo
+    }
 
 public function solrevisioninformefinal(Request $request, Informefinal $informefinal)
 {
