@@ -395,7 +395,7 @@
         <tr>
             <td class="firma-izquierda" colspan="4">
                 @if(file_exists($medicoSignaturePath))
-                    <img src="{{ $medicoSignaturePath }}" alt="Firma del Médico Examinador" style="max-width: 150px; max-height: 50px;">
+                    <img src="{{ $medicoSignaturePath }}" alt="Firma del Médico Examinador" style="max-width: 250px; max-height: 100px;">
                 @else
                     <p></p>
                 @endif
@@ -403,15 +403,13 @@
             </td>
             <td class="firma-derecha" colspan="4">
                 @if(file_exists($propuestoSignaturePath))
-                    <img src="{{ $propuestoSignaturePath }}" alt="Firma del Propuesto Asegurado" style="max-width: 150px; max-height: 50px;">
+                    <img src="{{ $propuestoSignaturePath }}" alt="Firma del Propuesto Asegurado" style="max-width: 250px; max-height: 100px;">
                 @else
                     <p></p>
                 @endif
                 <p>Firma del Propuesto Asegurado</p>
             </td>
         </tr>
-                   
-
     </table>
 </body>
 

@@ -7357,7 +7357,24 @@ class AsociadoController extends Controller
 //DECLARACION MEDICA
     public function declaracionesmedico(ClienteBanco $clientebanco)
     {
-        return view('admin.asociados.formularios.declaracionesmedico', compact('clientebanco'));
+         // Verificar si existe el documento DIGITAL
+         $declaracionDigital = Fichamedicasubcliente::where('clienteid', $clientebanco->id)
+         ->where('tipodocumento', 'DIGITAL')
+         ->first();
+
+     // Verificar si existe el documento FISICO (puede no existir aún)
+     $declaracionFisico = Fichamedicasubcliente::where('clienteid', $clientebanco->id)
+         ->where('tipodocumento', 'FISICO')
+         ->first();
+
+     // Si el documento DIGITAL existe, redirigir a la vista para mostrar ambos documentos
+     if ($declaracionDigital) {
+         return view('admin.asociados.formularios.mostrardeclaracionesmedico', compact('clientebanco', 'declaracionDigital', 'declaracionFisico'));
+     }
+
+     // Si el documento DIGITAL no existe, redirigir al formulario para subirlo
+     return view('admin.asociados.formularios.declaracionesmedico', compact('clientebanco'));
+
     }
 
     /* public function guardardeclaracion(Request $request, ClienteBanco $clientebanco)
@@ -9570,7 +9587,7 @@ class AsociadoController extends Controller
                     'document' => $pdfName,
                     'usuarioid' => auth()->user()->id,
                     'usuarioregistro' => auth()->user()->name,
-                    'detalles' => 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR',
+                    'detalle' => 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR',
                     'tipodocumento' => 'FISICO',
                     'clientebancoid' => $clientebanco->id,
                     'clientebanconombre' => $clientebanco->nombrecompleto
@@ -9720,14 +9737,27 @@ class AsociadoController extends Controller
             'document' => $pdfName,  // Nombre del archivo PDF
             'usuarioid' => auth()->user()->id,  // ID del usuario actual
             'usuarioregistro' => auth()->user()->name,  // Nombre del usuario que hace el registro
-            'detalles' => 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR',  // Detalle del registro
+            'detalle' => 'DECLARACIONES HECHAS AL MEDICO EXAMINADOR',  // Detalle del registro
             'tipodocumento' => $tipodocumento,  // Tipo de documento (DIGITAL o FISICO)
             'clientebancoid' => $clientebanco->id,  // ID del cliente banco
             'clientebanconombre' => $clientebanco->nombrecompleto  // Nombre completo del cliente banco
         ]);
 
         // Retornar el PDF descargable
-        return $pdf->download($pdfName);
+        /* return $pdf->download($pdfName); */
+        $pdf2 = PDF::loadView('admin.asociados.formularios.declaracionpdfmedico2', compact('clientebanco', 'preguntas', 'nombre_medico', 'fecha_consulta', 'tratamiento_medico', 'familiares', 'estatura', 'peso', 'lugar', 'dia', 'mes', 'anio'));
+
+        $pdfName2 = 'DeclaracionMedicaFisica_' . $clientebanco->nombrecompleto . '.pdf';
+        /* $clientFolder2 = public_path('fichamedicaclientesbanco/' . $clientebanco->id);
+
+        if (!file_exists($clientFolder2)) {
+            mkdir($clientFolder2, 0755, true);
+        }
+
+        $pdf2->save($clientFolder2 . '/' . $pdfName2); */
+
+        // Descargar el PDF
+        return $pdf2->download($pdfName2);
     }
     public function guardarSOLOdeclaracion(Request $request, ClienteBanco $clientebanco)
     {
