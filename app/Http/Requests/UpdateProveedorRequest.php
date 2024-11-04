@@ -31,10 +31,10 @@ class UpdateProveedorRequest extends FormRequest
     {
         $rules = [
             'id' => '',
-            'proveedor' => 'required|max:45',
+            'proveedor' => 'required|max:255',
             'usuarioid' => 'required|max:45',
-            'usuarioregistro' => 'required|max:45',
-            'direccion' => 'required|max:45',
+            'usuarioregistro' => 'required|max:255',
+            'direccion' => 'required|max:255',
             'nit' => 'max:45',
             'banco' => 'max:255',
             'cuenta' => 'max:45',
@@ -49,6 +49,7 @@ class UpdateProveedorRequest extends FormRequest
             'telefonoreferencia' => '',
             'usuarioactualizacion' => '',
             'usuarioeliminacion' => '',
+            'linkubicacion' => '',
             
         ]; 
         return $rules;

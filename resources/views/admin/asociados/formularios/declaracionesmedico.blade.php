@@ -5292,6 +5292,14 @@
                     }
                 </script>
                 
+                {{-- <script>
+                    document.getElementById('generate_pdf_button').addEventListener('submit', function() {
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1000);
+                    });
+                </script> --}}
+
                 {{-- <div style="text-align: center; margin-bottom: 10px;">
                     {!! Form::submit('DESCARGAR DECLARACION PARA FIRMAS MANUALES', ['class' => 'btn btn-primary', 'formaction' => route('admin.asociados.formularios.guardarSOLOdeclaracion', $clientebanco),]) !!}
                 </div>
@@ -5321,6 +5329,7 @@
 
                     {!! Form::close() !!}
                 </div> --}}
+                
 
                 <script>
                     // Función para mostrar la vista previa de las imágenes seleccionadas y validar

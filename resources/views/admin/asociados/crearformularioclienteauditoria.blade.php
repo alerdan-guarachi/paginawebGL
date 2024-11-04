@@ -1,7 +1,9 @@
 @extends('adminlte::page')
     
 @section('content_header')
+@if($userRole !== 'PROVEEDOR')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
+@endif
 <h1>FICHA MEDICA DE "{{$clienteauditoria->nombrecompleto}}"</h1>
 @stop
 

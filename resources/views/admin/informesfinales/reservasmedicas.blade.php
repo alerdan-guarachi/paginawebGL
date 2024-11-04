@@ -74,7 +74,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
-                    INFORME PENDIENTE
+                    PENDIENTES
                     <?php if ($informependienteCount > 0): ?>
                         <span class="circle"><?= $informependienteCount ?></span>
                     <?php endif; ?>
@@ -82,17 +82,17 @@
             </li> 
             <li class="nav-item">
                 <a class="nav-link" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
-                    INFORME COMPLETO
+                    COMPLETOS
                     <?php if ($informecompletoCount > 0): ?>
                         <span class="circle"><?= $informecompletoCount ?></span>
                     <?php endif; ?>
                 </a>
             </li>
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
                     PAGOS MENSUALES
                 </a>
-            </li>
+            </li> --}}
         </ul>
     </div>
     <div class="card-body">
@@ -103,6 +103,7 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th>Tipo Cliente</th>
                             <th>ID Cliente</th>
                             <th>Cliente</th>
                             <th>Fecha Bateria</th>
@@ -119,6 +120,7 @@
                         @foreach ($reservasmedicas as $reservasmedica)
                             @if(!$reservasmedica->documentacionDisponible && !$reservasmedica->informeDisponible)
                                 <tr>
+                                    <td>CLIENTE ITA</td>
                                     <td>{{$reservasmedica->clienteitaid}}</td>
                                     <td>{{$reservasmedica->clienteitanombre}}</td>
                                     <td>{{$reservasmedica->fechabateria}}</td>
@@ -149,6 +151,40 @@
                                 </tr>
                             @endif
                         @endforeach
+                        @foreach ($reservasmedicasauditorias as $reservasmedicaauditoria)
+                            @if(!$reservasmedicaauditoria->documentacionDisponibleauditoria && !$reservasmedicaauditoria->informeDisponibleauditoria)
+                                <tr>
+                                    <td>CLIENTE AUDITORIA</td>
+                                    <td>{{$reservasmedicaauditoria->clienteauditoriaid}}</td>
+                                    <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
+                                    <td>{{$reservasmedicaauditoria->fechabateria}}</td>
+                                    @if ($rolusuario !== 'PROVEEDOR')
+                                    <td>{{$reservasmedicaauditoria->proveedornombre}}</td>
+                                    @endif
+                                    <td>{{$reservasmedicaauditoria->accionnombre}}</td>
+                                    <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
+                                    <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
+
+                                    <td width="10px">
+                                        @if($reservasmedicaauditoria->informeDisponible)
+                                            <abbr title="SUBIR INFORME">
+                                                <button type="button" class="btn btn-subirinforme" 
+                                                        data-toggle="modal" 
+                                                        data-target="#subirinformeModal"
+                                                        data-clienteauditoriaid="{{ $reservasmedicaauditoria->clienteitaid }}"
+                                                        data-clienteauditorianombre="{{ $reservasmedicaauditoria->clienteitanombre }}"
+                                                        data-fechabateria="{{ $reservasmedicaauditoria->fechabateria }}"
+                                                        data-accion="{{ $reservasmedicaauditoria->accionnombre }}">
+                                                    <i class="fas fa-upload"></i>
+                                                </button>
+                                            </abbr>
+                                        @else
+                                            <p class="text-incompleto">PENDIENTE</p>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -160,6 +196,7 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th>Tipo Cliente</th>
                             <th>ID Cliente</th>
                             <th>Cliente</th>
                             <th>Fecha Bateria</th>
@@ -176,6 +213,7 @@
                         @foreach ($reservasmedicas as $reservasmedica)
                             @if(!$reservasmedica->documentacionDisponible && $reservasmedica->informeDisponible)
                                 <tr>
+                                    <td>CLIENTE ITA</td>
                                     <td>{{$reservasmedica->clienteitaid}}</td>
                                     <td>{{$reservasmedica->clienteitanombre}}</td>
                                     <td>{{$reservasmedica->fechabateria}}</td>
@@ -186,11 +224,17 @@
                                     <td>{{$reservasmedica->fechaasignada}}</td>
                                     <td>{{$reservasmedica->horadesde}} - {{$reservasmedica->horahasta}}</td>
                                     <td width="10px">
+                                        @if($reservasmedica->fichamedicaita)
+                                            <a href="{{ asset('/fichamedicaclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->fichamedicaita) }}" class="btn btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        @else
                                         <abbr title="CREAR FICHA MÉDICA">
                                             <a class="btn btn-sm btn-fichamedica" href="{{route('admin.asociados.crearformularioclienteita', $reservasmedica->clienteitaid)}}">
                                                 <i class="fas fa-file-signature"></i>
                                             </a>
                                         </abbr>
+                                        @endif
                                     </td>
                                     <td width="10px">
                                         <abbr title="CREAR BATERIA">
@@ -411,6 +455,251 @@
                                 </tr>
                             @endif
                         @endforeach
+                        @foreach ($reservasmedicasauditorias as $reservasmedicaauditoria)
+                            @if(!$reservasmedicaauditoria->documentacionDisponibleauditoria && $reservasmedicaauditoria->informeDisponibleauditoria)
+                                <tr>
+                                    <td>CLIENTE AUDITORIA</td>
+                                    <td>{{$reservasmedicaauditoria->clienteauditoriaid}}</td>
+                                    <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
+                                    <td>{{$reservasmedicaauditoria->fechabateria}}</td>
+                                    @if ($rolusuario !== 'PROVEEDOR')
+                                    <td>{{$reservasmedica->proveedornombre}}</td>
+                                    @endif
+                                    <td>{{$reservasmedicaauditoria->accionnombre}}</td>
+                                    <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
+                                    <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
+                                    <td width="10px">
+                                        @if($tienefichamedicaauditoria)
+                                            <a href="{{ asset('/fichamedicaclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->fichamedicaauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        @else
+                                        <abbr title="CREAR FICHA MÉDICA">
+                                            <a class="btn btn-sm btn-fichamedica" href="{{route('admin.asociados.crearformularioclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
+                                                <i class="fas fa-file-signature"></i>
+                                            </a>
+                                        </abbr>
+                                        @endif
+                                    </td>
+                                    <td width="10px">
+                                        <abbr title="CREAR BATERIA">
+                                            <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
+                                                <i class="fas fa-charging-station"></i>
+                                            </a>
+                                        </abbr>
+                                    </td>
+                                    <td width="10px">
+                                        @if($reservasmedicaauditoria->informeDisponibleauditoria)
+                                            <abbr title="SUBIR INFORME">
+                                                <button type="button" class="btn btn-sm btn-subirinforme" 
+                                                        data-toggle="modal" 
+                                                        data-target="#subirinformeModal"
+                                                        data-clienteauditoriaid="{{ $reservasmedicaauditoria->clienteauditoriaid }}"
+                                                        data-clienteauditorianombre="{{ $reservasmedicaauditoria->clienteauditorianombre }}"
+                                                        data-fechabateria="{{ $reservasmedicaauditoria->fechabateria }}"
+                                                        data-accion="{{ $reservasmedicaauditoria->accionnombre }}">
+                                                    <i class="fas fa-upload"></i>
+                                                </button>
+                                            </abbr>
+                                        @else
+                                            <p class="text-incompleto">FECHA DE ATENCIÓN PENDIENTE</p>
+                                        @endif
+                                    </td>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="subirinformeModal" tabindex="-1" role="dialog" aria-labelledby="subirinformeModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h3 class="modal-title" id="subirinformeModalLabel" style="color: #94c93b; font-weight: bold;">SUBIR INFORME</h3>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                {!! Form::open(['id' => 'subirinformeFormauditoria', 'method' => 'POST', 'files' => true]) !!}
+                                                {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                                {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                                {!! Form::hidden('clienteauditoriaid', null, ['id' => 'modal-clienteauditoriaid']) !!}
+                                                {!! Form::hidden('clienteauditorianombre', null, ['id' => 'modal-clienteauditorianombre']) !!}
+                                                {!! Form::hidden('fechabateria', null, ['id' => 'modal-fechabateria']) !!}
+                                                {!! Form::hidden('accion', null, ['id' => 'modal-accion']) !!}
+
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="col-lg-4">
+                                                            <div class="file-upload">
+                                                                <label for="archivo">INFORME:</label>
+                                                                <input type="file" name="archivo" id="archivo" class="file-input" accept=".pdf,.doc,.docx" />
+                                                                <label for="archivo" class="file-custom-label">Elige un PDF</label>
+                                                                <div class="file-preview" id="preview-archivo"></div>
+                                                                @error('archivo')
+                                                                <small class="text-danger fas fa-exclamation-circle">
+                                                                    {{$message}}
+                                                                </small>
+                                                                @enderror
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-4">
+                                                            <div class="file-upload">
+                                                                <label for="picture">IMAGEN 1:</label>
+                                                                <input type="file" name="picture" id="picture" class="file-input" accept="image/*" />
+                                                                <label for="picture" class="file-custom-label">Elige una imagen</label>
+                                                                <div class="file-preview" id="preview-picture"></div>
+                                                                @error('picture')
+                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                        {{$message}}
+                                                                    </small>
+                                                                @enderror
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-4">
+                                                            <div class="file-upload">
+                                                                <label for="picture2">IMAGEN 2:</label>
+                                                                <input type="file" name="picture2" id="picture2" class="file-input" accept="image/*" />
+                                                                <label for="picture2" class="file-custom-label">Elige una imagen</label>
+                                                                <div class="file-preview" id="preview-picture2"></div>
+                                                                @error('picture2')
+                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                        {{$message}}
+                                                                    </small>
+                                                                @enderror
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <style>
+                                                    .file-upload {
+                                                        position: relative;
+                                                        display: flex;
+                                                        flex-direction: column;
+                                                        align-items: center;
+                                                        border: 2px solid #faa625; /* Border color */
+                                                        border-radius: 8px; /* Rounded corners */
+                                                        padding: 50px;
+                                                        background: rgb(249, 255, 244); /* Background color */
+                                                        transition: background 0.3s ease, border-color 0.3s ease;
+                                                    }
+                                                
+                                                    .file-upload:hover {
+                                                        background: #fff7eb; /* Light background on hover */
+                                                        border-color: #faa625; /* Darker border on hover */
+                                                    }
+                                                
+                                                    .file-upload label {
+                                                        font-weight: bold;
+                                                        margin-bottom: 8px;
+                                                    }
+                                                
+                                                    .file-input {
+                                                        display: none; /* Hide the default file input */
+                                                    }
+                                                
+                                                    .file-custom-label {
+                                                        display: inline-block;
+                                                        padding: 10px;
+                                                        border: 1px solid #faa625; /* Border for the custom button */
+                                                        border-radius: 4px; /* Rounded corners for button */
+                                                        background: #fff; /* Background color of button */
+                                                        color: #faa625; /* Text color */
+                                                        cursor: pointer;
+                                                        transition: background 0.3s ease;
+                                                    }
+                                                
+                                                    .file-custom-label:hover {
+                                                        background: #faa625; /* Darker background on hover */
+                                                        color: #fff; /* Text color */
+                                                    }
+                                                
+                                                    .file-preview {
+                                                        margin-top: 10px;
+                                                        width: 100%;
+                                                        height: auto;
+                                                        display: flex;
+                                                        justify-content: center;
+                                                        align-items: center;
+                                                        text-align: center;
+                                                    }
+                                                
+                                                    .file-preview img {
+                                                        max-width: 100%;
+                                                        max-height: 200px;
+                                                        border-radius: 8px;
+                                                        border: 2px solid #faa625; /* Border for preview image */
+                                                    }
+                                                
+                                                    .file-preview .file-name {
+                                                        font-size: 16px;
+                                                        color: #007bff;
+                                                    }
+                                                
+                                                </style>      
+                                                <script>
+                                                    function handleFileSelect(event) {
+                                                        const input = event.target;
+                                                        const preview = document.getElementById(`preview-${input.id}`);
+                                                
+                                                        // Clear any existing previews
+                                                        preview.innerHTML = '';
+                                                
+                                                        if (input.files && input.files[0]) {
+                                                            const file = input.files[0];
+                                                            const fileURL = URL.createObjectURL(file);
+                                                
+                                                            if (file.type.startsWith('image/')) {
+                                                                // If the file is an image
+                                                                const img = document.createElement('img');
+                                                                img.src = fileURL;
+                                                                preview.appendChild(img);
+                                                            } else {
+                                                                // For PDF and other file types
+                                                                const fileName = document.createElement('span');
+                                                                fileName.textContent = file.name;
+                                                                fileName.className = 'file-name';
+                                                                preview.appendChild(fileName);
+                                                            }
+                                                        }
+                                                    }
+                                                
+                                                    document.querySelectorAll('.file-input').forEach(input => {
+                                                        input.addEventListener('change', handleFileSelect);
+                                                    });
+                                                </script>
+    
+                                                <div class="modal-footer">
+                                                    <div class="text-center w-100">
+                                                        {!! Form::submit('SUBIR DOCUMENTACION', ['class' => 'btn btn-crear']) !!}
+                                                    </div>
+                                                </div>
+                                                {!! Form::close() !!}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                                    <script>
+                                        $(document).ready(function() {
+                                            $('#subirinformeModal').on('show.bs.modal', function (event) {
+                                                var button = $(event.relatedTarget); // Botón que activó el modal
+                                                var clienteitaid = button.data('clienteauditoriaid');
+                                                var clienteitanombre = button.data('clienteauditorianombre');
+                                                var fechabateria = button.data('fechabateria');
+                                                var accion = button.data('accion');
+
+                                                var modal = $(this);
+                                                modal.find('#modal-clienteauditoriaid').val(clienteitaid);
+                                                modal.find('#modal-clienteauditorianombre').val(clienteitanombre);
+                                                modal.find('#modal-fechabateria').val(fechabateria);
+                                                modal.find('#modal-accion').val(accion);
+                                                // Actualiza la ruta del formulario para incluir el clienteitaid
+                                                var formAction = '{{ route("admin.asociados.guardardocumentacionclienteauditoriadeproveedor", ":clienteauditoria") }}';
+                                                formAction = formAction.replace(':cliente', clienteitaid);
+                                                $('#subirinformeFormauditoria').attr('action', formAction);
+                                            });
+                                        });
+                                    </script>
+                                </tr>
+                            @endif
+                        @endforeach
                     </tbody>
                 </table>
             </div>
@@ -422,6 +711,7 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th>Tipo Cliente</th>
                             <th>ID Cliente</th>
                             <th>Cliente</th>
                             <th>Fecha Bateria</th>
@@ -431,6 +721,7 @@
                             <th>Acción</th>
                             <th>Fecha asignada</th>
                             <th>Hora asignada</th>
+                            <th>Fecha registro</th>
                             <th colspan="3">Informe</th>
                         </tr>
                     </thead>
@@ -438,6 +729,7 @@
                         @foreach ($reservasmedicas as $reservasmedica)
                             @if($reservasmedica->documentacionDisponible)
                                 <tr>
+                                    <td>CLIENTE ITA</td>
                                     <td>{{$reservasmedica->clienteitaid}}</td>
                                     <td>{{$reservasmedica->clienteitanombre}}</td>
                                     <td>{{$reservasmedica->fechabateria}}</td>
@@ -447,7 +739,7 @@
                                     <td>{{$reservasmedica->accionnombre}}</td>
                                     <td>{{$reservasmedica->fechaasignada}}</td>
                                     <td>{{$reservasmedica->horadesde}} - {{$reservasmedica->horahasta}}</td>
-                                    
+                                    <td>{{$reservasmedica->fechainforme}}</td>
                                     <td width="10px">
                                         <div class="dropdown-container">
                                             <button class="btn btn-dropdown" type="button">
@@ -464,6 +756,45 @@
                                                     @endif
                                                     @if($reservasmedica->imagen2Disponible)
                                                         <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->imagen2Disponible) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
+                                                            <i class="far fa-images"></i>
+                                                        </a>
+                                                    @endif
+                                            </div>
+                                        </div>   
+                                    </td>                                 
+                                </tr>
+                            @endif
+                        @endforeach
+                        @foreach ($reservasmedicasauditorias as $reservasmedicaauditoria)
+                            @if($reservasmedicaauditoria->documentacionDisponibleauditoria)
+                                <tr>
+                                    <td>CLIENTE AUDITORIA</td>
+                                    <td>{{$reservasmedicaauditoria->clienteauditoriaid}}</td>
+                                    <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
+                                    <td>{{$reservasmedicaauditoria->fechabateria}}</td>
+                                    @if ($rolusuario !== 'PROVEEDOR')
+                                    <td>{{$reservasmedicaauditoria->proveedornombre}}</td>
+                                    @endif
+                                    <td>{{$reservasmedicaauditoria->accionnombre}}</td>
+                                    <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
+                                    <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
+                                    <td>{{$reservasmedicaauditoria->fechainformeauditoria}}</td>
+                                    <td width="10px">
+                                        <div class="dropdown-container">
+                                            <button class="btn btn-dropdown" type="button">
+                                                <i class="fas fa-search-plus"></i>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionDisponibleauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER INFORME MÉDICO">
+                                                    <i class="fas fa-folder-open"></i>
+                                                </a>
+                                                    @if($reservasmedicaauditoria->imagen1Disponibleauditoria)
+                                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen1Disponibleauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 1">
+                                                            <i class="fas fa-images"></i>
+                                                        </a>
+                                                    @endif
+                                                    @if($reservasmedicaauditoria->imagen2Disponibleauditoria)
+                                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen2Disponibleauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
                                                             <i class="far fa-images"></i>
                                                         </a>
                                                     @endif
@@ -628,6 +959,30 @@
                                         @endif
                                     @endif
                                 @endforeach
+                                @foreach ($reservasmedicasauditorias as $reservasmedicaauditoria)
+                                    @if($reservasmedicaauditoria->documentacionDisponible)
+                                        @php
+                                            $fechaInforme = Carbon::parse($reservasmedicaauditoria->fechainforme);
+                                        @endphp
+
+                                        @if($fechaInforme->month == $previousMonth && $fechaInforme->year == $previousYear)
+                                            @php
+                                                $totalPreviousMonth += $reservasmedicaauditoria->precio;
+                                            @endphp
+                                            <tr>
+                                                <td>{{$reservasmedicaauditoria->clienteauditoriaid}}</td>
+                                                <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
+                                                <td>{{$reservasmedicaauditoria->fechabateria}}</td>
+                                                @if ($rolusuario !== 'PROVEEDOR')
+                                                <td>{{$reservasmedicaauditoria->proveedornombre}}</td>
+                                                @endif
+                                                <td>{{$reservasmedicaauditoria->accionnombre}}</td>
+                                                <td>{{ $fechaInforme->format('Y-m-d') }}</td>
+                                                <td>{{ number_format($reservasmedicaauditoria->precio, 2) }}</td>                              
+                                            </tr>
+                                        @endif
+                                    @endif
+                                @endforeach
                             </tbody>
                             @if ($rolusuario === 'PROVEEDOR')
                             <tfoot>
@@ -697,6 +1052,30 @@
                                         @endif
                                     @endif
                                 @endforeach
+                                @foreach ($reservasmedicasauditorias as $reservasmedicaauditoria)
+                                    @if($reservasmedicaauditoria->documentacionDisponible)
+                                        @php
+                                            $fechaInforme = Carbon::parse($reservasmedicaauditoria->fechainforme);
+                                        @endphp
+
+                                        @if($fechaInforme->month == $currentMonth && $fechaInforme->year == $currentYear)
+                                            @php
+                                                $totalCurrentMonth += $reservasmedicaauditoria->precio;
+                                            @endphp
+                                            <tr>
+                                                <td>{{$reservasmedicaauditoria->clienteauditoriaid}}</td>
+                                                <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
+                                                <td>{{$reservasmedicaauditoria->fechabateria}}</td>
+                                                @if ($rolusuario !== 'PROVEEDOR')
+                                                <td>{{$reservasmedicaauditoria->proveedornombre}}</td>
+                                                @endif
+                                                <td>{{$reservasmedicaauditoria->accionnombre}}</td>
+                                                <td>{{ $fechaInforme->format('Y-m-d') }}</td>
+                                                <td>{{ number_format($reservasmedicaauditoria->precio, 2) }}</td>                              
+                                            </tr>
+                                        @endif
+                                    @endif
+                                @endforeach
                             </tbody>
                             @if ($rolusuario === 'PROVEEDOR')
                             <tfoot>
@@ -740,6 +1119,16 @@
                                     <td>{{$reservasmedica->fechabateria}}</td>
                                     <td>{{$reservasmedica->proveedornombre}}</td>
                                     <td>{{$reservasmedica->accionnombre}}</td>
+                                    <td>{{ $fechaInforme->format('Y-m-d') }}</td>                           
+                                </tr>
+                                @endforeach
+                                @foreach ($reservasmedicasauditorias as $reservasmedicaauditoria)
+                                <tr>
+                                    <td>{{$reservasmedicaauditoria->clienteauditoriaid}}</td>
+                                    <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
+                                    <td>{{$reservasmedicaauditoria->fechabateria}}</td>
+                                    <td>{{$reservasmedicaauditoria->proveedornombre}}</td>
+                                    <td>{{$reservasmedicaauditoria->accionnombre}}</td>
                                     <td>{{ $fechaInforme->format('Y-m-d') }}</td>                           
                                 </tr>
                                 @endforeach
@@ -930,7 +1319,7 @@
     }
     .circle {
         display: inline-block;
-        width: 20px;
+        width: 50px;
         height: 20px;
         line-height: 20px;
         border-radius: 50%;

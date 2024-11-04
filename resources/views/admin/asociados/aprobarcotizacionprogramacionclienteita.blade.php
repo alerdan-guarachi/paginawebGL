@@ -188,7 +188,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
+            {{-- <div class="modal-body">
                 <table class="table">
                     <thead>
                         <tr>
@@ -218,7 +218,6 @@
                                             </a>
                                         </abbr>
                                         @else
-                                            {{-- <span class="text-danger">Documento no disponible</span> --}}
                                         @endif
                                         @php
                                             $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
@@ -230,7 +229,6 @@
                                             </a>
                                         </abbr>
                                         @else
-                                            {{-- <span class="text-danger">Documento cons. info no disponible</span> --}}
                                         @endif
                                     @else
                                     <span style="color: red;">NO APROBADO</span>
@@ -240,7 +238,60 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div> --}}
+            <div class="modal-body"> 
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Fecha de Bateria</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($fechasDisponibles as $fecha)
+                            <tr style="color:{{ $fechasRegistradas->contains($fecha) ? 'green' : 'red' }}">
+                                <td>
+                                    <span style="display: inline-block; width: 5px; height: 5px; background-color: black; border-radius: 50%; margin-right: 5px;"></span>
+                                    {{ $fecha }}
+                                </td>
+                                <td>
+                                    @if($fechasRegistradas->contains($fecha))
+                                        <a type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal" title="MODIFICAR COTIZACIÓN">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @php
+                                            $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
+                                            $whatsappNumber = $cliente->celular;
+                                            $mensaje = urlencode("Hola, le comparto la cotización. Puede descargarla aquí:");
+                                        @endphp
+                                        @if($document)
+                                            <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm" title="VER COTIZACIÓN APROBADA">
+                                                <i class="fas fa-file-invoice-dollar"></i>
+                                            </a>
+                                        @endif
+                                        @php
+                                            $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
+                                        @endphp
+                                        @if($documentconsinfo)
+                                            <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm" title="VER CONSENTIMIENTO INFORMADO">
+                                                <i class="fas fa-clone"></i>
+                                            </a>
+                                        @endif
+                                        {{-- @if($document)
+                                            <a href="https://wa.me/{{ $whatsappNumber }}?text={{ $mensaje }}%20{{ url('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-whatsapp btn-sm" title="WHATSAPP">
+                                                <i class="fab fa-whatsapp"></i>
+                                            </a>
+                                        @endif --}}
+                                    @else
+                                        <span style="color: red;">NO APROBADO</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
+            
             <div class="modal-footer">
                 <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
             </div>
@@ -532,6 +583,18 @@
 }
 .btn-editar:hover {
     background-color: #faa625;
+    color: #ffffff;
+}
+.btn-whatsapp {
+    background-color:  #ffffff;
+    color: #94c93b;
+    border-color: #94c93b;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 5px 10px;
+}
+.btn-whatsapp:hover {
+    background-color: #94c93b;
     color: #ffffff;
 }
 .btn-vercotizacion {

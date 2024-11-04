@@ -54,42 +54,47 @@ class AdministrarProgramacionController extends Controller
         $this->middleware('can:admin.users.index')->only('index');
     } */
 
-    public function index(ClienteAuditoria $clienteauditoria, ClienteComun $clientecomun, Cliente $cliente, ClienteBanco $clientebanco)
+    public function index(Request $request, ClienteAuditoria $clienteauditoria, ClienteComun $clientecomun, Cliente $cliente, ClienteBanco $clientebanco)
     {
+        $busqueda = $request->get('buscarpor');
+        $fechaActual = $busqueda ?? now()->toDateString();
+
         $clientesComunesCount = DB::table('clientescomunes')->count();
         $clientesBancosCount = DB::table('clientebancos')->count();
         $clientesITACount = DB::table('clientes')->count();
         $clientesAuditoriasCount = DB::table('clienteauditorias')->count();
 
-
-        //FECHAS PROXIMAS DE CLIENTES AUDITORIA 
+        // FECHAS PROXIMAS DE CLIENTES AUDITORIA
         $programacionclienteauditorias = Programacionsubcliente::whereNotNull('clienteauditorianombre')
-                                                    ->where('clienteauditorianombre', '!=', '')
-                                                    ->whereDate('fechaasignada', '=', now()->toDateString())
-                                                    ->get();
+            ->where('clienteauditorianombre', '!=', '')
+            ->whereDate('fechaasignada', '=', $fechaActual)
+            ->orderBy('horadesde', 'asc')
+            ->get();
+
         $nombreClienteAuditoria = $clienteauditoria->nombrecompleto;
         $accionesClienteAuditoria = BateriaSubCliente::where('clienteauditorianombre', $nombreClienteAuditoria)->pluck('accionnombre')->toArray();
         $idAuditoria = $clienteauditoria->nombrecompleto ? ClienteAuditoria::where('nombrecompleto', $clienteauditoria->nombrecompleto)->value('id') : null;
         $accionesPorAreaAuditoria = Programacionsubcliente::where('clienteauditorianombre', $nombreClienteAuditoria)
-        ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
-        ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);    
+            ->whereDate('fechaasignada', '=', $fechaActual)
+            ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);
         $estadoRegistradosAuditoria = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteAuditoria)
             ->where('clienteauditorianombre', $nombreClienteAuditoria)
             ->pluck('accionnombre')->toArray();
         $accionesDisponiblesAuditoria = $accionesPorAreaAuditoria;
         $accionesPorAreasAuditoria = Programacionsubcliente::where('clienteauditorianombre', $nombreClienteAuditoria)->pluck('accionnombre', 'accionnombre');
 
-
-        //FECHAS PROXIMAS DE CLIENTES COMUNES
+        // FECHAS PROXIMAS DE CLIENTES COMUNES
         $programacionclientecomunes = Programacionsubcliente::whereNotNull('clientecomunnombre')
-                                                    ->where('clientecomunnombre', '!=', '')
-                                                    ->whereDate('fechaasignada', '=', now()->toDateString())
-                                                    ->get();
+            ->where('clientecomunnombre', '!=', '')
+            ->whereDate('fechaasignada', '=', $fechaActual)
+            ->orderBy('horadesde', 'asc')
+            ->get();
+
         $nombreClienteComun = $clientecomun->nombrecompleto;
         $accionesClienteComun = BateriaSubCliente::where('clientecomunnombre', $nombreClienteComun)->pluck('accionnombre')->toArray();
         $idComun = $clientecomun->nombrecompleto ? ClienteComun::where('nombrecompleto', $clientecomun->nombrecompleto)->value('id') : null;
         $accionesPorAreaComun = Programacionsubcliente::where('clientecomunnombre', $nombreClienteComun)
-            ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
+            ->whereDate('fechaasignada', '=', $fechaActual)
             ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);
         $estadoRegistradosComun = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteComun)
             ->where('clientecomunnombre', $nombreClienteComun)
@@ -97,17 +102,18 @@ class AdministrarProgramacionController extends Controller
         $accionesDisponiblesComun = $accionesPorAreaComun;
         $accionesPorAreasComun = Programacionsubcliente::where('clientecomunnombre', $nombreClienteComun)->pluck('accionnombre', 'accionnombre');
 
-
-        //FECHAS PROXIMAS DE CLIENTES ITA
+        // FECHAS PROXIMAS DE CLIENTES ITA
         $programacionclienteitas = Programacionsubcliente::whereNotNull('clienteitanombre')
-                                                    ->where('clienteitanombre', '!=', '')
-                                                    ->whereDate('fechaasignada', '=', now()->toDateString())
-                                                    ->get();
+            ->where('clienteitanombre', '!=', '')
+            ->whereDate('fechaasignada', '=', $fechaActual)
+            ->orderBy('horadesde', 'asc')
+            ->get();
+
         $nombreClienteIta = $cliente->nombrecompleto;
         $accionesClienteIta = BateriaSubCliente::where('clienteitanombre', $nombreClienteIta)->pluck('accionnombre')->toArray();
         $idIta = $cliente->nombrecompleto ? Cliente::where('nombrecompleto', $cliente->nombrecompleto)->value('id') : null;
         $accionesPorAreaIta = Programacionsubcliente::where('clienteitanombre', $nombreClienteIta)
-            ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
+            ->whereDate('fechaasignada', '=', $fechaActual)
             ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);
         $estadoRegistradosIta = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteIta)
             ->where('clienteitanombre', $nombreClienteIta)
@@ -115,17 +121,18 @@ class AdministrarProgramacionController extends Controller
         $accionesDisponiblesIta = $accionesPorAreaIta;
         $accionesPorAreasIta = Programacionsubcliente::where('clienteitanombre', $nombreClienteIta)->pluck('accionnombre', 'accionnombre');
 
-
-        //FECHAS PROXIMAS DE CLIENTES BANCOS
+        // FECHAS PROXIMAS DE CLIENTES BANCOS
         $programacionclientebancos = Programacionsubcliente::whereNotNull('clientenombre')
-                                                    ->where('clientenombre', '!=', '')
-                                                    ->whereDate('fechaasignada', '=', now()->toDateString())
-                                                    ->get();
+            ->where('clientenombre', '!=', '')
+            ->whereDate('fechaasignada', '=', $fechaActual)
+            ->orderBy('horadesde', 'asc')
+            ->get();
+
         $nombreClienteBanco = $clientebanco->nombrecompleto;
         $accionesClienteBanco = BateriaSubCliente::where('clientenombre', $nombreClienteBanco)->pluck('accionnombre')->toArray();
         $idBanco = $clientebanco->nombrecompleto ? ClienteBanco::where('nombrecompleto', $clientebanco->nombrecompleto)->value('id') : null;
         $accionesPorAreaBanco = Programacionsubcliente::where('clientenombre', $nombreClienteBanco)
-            ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
+            ->whereDate('fechaasignada', '=', $fechaActual)
             ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);
         $estadoRegistradosBanco = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteBanco)
             ->where('clientebanconombre', $nombreClienteBanco)
@@ -133,12 +140,47 @@ class AdministrarProgramacionController extends Controller
         $accionesDisponiblesBanco = $accionesPorAreaBanco;
         $accionesPorAreasBanco = Programacionsubcliente::where('clientenombre', $nombreClienteBanco)->pluck('accionnombre', 'accionnombre');
 
-        return view('admin.admprogramaciones.index', compact('programacionclientebancos','programacionclienteitas','programacionclientecomunes', 'programacionclienteauditorias','clientesComunesCount', 'clientesBancosCount', 'clientesITACount', 'clientesAuditoriasCount', 
-        'accionesPorAreasAuditoria', 'accionesPorAreaAuditoria', 'accionesDisponiblesAuditoria', 'clienteauditoria', 'idAuditoria', 'accionesClienteAuditoria', 'estadoRegistradosAuditoria',
-        'accionesPorAreasComun', 'accionesPorAreaComun', 'accionesDisponiblesComun', 'clientecomun', 'idComun', 'accionesClienteComun', 'estadoRegistradosComun',
-        'accionesPorAreasIta', 'accionesPorAreaIta', 'accionesDisponiblesIta', 'cliente', 'idIta', 'accionesClienteIta', 'estadoRegistradosIta',
-        'accionesPorAreasBanco', 'accionesPorAreaBanco', 'accionesDisponiblesBanco', 'clientebanco', 'idBanco', 'accionesClienteBanco', 'estadoRegistradosBanco'));
+        return view('admin.admprogramaciones.index', compact(
+            'programacionclientebancos',
+            'programacionclienteitas',
+            'programacionclientecomunes',
+            'programacionclienteauditorias',
+            'clientesComunesCount',
+            'clientesBancosCount',
+            'clientesITACount',
+            'clientesAuditoriasCount',
+            'accionesPorAreasAuditoria',
+            'accionesPorAreaAuditoria',
+            'accionesDisponiblesAuditoria',
+            'clienteauditoria',
+            'idAuditoria',
+            'accionesClienteAuditoria',
+            'estadoRegistradosAuditoria',
+            'accionesPorAreasComun',
+            'accionesPorAreaComun',
+            'accionesDisponiblesComun',
+            'clientecomun',
+            'idComun',
+            'accionesClienteComun',
+            'estadoRegistradosComun',
+            'accionesPorAreasIta',
+            'accionesPorAreaIta',
+            'accionesDisponiblesIta',
+            'cliente',
+            'idIta',
+            'accionesClienteIta',
+            'estadoRegistradosIta',
+            'accionesPorAreasBanco',
+            'accionesPorAreaBanco',
+            'accionesDisponiblesBanco',
+            'clientebanco',
+            'idBanco',
+            'accionesClienteBanco',
+            'estadoRegistradosBanco',
+            'fechaActual'
+        ));
     }
+
 
     public function documentacionpendiente(Request $request, Asociado $asociado, Cliente $cliente)
     {

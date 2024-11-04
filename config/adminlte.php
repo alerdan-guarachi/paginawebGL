@@ -324,7 +324,7 @@ return [
             'can'  => 'admin.admprogramaciones.index',
             'submenu' => [
                 [
-                    'text' => 'Prog. Para Hoy',
+                    'text' => 'Programaciones',
                     'route'  => 'admin.admprogramaciones.index',
                     'icon' => 'fas fa-fw fas fa-calendar-check',
                     'can'  => 'admin.admprogramaciones.index',
@@ -333,31 +333,31 @@ return [
                     'text' => 'Clientes Creados Hoy',
                     'route'  => 'admin.admprogramaciones.clientescreadoshoy',
                     'icon' => 'fas fa-fw fas fa-users',
-                    'can'  => 'admin.admprogramaciones.index',
+                    'can'  => 'admin.admprogramaciones.create',
                 ],
                 [
                     'text' => 'Baterias Creados Hoy',
                     'route'  => 'admin.admprogramaciones.bateriascreadoshoy',
                     'icon' => 'fas fa-fw fas fa-battery-half',
-                    'can'  => 'admin.admprogramaciones.index',
+                    'can'  => 'admin.admprogramaciones.create',
                 ],
                 [
                     'text' => 'Prog. Creados Hoy',
                     'route'  => 'admin.admprogramaciones.programacionescreadoshoy',
                     'icon' => 'fas fa-fw fas fa-calendar-check',
-                    'can'  => 'admin.admprogramaciones.index',
+                    'can'  => 'admin.admprogramaciones.create',
                 ],
                 [
                     'text' => 'Doc. Pendientes',
                     'route'  => 'admin.admprogramaciones.documentacionpendiente',
                     'icon' => 'fas fa-fw fas fa-question-circle',
-                    'can'  => 'admin.admprogramaciones.index',
+                    'can'  => 'admin.admprogramaciones.create',
                 ],
                 [
                     'text' => 'Doc. Activa',
                     'route'  => 'admin.admprogramaciones.documentacionactiva',
                     'icon' => 'fas fa-fw fas fa-folder-open',
-                    'can'  => 'admin.admprogramaciones.index',
+                    'can'  => 'admin.admprogramaciones.create',
                 ],
                 [
                     'text' => 'Reportes',
@@ -504,7 +504,7 @@ return [
             ],
         ],
         
-        [
+        /* [
             'text' => 'Ordenes de Venta',
             'icon' => 'fas fa-fw fas fa-comment-dollar',
             'can'  => 'admin.informesfinales.consiliacionesgenerales',
@@ -513,6 +513,19 @@ return [
                     'text' => 'Ordenes general',
                     'route'  => 'admin.informesfinales.consiliacionesclientesbanco',
                     'icon' => 'fas fa-fw fas fa-donate',
+                    'can'  => 'admin.informesfinales.consiliacionesclientesbanco',
+                ],
+            ],
+        ], */
+        [
+            'text' => 'Órdenes',
+            'icon' => 'fas fa-fw fa-comment-dollar',
+            'can'  => 'admin.informesfinales.consiliacionesgenerales',
+            'submenu' => [
+                [
+                    'text' => 'Órdenes de Venta',
+                    'route'  => 'admin.ordenes.ordenesventa.index',
+                    'icon' => 'fas fa-fw fa-donate',
                     'can'  => 'admin.informesfinales.consiliacionesclientesbanco',
                 ],
             ],
@@ -530,6 +543,11 @@ return [
                 [
                     'text' => 'Proc. de Trámites Gestora',
                     'route'  => 'admin.tramites.index',
+                    'icon' => 'fas fa-fw fas fa-paste',
+                ],
+                [
+                    'text' => 'Modelo Cartas/Reclamos',
+                    'route'  => 'admin.tramites.modelocartareclamo',
                     'icon' => 'fas fa-fw fas fa-file',
                 ],
 

@@ -55,21 +55,8 @@
                             @enderror
                         </div>
                         <input type="hidden" id="fechabateria" name="fechabateria">
-                        
-                        {{-- <div class="form-group" id="acciones_select">
-                            {!! Form::label('', 'Acciones disponibles:') !!}
-                            <select class="form-control" id="accion" name="accion">
-                                <option value="" disabled selected></option>
-                            </select>
-                            @error('accion')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                        <input type="hidden" id="accionselec" name="accionselec"> --}}
 
-                        <div class="form-group" id="acciones_select" style="display: none;">
+                        {{-- <div class="form-group" id="acciones_select" style="display: none;">
                             {!! Form::label('', 'Acciones disponibles:') !!}
                             <div id="acciones_disponibles"></div>
                             @error('accion')
@@ -79,12 +66,31 @@
                             @enderror
                         </div>
                         <style>
-                            /* Estilo para que los labels de las acciones no se muestren en negritas */
                             #acciones_disponibles label {
-                                font-weight: normal; /* Evita que las etiquetas sean gruesas */
+                                font-weight: normal;
                             }
                         </style>
-                        <input type="hidden" id="accionselec" name="accionselec">
+                        <input type="hidden" id="accionselec" name="accionselec"> --}}
+                        <div class="form-group" id="acciones_select" style="display: none;">
+                            {!! Form::label('', 'Acciones disponibles:') !!}
+                            <div id="acciones_disponibles">
+                                <!-- Checkbox para seleccionar todo -->
+                                <label>
+                                    <input type="checkbox" id="select_all"> Seleccionar todo
+                                </label>
+                                <br>
+                            </div>
+                            @error('accion')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                        <style>
+                            #acciones_disponibles label {
+                                font-weight: normal;
+                            }
+                        </style>
                     </div>
 
                     <div class="col-lg-3">
@@ -365,7 +371,7 @@
     });
 </script> --}}
 
-<script>
+{{-- <script>
     $(document).ready(function(){
         $('#fecha_bateria').on('change', function(){
             $('#accionselec').val('');  // Limpia el valor previo
@@ -400,6 +406,70 @@
 
             // Mostrar el div de acciones
             document.getElementById('acciones_select').style.display = 'block';
+        });
+    });
+
+    document.getElementById('fecha_bateria').addEventListener('change', function() {
+        var selectedDate = this.value;
+        document.getElementById('fechabateria').value = selectedDate;
+    });
+</script> --}}
+<script>
+    $(document).ready(function(){
+        $('#fecha_bateria').on('change', function(){
+            $('#accionselec').val('');  // Limpia el valor previo
+        });
+
+        document.getElementById('fecha_bateria').addEventListener('change', function() {
+            var fechaSeleccionada = this.value;
+            var accionesContainer = document.getElementById('acciones_disponibles');
+            accionesContainer.innerHTML = '';  // Limpia los checkboxes previos
+            
+            // Agregar el checkbox de "Seleccionar todo"
+            var selectAllCheckbox = document.createElement('input');
+            selectAllCheckbox.type = 'checkbox';
+            selectAllCheckbox.id = 'select_all';
+            var selectAllLabel = document.createElement('label');
+            selectAllLabel.htmlFor = 'select_all';
+            selectAllLabel.textContent = 'Seleccionar todo';
+            accionesContainer.appendChild(selectAllCheckbox);
+            accionesContainer.appendChild(selectAllLabel);
+            accionesContainer.appendChild(document.createElement('br'));
+
+            var accionesNoRegistradasPorFecha = @json($accionesNoRegistradasPorFecha);
+
+            if (accionesNoRegistradasPorFecha[fechaSeleccionada]) {
+                accionesNoRegistradasPorFecha[fechaSeleccionada].forEach(function(accion) {
+                    // Crear el checkbox para cada acción
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = 'acciones[]';
+                    checkbox.value = accion.accionnombre;
+                    checkbox.classList.add('accion_checkbox'); // Clase para identificar los checkboxes de acciones
+                    checkbox.id = 'accion_' + accion.accionnombre;
+
+                    // Crear la etiqueta del checkbox
+                    var label = document.createElement('label');
+                    label.htmlFor = 'accion_' + accion.accionnombre;
+                    label.textContent = accion.accionnombre;
+
+                    // Añadir checkbox y etiqueta al contenedor
+                    accionesContainer.appendChild(checkbox);
+                    accionesContainer.appendChild(label);
+                    accionesContainer.appendChild(document.createElement('br'));
+                });
+            }
+
+            // Mostrar el div de acciones
+            document.getElementById('acciones_select').style.display = 'block';
+
+            // Evento para seleccionar/deseleccionar todos los checkboxes
+            document.getElementById('select_all').addEventListener('change', function() {
+                var checkboxes = document.querySelectorAll('.accion_checkbox');
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = document.getElementById('select_all').checked;
+                });
+            });
         });
     });
 

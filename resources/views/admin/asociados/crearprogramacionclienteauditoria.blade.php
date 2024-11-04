@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
+<a class="btn btn-sm float-right btn-regresar" href="{{ session('previous_url', route('admin.asociados.verclienteauditoria', $clienteauditoria)) }}">REGRESAR</a>
 @can('admin.asociados.reprogramacionclienteita')
 <a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.reprogramacionclienteauditoria', $clienteauditoria)}}">REPROGRAMAR</a>
 @endcan

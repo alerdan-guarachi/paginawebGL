@@ -73,7 +73,7 @@
             </nav>
         @endcan
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-buttons">
                 @if($rolusuario !== 'ASOCIADO')
                 <thead>
                     <tr>
@@ -136,7 +136,7 @@
                                 <abbr title="Documentación múltiple">
                                     @if($grupocliente->asociado === 'AUDITORIA MEDICA')
                                     @can('admin.asociados.documentacionmultipleclienteita')
-                                        <a class="btn btn-sm btn-documentacionmultiple" href="{{ route('admin.asociados.documentacionmultipleclienteita', $grupocliente) }}">
+                                        <a class="btn btn-sm btn-documentacionmultiple" href="{{ route('admin.asociados.documentacionmultipleclienteauditoria', $grupocliente) }}">
                                             <i class="fas fa-folder"></i>
                                         </a>
                                         @endcan
@@ -155,6 +155,32 @@
                                     @endif
                                 </abbr>
                             </td>   
+                            <td width="10px">
+                                <abbr title="Ver programaciones pendientes">
+                                    @if ($grupocliente->asociado === 'AUDITORIA MEDICA')
+                                        @can('admin.asociados.verprogramacionpendienteauditoria')
+                                            <a class="btn btn-sm btn-verprogramacion"
+                                                href="{{ route('admin.asociados.verprogramacionauditoria', $grupocliente) }}">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </a>
+                                        @endcan
+                                    @elseif($grupocliente->asociado === 'CLIENTES COMUNES')
+                                        @can('admin.asociados.verprogramacionpendientecomun')
+                                            <a class="btn btn-sm btn-verprogramacion"
+                                                href="{{ route('admin.asociados.verprogramacioncomun', $grupocliente) }}">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </a>
+                                        @endcan
+                                    @elseif($grupocliente->asociado === 'CLIENTES ITA')
+                                        @can('admin.asociados.verprogramacionpendienteita')
+                                            <a class="btn btn-sm btn-verprogramacion"
+                                                href="{{ route('admin.asociados.verprogramacionita', $grupocliente) }}">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </a>
+                                        @endcan
+                                    @endif
+                                </abbr>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -224,9 +250,19 @@
                                 @endcan
                                 @can('admin.asociados.documentacionmultipleclientebanco')
                                 <td width="10px">
-                                    <abbr title="Lista de clientes">
+                                    <abbr title="Documentación múltiple">
                                         <a class="btn btn-sm btn-documentacionmultiple" href="{{ route('admin.asociados.documentacionmultipleclientebanco', $asociado) }}">
                                             <i class="fas fa-folder"></i>
+                                        </a>
+                                    </abbr>
+                                </td>
+                                @endcan
+                                
+                                @can('admin.asociados.verprogramacionpendienteauditoria')
+                                <td width="10px">
+                                    <abbr title="Ver programaciones pendientes">
+                                        <a class="btn btn-sm btn-verprogramacion" href="{{ route('admin.asociados.verprogramacionauditoria', $grupocliente) }}" style="pointer-events: none; opacity: 0.5;">
+                                            <i class="fas fa-calendar-alt"></i>
                                         </a>
                                     </abbr>
                                 </td>
@@ -235,7 +271,11 @@
                         @endif
                     @endforeach
                 </tbody>
-
+                <style>
+                    .table-buttons td {
+                        padding: 12 7px;
+                    }
+                </style>
             </table>
         </div>
     </div>

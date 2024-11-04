@@ -23,6 +23,8 @@ class Fichamedicasubcliente extends Model
         'tipodocumento' => '',
         'clientebancoid' => '',
         'clientebanconombre' => '',
+        'clienteauditoriaid' => '',
+        'clienteauditorianombre' => '',
     ]; 
 
     protected $fillable = [
@@ -36,6 +38,8 @@ class Fichamedicasubcliente extends Model
         'tipodocumento',
         'clientebancoid',
         'clientebanconombre',
+        'clienteauditoriaid',
+        'clienteauditorianombre',
     ];
 
 }

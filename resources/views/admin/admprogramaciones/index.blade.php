@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<h1>PROGRAMACIONES DE HOY</h1>
+<h1>PROGRAMACIONES DE CLIENTES</h1>
 @stop
 
 @section('content')
@@ -17,10 +17,25 @@
 @endif
 <div class="card">
     <div class="card-body">
+        <nav class="navbar navbar-expand-lg float-right">
+            <div class="container-fluid">
+                <div class="d-flex flex-wrap align-items-center">
+                    <form action="{{ route('admin.admprogramaciones.index') }}" method="get" class="form-inline">
+                        <div class="flex-grow-1">
+                            <input name="buscarpor" class="form-control buscador mr-sm-2" type="date" 
+                                 value="{{ old('buscarpor') ?? $fechaActual }}" aria-label="Fecha">
+                        </div>
+                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit">BUSCAR</button>
+                    </form>                    
+                </div>
+            </div>
+        </nav>
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                     <tr>
+                        <th>ID</th>
+                        <th>Tipo Cliente</th>
                         <th>Cliente</th>
                         <th>Acciones</th>
                         <th>Proveedor</th>
@@ -45,6 +60,8 @@
                         $mensajeCodificado = urlencode($mensaje);
                         ?>
                         <tr>
+                            <td>{{ $programacionclienteauditoria->id }}</td>
+                            <td>CLIENTE AUDITORIA</td>
                             <td>{{ $programacionclienteauditoria->clienteauditorianombre }}</td>
                             <td>{{ $programacionclienteauditoria->accionnombre }}</td>
                             <td>{{ $programacionclienteauditoria->proveedornombre }}</td>
@@ -87,6 +104,8 @@
                         $mensajeCodificado = urlencode($mensaje);
                         ?>
                         <tr>
+                            <td>{{ $programacionclientecomun->id }}</td>
+                            <td>CLIENTE COMUN</td>
                             <td>{{ $programacionclientecomun->clientecomunnombre}}</td>
                             <td>{{ $programacionclientecomun->accionnombre }}</td>
                             <td>{{ $programacionclientecomun->proveedornombre }}</td>
@@ -128,6 +147,8 @@
                         $mensajeCodificado = urlencode($mensaje);
                         ?>
                         <tr>
+                            <td>{{ $programacionclienteita->id }}</td>
+                            <td>CLIENTE ITA</td>
                             <td>{{ $programacionclienteita->clienteitanombre}}</td>
                             <td>{{ $programacionclienteita->accionnombre }}</td>
                             <td>{{ $programacionclienteita->proveedornombre }}</td>
@@ -169,6 +190,8 @@
                         $mensajeCodificado = urlencode($mensaje);
                         ?>
                         <tr>
+                            <td>{{ $programacionclientebanco->id }}</td>
+                            <td>CLIENTE BANCO</td>
                             <td>{{ $programacionclientebanco->clientenombre}}</td>
                             <td>{{ $programacionclientebanco->accionnombre }}</td>
                             <td>{{ $programacionclientebanco->proveedornombre }}</td>

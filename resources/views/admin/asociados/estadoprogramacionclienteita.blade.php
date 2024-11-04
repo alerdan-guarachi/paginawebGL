@@ -58,12 +58,19 @@
                 <tbody>
                     @foreach($accionesDisponibles as $accion)
                     <?php
+                    // Mensaje principal
                     $mensaje = "Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: " .
                             $accion->proveedornombre . ", para realizarse: " .
-                            $accion->accionnombre . ", para la fecha: " .
+                            $accion->areanombre . ", para la fecha: " .
                             $accion->fechaasignada . ", a la hora: " . 
-                            $accion->horadesde . ". Que tenga un excelente dia.";
-
+                            $accion->horadesde . " en: " . 
+                            $accion->direccion . ". Que tenga un excelente día.";
+                    
+                    // Mensaje de ubicación en un párrafo separado, si está disponible
+                    if (!empty($accion->linkubicacion)) {
+                        $mensaje .= "\n\nVer ubicación: " . $accion->linkubicacion;
+                    }
+                    
                     $mensajeCodificado = urlencode($mensaje);
                     ?>
                     <tr>
@@ -124,7 +131,7 @@
                 {!! Form::hidden('clienteitanombre', $nombreclienteita) !!}
                 {!! Form::hidden('accionid', '', ['id' => 'modalAccionId']) !!}
 
-                <div class="form-group">  
+                <div class="form-group">   
                     {!! Form::label('', 'Fecha de Bateria:') !!}
                     <select class="form-control" id="fecha_bateria">
                         <option value="" disabled selected></option>
@@ -147,22 +154,27 @@
                     });
                 </script>
                 
-                <script>
-                    document.getElementById('fecha_bateria').addEventListener('change', function() {
-                        document.getElementById('fechabateria_hidden').value = this.value;
-                    });
-                </script>
-                
                 <div class="form-group"> 
-                    {!! Form::label('', 'Acciones disponibles:') !!}
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        {!! Form::label('', 'Acciones disponibles:') !!}
+
+                        <!-- Checkbox "Seleccionar Todo" -->
+                        <div id="select-all-container" style="display: none;">
+                            <label style="font-weight: bold; font-size: 14px; margin-bottom: 0;">
+                                <input type="checkbox" id="select-all" style="margin-right: 5px;">
+                                SELECCIONAR TODO
+                            </label>
+                        </div>
+                    </div>
+                
                     <div id="acciones_select">
                         @foreach($accionesPorFecha as $fecha => $acciones)
-                            <div class="acciones-{{ $fecha }}" style="display:none; ">
+                            <div class="acciones-{{ $fecha }}" style="display:none;">
                                 @foreach($acciones as $accion)
                                     @if (in_array($accion, $accionesNoRegistradas))
                                         <div>
                                             <label style="font-weight: normal;">
-                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }}
+                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}" class="accion-checkbox"> {{ $accion }}
                                             </label>
                                         </div>
                                     @endif
@@ -181,22 +193,59 @@
                     document.getElementById('fecha_bateria').addEventListener('change', function() {
                         const selectedFecha = this.value;
                         const accionesDivs = document.querySelectorAll('.acciones-' + selectedFecha);
-                
+
                         // Oculta todas las acciones
                         document.querySelectorAll('[class^="acciones-"]').forEach(div => {
                             div.style.display = 'none';
                         });
-                
+
+                        // Reinicia el estado del checkbox "Seleccionar Todo"
+                        document.getElementById('select-all').checked = false;
+
                         // Muestra las acciones para la fecha seleccionada
                         accionesDivs.forEach(div => {
                             div.style.display = 'block';
-                            // Muestra solo los checkboxes de acciones no registradas
-                            div.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                                checkbox.closest('div').style.display = 'block'; // Muestra el checkbox
-                            });
                         });
+
+                        // Obtener todos los checkboxes de acciones visibles
+                        const accionesCheckboxes = document.querySelectorAll('.acciones-' + selectedFecha +
+                            ' .accion-checkbox');
+
+                        // Muestra el checkbox "Seleccionar Todo" si hay acciones disponibles
+                        if (accionesCheckboxes.length > 0) {
+                            document.getElementById('select-all-container').style.display = 'block';
+                        } else {
+                            document.getElementById('select-all-container').style.display = 'none';
+                        }
                     });
-                </script>
+
+                    // Función para manejar el "Seleccionar Todo"
+                    document.getElementById('select-all').addEventListener('change', function() {
+                        const isChecked = this.checked;
+                        const selectedFecha = document.getElementById('fecha_bateria').value;
+
+                        if (selectedFecha) {
+                            const accionesCheckboxes = document.querySelectorAll('.acciones-' + selectedFecha +
+                                ' .accion-checkbox');
+                            accionesCheckboxes.forEach(checkbox => {
+                                checkbox.checked = isChecked;
+                            });
+                        }
+                    });
+
+                    // Opcional: Actualizar el estado del checkbox "Seleccionar Todo" si se desmarca algún checkbox individual
+                    document.addEventListener('change', function(e) {
+                        if (e.target.classList.contains('accion-checkbox')) {
+                            const selectedFecha = document.getElementById('fecha_bateria').value;
+                            const accionesCheckboxes = document.querySelectorAll('.acciones-' + selectedFecha +
+                                ' .accion-checkbox');
+                            const allChecked = Array.from(accionesCheckboxes).every(checkbox => checkbox.checked);
+                            document.getElementById('select-all').checked = allChecked;
+                        }
+                    });
+                    </script>
+
+                
                                  
                 <div class="form-group" hidden>
                     {!! Form::label('nombrecompleto', 'Nombre del Cliente:') !!}

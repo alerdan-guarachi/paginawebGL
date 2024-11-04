@@ -60,7 +60,7 @@
                     </div>  
                 </div>
             </div>
-            {!! Form::hidden('idtipoarea', null, ['id' => 'idtipoarea', 'class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+            {!! Form::text('idtipoarea', null, ['id' => 'idtipoarea', 'class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
         </div>   
         {!! Form::submit('CREAR ÁREA', ['class' => 'btn btn-crear']) !!}
         {!! Form::close() !!}     

@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\InstructivaPoderController;
 use App\Http\Controllers\Admin\PersonalController;
 use App\Http\Controllers\Admin\InformeFinalController;
 use App\Http\Controllers\Admin\TramitesController;
+use App\Http\Controllers\Admin\OrdenVentaController;
 use App\Http\Controllers\Admin\ServiciosrequisitosController;
 use App\Http\Controllers\TemporalController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -60,61 +61,72 @@ Route::resource('personal', PersonalController::class)/* ->middleware('can:admin
 Route::resource('informesfinales', InformeFinalController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.informesfinales');
 Route::resource('tramites', TramitesController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.tramites');
 Route::resource('serviciosrequisitos', ServiciosrequisitosController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.serviciosrequisitos');
+Route::resource('ordenes/ordenesventa', OrdenVentaController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.ordenes.ordenesventa');
 
+
+/* Route::get('ordenes/ordenesventa', [OrdenVentaController::class, 'index'])->name('admin.ordenes.ordenesventa.index'); */
+        Route::get('ordenes/ordenesventa/create/{clientebanco}', [OrdenVentaController::class, 'create'])->name('admin.ordenes.ordenesventa.create');
+        Route::post('ordenes/ordenesventa/create/crearNotadeVenta', [OrdenVentaController::class, 'crearNotadeVenta'])->name('admin.ordenes.ordenesventa.create.crearnotadeventa');
+        Route::get('ordenes/ordenesventa/{clientebanco}/generarPDF', [OrdenVentaController::class, 'generarPDFNotaDeVenta'])->name('admin.ordenes.ordenesventa.generarPDF');
+
+//CONTROL DE PROGRAMACIONES
+    Route::resource('controlprogramacion', ControlProgController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.controlprogramacion');
+    Route::get('/buscar-usuario', [ControlProgController::class, 'buscarPorUsuario'])->name('admin.controlprogramacion.buscarPorUsuario');
 //
-Route::resource('controlprogramacion', ControlProgController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.controlprogramacion');
-Route::get('/buscar-usuario', [ControlProgController::class, 'buscarPorUsuario'])
-    ->name('admin.controlprogramacion.buscarPorUsuario');
-//GENERAR PDF DEL CLIENTE ITA
-Route::get('admin/asociados/generarpdfcliente/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@generarPDFCliente')->name('admin.asociados.generarpdfcliente');
-Route::post('admin/asociados/generarpdfcliente/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@generarPDFCliente')->name('admin.asociados.generarpdfcliente');
-Route::post('admin/asociados/eliminar-pdf', 'App\Http\Controllers\Admin\AsociadoController@eliminarPDF')->name('admin.asociados.eliminarpdf');
-
 
 Route::get('asociados/{id}/download-pdf', [AsociadoController::class, 'downloadPDF'])->name('admin.asociados.downloadPDF');
 
-Route::get('informesfinales/documentosprogramaciones/7', 'App\Http\Controllers\Admin\InformeFinalController@documentosprogramaciones')->name('admin.informesfinales.documentosprogramaciones');
-Route::get('/buscarprogramacionesclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarporproveedor')->name('buscarporproveedor');
-Route::get('/buscarporproveedor', 'App\Http\Controllers\Admin\InformeFinalController@buscarprogramacionesclienteita')->name('buscarprogramacionesclienteita');
-Route::get('/buscarprogramacionescomclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarprogramacionescomclienteita')->name('buscarprogramacionescomclienteita');
-Route::get('/buscarreservamedicaclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarreservamedicaclienteita')->name('buscarreservamedicaclienteita');
-Route::post('informesfinales/guardaraprobacioninformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardaraprobacioninformefinal')->name('admin.informesfinales.guardaraprobacioninformefinal');
-Route::post('informesfinales/guardarproveedorinformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardarproveedorinformefinal')->name('admin.informesfinales.guardarproveedorinformefinal');
-Route::post('informesfinales/guardarinformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardarinformefinal')->name('admin.informesfinales.guardarinformefinal');
-Route::delete('informesfinales/solrevisioninformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@solrevisioninformefinal')->name('admin.informesfinales.solrevisioninformefinal');
-Route::put('informesfinales/aprobarinformefinalfs/{item}', 'App\Http\Controllers\Admin\InformeFinalController@aprobarinformefinalfs')->name('admin.informesfinales.aprobarinformefinalfs');
-Route::get('/buscarresultadosclientebanco', 'App\Http\Controllers\Admin\InformeFinalController@buscarresultadosclientebanco')->name('buscarresultadosclientebanco');
-Route::get('/buscarconsiliacionclientebanco', 'App\Http\Controllers\Admin\InformeFinalController@buscarconsiliacionclientebanco')->name('buscarconsiliacionclientebanco');
+//INFORMES FINALES
+    Route::get('informesfinales/documentosprogramaciones/7', 'App\Http\Controllers\Admin\InformeFinalController@documentosprogramaciones')->name('admin.informesfinales.documentosprogramaciones');
+    Route::get('/buscarprogramacionesclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarporproveedor')->name('buscarporproveedor');
+    Route::get('/buscarporproveedor', 'App\Http\Controllers\Admin\InformeFinalController@buscarprogramacionesclienteita')->name('buscarprogramacionesclienteita');
+    Route::get('/buscarprogramacionescomclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarprogramacionescomclienteita')->name('buscarprogramacionescomclienteita');
+    Route::get('/buscarreservamedicaclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarreservamedicaclienteita')->name('buscarreservamedicaclienteita');
+    Route::post('informesfinales/guardaraprobacioninformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardaraprobacioninformefinal')->name('admin.informesfinales.guardaraprobacioninformefinal');
+    Route::post('informesfinales/guardarproveedorinformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardarproveedorinformefinal')->name('admin.informesfinales.guardarproveedorinformefinal');
+    Route::post('informesfinales/guardarinformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardarinformefinal')->name('admin.informesfinales.guardarinformefinal');
+    Route::delete('informesfinales/solrevisioninformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@solrevisioninformefinal')->name('admin.informesfinales.solrevisioninformefinal');
+    Route::put('informesfinales/aprobarinformefinalfs/{item}', 'App\Http\Controllers\Admin\InformeFinalController@aprobarinformefinalfs')->name('admin.informesfinales.aprobarinformefinalfs');
+    Route::get('/buscarresultadosclientebanco', 'App\Http\Controllers\Admin\InformeFinalController@buscarresultadosclientebanco')->name('buscarresultadosclientebanco');
+    Route::get('/buscarconsiliacionclientebanco', 'App\Http\Controllers\Admin\InformeFinalController@buscarconsiliacionclientebanco')->name('buscarconsiliacionclientebanco');
 
-Route::post('/update-observacion', [InformeFinalController::class, 'updateObservacion'])->name('updateObservacion');
-// En routes/web.php
-Route::post('/update-document/{id}', [InformeFinalController::class, 'updateDocument'])->name('updateDocument');
+    Route::get('informesfinales/estadodocumentacionprogramacion/7', 'App\Http\Controllers\Admin\InformeFinalController@estadodocumentacionprogramacion')->name('admin.informesfinales.estadodocumentacionprogramacion');
+    Route::get('informesfinales/resultadosmedicosclientesauditoria/8', 'App\Http\Controllers\Admin\InformeFinalController@resultadosmedicosclientesauditoria')->name('admin.informesfinales.resultadosmedicosclientesauditoria');
+    Route::get('informesfinales/resultadosmedicosclientesbancos/9', 'App\Http\Controllers\Admin\InformeFinalController@resultadosmedicosclientesbancos')->name('admin.informesfinales.resultadosmedicosclientesbancos');
+    Route::get('admprogramaciones/controlregistros/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@controlregistros')->name('admin.admprogramaciones.controlregistros');
+    Route::get('informesfinales/reservasmedicas/8', 'App\Http\Controllers\Admin\InformeFinalController@reservasmedicas')->name('admin.informesfinales.reservasmedicas');
+    Route::get('informesfinales/consiliacionesclientesbanco/10', 'App\Http\Controllers\Admin\InformeFinalController@consiliacionesclientesbanco')->name('admin.informesfinales.consiliacionesclientesbanco');
 
+    Route::post('/update-observacion', [InformeFinalController::class, 'updateObservacion'])->name('updateObservacion');
+    Route::post('/update-document/{id}', [InformeFinalController::class, 'updateDocument'])->name('updateDocument');
+//
 
-Route::get('tramites/procmasahereditaria/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procmasahereditaria')->name('admin.tramites.procmasahereditaria');
-Route::get('tramites/procjubilacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procjubilacion')->name('admin.tramites.procjubilacion');
-Route::get('tramites/procretiroaportestotal/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procretiroaportestotal')->name('admin.tramites.procretiroaportestotal');
-Route::get('tramites/procretiroaportesparcial/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procretiroaportesparcial')->name('admin.tramites.procretiroaportesparcial');
-Route::get('tramites/procpensionpormuerte/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procpensionpormuerte')->name('admin.tramites.procpensionpormuerte');
-Route::get('tramites/procsegundasolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procsegundasolicitud')->name('admin.tramites.procsegundasolicitud');
-Route::get('tramites/procinvalidez/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procinvalidez')->name('admin.tramites.procinvalidez');
-Route::get('tramites/procapelacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapelacion')->name('admin.tramites.procapelacion');
-Route::get('tramites/proccompensacionsenasir/{cliente}', 'App\Http\Controllers\Admin\TramitesController@proccompensacionsenasir')->name('admin.tramites.proccompensacionsenasir');
+//TRAMITES
+    Route::get('tramites/procmasahereditaria/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procmasahereditaria')->name('admin.tramites.procmasahereditaria');
+    Route::get('tramites/procjubilacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procjubilacion')->name('admin.tramites.procjubilacion');
+    Route::get('tramites/procretiroaportestotal/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procretiroaportestotal')->name('admin.tramites.procretiroaportestotal');
+    Route::get('tramites/procretiroaportesparcial/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procretiroaportesparcial')->name('admin.tramites.procretiroaportesparcial');
+    Route::get('tramites/procpensionpormuerte/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procpensionpormuerte')->name('admin.tramites.procpensionpormuerte');
+    Route::get('tramites/procsegundasolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procsegundasolicitud')->name('admin.tramites.procsegundasolicitud');
+    Route::get('tramites/procinvalidez/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procinvalidez')->name('admin.tramites.procinvalidez');
+    Route::get('tramites/procapelacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapelacion')->name('admin.tramites.procapelacion');
+    Route::get('tramites/proccompensacionsenasir/{cliente}', 'App\Http\Controllers\Admin\TramitesController@proccompensacionsenasir')->name('admin.tramites.proccompensacionsenasir');
 
+    Route::post('tramites/guardartramitesclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardartramitesclienteita')->name('admin.tramites.guardartramitesclienteita');
+    Route::post('tramites/guardariniciotramiteclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardariniciotramiteclienteita')->name('admin.tramites.guardariniciotramiteclienteita');
+    
+    Route::get('tramites/generarcartareclamo/{cliente}', 'App\Http\Controllers\Admin\TramitesController@generarcartareclamo')->name('admin.tramites.generarcartareclamo');
+    Route::get('tramites/generaradjuntoyrespuesta/{cliente}', 'App\Http\Controllers\Admin\TramitesController@generaradjuntoyrespuesta')->name('admin.tramites.generaradjuntoyrespuesta');
+    Route::get('tramites/generarsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@generarsolicitud')->name('admin.tramites.generarsolicitud');
 
-Route::get('informesfinales/estadodocumentacionprogramacion/7', 'App\Http\Controllers\Admin\InformeFinalController@estadodocumentacionprogramacion')->name('admin.informesfinales.estadodocumentacionprogramacion');
-Route::get('informesfinales/resultadosmedicosclientesauditoria/8', 'App\Http\Controllers\Admin\InformeFinalController@resultadosmedicosclientesauditoria')->name('admin.informesfinales.resultadosmedicosclientesauditoria');
-Route::get('informesfinales/resultadosmedicosclientesbancos/9', 'App\Http\Controllers\Admin\InformeFinalController@resultadosmedicosclientesbancos')->name('admin.informesfinales.resultadosmedicosclientesbancos');
-Route::get('admprogramaciones/controlregistros/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@controlregistros')->name('admin.admprogramaciones.controlregistros');
-Route::get('informesfinales/reservasmedicas/8', 'App\Http\Controllers\Admin\InformeFinalController@reservasmedicas')->name('admin.informesfinales.reservasmedicas');
-Route::get('informesfinales/consiliacionesclientesbanco/10', 'App\Http\Controllers\Admin\InformeFinalController@consiliacionesclientesbanco')->name('admin.informesfinales.consiliacionesclientesbanco');
+    Route::get('/tramites/actualizarEstado/{id}/{clienteId}', [TramitesController::class, 'actualizarEstado'])->name('tramites.actualizarEstado');
+    Route::post('/tramites/{id}/subir-archivo/{clienteId}', [TramitesController::class, 'subirArchivo'])->name('tramites.subirArchivo');
+    Route::post('tramites/asignarapoderadotramiteclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@asignarapoderadotramiteclienteita')->name('admin.tramites.asignarapoderadotramiteclienteita');
+    Route::post('tramites/guardartramitesclienteitaseguimiento/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardartramitesclienteitaseguimiento')->name('admin.tramites.guardartramitesclienteitaseguimiento');
 
-Route::post('tramites/guardartramitesclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardartramitesclienteita')->name('admin.tramites.guardartramitesclienteita');
-Route::post('tramites/guardariniciotramiteclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardariniciotramiteclienteita')->name('admin.tramites.guardariniciotramiteclienteita');
+    Route::get('tramites/modelocartareclamo/1', 'App\Http\Controllers\Admin\TramitesController@modelocartareclamo')->name('admin.tramites.modelocartareclamo');
+//
 
-Route::get('tramites/generarcartareclamo/{cliente}', 'App\Http\Controllers\Admin\TramitesController@generarcartareclamo')->name('admin.tramites.generarcartareclamo');
-Route::get('tramites/generaradjuntoyrespuesta/{cliente}', 'App\Http\Controllers\Admin\TramitesController@generaradjuntoyrespuesta')->name('admin.tramites.generaradjuntoyrespuesta');
-Route::get('tramites/generarsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@generarsolicitud')->name('admin.tramites.generarsolicitud');
 /* Route::get('tramites/sitsegundacarta/{cliente}', 'App\Http\Controllers\Admin\TramitesController@sitsegundacarta')->name('admin.tramites.sitsegundacarta');
 Route::get('tramites/sitterceracarta/{cliente}', 'App\Http\Controllers\Admin\TramitesController@sitterceracarta')->name('admin.tramites.sitterceracarta');
 Route::get('tramites/reclamoprimeracarta/{cliente}', 'App\Http\Controllers\Admin\TramitesController@sitprimeracarta')->name('admin.tramites.reclamoprimeracarta');
@@ -122,21 +134,21 @@ Route::get('tramites/reclamosegundacarta/{cliente}', 'App\Http\Controllers\Admin
 Route::get('tramites/reclamoterceracarta/{cliente}', 'App\Http\Controllers\Admin\TramitesController@sitprimeracarta')->name('admin.tramites.reclamoterceracarta');
 Route::get('tramites/reclamoaps/{cliente}', 'App\Http\Controllers\Admin\TramitesController@reclamoaps')->name('admin.tramites.reclamoaps'); */
 
+Route::get('asociados/programacionpendienteauditoria/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@verProgramacionPendienteAuditoria')->name('admin.asociados.verprogramacionauditoria');
+Route::get('asociados/buscarprogramacionpendienteauditoria/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@buscarProgramacionPendienteAuditoria')->name('admin.asociados.buscarprogramacionpendienteauditoria');
+Route::get('asociados/programacionpendienteita/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@verProgramacionPendienteITA')->name('admin.asociados.verprogramacionita');
+Route::get('asociados/buscarprogramacionpendienteita/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@buscarProgramacionPendienteITA')->name('admin.asociados.buscarprogramacionpendienteita');
+Route::get('asociados/programacionpendientecomun/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@verProgramacionPendienteComun')->name('admin.asociados.verprogramacioncomun');
+Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@buscarProgramacionPendienteComun')->name('admin.asociados.buscarprogramacionpendientecomun');
+
 //CREAR Y EDITAR BATERIA DE GOOD LIFE
     Route::get('asociados/verbateriaasociado/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@verbateriaasociado')->name('admin.asociados.verbateriaasociado');
     Route::get('asociados/editarbateriaasociado/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@editarbateriaasociado')->name('admin.asociados.editarbateriaasociado');
     Route::put('asociados/actualizarbateriaasociado/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@actualizarbateriaasociado')->name('admin.asociados.actualizarbateriaasociado');
     Route::get('asociados/crearbateriaasociado/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@crearbateriaasociado')->name('admin.asociados.crearbateriaasociado');
     Route::post('asociados/guardarbateriaasociado/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@guardarbateriaasociado')->name('admin.asociados.guardarbateriaasociado');
-//
 
-//CREAR Y EDITAR BATERIA DE BANCOS
-    Route::get('asociados/verbateriasbanco/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@verbateriasbanco')->name('admin.asociados.verbateriasbanco');
-    Route::get('asociados/crearbateriabanco/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@crearbateriabanco')->name('admin.asociados.crearbateriabanco');
-    Route::post('asociados/guardarbateriabanco/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@guardarbateriabanco')->name('admin.asociados.guardarbateriabanco');
-    Route::get('asociados/editarbateriabanco/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@editarbateriabanco')->name('admin.asociados.editarbateriabanco');
-    Route::put('asociados/actualizarbateriabanco/{areaaccion}', 'App\Http\Controllers\Admin\AsociadoController@actualizarbateriabanco')->name('admin.asociados.actualizarbateriabanco');
-    Route::get('/buscarbateriabanco', 'App\Http\Controllers\Admin\AsociadoController@buscarbateriabanco')->name('buscarbateriabanco');
+    Route::put('/areaacciones/{id}/cambiarEstado', [AreaaccionController::class, 'cambiarEstado'])->name('cambiarEstado');
 //
 
 //VER Y ADMINISTRAR REGISTROS 
@@ -149,17 +161,11 @@ Route::get('tramites/reclamoaps/{cliente}', 'App\Http\Controllers\Admin\Tramites
     Route::get('/buscarbateriasporfecha', 'App\Http\Controllers\Admin\AdministrarProgramacionController@buscarbateriasporfecha')->name('buscarbateriasporfecha');
     Route::get('/buscarprogramacionesporfecha', 'App\Http\Controllers\Admin\AdministrarProgramacionController@buscarprogramacionesporfecha')->name('buscarprogramacionesporfecha');
 //
-Route::get('/tramites/actualizarEstado/{id}/{clienteId}', [TramitesController::class, 'actualizarEstado'])->name('tramites.actualizarEstado');
-// web.php
-// web.php
-Route::post('/tramites/{id}/subir-archivo/{clienteId}', [TramitesController::class, 'subirArchivo'])->name('tramites.subirArchivo');
-Route::post('tramites/asignarapoderadotramiteclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@asignarapoderadotramiteclienteita')->name('admin.tramites.asignarapoderadotramiteclienteita');
 
-
-Route::post('tramites/guardartramitesclienteitaseguimiento/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardartramitesclienteitaseguimiento')->name('admin.tramites.guardartramitesclienteitaseguimiento');
-
-Route::get('instructivaspoder/crearinspoderinvalidez/{cliente}', 'App\Http\Controllers\Admin\InstructivaPoderController@crearinspoderinvalidez')->name('admin.instructivaspoder.crearinspoderinvalidez');
-Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\Controllers\Admin\InstructivaPoderController@generarpdfinspoderinvalidez')->name('admin.instructivaspoder.generarpdfinspoderinvalidez');
+//INSTRUCTIVAS DE PODER
+    Route::get('instructivaspoder/crearinspoderinvalidez/{cliente}', 'App\Http\Controllers\Admin\InstructivaPoderController@crearinspoderinvalidez')->name('admin.instructivaspoder.crearinspoderinvalidez');
+    Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\Controllers\Admin\InstructivaPoderController@generarpdfinspoderinvalidez')->name('admin.instructivaspoder.generarpdfinspoderinvalidez');
+//
 
 //CLIENTES ITA
     //CREAR Y EDITAR CLIENTE ITA
@@ -244,13 +250,19 @@ Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\
         Route::post('/generar-pdf-conocinfor', [AsociadoController::class, 'generarPDFconsentimientoinformado'])->name('generar.pdf.consentimientoinformado');
         Route::post('/aprobariniciarcrearbateria', [AsociadoController::class, 'aprobariniciarcrearbateria'])->name('aprobariniciarcrearbateria');
 
-        //CONTACTOS CLIENTES ITA
+    //CONTACTOS CLIENTES ITA
         Route::get('asociados/vercontactoclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@vercontactoclienteita')->name('admin.asociados.vercontactoclienteita');
         Route::get('asociados/crearcontactoclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@crearcontactoclienteita')->name('admin.asociados.crearcontactoclienteita');
         Route::post('asociados/guardarcontactoclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardarcontactoclienteita')->name('admin.asociados.guardarcontactoclienteita');
 
-        //PROVEEDOR INFORME FINAL
+    //PROVEEDOR INFORME FINAL
         Route::post('asociados/guardarproveedorinformefinal/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardarproveedorinformefinal')->name('admin.asociados.guardarproveedorinformefinal');
+    
+    //GENERAR PDF DEL CLIENTE ITA
+        Route::get('admin/asociados/generarpdfcliente/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@generarPDFCliente')->name('admin.asociados.generarpdfcliente');
+        Route::post('admin/asociados/generarpdfcliente/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@generarPDFCliente')->name('admin.asociados.generarpdfcliente');
+        Route::post('admin/asociados/eliminar-pdf', 'App\Http\Controllers\Admin\AsociadoController@eliminarPDF')->name('admin.asociados.eliminarpdf');
+
 
 //
 
@@ -270,10 +282,10 @@ Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\
     //APROBAR COTIZACION DE PROGRAMACION DE CLIENTE COMUN
         Route::get('asociados/aprobacioncotizacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@aprobacioncotizacionclientecomun')->name('admin.asociados.aprobacioncotizacionclientecomun');
         Route::get('/buscarbateriaclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@buscarbateriaclientecomun')->name('buscarbateriaclientecomun');
-        /* Route::post('asociados/guardaraprobacionprogramacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@guardaraprobacionprogramacionclientecomun')->name('admin.asociados.guardaraprobacionprogramacionclientecomun');
+        Route::post('asociados/guardaraprobacionprogramacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@guardaraprobacionprogramacionclientecomun')->name('admin.asociados.guardaraprobacionprogramacionclientecomun');
         Route::get('asociados/aprobarcotizacionprogramacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@aprobarcotizacionprogramacionclientecomun')->name('admin.asociados.aprobarcotizacionprogramacionclientecomun');
         Route::post('asociados/guardaraprobacioncotizacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@guardaraprobacioncotizacionclientecomun')->name('admin.asociados.guardaraprobacioncotizacionclientecomun');
-        Route::get('asociados/generarpdfcotizacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@generarpdfcotizacionclientecomun')->name('admin.asociados.generarpdfcotizacionclientecomun'); */
+        Route::get('asociados/generarpdfcotizacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@generarpdfcotizacionclientecomun')->name('admin.asociados.generarpdfcotizacionclientecomun');
     //CREAR PROGRAMACION Y REPROGRAMACION DE CLIENTE COMUN
         Route::get('asociados/crearprogramacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@crearprogramacionclientecomun')->name('admin.asociados.crearprogramacionclientecomun');
         Route::post('asociados/guardarprogramacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@guardarprogramacionclientecomun')->name('admin.asociados.guardarprogramacionclientecomun');
@@ -334,6 +346,9 @@ Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\
         Route::post('asociados/guardardocumentacionclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardardocumentacionclienteauditoria')->name('admin.asociados.guardardocumentacionclienteauditoria');
         Route::get('asociados/listadodocumentacionclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@listadodocumentacionclienteauditoria')->name('admin.asociados.listadodocumentacionclienteauditoria');
         Route::get('/buscardocumentoclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@buscardocumentoclienteauditoria')->name('buscardocumentoclienteauditoria');
+        Route::post('asociados/guardardocumentacionclienteauditoriadeproveedor/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardardocumentacionclienteauditoriadeproveedor')->name('admin.asociados.guardardocumentacionclienteauditoriadeproveedor');
+        Route::get('asociados/documentacionmultipleclienteauditoria/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@documentacionmultipleclienteauditoria')->name('admin.asociados.documentacionmultipleclienteauditoria');
+
     //CREAR FORMULARIO DE CLIENTE AUDITORIA
         Route::get('asociados/crearformularioclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@crearformularioclienteauditoria')->name('admin.asociados.crearformularioclienteauditoria');
         Route::post('asociados/guardarformularioclienteauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardarformularioclienteauditoria')->name('admin.asociados.guardarformularioclienteauditoria');
@@ -430,6 +445,15 @@ Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\
 
 //
 
+//CREAR Y EDITAR BATERIA DE BANCOS
+    Route::get('asociados/verbateriasbanco/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@verbateriasbanco')->name('admin.asociados.verbateriasbanco');
+    Route::get('asociados/crearbateriabanco/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@crearbateriabanco')->name('admin.asociados.crearbateriabanco');
+    Route::post('asociados/guardarbateriabanco/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@guardarbateriabanco')->name('admin.asociados.guardarbateriabanco');
+    Route::get('asociados/editarbateriabanco/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@editarbateriabanco')->name('admin.asociados.editarbateriabanco');
+    Route::put('asociados/actualizarbateriabanco/{areaaccion}', 'App\Http\Controllers\Admin\AsociadoController@actualizarbateriabanco')->name('admin.asociados.actualizarbateriabanco');
+    Route::get('/buscarbateriabanco', 'App\Http\Controllers\Admin\AsociadoController@buscarbateriabanco')->name('buscarbateriabanco');
+//
+
 //PROVEEDORES
     Route::get('proveedores/crearbateriaproveedor/{proveedor}', 'App\Http\Controllers\Admin\ProveedorController@crearbateriaproveedor')->name('admin.proveedores.crearbateriaproveedor');
     Route::post('proveedores/guardarbateriaproveedor/{proveedor}', 'App\Http\Controllers\Admin\ProveedorController@guardarbateriaproveedor')->name('admin.proveedores.guardarbateriaproveedor');
@@ -456,11 +480,10 @@ Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\
 //
 
 //REPORTES
-Route::post('reportes/generarreportes', 'App\Http\Controllers\Admin\ReporteController@generarreportes')->name('admin.reportes.generarreportes');
-Route::get('/generar-pdf', 'App\Http\Controllers\Admin\ReporteController@generarPDF')->name('generar.pdf');
-Route::get('/generar-excel', 'App\Http\Controllers\Admin\ReporteController@generarExcel')->name('generar.excel');
+    Route::post('reportes/generarreportes', 'App\Http\Controllers\Admin\ReporteController@generarreportes')->name('admin.reportes.generarreportes');
+    Route::get('/generar-pdf', 'App\Http\Controllers\Admin\ReporteController@generarPDF')->name('generar.pdf');
+    Route::get('/generar-excel', 'App\Http\Controllers\Admin\ReporteController@generarExcel')->name('generar.excel');
 //
-Route::put('/areaacciones/{id}/cambiarEstado', [AreaaccionController::class, 'cambiarEstado'])->name('cambiarEstado');
 
 
 Route::get('/print', [ClienteController::class, 'print'])->name('admin.clientes.print');

@@ -126,6 +126,67 @@
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="form-group">
+                            {!! Form::label('proveedor', 'Proveedor:') !!}
+                            {!! Form::select('proveedor', $proveedores, null, [
+                                'class' => 'form-control',
+                                'placeholder' => '',
+                                'onchange' => 'setProveedor()',
+                            ]) !!}
+                            @error('proveedor')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{ $message }}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    {!! Form::hidden('proveedorid', null, [
+                        'id' => 'proveedorid',
+                        'class' => 'form-control',
+                        'placeholder' => '',
+                        'maxlength' => '45',
+                    ]) !!}
+
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            {!! Form::label('asociado', 'Tipo de cliente:') !!}
+                            {!! Form::select('asociado', $tipocliente, null, [
+                                'class' => 'form-control',
+                                'placeholder' => '',
+                                'onchange' => 'setAsociado()',
+                            ]) !!}
+                            @error('asociado')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{ $message }}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    {!! Form::hidden('asociadoid', null, [
+                        'id' => 'asociadoid',
+                        'class' => 'form-control',
+                        'placeholder' => '',
+                        'maxlength' => '45',
+                    ]) !!}
+
+                    
+                </div>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            {!! Form::label('servicio', 'Servicio:') !!}
+                            {!! Form::select('servicio', $servicio, null, [
+                                'class' => 'form-control',
+                                'placeholder' => '',
+                            ]) !!}
+                            @error('servicio')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{ $message }}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
                             {!! Form::label('sucursal', 'Sucursal:') !!}
                             {!! Form::select('sucursal', $sucursal, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90']) !!}
                             @error('sucursal')
@@ -135,7 +196,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-6">
+                    {{-- <div class="col-lg-6">
                         <div class="form-group">
                             {!! Form::label('asociado', 'Tipo de cliente:') !!}
                             {!! Form::select('asociado', $tipocliente, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45', 'onchange' => 'setAsociado()']) !!}
@@ -145,7 +206,7 @@
                                 </small>
                             @enderror
                         </div>
-                    </div>
+                    </div> --}}
                     {!! Form::hidden('asociadoid', null, ['id' => 'asociadoid', 'class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
                 </div>
                 <div class="row">
@@ -208,6 +269,23 @@
             asociadoid.value = '';
         }
     }
+    function setProveedor() {
+            var proveedor = document.getElementById('proveedor').value;
+            var proveedorid = document.getElementById('proveedorid');
+            proveedorid.value = proveedor;
+        }
+
+        function setAsociado() {
+            var asociado = document.getElementById('asociado').value;
+            var asociadoid = document.getElementById('asociadoid');
+            if (asociado === 'CLIENTES ITA') {
+                asociadoid.value = 6;
+            } else if (asociado === 'CLIENTES COMUNES') {
+                asociadoid.value = 3;
+            } else {
+                asociadoid.value = '';
+            }
+        }
 
     document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keypress', function(event) {

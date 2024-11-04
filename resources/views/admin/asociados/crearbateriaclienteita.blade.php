@@ -1,7 +1,9 @@
 @extends('adminlte::page')
  
 @section('content_header')
+@if($rolusuario !== 'PROVEEDOR')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
+@endif
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">BATERIA DEL CLIENTE</a>
 <h5>CREAR BATERIA DE:</h5> 
 <h3>{{$cliente->nombrecompleto}}</h3>
@@ -20,7 +22,7 @@
 @endif 
 <div class="card">
     <div class="card-body">
-        {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST']) !!}
+        {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST', 'id' => 'form-crear-bateria']) !!}
         <div class="row">
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
@@ -198,16 +200,16 @@
                             });
                         </script>
 
-<style>
-    .compact-table th, .compact-table td {
-        padding: 4px 8px; /* Reduce el padding para compactar las celdas */
-        line-height: 1.2; /* Ajusta el interlineado de las celdas */
-    }
+                        <style>
+                            .compact-table th, .compact-table td {
+                                padding: 4px 8px; /* Reduce el padding para compactar las celdas */
+                                line-height: 1.2; /* Ajusta el interlineado de las celdas */
+                            }
 
-    .compact-table {
-        font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
-    }
-</style>
+                            .compact-table {
+                                font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
+                            }
+                        </style>
 
                     <div class="form-group">
                         <strong>Fecha de Batería:</strong>
@@ -307,32 +309,7 @@
                     </div>
                     <div id="reset_button_container" style="margin-bottom: 20px" class=""></div>
                 </div>
-                <div class="col-lg-8">
-                    {{-- @foreach($areas as $id => $nombreArea) 
-                        <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
-                            <div class="card" style="max-height: 500px; overflow-y: auto;">
-                                <div class="card-body">
-                                    @php $count = count($accionesPorArea[$id]); @endphp
-                                    @foreach($accionesPorArea[$id] as $accion)
-                                        <div class="form-check">
-                                            {!! Form::checkbox('acciones[]', $accion->id, null, ['class' => 'form-check-input', 'id' => 'accion_'.$accion->id]) !!}
-                                            {!! Form::label('accion_'.$accion->id, $accion->accion . ' - ID: ' . $accion->id . ' - Proveedor: ' . $accion->proveedor, ['class' => 'form-check-label']) !!}
-
-                                            @if(!auth()->user()->hasRole('PROVEEDOR'))
-                                                <span>- Precio: {{ $accion->precio }}</span>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                            @error('accionnombre')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    @endforeach --}}
-                              
+                <div class="col-lg-8">         
                     @foreach($areas as $id => $nombreArea)  
                         <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
                             <input type="text" id="search_{{ $id }}" placeholder="BUSCAR ESTUDIO" class="form-control" onkeyup="buscarAccion({{ $id }})"> <!-- Input de búsqueda -->
@@ -399,25 +376,78 @@
                             @endforeach
                         </div>
                     </div>
-<script>
-    
-    function buscarEspecialidad() {
-    var query = $('#search_especialidades').val().toLowerCase(); // Toma el valor del input y lo convierte a minúsculas
-    $('.especialidad-item').each(function() {  // Recorre todas las especialidades
-        var label = $(this).find('label').text().toLowerCase();
-        
-        if (label.includes(query)) {  // Si el texto de la especialidad incluye la búsqueda, mostrar
-            $(this).show();
-        } else {  // Si no incluye, ocultar
-            $(this).hide();
-        }
-    });
-}
-</script>                    
+                <script>
+                    
+                    function buscarEspecialidad() {
+                    var query = $('#search_especialidades').val().toLowerCase(); // Toma el valor del input y lo convierte a minúsculas
+                    $('.especialidad-item').each(function() {  // Recorre todas las especialidades
+                        var label = $(this).find('label').text().toLowerCase();
+                        
+                        if (label.includes(query)) {  // Si el texto de la especialidad incluye la búsqueda, mostrar
+                            $(this).show();
+                        } else {  // Si no incluye, ocultar
+                            $(this).hide();
+                        }
+                    });
+                }
+                </script>                    
                     
                 </div>
             </div>
-            {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-crear']) !!}
+            {{-- {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-crear']) !!} --}}
+            <button type="button" class="btn btn-crear" id="btn-crear-bateria">CREAR BATERIA</button>
+            {{-- <div id="loading-spinner" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; text-align: center;">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden"></span>
+                    </div>
+                    <span style="color: #ffffff; margin-top: 10px;">GUARDANDO...</span>
+                </div>
+            </div>
+            <style>
+                .spinner-border {
+                    width: 4rem;
+                    height: 4rem;
+                    border: 8px solid rgba(255, 255, 255, 0.3);
+                    border-left-color: #94c93b;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                #loading-spinner {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+            </style> --}}
+            {{-- <script> 
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('btn-crear-bateria').addEventListener('click', function() {
+                        const checkboxesAcciones = document.querySelectorAll('input[name="acciones[]"]:checked');
+                        const checkboxesEspecialidades = document.querySelectorAll('input[name="accionnombre[]"]:checked');
+                        if (checkboxesAcciones.length === 0 && checkboxesEspecialidades.length === 0) {
+                            alert('POR FAVOR SELECCIONE AL MENOS UNA ACCIÓN.');
+                        } else {
+                            document.getElementById('btn-crear-bateria').style.display = 'none';
+                           /*  document.getElementById('loading-spinner').style.display = 'block'; */
+                            document.getElementById('form-crear-bateria').submit();
+                        }
+                    });
+                });
+            </script> --}}
+            {{-- <script> 
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('btn-crear-bateria').addEventListener('click', function() {
+                        document.getElementById('btn-crear-bateria').style.display = 'none';
+                        document.getElementById('loading-spinner').style.display = 'block';
+                        document.getElementById('form-crear-bateria').submit();
+                    });
+                });
+            </script> --}}
+                
             {!! Form::close() !!}
         </div>
     </div>

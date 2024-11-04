@@ -2,7 +2,7 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.tramites.index') }}">REGRESAR</a>
-@if($tienetramiteinicio)
+@if($inicioocontinuidad)
 <a class="btn btn-sm float-right btn-seguimiento" data-toggle="modal" data-target="#modalseguimientoproceso">SEGUIMIENTO</a>
 <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalcartayreclamo">CARTA / RECLAMO</a>
 <a class="btn btn-sm float-right btn-adjuntosrespuestas" data-toggle="modal" data-target="#modaladjuntosrespuestas">ADJUNTOS Y RESPUESTAS</a>
@@ -11,6 +11,11 @@
 @endif
 <h5>PROCEDIMIENTO DE INVALIDEZ DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
+@stop
+
+@section('css')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
+<link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
 @stop
 
 @section('content')
@@ -27,44 +32,76 @@
 
 <div class="card">
 
-    @if(!$tienetramiteinicio)
-    <div class="card-body">
-        <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
-                <form action="{{ route('admin.tramites.guardariniciotramiteclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
-                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
-                    {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
-                    {!! Form::hidden('apoderado', auth()->user()->name) !!}
-                    @csrf
-                    <h5 style="text-align: center; font-size: 25px; margin-bottom:30px; margin-top:20px;">ELIGE UNA OPCIÓN</h5>
-                    <div class="row">
-                        <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
-                            <button type="button" class="btn btn-custom" style="width: 80%;" data-toggle="modal" data-target="#modalIngresoTramite">
-                                <div class="d-flex flex-column align-items-center justify-content-center">
-                                    <i class="fas fa-pencil-alt fa-5x mb-2"></i>
-                                    <span class="h6 mb-0">INICIO DE TRAMITE</span>
-                                </div>
-                            </button>
+    @if(!$inicioocontinuidad)
+        <div class="card-body">
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
+                    <form id="formTramite" action="{{ route('admin.tramites.guardariniciotramiteclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
+                        {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                        {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                        {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                        {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
+                        {!! Form::hidden('apoderado', auth()->user()->name) !!}
+                        {!! Form::hidden('tramite', 'INVALIDEZ') !!}
+                        {!! Form::hidden('nivelprocedimiento', '', ['id' => 'nivelprocedimiento']) !!}
+                        @csrf
+                        <h5 style="text-align: center; font-size: 25px; margin-bottom:30px; margin-top:20px;">ELIGE UNA OPCIÓN</h5>
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
+                                <button type="button" class="btn btn-custom" style="width: 80%;" onclick="confirmarTramite('INICIO DE TRAMITE')">
+                                    <div class="d-flex flex-column align-items-center justify-content-center">
+                                        <i class="fas fa-pencil-alt fa-5x mb-2"></i>
+                                        <span class="h6 mb-0">INICIO DE TRAMITE</span>
+                                    </div>
+                                </button>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
+                                <button type="button" class="btn btn-custom" style="width: 80%;" onclick="confirmarTramite('CONTINUIDAD DE TRAMITE')">
+                                    <div class="d-flex flex-column align-items-center justify-content-center">
+                                        <i class="fas fa-sync-alt fa-5x mb-2"></i>
+                                        <span class="h6 mb-0">CONTINUIDAD DE TRAMITE</span>
+                                    </div>
+                                </button>
+                            </div>
                         </div>
-                        <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
-                            <button type="button" class="btn btn-custom" style="width: 80%;" data-toggle="modal" data-target="#modalNotificacionPoder">
-                                <div class="d-flex flex-column align-items-center justify-content-center">
-                                    <i class="fas fa-sync-alt fa-5x mb-2"></i>
-                                    <span class="h6 mb-0">CONTINUIDAD DE TRAMITE</span>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-                    
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
     @endif
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmarTramite(nivel) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: `¿DESEAS REGISTRAR ${nivel}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#94c93b',
+                cancelButtonColor: '#faa625',
+                confirmButtonText: 'Sí, continuar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('nivelprocedimiento').value = nivel;
+                    document.getElementById('formTramite').submit();
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            @if(session('success'))
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: "{{ session('success') }}",
+                    icon: 'success',
+                    confirmButtonColor: '#94c93b',
+                    confirmButtonText: 'ACEPTAR'
+                });
+            @endif
+        });
+    </script>
     
-    @if($tienetramiteinicio)
+    @if($inicioocontinuidad)
     {{-- NIVELES DE PROCEDIMIENTO --}}
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" id="myTabs">
@@ -83,8 +120,18 @@
                         });
                 })
                 ->first();
+
+                $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE PODER')
+                ->where('tramite', 'INVALIDEZ')
+                ->where(function ($query) {
+                    $query->whereNotNull('capturacomunicacion')
+                        ->where(function ($subQuery) {
+                            $subQuery->where('capturacomunicacion', 'like', '%.jpg');
+                        });
+                })
+                ->first();
             @endphp
-            @if (!$documento5)
+            @if (!$documento5 && !$documento3)
             <li class="nav-item">
                 <a class="nav-link disabled" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="false">PROCESO EN CURSO</a>
             </li>
@@ -107,98 +154,126 @@
         <div class="tab-content" id="myTabContent">
             {{-- 1.- INICIO DE TRÁMITE --}}
             <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
-                <div class="row">
-                    <div class="col-12 col-md-4 mb-3">
-                        <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalIngresoTramite">
-                            <div class="d-flex flex-column align-items-center justify-content-center">
-                                <i class="fas fa-folder-plus fa-5x mb-2"></i>
-                                <span class="h6 mb-0 btn-block text-center">INGRESO DE TRÁMITE</span>
-                            </div>
-                        </button>
-                        <br>
-                        @php
-                            $documento1 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
-                            $documento2 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'INCLUSIÓN DE PODER')->first();
-                        @endphp
-                        <div class="text-center">
-                            @if (!$documento1 || !$documento2)
-                                <span class="mb-0 checkamarillo">
-                                    <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
-                                </span>
-                            @else
-                                <span class="mb-0 checkverde">
-                                    <i class="fas fa-check-circle"></i> COMPLETO
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-                    @php
-                        $documento1 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'RECEPCION DE TRÁMITE')->first();
-                        $documento2 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'INCLUSION DE PODER')->first();
-                    @endphp
-                    <div class="col-12 col-md-4 mb-3">
-                        <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalNotificacionPoder" @if (!$documento1 || !$documento2) disabled @endif>
-                            <div class="d-flex flex-column align-items-center justify-content-center">
-                                <i class="fas fa-envelope-open-text fa-5x mb-2"></i>
-                                <span class="h6 mb-0">NOTIFICACIÓN DEL PODER</span>
-                            </div>
-                        </button>
-                        <br>
-                        @php
-                            $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
-                        @endphp
-                        <div class="text-center">
-                            @if (!$documento3)
-                                <span class="mb-0 checkamarillo">
-                                    <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
-                                </span>
-                            @else
-                                <span class="mb-0 checkverde">
-                                    <i class="fas fa-check-circle"></i> COMPLETO
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-                    @php
-                        $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
-                    @endphp
-                    <div class="col-12 col-md-4 mb-3">
-                        <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalFirmaEAP" @if (!$documento3) disabled @endif>
-                            <div class="d-flex flex-column align-items-center justify-content-center">
-                                <i class="fas fa-signature fa-5x mb-2"></i>
-                                <span class="h6 mb-0">FIRMA EAP</span>
-                                @php
-                                    $documento5 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
-                                @endphp
-                                @if (!$documento5)
-                                    @if ($documento3)
-                                        @php
-                                            $fechaSubidaEAP = \Carbon\Carbon::parse($documento3->fechasubida);
-                                            $diasRestantesEAP = max(0, 10 - $fechaSubidaEAP->diffInDays(\Carbon\Carbon::now()));
-                                            $mensajeDias = $diasRestantesEAP == 1 ? '1 DIA RESTANTE' : "$diasRestantesEAP DIAS RESTANTES";
-                                        @endphp
-                                        <span class="badge badge-orange mt-2">{{ $mensajeDias }}</span>
-                                    @endif
+                @if($tramiteinicio)
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalIngresoTramite">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-folder-plus fa-5x mb-2"></i>
+                                    <span class="h6 mb-0 btn-block text-center">INGRESO DE TRÁMITE</span>
+                                </div>
+                            </button>
+                            <br>
+                            @php
+                                $documento1 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
+                                $documento2 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'INCLUSIÓN DE PODER')->first();
+                            @endphp
+                            <div class="text-center"> 
+                                @if (!$documento1 && !$documento2)
+                                    <span class="mb-0 checkamarillo">
+                                        <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
+                                    </span>
+                                @elseif ($documento1 || $documento2)
+                                    <span class="mb-0 checkverde">
+                                        <i class="fas fa-check-circle"></i> COMPLETO
+                                    </span>
                                 @endif
                             </div>
-                        </button>
-                        <br>
+                        </div>
+
                         @php
-                            $documento5 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                            $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
                         @endphp
-                        <div class="text-center">
-                            @if (!$documento5)
-                                <span class="mb-0 checkamarillo">
-                                    <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
-                                </span>
-                            @else
-                                <span class="mb-0 checkverde">
-                                    <i class="fas fa-check-circle"></i> COMPLETO
-                                </span>
-                            @endif
+                        <div class="col-12 col-md-6 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalFirmaEAP" @if (!$documento3) disabled @endif>
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-signature fa-5x mb-2"></i>
+                                    <span class="h6 mb-0">FIRMA EAP</span>
+                                    @php
+                                        $documento5 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                                    @endphp
+                                    @if (!$documento5)
+                                        @if ($documento3)
+                                            @php
+                                                $fechaSubidaEAP = \Carbon\Carbon::parse($documento3->fechasubida);
+                                                $diasRestantesEAP = max(0, 10 - $fechaSubidaEAP->diffInDays(\Carbon\Carbon::now()));
+                                                $mensajeDias = $diasRestantesEAP == 1 ? '1 DIA RESTANTE' : "$diasRestantesEAP DIAS RESTANTES";
+                                            @endphp
+                                            <span class="badge badge-orange mt-2">{{ $mensajeDias }}</span>
+                                        @endif
+                                    @endif
+                                </div>
+                            </button>
+                            <br>
+                            @php
+                                $documento5 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                            @endphp
+                            <div class="text-center">
+                                @if (!$documento5)
+                                    <span class="mb-0 checkamarillo">
+                                        <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
+                                    </span>
+                                @else
+                                    <span class="mb-0 checkverde">
+                                        <i class="fas fa-check-circle"></i> COMPLETO
+                                    </span>
+                                @endif
+                            </div>
                         </div>
                     </div>
-                </div>
+                @endif
+
+                @if($tramitecontinuidad)
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalIngresoTramite">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-folder-plus fa-5x mb-2"></i>
+                                    <span class="h6 mb-0 btn-block text-center">INGRESO DE TRÁMITE</span>
+                                </div>
+                            </button>
+                            <br>
+                            @php
+                                $documento1 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
+                                $documento2 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'INCLUSIÓN DE PODER')->first();
+                            @endphp
+                            <div class="text-center"> 
+                                @if (!$documento1 && !$documento2)
+                                    <span class="mb-0 checkamarillo">
+                                        <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
+                                    </span>
+                                @elseif ($documento1 || $documento2)
+                                    <span class="mb-0 checkverde">
+                                        <i class="fas fa-check-circle"></i> COMPLETO
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalNotificacionPoder" @if (!$documento1 && !$documento2) disabled @endif>
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-envelope-open-text fa-5x mb-2"></i>
+                                    <span class="h6 mb-0">NOTIFICACIÓN DEL PODER</span>
+                                </div>
+                            </button>
+                            <br>
+                            @php
+                                $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
+                            @endphp
+                            <div class="text-center">
+                                @if (!$documento3)
+                                    <span class="mb-0 checkamarillo">
+                                        <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
+                                    </span>
+                                @else
+                                    <span class="mb-0 checkverde">
+                                        <i class="fas fa-check-circle"></i> COMPLETO
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
                 <!-- Modal Ingreso de Trámite -->
                 <div class="modal fade" id="modalIngresoTramite" tabindex="-1" role="dialog" aria-labelledby="modalIngresoTramiteLabel" aria-hidden="true">
@@ -231,69 +306,65 @@
                                                 <strong>DOCUMENTO</strong>
                                             </div>
                                         </div>
-                                        @php
-                                            $documento1 = $cliente->tramites()->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
-                                        @endphp
-                                        <div class="row mb-3 align-items-center {{ !$documento1 ? 'no-documento' : '' }}">
-                                            <div class="col-md-4 text-center">
-                                                <p class="mb-0">RECEPCIÓN DE TRÁMITE</p>
-                                                @if (!$documento1)
-                                                <input type="text" class="form-control" id="tramite1" name="tramite[]" value="INVALIDEZ" hidden>
-                                                <input type="text" class="form-control" id="nivelprocedimiento1" name="nivelprocedimiento[]" value="INGRESO DE TRÁMITE" hidden>
-                                                <input type="text" class="form-control" id="subprocedimiento1" name="subprocedimiento[]" value="RECEPCIÓN DE TRÁMITE" hidden>
-                                                @endif
+                                        @if($tramiteinicio)
+                                            <div class="row mb-3 align-items-center {{ !$documento1 ? 'no-documento' : '' }}">
+                                                <div class="col-md-4 text-center">
+                                                    <p class="mb-0">RECEPCIÓN DE TRÁMITE</p>
+                                                    @if (!$documento1)
+                                                    <input type="text" class="form-control" id="tramite1" name="tramite[]" value="INVALIDEZ" hidden>
+                                                    <input type="text" class="form-control" id="nivelprocedimiento1" name="nivelprocedimiento[]" value="INGRESO DE TRÁMITE" hidden>
+                                                    <input type="text" class="form-control" id="subprocedimiento1" name="subprocedimiento[]" value="RECEPCIÓN DE TRÁMITE" hidden>
+                                                    @endif
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    @php
+                                                        $documento1 = $cliente->tramites()->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->where('tramite', 'INVALIDEZ')->first();
+                                                    @endphp
+                                                    @if ($documento1)
+                                                        <p class="mb-0">{{ $documento1->fechasubida }}</p>
+                                                    @else
+                                                    <input type="date" class="form-control" id="fechasubida1" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                    @endif
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    @if ($documento1)
+                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento1->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                    @else
+                                                    <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block" accept="application/pdf">
+                                                    @endif
+                                                </div>
                                             </div>
-                                            <div class="col-md-4 text-center">
-                                                @php
-                                                    $documento1 = $cliente->tramites()->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
-                                                @endphp
-                                                @if ($documento1)
-                                                    <p class="mb-0">{{ $documento1->fechasubida }}</p>
-                                                @else
-                                                <input type="date" class="form-control" id="fechasubida1" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
-                                                @endif
-                                            </div>
-                                            <div class="col-md-4 text-center">
-                                                @if ($documento1)
-                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento1->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
-                                                @else
-                                                <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block">
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="row mb-3 align-items-center {{ !$documento2 ? 'no-documento' : '' }}">
-                                            <div class="col-md-4 text-center">
-                                                <p class="mb-0">INCLUSIÓN DE PODER</p>
-                                                <input type="text" class="form-control" id="tramite2" name="tramite[]" value="INVALIDEZ" hidden>
-                                                <input type="text" class="form-control" id="nivelprocedimiento2" name="nivelprocedimiento[]" value="INGRESO DE TRÁMITE" hidden>
-                                                <input type="text" class="form-control" id="subprocedimiento2" name="subprocedimiento[]" value="INCLUSIÓN DE PODER" hidden>
-                                            </div>
-                                            <div class="col-md-4 text-center">
-                                                @php
-                                                    $documento2 = $cliente->tramites()->where('subprocedimiento', 'INCLUSIÓN DE PODER')->first();
-                                                @endphp
-                                                @if ($documento2)
-                                                    <p class="mb-0">{{ $documento2->fechasubida }}</p>
-                                                @else
-                                                <input type="date" class="form-control" id="fechasubida2" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
-                                                @endif
-                                            </div>
-                                            <div class="col-md-4 text-center">
-                                                @if ($documento2)
-                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento2->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
-                                                @else
+                                        @endif
+                                        @if($tramitecontinuidad)
+                                            <div class="row mb-3 align-items-center {{ !$documento2 ? 'no-documento' : '' }}">
+                                                <div class="col-md-4 text-center">
+                                                    <p class="mb-0">INCLUSIÓN DE PODER</p>
+                                                    <input type="text" class="form-control" id="tramite2" name="tramite[]" value="INVALIDEZ" hidden>
+                                                    <input type="text" class="form-control" id="nivelprocedimiento2" name="nivelprocedimiento[]" value="INGRESO DE TRÁMITE" hidden>
+                                                    <input type="text" class="form-control" id="subprocedimiento2" name="subprocedimiento[]" value="INCLUSIÓN DE PODER" hidden>
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    @php
+                                                        $documento2 = $cliente->tramites()->where('subprocedimiento', 'INCLUSIÓN DE PODER')->where('tramite', 'INVALIDEZ')->first();
+                                                    @endphp
+                                                    @if ($documento2)
+                                                        <p class="mb-0">{{ $documento2->fechasubida }}</p>
+                                                    @else
+                                                    <input type="date" class="form-control" id="fechasubida2" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                    @endif
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    @if ($documento2)
+                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento2->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                    @else
 
-                                                <input type="file" name="archivo[]" id="archivo2" class="dropify mx-auto d-block">
-                                                @endif
+                                                    <input type="file" name="archivo[]" id="archivo2" class="dropify mx-auto d-block" accept="application/pdf">
+                                                    @endif
+                                                </div>
                                             </div>
-                                        </div>
+                                        @endif
                                     </div>
-
-                                    @php
-                                        $documento1 = $cliente->tramites()->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
-                                        $documento2 = $cliente->tramites()->where('subprocedimiento', 'INCLUSIÓN DE PODER')->first();
-                                    @endphp
-                                    @if (!$documento1 || !$documento2)
+                                    @if (!$documento1 && !$documento2)
                                         <button type="submit" class="btn btn-subirarchivos d-block mx-auto mt-3" style="width: 200px;">SUBIR ARCHIVOS</button>
                                     @endif
                                 </form>
@@ -333,7 +404,7 @@
                                         </div>
 
                                         @php
-                                        $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
+                                        $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('tramite', 'INVALIDEZ')->first();
                                         @endphp
                                         <div class="row mb-3 align-items-center {{ !$documento3 ? 'no-documento' : '' }}">
                                             <div class="col-md-4 text-center">
@@ -353,14 +424,14 @@
                                                 @if ($documento3)
                                                     <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento3->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
                                                 @else
-                                                    <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block">
+                                                    <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block" accept="application/pdf">
                                                 @endif
                                             </div>
                                         </div>
 
                                         <!-- RECHAZO DE PODER -->
                                         @php
-                                        $documento4 = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE PODER')->first();
+                                        $documento4 = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE PODER')->where('tramite', 'INVALIDEZ')->first();
                                         @endphp
                                         @if (!$documento3 || $documento4 && (!$documento4 || $documento4))
                                         <div class="row mb-3 align-items-center {{ !$documento4 ? 'no-documento' : '' }}">
@@ -381,15 +452,15 @@
                                                 @if ($documento4)
                                                     <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento4->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
                                                 @else
-                                                    <input type="file" name="archivo[]" id="archivo2" class="dropify mx-auto d-block">
+                                                    <input type="file" name="archivo[]" id="archivo2" class="dropify mx-auto d-block" accept="application/pdf">
                                                 @endif
                                             </div>
                                         </div>
                                         @endif
                                     </div>
                                     @php
-                                        $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACION DE PODER')->first();
-                                        $documento4 = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE PODER')->first();
+                                        $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACION DE PODER')->where('tramite', 'INVALIDEZ')->first();
+                                        $documento4 = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE PODER')->where('tramite', 'INVALIDEZ')->first();
                                     @endphp
                                     @if (!$documento3)
                                         <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">SUBIR ARCHIVOS</button>
@@ -431,7 +502,7 @@
                                             </div>
                                         </div><br>
                                         @php
-                                            $documento5 = $cliente->tramites()->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                                            $documento5 = $cliente->tramites()->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->where('tramite', 'INVALIDEZ')->first();
                                         @endphp
                                         <div class="row mb-3 align-items-center {{ !$documento5 ? 'no-documento' : '' }}">
                                             <div class="col-md-4 text-center">
@@ -442,7 +513,7 @@
                                             </div>
                                             <div class="col-md-4 text-center">
                                                 @php
-                                                    $documento5 = $cliente->tramites()->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                                                    $documento5 = $cliente->tramites()->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->where('tramite', 'INVALIDEZ')->first();
                                                 @endphp
                                                 @if ($documento5)
                                                     <p class="mb-0">{{ $documento5->fechasubida }}</p>
@@ -460,7 +531,7 @@
                                         </div>
                                     </div>
                                     @php
-                                        $documento5 = $cliente->tramites()->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                                        $documento5 = $cliente->tramites()->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->where('tramite', 'INVALIDEZ')->first();
                                     @endphp
                                     @if (!$documento5)
                                         <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">SUBIR ARCHIVOS</button>
@@ -488,10 +559,10 @@
                         <br>
                         @php
                             $documentos = [
-                                $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->first(),
-                                $documento25 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->first(),
-                                $documento27 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->first(),
-                                $documento29 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->first(),
+                                $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first(),
+                                $documento25 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first(),
+                                $documento27 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first(),
+                                $documento29 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first(),
                             ];
                             function getParteAntesDelGuion($subprocedimiento) {
                                 return explode(' _', $subprocedimiento)[0] ?? $subprocedimiento;
@@ -518,22 +589,22 @@
                         </div>
 
                         @php
-                            $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->first();
-                            $documento99 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->first();
-                            $documento22 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->first();
-                            $documento23 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->first();
-                            $documento24 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RESPUESTA TÉCNICO MÉDICO')->first();
+                            $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                            $documento99 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
+                            $documento22 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->where('tramite', 'INVALIDEZ')->first();
+                            $documento23 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->where('tramite', 'INVALIDEZ')->first();
+                            $documento24 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RESPUESTA TÉCNICO MÉDICO')->where('tramite', 'INVALIDEZ')->first();
 
-                            $documento25 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->first();
-                            $documento26 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->first();
+                            $documento25 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                            $documento26 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->where('tramite', 'INVALIDEZ')->first();
                         
-                            $documento27 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->first();
-                            $documento28 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->first();
+                            $documento27 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                            $documento28 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->where('tramite', 'INVALIDEZ')->first();
                         
-                            $documento29 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->first();
-                            $documento30 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ SOLICITUD DE INFORME AL EMPLEADOR')->first();
-                            $documento31 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->first();
-                            $documento32 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ REMISIÓN DE RESPUESTA')->first();
+                            $documento29 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                            $documento30 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ SOLICITUD DE INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
+                            $documento31 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
+                            $documento32 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ REMISIÓN DE RESPUESTA')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                             <a class="dropdown-item @if($documento21 || $documento99 || $documento22 || $documento23 || $documento24) text-success @endif" href="#" data-toggle="modal" data-target="#modalEnteGestorSalud">ENTE GESTOR DE SALUD</a>
@@ -555,9 +626,9 @@
 
                     <br>
                         @php
-                            $documento10 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->first();
-                            $documento103 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AGENDAMIENTO')->first();
-                            $documento104 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'ORDENES DE COMPRA DE SERVICIOS')->first();
+                            $documento10 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                            $documento103 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AGENDAMIENTO')->where('tramite', 'INVALIDEZ')->first();
+                            $documento104 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'ORDENES DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
                         <div class="text-center">
                             @if (!$documento10 || !$documento103 || !$documento104)
@@ -607,7 +678,7 @@
                                                 </div>
                                             </div>
                                             @php
-                                                $documento10 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->first();
+                                                $documento10 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             <div class="row mb-3 align-items-center {{ !$documento10 ? 'no-documento' : '' }}">
                                                 <div class="col-md-3 text-center">
@@ -620,7 +691,7 @@
                                                 </div>
                                                 <div class="col-md-2 text-center">
                                                     @php
-                                                        $documento10 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->first();
+                                                        $documento10 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
                                                     @endphp
                                                     @if ($documento10)
                                                         <p class="mb-0">{{ $documento10->fechasubida }}</p>
@@ -776,7 +847,7 @@
                                             </div>
 
                                             @php
-                                                $documento101 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AVISO DE VIAJE DEL ASEGURADO')->first();
+                                                $documento101 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AVISO DE VIAJE DEL ASEGURADO')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             <div id="notificacion1" class="row mb-3 d-none align-items-center {{ !$documento101 ? 'no-documento' : '' }}">
                                                 <div class="col-md-4 text-center">
@@ -789,7 +860,7 @@
                                                 </div>
                                                 <div class="col-md-4 text-center">
                                                     @php
-                                                        $documento101 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AVISO DE VIAJE DEL ASEGURADO')->first();
+                                                        $documento101 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AVISO DE VIAJE DEL ASEGURADO')->where('tramite', 'INVALIDEZ')->first();
                                                     @endphp
                                                     @if ($documento101)
                                                         <p class="mb-0">{{ $documento101->fechasubida }}</p>
@@ -807,7 +878,7 @@
                                             </div>
 
                                             @php
-                                                $documento102 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AVISO DE VIAJE DEL ASEGURADO')->first();
+                                                $documento102 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AVISO DE VIAJE DEL ASEGURADO')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             <div id="notificacion2" class="row mb-3 d-none align-items-center {{ !$documento102 ? 'no-documento' : '' }}">
                                                 <div class="col-md-4 text-center">
@@ -820,7 +891,7 @@
                                                 </div>
                                                 <div class="col-md-4 text-center">
                                                     @php
-                                                        $documento102 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'ORDEN DE TRASLADO')->first();
+                                                        $documento102 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'ORDEN DE TRASLADO')->where('tramite', 'INVALIDEZ')->first();
                                                     @endphp
                                                     @if ($documento102)
                                                         <p class="mb-0">{{ $documento102->fechasubida }}</p>
@@ -838,7 +909,7 @@
                                             </div>
 
                                             @php
-                                                $documento10 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->where('viaja', 'SI')->first();
+                                                $documento10 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->where('viaja', 'SI')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento10)
                                             <div class="row mb-3 align-items-center {{ !$documento101 ? 'no-documento' : '' }}">
@@ -852,7 +923,7 @@
                                                 </div>
                                                 <div class="col-md-4 text-center">
                                                     @php
-                                                        $documento101 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AVISO DE VIAJE DEL ASEGURADO')->first();
+                                                        $documento101 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AVISO DE VIAJE DEL ASEGURADO')->where('tramite', 'INVALIDEZ')->first();
                                                     @endphp
                                                     @if ($documento101)
                                                         <p class="mb-0">{{ $documento101->fechasubida }}</p>
@@ -870,7 +941,7 @@
                                             </div>
                                             @endif
                                             @php
-                                                $documento10 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->where('viaja', 'SI')->first();
+                                                $documento10 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->where('viaja', 'SI')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento10)
                                             <div class="row mb-3 align-items-center {{ !$documento102 ? 'no-documento' : '' }}">
@@ -884,7 +955,7 @@
                                                 </div>
                                                 <div class="col-md-4 text-center">
                                                     @php
-                                                        $documento102 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'ORDEN DE TRASLADO')->first();
+                                                        $documento102 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'ORDEN DE TRASLADO')->where('tramite', 'INVALIDEZ')->first();
                                                     @endphp
                                                     @if ($documento102)
                                                         <p class="mb-0">{{ $documento102->fechasubida }}</p>
@@ -903,7 +974,7 @@
                                             @endif
 
                                             @php
-                                                $documento103 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AGENDAMIENTO')->first();
+                                                $documento103 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AGENDAMIENTO')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             <div class="row mb-3 align-items-center {{ !$documento103 ? 'no-documento' : '' }}">
                                                 <div class="col-md-4 text-center">
@@ -916,7 +987,7 @@
                                                 </div>
                                                 <div class="col-md-4 text-center">
                                                     @php
-                                                        $documento103 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AGENDAMIENTO')->first();
+                                                        $documento103 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'AGENDAMIENTO')->where('tramite', 'INVALIDEZ')->first();
                                                     @endphp
                                                     @if ($documento103)
                                                         <p class="mb-0">{{ $documento103->fechasubida }}</p>
@@ -934,7 +1005,7 @@
                                             </div>
 
                                             @php
-                                                $documento104 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'ORDENES DE COMPRA DE SERVICIOS')->first();
+                                                $documento104 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'ORDENES DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             <div class="row mb-3 align-items-center {{ !$documento104 ? 'no-documento' : '' }}">
                                                 <div class="col-md-4 text-center">
@@ -947,7 +1018,7 @@
                                                 </div>
                                                 <div class="col-md-4 text-center">
                                                     @php
-                                                        $documento104 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'ORDENES DE COMPRA DE SERVICIOS')->first();
+                                                        $documento104 = $cliente->tramites()->where('nivelprocedimiento', 'COMPRA DE SERVICIOS')->where('subprocedimiento', 'ORDENES DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
                                                     @endphp
                                                     @if ($documento104)
                                                         <p class="mb-0">{{ $documento104->fechasubida }}</p>
@@ -965,10 +1036,10 @@
                                             </div>
                                         </div>
                                         @php
-                                            $documento10 = $cliente->tramites()->where('subprocedimiento', 'RECOJO DE NOTIFICACIÓN DE GESTORA')->first();
-                                            $documento11 = $cliente->tramites()->where('subprocedimiento', 'SOLICITUD DE CERTIFICADO DE OBITO LEGALIZADO')->first();
-                                            $documento12 = $cliente->tramites()->where('subprocedimiento', 'RESPUESTA A NOTA DE GESTORA')->first();
-                                            $documento13 = $cliente->tramites()->where('subprocedimiento', 'ADJUNTO DE DECLARACIÓN DE HEREDEROS')->first();
+                                            $documento10 = $cliente->tramites()->where('subprocedimiento', 'RECOJO DE NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                                            $documento11 = $cliente->tramites()->where('subprocedimiento', 'SOLICITUD DE CERTIFICADO DE OBITO LEGALIZADO')->where('tramite', 'INVALIDEZ')->first();
+                                            $documento12 = $cliente->tramites()->where('subprocedimiento', 'RESPUESTA A NOTA DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                                            $documento13 = $cliente->tramites()->where('subprocedimiento', 'ADJUNTO DE DECLARACIÓN DE HEREDEROS')->where('tramite', 'INVALIDEZ')->first();
                                         @endphp
                                         @if (!$documento10 || !$documento11 || !$documento12 || !$documento13)
                                             <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Subir Archivos</button> <!-- Añadido 'btn-block', 'mx-auto' y 'd-block' para centrar -->
@@ -992,10 +1063,10 @@
                         <br>
                         @php
                             $documentos = [
-                                $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->first(),
-                                $documento250 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->first(),
-                                $documento270 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->first(),
-                                $documento290 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->first(),
+                                $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first(),
+                                $documento250 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first(),
+                                $documento270 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first(),
+                                $documento290 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first(),
                             ];
                             function getParteAntesDelGuion2($subprocedimiento) {
                                 return explode(' _', $subprocedimiento)[0] ?? $subprocedimiento;
@@ -1021,22 +1092,22 @@
                             @endif
                         </div>
                         @php
-                            $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->first();
-                            $documento990 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->first();
-                            $documento220 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->first();
-                            $documento230 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->first();
-                            /* $documento240 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RESPUESTA COMPLEMENTARIA')->first(); */
+                            $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                            $documento990 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
+                            $documento220 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->where('tramite', 'INVALIDEZ')->first();
+                            $documento230 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->where('tramite', 'INVALIDEZ')->first();
+                            /* $documento240 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RESPUESTA COMPLEMENTARIA')->where('tramite', 'INVALIDEZ')->first(); */
 
-                            $documento250 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->first();
-                            $documento260 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->first();
+                            $documento250 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                            $documento260 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->where('tramite', 'INVALIDEZ')->first();
                         
-                            $documento270 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->first();
-                            $documento280 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->first();
+                            $documento270 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                            $documento280 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->where('tramite', 'INVALIDEZ')->first();
                         
-                            $documento290 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->first();
-                            $documento300 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ SOLICITUD DE INFORME AL EMPLEADOR')->first();
-                            $documento310 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->first();
-                            $documento320 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ REMISIÓN DE RESPUESTA')->first();
+                            $documento290 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                            $documento300 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ SOLICITUD DE INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
+                            $documento310 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
+                            $documento320 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ REMISIÓN DE RESPUESTA')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
                         <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                             <a class="dropdown-item @if($documento210 || $documento990 || $documento220 || $documento230/*  || $documento240 */) text-success @endif" href="#" data-toggle="modal" data-target="#modalEnteGestorSalud2">ENTE GESTOR DE SALUD</a>
@@ -1091,7 +1162,7 @@
                                         </div>
                                         <div class="col-md-2 text-center">
                                             @php
-                                                $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->first();
+                                                $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento21)
                                                 <p class="mb-0">{{ $documento21->fechasubida }}</p>
@@ -1120,8 +1191,8 @@
                                     </div>
 
                                     @php
-                                        $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('seguro', 'NO')->first();
-                                        $documento99 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->first();
+                                        $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('seguro', 'NO')->where('tramite', 'INVALIDEZ')->first();
+                                        $documento99 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
                                     @endphp
                                     @if ($documento21)
                                     <div class="row mb-3 align-items-center {{ !$documento99 ? 'no-documento' : '' }}">
@@ -1133,7 +1204,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento99 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->first();
+                                                $documento99 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento99)
                                                 <p class="mb-0">{{ $documento99->fechasubida }}</p>
@@ -1153,7 +1224,7 @@
 
                                     @php
                                        
-                                        $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('seguro', 'SI')->first();
+                                        $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('seguro', 'SI')->where('tramite', 'INVALIDEZ')->first();
                                     @endphp
                                     @if ($documento21)
                                     <div class="row mb-3 align-items-center {{ !$documento22 ? 'no-documento' : '' }}">
@@ -1165,7 +1236,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento22 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->first();
+                                                $documento22 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento22)
                                                 <p class="mb-0">{{ $documento22->fechasubida }}</p>
@@ -1190,7 +1261,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento23 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->first();
+                                                $documento23 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento23)
                                                 <p class="mb-0">{{ $documento23->fechasubida }}</p>
@@ -1215,7 +1286,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento24 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RESPUESTA TÉCNICO MÉDICO')->first();
+                                                $documento24 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RESPUESTA TÉCNICO MÉDICO')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento24)
                                                 <p class="mb-0">{{ $documento24->fechasubida }}</p>
@@ -1234,11 +1305,11 @@
                                     @endif
                                 </div>
                                 @php
-                                    $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->first();
-                                    $documento99 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->first();
-                                    $documento22 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->first();
-                                    $documento23 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->first();
-                                    $documento24 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RESPUESTA TÉCNICO MÉDICO')->first();
+                                    $documento21 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento99 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento22 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento23 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento24 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RESPUESTA TÉCNICO MÉDICO')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if (!$documento21 || !$documento22 || !$documento23 || !$documento24 || !$documento99)
                                     <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Subir Archivos</button>
@@ -1290,7 +1361,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento25 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->first();
+                                                $documento25 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento25)
                                                 <p class="mb-0">{{ $documento25->fechasubida }}</p>
@@ -1316,7 +1387,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento26 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->first();
+                                                $documento26 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento26)
                                                 <p class="mb-0">{{ $documento26->fechasubida }}</p>
@@ -1334,8 +1405,8 @@
                                     </div>
                                 </div>
                                 @php
-                                    $documento25 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->first();
-                                    $documento26 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->first();
+                                    $documento25 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento26 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if (!$documento25 || !$documento26)
                                     <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Subir Archivos</button>
@@ -1387,7 +1458,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento27 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->first();
+                                                $documento27 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento27)
                                                 <p class="mb-0">{{ $documento27->fechasubida }}</p>
@@ -1413,7 +1484,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento28 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->first();
+                                                $documento28 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento28)
                                                 <p class="mb-0">{{ $documento28->fechasubida }}</p>
@@ -1431,8 +1502,8 @@
                                     </div>
                                 </div>
                                 @php
-                                    $documento27 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->first();
-                                    $documento28 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->first();
+                                    $documento27 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento28 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if (!$documento27 || !$documento28)
                                     <button type="submit" class="btn btn-info d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Subir Archivos</button> <!-- Añadido 'btn-block', 'mx-auto' y 'd-block' para centrar -->
@@ -1484,7 +1555,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento29 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->first();
+                                                $documento29 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento29)
                                                 <p class="mb-0">{{ $documento29->fechasubida }}</p>
@@ -1512,7 +1583,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento30 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ SOLICITUD DE INFORME AL EMPLEADOR')->first();
+                                                $documento30 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ SOLICITUD DE INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento30)
                                                 <p class="mb-0">{{ $documento30->fechasubida }}</p>
@@ -1540,7 +1611,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento31 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->first();
+                                                $documento31 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento31)
                                                 <p class="mb-0">{{ $documento31->fechasubida }}</p>
@@ -1568,7 +1639,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento32 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ REMISIÓN DE RESPUESTA')->first();
+                                                $documento32 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'EMPLEADOR _ REMISIÓN DE RESPUESTA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento32)
                                                 <p class="mb-0">{{ $documento32->fechasubida }}</p>
@@ -1586,10 +1657,10 @@
                                     </div>
                                 </div>
                                 @php
-                                    $documento29 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->first();
-                                    $documento30 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'SOLICITUD DE INFORME AL EMPLEADOR')->first();
-                                    $documento31 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->first();
-                                    $documento32 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'REMISIÓN DE RESPUESTA')->first();
+                                    $documento29 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento30 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'SOLICITUD DE INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento31 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento32 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'REMISIÓN DE RESPUESTA')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if (!$documento29 || !$documento30 || !$documento31|| !$documento32)
                                     <button type="submit" class="btn btn-info d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Subir Archivos</button>
@@ -1669,7 +1740,7 @@
                                         </div>
                                         <div class="col-md-2 text-center">
                                             @php
-                                                $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->first();
+                                                $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento210)
                                                 <p class="mb-0">{{ $documento210->fechasubida }}</p>
@@ -1698,8 +1769,8 @@
                                     </div>
 
                                     @php
-                                        $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('seguro', 'NO')->first();
-                                        $documento990 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->first();
+                                        $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('seguro', 'NO')->where('tramite', 'INVALIDEZ')->first();
+                                        $documento990 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
                                     @endphp
                                     @if ($documento210)
                                     <div class="row mb-3 align-items-center {{ !$documento990 ? 'no-documento' : '' }}">
@@ -1711,7 +1782,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento990 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->first();
+                                                $documento990 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento990)
                                                 <p class="mb-0">{{ $documento990->fechasubida }}</p>
@@ -1731,7 +1802,7 @@
 
                                     @php
                                        
-                                        $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('seguro', 'SI')->first();
+                                        $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('seguro', 'SI')->where('tramite', 'INVALIDEZ')->first();
                                     @endphp
                                     @if ($documento210)
                                     <div class="row mb-3 align-items-center {{ !$documento220 ? 'no-documento' : '' }}">
@@ -1743,7 +1814,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento220 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->first();
+                                                $documento220 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento220)
                                                 <p class="mb-0">{{ $documento220->fechasubida }}</p>
@@ -1768,7 +1839,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento230 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->first();
+                                                $documento230 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento230)
                                                 <p class="mb-0">{{ $documento230->fechasubida }}</p>
@@ -1812,10 +1883,10 @@
                                     @endif 
                                 </div>
                                 @php
-                                    $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->first();
-                                    $documento990 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->first();
-                                    $documento220 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->first();
-                                    $documento230 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->first();
+                                    $documento210 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento990 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE COMPRA DE SERVICIOS')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento220 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN POR MEDICINA DEL TRABAJO EGS')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento230 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE HISTORIA CLÍNICA')->where('tramite', 'INVALIDEZ')->first();
                                     /* $documento24 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RESPUESTA COMPLEMENTARIA')->first(); */
                                 @endphp
                                 @if (!$documento210 || !$documento220 || !$documento230 || !$documento240 || !$documento990)
@@ -1868,7 +1939,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento250 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->first();
+                                                $documento250 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento250)
                                                 <p class="mb-0">{{ $documento250->fechasubida }}</p>
@@ -1894,7 +1965,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento260 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->first();
+                                                $documento260 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento260)
                                                 <p class="mb-0">{{ $documento260->fechasubida }}</p>
@@ -1912,8 +1983,8 @@
                                     </div>
                                 </div>
                                 @php
-                                    $documento250 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->first();
-                                    $documento260 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->first();
+                                    $documento250 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento260 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RESPUESTA A NOTIFICACIÓN TMC')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if (!$documento250 || !$documento260)
                                     <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Subir Archivos</button>
@@ -1965,7 +2036,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento270 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->first();
+                                                $documento270 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento270)
                                                 <p class="mb-0">{{ $documento270->fechasubida }}</p>
@@ -1991,7 +2062,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento280 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->first();
+                                                $documento280 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento280)
                                                 <p class="mb-0">{{ $documento280->fechasubida }}</p>
@@ -2009,8 +2080,8 @@
                                     </div>
                                 </div>
                                 @php
-                                    $documento270 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->first();
-                                    $documento280 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->first();
+                                    $documento270 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento280 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMR _ RESPUESTA A NOTIFICACIÓN TMR')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if (!$documento270 || !$documento280)
                                     <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Subir Archivos</button> <!-- Añadido 'btn-block', 'mx-auto' y 'd-block' para centrar -->
@@ -2062,7 +2133,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento290 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->first();
+                                                $documento290 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento290)
                                                 <p class="mb-0">{{ $documento290->fechasubida }}</p>
@@ -2090,7 +2161,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento300 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ SOLICITUD DE INFORME AL EMPLEADOR')->first();
+                                                $documento300 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ SOLICITUD DE INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento300)
                                                 <p class="mb-0">{{ $documento300->fechasubida }}</p>
@@ -2118,7 +2189,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento310 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->first();
+                                                $documento310 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento310)
                                                 <p class="mb-0">{{ $documento310->fechasubida }}</p>
@@ -2146,7 +2217,7 @@
                                         </div>
                                         <div class="col-md-4 text-center">
                                             @php
-                                                $documento320 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ REMISIÓN DE RESPUESTA')->first();
+                                                $documento320 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'EMPLEADOR _ REMISIÓN DE RESPUESTA')->where('tramite', 'INVALIDEZ')->first();
                                             @endphp
                                             @if ($documento320)
                                                 <p class="mb-0">{{ $documento320->fechasubida }}</p>
@@ -2164,10 +2235,10 @@
                                     </div>
                                 </div>
                                 @php
-                                    $documento290 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->first();
-                                    $documento300 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'SOLICITUD DE INFORME AL EMPLEADOR')->first();
-                                    $documento310 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->first();
-                                    $documento320 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'REMISIÓN DE RESPUESTA')->first();
+                                    $documento290 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN DE GESTORA')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento300 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'SOLICITUD DE INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento310 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'REITERACIÓN DE SOLICITUD DEL INFORME AL EMPLEADOR')->where('tramite', 'INVALIDEZ')->first();
+                                    $documento320 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'REMISIÓN DE RESPUESTA')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if (!$documento290 || !$documento300 || !$documento310|| !$documento320)
                                     <button type="submit" class="btn btn-info d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Subir Archivos</button>
@@ -2216,7 +2287,7 @@
                         </button>
                         <br>
                         @php
-                            $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->first();
+                            $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
 
                         <div class="text-center">
@@ -2242,8 +2313,8 @@
                         </div>
                     </div>
                     @php
-                        $documento43 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('estadodictamen', 'ACEPTADO')->first();
-                        $documentoRechazado = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('estadodictamen', 'RECHAZADO')->first();
+                        $documento43 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('estadodictamen', 'ACEPTADO')->where('tramite', 'INVALIDEZ')->first();
+                        $documentoRechazado = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('estadodictamen', 'RECHAZADO')->where('tramite', 'INVALIDEZ')->first();
                     @endphp
 
                     <div class="col-12 col-md-4 mb-3">
@@ -2263,11 +2334,11 @@
                             </button>
                             <br>
                             @php
-                                $documento43 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'ACEPTACIÓN DE DICTAMEN')->first();
-                                $documento44 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE FORMULARIO')->first();
-                                $documento45 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE CONTRATO')->first();
-                                $documento46 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'COBRO DE PENSIÓN')->first();
-                                $documento47 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->first();
+                                $documento43 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'ACEPTACIÓN DE DICTAMEN')->where('tramite', 'INVALIDEZ')->first();
+                                $documento44 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE FORMULARIO')->where('tramite', 'INVALIDEZ')->first();
+                                $documento45 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE CONTRATO')->where('tramite', 'INVALIDEZ')->first();
+                                $documento46 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'COBRO DE PENSIÓN')->where('tramite', 'INVALIDEZ')->first();
+                                $documento47 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->where('tramite', 'INVALIDEZ')->first();
                             @endphp
                             <div class="text-center">
                                 @if (!$documento43 || !$documento44 || !$documento45 || !$documento46 || !$documento47)
@@ -2291,8 +2362,8 @@
                     </div>
 
                     @php
-                        $documento43 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('estadodictamen', 'ACEPTADO')->first();
-                        $documentoRechazado = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('estadodictamen', 'RECHAZADO')->first();
+                        $documento43 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('estadodictamen', 'ACEPTADO')->where('tramite', 'INVALIDEZ')->first();
+                        $documentoRechazado = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('estadodictamen', 'RECHAZADO')->where('tramite', 'INVALIDEZ')->first();
                     @endphp
 
                     <div class="col-12 col-md-4 mb-3">
@@ -2312,7 +2383,7 @@
                             </button>
                             <br>
                             @php
-                                $documento48 = $cliente->tramites()->where('subprocedimiento', 'INICIO PROCESO DE APELACIÓN')->first();
+                                $documento48 = $cliente->tramites()->where('subprocedimiento', 'INICIO PROCESO DE APELACIÓN')->where('tramite', 'INVALIDEZ')->first();
                             @endphp
                             <div class="text-center">
                                 @if (!$documento48)
@@ -2989,7 +3060,7 @@
                             </div>
                             <div class="col-md-6">
                                 @php
-                                    $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->first();
+                                    $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento41)
                                     <p class="mb-0">{{ $documento41->fechasubida }}</p>
@@ -3005,7 +3076,7 @@
                             </div>
                             <div class="col-md-6">
                                 @php
-                                    $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->first();
+                                    $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento41)
                                     <p class="mb-3" style="margin-top: 10px;">{{ $documento41->porcentajeaceptorechazodictamen }}</p>
@@ -3098,7 +3169,7 @@
                         </div>
                         
                         @php
-                            $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->first();
+                            $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
 
                         @if ($documento41 && !in_array($documento41->estadodictamen, ['ACEPTADO', 'RECHAZADO']))
@@ -3106,7 +3177,7 @@
                         @endif
 
                         @php
-                            $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->first();
+                            $documento41 = $cliente->tramites()->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
                         @if (!$documento41)
                             <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Subir Archivos</button>
@@ -3166,7 +3237,7 @@
                             </div>
                         </div>
                         @php
-                            $documento43 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'ACEPTACIÓN DE DICTAMEN')->first();
+                            $documento43 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'ACEPTACIÓN DE DICTAMEN')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
                         <div class="row mb-3 align-items-center {{ !$documento43 ? 'no-documento' : '' }}" style="margin-top: -10px;">
                             <div class="col-md-3 text-center">
@@ -3179,7 +3250,7 @@
                             </div>
                             <div class="col-md-3 text-center">
                                 @php
-                                    $documento43 = $cliente->tramites()->where('subprocedimiento', 'ACEPTACIÓN DE DICTAMEN')->first();
+                                    $documento43 = $cliente->tramites()->where('subprocedimiento', 'ACEPTACIÓN DE DICTAMEN')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento43)
                                     <p class="mb-0">{{ $documento43->fechasubida }}</p>
@@ -3189,7 +3260,7 @@
                             </div>
                             <div class="col-md-3 text-center">
                                 @php
-                                    $documento43 = $cliente->tramites()->where('subprocedimiento', 'ACEPTACIÓN DE DICTAMEN')->first();
+                                    $documento43 = $cliente->tramites()->where('subprocedimiento', 'ACEPTACIÓN DE DICTAMEN')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento43)
                                     <p class="mb-0">{{ $documento43->fechagestoradictamen }}</p>
@@ -3221,7 +3292,7 @@
                             </div>
                         </div>
                         @php
-                            $documento44 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE FORMULARIO')->first();
+                            $documento44 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE FORMULARIO')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
                         <div class="row mb-3 align-items-center {{ !$documento44 ? 'no-documento' : '' }}" style="margin-top: -10px;">
                             <div class="col-md-3 text-center">
@@ -3234,7 +3305,7 @@
                             </div>
                             <div class="col-md-3 text-center">
                                 @php
-                                    $documento44 = $cliente->tramites()->where('subprocedimiento', 'FIRMA DE FORMULARIO')->first();
+                                    $documento44 = $cliente->tramites()->where('subprocedimiento', 'FIRMA DE FORMULARIO')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento44)
                                     <p class="mb-0">{{ $documento44->fechasubida }}</p>
@@ -3244,7 +3315,7 @@
                             </div>
                             <div class="col-md-3 text-center">
                                 @php
-                                    $documento44 = $cliente->tramites()->where('subprocedimiento', 'FIRMA DE FORMULARIO')->first();
+                                    $documento44 = $cliente->tramites()->where('subprocedimiento', 'FIRMA DE FORMULARIO')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento44)
                                     <p class="mb-0">{{ $documento44->fechasinestro }}</p>
@@ -3279,7 +3350,7 @@
                             </div>
                         </div>
                         @php
-                            $documento45 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE CONTRATO')->first();
+                            $documento45 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE CONTRATO')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
                         <div class="row mb-3 align-items-center {{ !$documento45 ? 'no-documento' : '' }}" style="margin-top: -10px;">
                             <div class="col-md-3 text-center">
@@ -3292,7 +3363,7 @@
                             </div>
                             <div class="col-md-2 text-center">
                                 @php
-                                    $documento45 = $cliente->tramites()->where('subprocedimiento', 'FIRMA DE CONTRATO')->first();
+                                    $documento45 = $cliente->tramites()->where('subprocedimiento', 'FIRMA DE CONTRATO')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento45)
                                     <p class="mb-0">{{ $documento45->fechasubida }}</p>
@@ -3302,7 +3373,7 @@
                             </div>
                             <div class="col-md-2 text-center">
                                 @php
-                                    $documento45 = $cliente->tramites()->where('subprocedimiento', 'FIRMA DE CONTRATO')->first();
+                                    $documento45 = $cliente->tramites()->where('subprocedimiento', 'FIRMA DE CONTRATO')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento45)
                                     <p class="mb-0">{{ $documento45->fechacobrocontrato }}</p>
@@ -3312,7 +3383,7 @@
                             </div>
                             <div class="col-md-2 text-center">
                                 @php
-                                    $documento45 = $cliente->tramites()->where('subprocedimiento', 'FIRMA DE CONTRATO')->first();
+                                    $documento45 = $cliente->tramites()->where('subprocedimiento', 'FIRMA DE CONTRATO')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento45)
                                     <p class="mb-0">{{ $documento45->montocontrato }}</p>
@@ -3341,7 +3412,7 @@
                             </div>
                         </div>
                         @php
-                            $documento46 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'COBRO DE PENSIÓN')->first();
+                            $documento46 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'COBRO DE PENSIÓN')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
                         <div class="row mb-3 align-items-center {{ !$documento46 ? 'no-documento' : '' }}" style="margin-top: -10px;">
                             <div class="col-md-3 text-center">
@@ -3354,7 +3425,7 @@
                             </div>
                             <div class="col-md-6 text-center">
                                 @php
-                                    $documento46 = $cliente->tramites()->where('subprocedimiento', 'COBRO DE PENSIÓN')->first();
+                                    $documento46 = $cliente->tramites()->where('subprocedimiento', 'COBRO DE PENSIÓN')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento46)
                                     <p class="mb-0">{{ $documento46->fechasubida }}</p>
@@ -3389,7 +3460,7 @@
                             </div>
                         </div>
                         @php
-                            $documento47 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->first();
+                            $documento47 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
                         <div class="row mb-3 align-items-center {{ !$documento47 ? 'no-documento' : '' }}" style="margin-top: -10px;">
                             <div class="col-md-3 text-center">
@@ -3402,7 +3473,7 @@
                             </div>
                             <div class="col-md-2 text-center">
                                 @php
-                                    $documento47 = $cliente->tramites()->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->first();
+                                    $documento47 = $cliente->tramites()->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento47)
                                     <p class="mb-0">{{ $documento47->fechasubida }}</p>
@@ -3412,7 +3483,7 @@
                             </div>
                             <div class="col-md-2 text-center">
                                 @php
-                                    $documento47 = $cliente->tramites()->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->first();
+                                    $documento47 = $cliente->tramites()->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento47)
                                     <p class="mb-0">{{ $documento47->motivorechazo }}</p>
@@ -3422,7 +3493,7 @@
                             </div>
                             <div class="col-md-2 text-center">
                                 @php
-                                    $documento47 = $cliente->tramites()->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->first();
+                                    $documento47 = $cliente->tramites()->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento47)
                                 <p class="text-center mb-3" style="margin-top: 10px;">{{ $documento47->porcentajeaceptorechazodictamen }}</p>
@@ -3450,11 +3521,11 @@
                         </div>
                     </div>
                     @php
-                        $documento43 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'ACEPTACIÓN DE DICTAMEN')->first();
-                        $documento44 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE FORMULARIO')->first();
-                        $documento45 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE CONTRATO')->first();
-                        $documento46 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'COBRO DE PENSIÓN')->first();
-                        $documento47 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->first();
+                        $documento43 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'ACEPTACIÓN DE DICTAMEN')->where('tramite', 'INVALIDEZ')->first();
+                        $documento44 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE FORMULARIO')->where('tramite', 'INVALIDEZ')->first();
+                        $documento45 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'FIRMA DE CONTRATO')->where('tramite', 'INVALIDEZ')->first();
+                        $documento46 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'COBRO DE PENSIÓN')->where('tramite', 'INVALIDEZ')->first();
+                        $documento47 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->where('tramite', 'INVALIDEZ')->first();
                     @endphp
                     @if (!$documento43 || !$documento44 || !$documento45 || !$documento46 || !$documento47)
                         <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Subir Archivos</button> <!-- Añadido 'btn-block', 'mx-auto' y 'd-block' para centrar -->
@@ -3497,7 +3568,7 @@
                             </div>
                         </div><br>
                         @php
-                            $documento48 = $cliente->tramites()->where('subprocedimiento', 'INICIO PROCESO DE APELACIÓN')->first();
+                            $documento48 = $cliente->tramites()->where('subprocedimiento', 'INICIO PROCESO DE APELACIÓN')->where('tramite', 'INVALIDEZ')->first();
                         @endphp
                         <div class="row mb-3 align-items-center {{ !$documento48 ? 'no-documento' : '' }}">
                             <div class="col-md-4 text-center">
@@ -3508,7 +3579,7 @@
                             </div>
                             <div class="col-md-4 text-center">
                                 @php
-                                    $documento48 = $cliente->tramites()->where('subprocedimiento', 'INICIO PROCESO DE APELACIÓN')->first();
+                                    $documento48 = $cliente->tramites()->where('subprocedimiento', 'INICIO PROCESO DE APELACIÓN')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 @if ($documento48)
                                     <p class="mb-0">{{ $documento48->fechasubida }}</p>
@@ -3526,7 +3597,7 @@
                         </div>
                     </div>
                     @php
-                        $documento48 = $cliente->tramites()->where('subprocedimiento', 'INICIO PROCESO DE APELACIÓN')->first();
+                        $documento48 = $cliente->tramites()->where('subprocedimiento', 'INICIO PROCESO DE APELACIÓN')->where('tramite', 'INVALIDEZ')->first();
                     @endphp
                     @if (!$documento48)
                         <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">Iniciar proceso de Apelación</button>
@@ -3659,7 +3730,7 @@
                                     </td>
                                     <td>
                                         @if ($procedimientotramite->estadocomunicado !== 'COMUNICADO')
-                                            <a href="{{ route('tramites.actualizarEstado', ['id' => $procedimientotramite->id, 'clienteId' => $cliente->id]) }}" class="btn btn-comunicar" target="_blank" style="width: 120px;">COMUNICAR</a>
+                                            <a href="{{ route('tramites.actualizarEstado', ['id' => $procedimientotramite->id, 'clienteId' => $cliente->id]) }}" class="btn btn-comunicar" target="_blank" style="width: 130px;">COMUNICAR</a>
                                         @else
                                             <button class="btn btn-whatsapp" style="width: 120px; background-color: #ccc; color: #666;" disabled>COMUNICADO</button>
                                         @endif
@@ -3782,7 +3853,3 @@
 </script>
 @endsection
 
-@section('css')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
-<link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
-@stop

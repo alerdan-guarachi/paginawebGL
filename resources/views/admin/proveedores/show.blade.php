@@ -36,10 +36,20 @@
                                                 <th>ID</th>
                                                 <td>{{$proveedor->id}}</td>
                                             </tr>
-                                            <tr>
+                                            <tr> 
                                                 <th>Dirección</th>
-                                                <td>{{$proveedor->direccion}}</td>
+                                                <td>
+                                                    {{$proveedor->direccion}}
+                                                    <!-- Verifica si existe un enlace en linkubicacion -->
+                                                    @if(!empty($proveedor->linkubicacion))
+                                                        <!-- Añade el ícono de ubicación como un enlace y con color naranja -->
+                                                        <a href="{{ $proveedor->linkubicacion }}" target="_blank" style="margin-left: 8px; color: orange;">
+                                                            <i class="fas fa-map-marker-alt"></i>
+                                                        </a>
+                                                    @endif
+                                                </td>
                                             </tr>
+                                            
                                             <tr>
                                                 <th>Celular</th>
                                                 <td>{{$proveedor->celular}}</td>

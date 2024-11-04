@@ -258,7 +258,7 @@
                                             AUD. MEDICA
                                             @if ($item['estadoGeneralauditoria'] !== 'NO REGISTRADO')
                                                 <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionauditoria{{ $loop->index }}">
+                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionauditoria{{ $loop->index }}">
                                                         <i class="fas fa-address-book"></i>
                                                     </button>
                                                 </abbr>

@@ -24,7 +24,8 @@ class Requisitosclientesauditoria extends Model
         'polizasegurodesgravamen' => '',
         'usuarioid' => '',
         'usuarionombre' => '',
-        'clienteitanombre' => '',
+        'clienteauditoriaid' => '',
+        'clienteauditorianombre' => '',
     ]; 
 
     protected $fillable = [
@@ -41,7 +42,8 @@ class Requisitosclientesauditoria extends Model
         'polizasegurodesgravamen',
         'usuarioid',
         'usuarionombre',
-        'clienteitanombre',
+        'clienteauditoriaid',
+        'clienteauditorianombre',
     ];
 
     public function cliente()

@@ -360,7 +360,7 @@
                     </div>
                     <div class="row text-center">
                         @can('admin.asociados.crearprogramacionclienteita')
-                            @if ($tieneBateria)
+                            @if ($tieneCotizacionaprobada)
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('admin.asociados.crearprogramacionclienteita', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
                                     <i class="fas fa-calendar-alt"></i>

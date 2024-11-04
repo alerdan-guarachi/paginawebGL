@@ -110,6 +110,7 @@
                                                             <table class="table table-striped">
                                                                 <thead>
                                                                     <tr>
+                                                                        <th style="background: white;">ID</th>
                                                                         <th style="background: white;">Proveedor</th>
                                                                         <th style="background: white;">Venta</th>
                                                                         @can('admin.areaacciones.verprecioscomprabateria')
@@ -123,6 +124,7 @@
                                                                 <tbody>
                                                                     @foreach ($areaacciones as $areaaccion)
                                                                         <tr>
+                                                                            <td>{{ $areaaccion->id }}</td>
                                                                             <td>{{ $areaaccion->proveedor }}</td>
                                                                             <td>{{ $areaaccion->precio }}</td>
                                                                             @can('admin.areaacciones.verprecioscomprabateria')
@@ -200,6 +202,7 @@
                                                         <table class="table table-striped">
                                                             <thead>
                                                                 <tr>
+                                                                    <th style="background: white;">ID</th>
                                                                     <th style="background: white;">Acción</th>
                                                                     <th style="background: white;">Proveedor</th>
                                                                     <th style="background: white;">Venta</th>
@@ -215,6 +218,7 @@
                                                             <tbody>
                                                                 @foreach ($areas as $areaaccion)
                                                                     <tr>
+                                                                        <td>{{ $areaaccion->id }}</td>
                                                                         <td>{{ $areaaccion->accion }}</td>
                                                                         <td>{{ $areaaccion->proveedor }}</td>
                                                                         <td>{{ $areaaccion->precio }}</td>

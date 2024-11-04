@@ -84,18 +84,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="form-group">
-                            {!! Form::label('direccion', 'Dirección:') !!}
-                            {!! Form::text('direccion', null, ['class' => 'form-control', 'placeholder' => '' , 'maxlength' => '200']) !!}
-                            @error('direccion')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-lg-4">
+                    <div class="col-lg-2">
                         <div class="form-group">
                             {!! Form::label('nit', 'NIT:') !!}
                             {!! Form::text('nit', null, ['class' => 'form-control', 'placeholder' => '','maxlength' => '20', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
@@ -106,6 +95,64 @@
                             @enderror
                         </div>
                     </div>
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            {!! Form::label('direccion', 'Dirección:') !!}
+                            {!! Form::text('direccion', null, ['class' => 'form-control', 'placeholder' => '' , 'maxlength' => '200']) !!}
+                            @error('direccion')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-3"> 
+                        <div class="form-group">
+                            <label for="linkubicacion">Link Dirección:</label>
+                            <div style="display: flex;">
+                                {!! Form::text('linkubicacion', null, [
+                                    'class' => 'form-control',
+                                    'placeholder' => '',
+                                    'maxlength' => '500', // Ajusta según sea necesario
+                                    'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57',
+                                    'style' => 'margin-right: 25px; width: auto;' // Espaciado entre el input y el botón
+                                ]) !!}
+                                <!-- Botón para abrir el enlace -->
+                                <a id="open-link" class="btn btn-ver" style="pointer-events: none; opacity: 0.5;" type="button">Ubic. <i class="fas fa-eye"></i></a>
+                            </div>
+                        </div>
+                        @error('linkubicacion')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const inputField = document.querySelector('input[name="linkubicacion"]');
+                            const openLinkButton = document.getElementById('open-link');
+                    
+                            inputField.addEventListener('input', function() {
+                                const link = inputField.value;
+                    
+                                // Verifica si el enlace es válido
+                                if (link.startsWith('http://') || link.startsWith('https://')) {
+                                    openLinkButton.style.pointerEvents = 'auto'; // Habilita el botón
+                                    openLinkButton.style.opacity = '1'; // Restaura la opacidad
+                                    openLinkButton.onclick = function(event) {
+                                        event.preventDefault(); // Previene el comportamiento por defecto
+                                        window.open(link, '_blank'); // Abre el enlace en una nueva pestaña
+                                    };
+                                } else {
+                                    openLinkButton.style.pointerEvents = 'none'; // Deshabilita el botón
+                                    openLinkButton.style.opacity = '0.5'; // Cambia la opacidad para indicar que está deshabilitado
+                                }
+                            });
+                        });
+                    </script>
+                    
                 </div>
                 <div class="row">
                     <div class="col-lg-3">
@@ -190,6 +237,53 @@
                     </div>
                 </div>
             </div>
+            {{-- <div class="col-lg-4">
+                {!! Form::label('', 'UBICACIÓN') !!}
+                <div class="col-lg-12">
+                    <div class="form-group">
+                        <label for="linkubicacion">Link Dirección:</label>
+                        <div style="display: flex; align-items: center;">
+                            {!! Form::text('linkubicacion', null, [
+                                'class' => 'form-control',
+                                'placeholder' => '',
+                                'maxlength' => '300', // Ajusta según sea necesario
+                                'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57',
+                                'style' => 'margin-right: 10px; width: auto;' // Espaciado entre el input y el botón
+                            ]) !!}
+                            <!-- Botón para abrir el enlace -->
+                            <button id="open-link" class="btn btn-primary" style="display: none;" type="button">Ver Ubicación</button>
+                        </div>
+                    </div>
+                    @error('telefonorefelinkubicacionrencia')
+                        <small class="text-danger fas fa-exclamation-circle">
+                            {{$message}}
+                        </small>
+                    @enderror
+                </div>
+            </div>
+            
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const inputField = document.querySelector('input[name="linkubicacion"]');
+                    const openLinkButton = document.getElementById('open-link');
+            
+                    inputField.addEventListener('input', function() {
+                        const link = inputField.value;
+            
+                        // Verifica si el enlace es válido
+                        if (link.startsWith('http://') || link.startsWith('https://')) {
+                            openLinkButton.style.display = 'block'; // Muestra el botón
+                            openLinkButton.onclick = function(event) {
+                                event.preventDefault(); // Previene el comportamiento por defecto
+                                window.open(link, '_blank'); // Abre el enlace en una nueva pestaña
+                            };
+                        } else {
+                            openLinkButton.style.display = 'none'; // Oculta el botón si no es válido
+                        }
+                    });
+                });
+            </script> --}}
+            
         </div>   
         {!! Form::submit('Crear proveedor', ['class' => 'btn btn-crear']) !!}
         {!! Form::close() !!}     
@@ -228,6 +322,16 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .btn-ver {
+                background-color:  #ffffff;
+                color: #302cf1;
+                border-color: #302cf1;
+                border-radius: 5px;
+            }
+        .btn-ver:hover {
+                background-color: #302cf1;
+                color: #ffffff;
+            }
     h1 {
         color:#94c93b; 
         font-family: "Segoe UI";

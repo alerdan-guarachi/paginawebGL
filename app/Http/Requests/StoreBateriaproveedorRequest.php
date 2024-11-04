@@ -47,7 +47,7 @@ class StoreBateriaproveedorRequest extends FormRequest
             'asociado'=>'required',
             'asociadoid'=>'',
             'servicio'=>'',
-            'estado'=>'',
+            'estado'=>'required',
             'tipoid'=>'',
             'areasid'=>'',
         ]; 

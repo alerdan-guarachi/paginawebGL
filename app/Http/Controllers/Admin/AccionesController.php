@@ -8,9 +8,13 @@ use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use App\Models\Empresa;
+use App\Models\Proveedor;
 use App\Models\Areaaccion;
 use App\Models\Area;
 use App\Http\Requests\StoreAreaaccionRequest;
+use App\Http\Requests\StoreBateriaproveedorRequest;
+use App\Models\Bateriaproveedor;
+use Illuminate\Support\Facades\Auth;
 
 class AccionesController extends Controller
 {
@@ -28,7 +32,7 @@ class AccionesController extends Controller
     {
         $nombreareaaccion = $request->get('buscarpor');
 
-        $areaacciones = Areaaccion::where('area', 'LIKE', "%$nombreareaaccion%")
+        $areaacciones = Bateriaproveedor::where('area', 'LIKE', "%$nombreareaaccion%")
             ->orderBy('area')
             ->distinct()
             ->get();
@@ -39,7 +43,7 @@ class AccionesController extends Controller
     public function buscarareaacciones(Request $request)
     {
         $busqueda = $request->get('buscarpor');
-        $areaacciones = Areaaccion::where(function ($query) use ($busqueda) {
+        $areaacciones = Bateriaproveedor::where(function ($query) use ($busqueda) {
                     $query->where('area', 'like', "%$busqueda%")
                             ->orWhere('accion', 'like', "%$busqueda%")
                             ->orWhere('sucursal', 'like', "%$busqueda%")
@@ -53,41 +57,75 @@ class AccionesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(Areaaccion $areaaccion)
-{
-    $tiponombre = Area::orderBy('tipoarea')
-                     ->distinct()
-                     ->pluck('tipoarea', 'tipoarea')
-                     ->toArray();
-    
-    // Obtener todas las áreas
-    $areas = Area::orderBy('nombrearea')->get(); 
-    
-    $estado = [
-        'ACTIVO' => 'ACTIVO',
-        'INACTIVO' => 'INACTIVO',
-    ];
-    
-    $tipocliente = [
-        'CLIENTES ITA' => 'CLIENTES ITA',
-        'CLIENTES COMUNES' => 'CLIENTES COMUNES',
-    ];
-    
-    $sucursal = [
-        'SANTA CRUZ' => 'SANTA CRUZ',
-        'COCHABAMBA' => 'COCHABAMBA',
-    ];
-    
-    return view('admin.acciones.create', compact('tiponombre', 'areaaccion', 'areas', 'estado', 'tipocliente', 'sucursal'));
-}
-public function store(StoreAreaaccionRequest $request)
+    public function create(Bateriaproveedor $bateriaproveedor)
     {
-        $areaData = $request->all();
-        
-        $areaccion = Areaaccion::create($areaData);
+        $tiponombre = Area::orderBy('tipoarea')
+            ->distinct()
+            ->pluck('tipoarea', 'tipoarea')
+            ->toArray();
 
-        return redirect()->route('admin.acciones.index', $areaccion)->with('info', 'La acción se creó con éxito');
+        // Obtener todas las áreas
+        $areas = Area::orderBy('nombrearea')->get();
+
+        $estado = [
+            'ACTIVO' => 'ACTIVO',
+            'INACTIVO' => 'INACTIVO',
+        ];
+
+        $tipocliente = [
+            'CLIENTES ITA' => 'CLIENTES ITA',
+            'CLIENTES COMUNES' => 'CLIENTES COMUNES',
+        ];
+
+        $sucursal = [
+            'SANTA CRUZ' => 'SANTA CRUZ',
+            'COCHABAMBA' => 'COCHABAMBA',
+        ];
+
+        $servicio = [
+            'INTERNO' => 'INTERNO',
+            'EXTERNO' => 'EXTERNO',
+        ];
+
+        $proveedores = Proveedor::orderBy('proveedor')->pluck('proveedor', 'id')->toArray();
+
+        return view('admin.acciones.create', compact('tiponombre', 'bateriaproveedor', 'areas', 'estado', 'tipocliente', 'sucursal', 'proveedores', 'servicio'));
     }
+    public function store(StoreBateriaproveedorRequest $request)
+    {
+        $bateriaProveedorData = $request->all();
+
+        // Obtener el nombre del proveedor basado en el proveedorid seleccionado
+        $proveedor = Proveedor::find($bateriaProveedorData['proveedorid']);
+        if ($proveedor) {
+            $bateriaProveedorData['proveedor'] = $proveedor->proveedor;  // Guardar el nombre del proveedor en vez del ID
+        }
+
+        // Obtener el nombre del tipo de área basado en el areasid seleccionado
+        $tipoArea = Area::find($bateriaProveedorData['areasid']);
+        if ($tipoArea) {
+            $bateriaProveedorData['tipoarea'] = $tipoArea->nombrearea;  // Guardar el nombre del área en vez del ID
+        }
+
+        // Asignar el ID del usuario autenticado al campo 'usuarioid'
+        $bateriaProveedorData['usuarioid'] = Auth::user()->id;
+
+        // Asignar el nombre del usuario autenticado al campo 'usuarioregistro'
+        $bateriaProveedorData['usuarioregistro'] = Auth::user()->name;
+
+        // Asignar el ID del asociado basado en el nombre seleccionado en 'asociado'
+        if ($bateriaProveedorData['asociado'] === 'CLIENTES ITA') {
+            $bateriaProveedorData['asociadoid'] = 6;
+        } elseif ($bateriaProveedorData['asociado'] === 'CLIENTES COMUNES') {
+            $bateriaProveedorData['asociadoid'] = 3;
+        }
+
+        // Crear el registro en bateriaproveedores
+        $bateriaproveedor = Bateriaproveedor::create($bateriaProveedorData);
+
+        return redirect()->route('admin.acciones.index', $bateriaproveedor)->with('info', 'La acción se creó con éxito');
+    }
+
 
     /**
      * Store a newly created resource in storage.

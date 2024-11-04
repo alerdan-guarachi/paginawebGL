@@ -2,7 +2,7 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.areaacciones.index') }}">REGRESAR</a>
-<h1>EDITAR {{ $areaaccion->tiponombre }}</h1>
+<h1>EDITAR {{ $areaaccion->tipoarea }}</h1>
 {{-- <h3>{{$clientecomun->nombrecompleto}}</h3> --}}
 @stop
 
@@ -38,7 +38,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-lg-3">
+                        {{-- <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('tipoarea', 'Tipo de Área:') !!}
                                 {!! Form::text('tipoarea', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => true]) !!}
@@ -48,8 +48,8 @@
                                     </small>
                                 @enderror
                             </div>
-                        </div>
-                        <div class="col-lg-3">
+                        </div> --}}
+                        <div class="col-lg-6">
                             <div class="form-group">
                                 {!! Form::label('sucursal', 'Sucursal:') !!}
                                 {!! Form::text('sucursal', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => true]) !!}
@@ -97,7 +97,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('precio', 'Precio Venta:') !!}
                                 {!! Form::text('precio', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -108,7 +108,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('preciocompra', 'Precio Compra:') !!}
                                 {!! Form::text('preciocompra', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -119,10 +119,22 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-lg-4">
+                        <!-- Campo Servicio -->
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                {!! Form::label('servicio', 'Servicio:') !!}
+                                {!! Form::select('servicio', ['INTERNO' => 'INTERNO', 'EXTERNO' => 'EXTERNO'], $areaaccion->servicio ?? 'INTERNO', ['class' => 'form-control']) !!}
+                                @error('servicio')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('estado', 'Estado:') !!}
-                                {!! Form::select('estado', $estadoproveedor, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                {!! Form::select('estado', $estadoproveedor, $areaaccion->estado ?? 'ACTIVO', ['class' => 'form-control'])!!}
                                 @error('estado')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}

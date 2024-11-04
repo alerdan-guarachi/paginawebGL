@@ -1,7 +1,9 @@
 @extends('adminlte::page')
  
 @section('content_header')
+@if($rolusuario !== 'PROVEEDOR')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclientecomun', $clientecomun) }}">REGRESAR</a>
+@endif
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">BATERIA DEL CLIENTE</a>
 <h5>CREAR BATERIA DE:</h5> 
 <h3>{{$clientecomun->nombrecompleto}}</h3>
@@ -17,15 +19,15 @@
             $('#alert-info').fadeOut('fast');
         }, 5000);
     </script>
-@endif
+@endif 
 <div class="card">
     <div class="card-body">
-        {!! Form::model($clientecomun, ['route' => ['admin.asociados.guardarbateriaclientecomun', $clientecomun], 'method' => 'POST']) !!}
+        {!! Form::model($clientecomun, ['route' => ['admin.asociados.guardarbateriaclientecomun', $clientecomun], 'method' => 'POST', 'id' => 'form-crear-bateria']) !!}
         <div class="row">
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                 {!! Form::hidden('clientecomunid', $id) !!}
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="form-group" hidden>
                         {!! Form::label('nombrecompleto', 'Nombre completo:') !!}
                         {!! Form::text('nombrecompleto', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
@@ -36,7 +38,7 @@
                         @enderror
                     </div> 
                     <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
+                        <div class="modal-dialog modal-xl" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
@@ -47,28 +49,130 @@
                                 <div class="modal-body">
                                     <strong>Fecha de Bateria:</strong>
                                     <select id="select-fechas" class="form-control">
-                                        <option value="" disabled selected></option>
+                                        <option value="" disabled selected>Selecciona una fecha</option>
                                         @foreach($accionesPorFecha as $fecha => $acciones)
                                             <option value="{{ $fecha }}">{{ $fecha }}</option>
                                         @endforeach
                                     </select>
                                     <div id="acciones-container" class="mt-3">
                                         <strong>Acciones requeridas:</strong>
-                                        @foreach($accionesPorFecha as $fecha => $acciones)
-                                            <div id="acciones-{{ $fecha }}" class="acciones" style="display: none;">
-                                                @foreach($acciones as $accion)
-                                                    <div style="color: black;">&#10003; {{ $accion }}</div>
-                                                @endforeach
-                                            </div>
-                                        @endforeach
+                                        <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Acción</th>
+                                                    <th>Informe</th>
+                                                    <th>Proveedor</th>
+                                                    @if(!auth()->user()->hasRole('PROVEEDOR'))
+                                                        <th>Precio</th>
+                                                    @endif
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+
+                                            </tbody>
+                                        </table>
                                     </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const selectFechas = document.getElementById('select-fechas');
+                                const accionesTable = document.getElementById('acciones-table');
+                                const tbody = accionesTable.querySelector('tbody');
+                            
+                                const accionesPorFecha = @json($accionesPorFecha);
+                                const rolusuario = @json($rolusuario);
+                            
+                                selectFechas.addEventListener('change', function () {
+                                    const selectedDate = this.value;
+                            
+                                    tbody.innerHTML = '';
+                            
+                                    if (selectedDate && accionesPorFecha[selectedDate]) {
+                                        const acciones = accionesPorFecha[selectedDate];
+                            
+                                        acciones.forEach(item => {
+                                            const row = document.createElement('tr');
+                                            row.innerHTML = `
+                                                <td>${item.id}</td>
+                                                <td>${item.accion}</td>
+                                                <td>${item.informe}</td>
+                                                <td>${item.proveedor}</td>
+                                                <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
+                                            `;
+                                            tbody.appendChild(row);
+                                        });
+                                        accionesTable.style.display = 'table';
+                                    } else {
+                                        accionesTable.style.display = 'none';
+                                    }
+                                });
+                            });
+                        </script>
+
+                        <style>
+                            .compact-table th, .compact-table td {
+                                padding: 4px 8px;
+                                line-height: 1.2;
+                            }
+
+                            .compact-table {
+                                font-size: 16px;
+                            }
+                        </style>
+
+                    <div class="form-group">
+                        <strong>Fecha de Batería:</strong>
+                        <select id="select-fechas" name="fechabateria" class="form-control">
+                            <option value="nueva_bateria">FECHA DE HOY</option>
+                            @foreach($accionesPorFecha as $fecha => $acciones)
+                                <option value="{{ $fecha }}">{{ $fecha }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <strong>Informe:</strong>
+                        <select id="informe" name="informe" class="form-control">
+                            <option value="NO TIENE INFORME">NO TIENE</option>
+                            <option value="SI TIENE INFORME">SI TIENE</option>
+                        </select>
+                    </div>
+                    <div class="form-group hidden" id="fechaInformeGroup">
+                        <strong>Fecha del Informe:</strong>
+                        <input type="date" id="fechainforme" name="fechainforme" class="form-control">
+                    </div>
+                    <style>
+                        .form-group {
+                            margin-bottom: 15px;
+                        }
+                        .hidden {
+                            display: none;
+                        }
+                    </style>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const informeSelect = document.getElementById('informe');
+                            const fechaInformeGroup = document.getElementById('fechaInformeGroup');
+                
+                            function toggleFechaInforme() {
+                                if (informeSelect.value === 'SI TIENE INFORME') {
+                                    fechaInformeGroup.classList.remove('hidden');
+                                } else {
+                                    fechaInformeGroup.classList.add('hidden');
+                                }
+                            }
+                
+                            // Inicializa el estado del campo cuando la página carga
+                            toggleFechaInforme();
+                
+                            // Añade un listener para cambios en la selección
+                            informeSelect.addEventListener('change', toggleFechaInforme);
+                        });
+                    </script>
                     <div class="form-group">
                         {!! Form::label('tipoarea', 'Tipo Area:', ['id' => 'area_label2']) !!}
                         {!! Form::select('tipoarea', ['Estudios' => 'ESTUDIOS', 'Especialidades' => 'ESPECIALIDADES'], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoarea']) !!}
@@ -78,6 +182,36 @@
                             </small>
                         @enderror
                     </div>
+                    <!-- Campo adicional "ANTECEDENTES" -->
+                    <div class="form-group" id="antecedentes-field" style="display: none;">
+                        {!! Form::label('antecedentes', 'Antecedentes:') !!}
+                        {!! Form::text('antecedentes', null, ['class' => 'form-control', 'id' => 'antecedentes']) !!}
+                        @error('antecedentes')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const tipoareaSelect = document.getElementById('tipoarea');
+                            const antecedentesField = document.getElementById('antecedentes-field');
+                        
+                            tipoareaSelect.addEventListener('change', function() {
+                                if (tipoareaSelect.value === 'Especialidades') {
+                                    antecedentesField.style.display = 'block';
+                                } else {
+                                    antecedentesField.style.display = 'none';
+                                }
+                            });
+                        
+                            // Opcional: si ya hay un valor seleccionado al cargar la página
+                            if (tipoareaSelect.value === 'Especialidades') {
+                                antecedentesField.style.display = 'block';
+                            }
+                        });
+                        </script>
+                        
                     <div class="form-group" id="estudios_group" style="display: none;">
                         {!! Form::label('areanombre', 'Estudio:', ['id' => 'area_label']) !!}
                         {!! Form::select('areanombre', $areas, null, ['class' => 'form-control', 'id' => 'area_select', 'placeholder' => '']) !!}
@@ -89,44 +223,80 @@
                     </div>
                     <div id="reset_button_container" style="margin-bottom: 20px" class=""></div>
                 </div>
-                <div class="col-lg-6">
-                    @foreach($areas as $id => $nombreArea)
+                <div class="col-lg-8">         
+                    @foreach($areas as $id => $nombreArea)  
                         <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
-                            <div class="card" style="max-height: 300px; overflow-y: auto;">
+                            <input type="text" id="search_{{ $id }}" placeholder="BUSCAR ESTUDIO" class="form-control" onkeyup="buscarAccion({{ $id }})"> <!-- Input de búsqueda -->
+                            
+                            <div class="card" style="max-height: 500px; overflow-y: auto;">
                                 <div class="card-body">
                                     @php $count = count($accionesPorArea[$id]); @endphp
-                                    @foreach($accionesPorArea[$id] as $key => $accionNombre)
-                                        <div class="form-check">
-                                            {!! Form::checkbox('accionnombre[]', $accionNombre, null, ['class' => 'form-check-input', 'id' => 'accionnombre_'.$key]) !!}
-                                            {!! Form::label('accionnombre_'.$key, $accionNombre, ['class' => 'form-check-label']) !!}
-                                        </div>
-                                        @if(($key + 1) == ceil($count / 1))
-                                            </div><div class="card-body">
-                                        @endif
-                                    @endforeach
+                                    <div class="acciones-container" id="acciones-container-{{ $id }}">
+                                        @foreach($accionesPorArea[$id] as $accion)
+                                            <div class="form-check accion-item">
+                                                {!! Form::checkbox('acciones[]', $accion->id, null, ['class' => 'form-check-input', 'id' => 'accion_'.$accion->id]) !!}
+                                                {!! Form::label('accion_'.$accion->id, $accion->accion . ' - ID: ' . $accion->id . ' - Proveedor: ' . $accion->proveedor, ['class' => 'form-check-label']) !!}
+
+                                                @if(!auth()->user()->hasRole('PROVEEDOR'))
+                                                    <span>- Precio: {{ $accion->precio }}</span>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
                             @error('accionnombre')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
+                                <small class="text-danger fas fa-exclamation-circle">{{$message}}</small>
                             @enderror
                         </div>
                     @endforeach
-                    <div class="form-group card card-body" id="especialidades_group" style="display: none;">
+                    <script>
+                        function buscarAccion(areaId) {
+                            var query = $('#search_' + areaId).val().toLowerCase();
+                            $('#acciones_' + areaId + ' .accion-item').each(function() { 
+                                var label = $(this).find('label').text().toLowerCase();
+                                
+                                if (label.includes(query)) { 
+                                    $(this).show();
+                                } else {
+                                    $(this).hide();
+                                }
+                            });
+                        }
+                    </script>
+               
+                    <div class="form-group card card-body" id="especialidades_group" style="display: none;">  
                         {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
+                        <input type="text" id="search_especialidades" placeholder="BUSCAR ESPECIALIDAD" class="form-control" onkeyup="buscarEspecialidad()">
+                        
                         <div class="row">
-                            @foreach ($areas2 as $index => $area)
-                                <div class="col-md-6 form-check">
-                                    {!! Form::checkbox('accionnombre[]', $area, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area]) !!}
-                                    {!! Form::label('accionnombre_'. $area, $area, ['class' => 'form-check-label']) !!}
+                            @foreach ($areas2 as $area2)
+                                <div class="col-md-12 form-check especialidad-item">
+                                    {!! Form::checkbox('accionnombre[]', $area2->id, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area2->id]) !!}
+                                    {!! Form::label('accionnombre_' . $area2->id, $area2->area . ' - Proveedor: ' . $area2->proveedor . (auth()->user()->hasRole('OPERATIVO') ? '' : ' - Precio: ' . $area2->precio), ['class' => 'form-check-label']) !!}
                                 </div>
                             @endforeach
                         </div>
                     </div>
+                <script>
+                    
+                    function buscarEspecialidad() {
+                    var query = $('#search_especialidades').val().toLowerCase(); 
+                    $('.especialidad-item').each(function() {  
+                        var label = $(this).find('label').text().toLowerCase();
+                        
+                        if (label.includes(query)) { 
+                            $(this).show();
+                        } else { 
+                            $(this).hide();
+                        }
+                    });
+                }
+                </script>                    
+                    
                 </div>
             </div>
-            {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-crear']) !!}
+            <button type="button" class="btn btn-crear" id="btn-crear-bateria">CREAR BATERIA</button>  
             {!! Form::close() !!}
         </div>
     </div>
@@ -324,6 +494,33 @@
     });
 
 </script>
+{{-- <script>
+    function generatePDF() {
+        // Obtener la fecha seleccionada
+        var fechaSeleccionada = document.getElementById('select-fechas').value;
+
+        if (!fechaSeleccionada) {
+            alert("Por favor, selecciona una fecha.");
+            return;
+        }
+
+        // Obtener el cliente ID
+        var clienteId = {{ $cliente->id }}; // Asegúrate de que tienes acceso a esta variable
+
+        // URL del controlador para generar el PDF
+        var url = '/admin/asociados/generarpdfcliente/' + clienteId;
+
+        // Redirigir a la URL para descargar el PDF directamente
+        window.location.href = url + '?fecha=' + encodeURIComponent(fechaSeleccionada);
+    }
+
+    // Asociar el evento de clic al botón "Generar PDF"
+    document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        generatePDF();
+    });
+</script> --}}
+
 @endsection
 
 @section('css')

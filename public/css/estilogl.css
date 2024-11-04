@@ -278,6 +278,19 @@ h5 {
     background-color: #faa625;
     color: #ffffff;
 }
+.btn-verprogramacion {
+    background-color: #ffffff;
+    color: #28a745; 
+    border-color: #28a745;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 5px 10px;
+}
+
+.btn-verprogramacion:hover {
+    background-color: #28a745;
+    color: #ffffff;
+}
 .btn-areas {
     background-color:  #ffffff;
     color: #faa625;

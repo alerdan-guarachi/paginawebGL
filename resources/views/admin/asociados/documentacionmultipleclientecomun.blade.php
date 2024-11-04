@@ -31,37 +31,39 @@
                 </div>
             </div>
         </nav>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Proveedor</th>
-                    <th>Acción</th>
-                    <th>Fecha de atención</th>
-                    <th>Fecha Batería</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($clientes as $cliente)
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>{{$cliente->clientecomunid}}</td>
-                        <td>{{$cliente->clientecomunnombre}}</td>
-                        <td>{{$cliente->proveedornombre}}</td>
-                        <td>{{$cliente->accionnombre}}</td>
-                        <td>{{$cliente->fechaasignada}}</td>
-                        <td>{{$cliente->fechabateria}}</td>
-                        <td width="10px">
-                            <abbr title="Subir documentación">
-                                <a class="btn btn-sm btn-bateria" href="{{ route('admin.asociados.creardocumentacionclientecomun', $cliente->clientecomunid) }}">
-                                    <i class="fas fa-file-alt"></i>
-                                </a>
-                            </abbr>
-                        </td>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Proveedor</th>
+                        <th>Acción</th>
+                        <th>Fecha de atención</th>
+                        <th>Fecha Batería</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach ($clientes as $cliente)
+                        <tr>
+                            <td>{{$cliente->clientecomunid}}</td>
+                            <td>{{$cliente->clientecomunnombre}}</td>
+                            <td>{{$cliente->proveedornombre}}</td>
+                            <td>{{$cliente->accionnombre}}</td>
+                            <td>{{$cliente->fechaasignada}}</td>
+                            <td>{{$cliente->fechabateria}}</td>
+                            <td width="10px">
+                                <abbr title="Subir documentación">
+                                    <a class="btn btn-sm btn-bateria" href="{{ route('admin.asociados.creardocumentacionclientecomun', $cliente->clientecomunid) }}">
+                                        <i class="fas fa-file-alt"></i>
+                                    </a>
+                                </abbr>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

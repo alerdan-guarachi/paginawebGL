@@ -322,7 +322,7 @@
                         </div>
                         <div class="row text-center">
                             @can('admin.asociados.crearprogramacionclienteauditoria')
-                                @if ($tieneBateria)
+                                @if ($tieneCotizacionaprobada)
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                     <a href="{{ route('admin.asociados.crearprogramacionclienteauditoria', $clienteauditoria) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
                                         <i class="fas fa-calendar-alt"></i>
@@ -490,7 +490,7 @@
     .dropify-wrapper {
       border-radius: 0.25rem;
     }
-  </style>
+</style>
 @endsection
 @section('js')
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>

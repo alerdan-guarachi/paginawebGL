@@ -1944,7 +1944,7 @@
                         <tbody>
                             @foreach ($item['acciones'] as $accion)
                                 <tr>
-                                    <td>{{ $accion['created_at']->format('Y-m-d') }}</td>
+                                    <td>{{ $accion['created_at'] }}</td>
                                     <td>{{ $accion['accion'] }}</td>
                                     <td>{{ $accion['proveedornombre'] }}</td>
                                     <td>

@@ -37,6 +37,7 @@ use App\Models\Bateriasubcliente;
 use App\Models\Estadoprogramacionsubcliente;
 use App\Models\Estadocotizacionsubcliente;
 use App\Models\Programacionsubcliente;
+use App\Models\Modelocartareclamo;
 use App\Models\Documentacionsubcliente;
 use App\Http\Requests\StoreInformefinalRequest;
 use App\Http\Requests\StoreTramiteRequest;
@@ -396,7 +397,16 @@ class TramitesController extends Controller
         return view('admin.tramites.index', compact('apelacionCount', 'derivarCount', 'finalizadoCount', 'pendienteCount', 'noIniciadoCount', 'usuarioAutenticado','proveedores', 'result', 'cliente', 'fechas', 'aprobaciones','apoderados', 'apoderadoSiguiente'));
     }
 
-    
+    public function modelocartareclamo(Request $request)
+        {
+            $tipocarta = $request->get('buscarpor');
+
+            $mdoelocartasreclamos = Modelocartareclamo::where('tipocarta', 'LIKE', "%$tipocarta%")
+                            ->simplePaginate(1000);
+
+            return view('admin.tramites.modelocartareclamo', compact('mdoelocartasreclamos'));
+        }
+        
 /* public function index(Cliente $cliente, Request $request)
 {
     $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
@@ -605,7 +615,17 @@ class TramitesController extends Controller
             $id = $cliente->id;
             $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
 
-            $tienetramiteinicio = Tramite::where('clienteitaid', $cliente->id)->exists();
+            $inicioocontinuidad = Tramite::where('clienteitaid', $cliente->id)
+                                        ->whereIn('nivelprocedimiento', ['INICIO DE TRAMITE', 'CONTINUIDAD DE TRAMITE'])
+                                        ->exists();
+            $tramiteinicio = Tramite::where('clienteitaid', $cliente->id)
+                                        ->where('nivelprocedimiento', 'INICIO DE TRAMITE')
+                                        ->where('tramite', 'INVALIDEZ')
+                                        ->exists();
+            $tramitecontinuidad = Tramite::where('clienteitaid', $cliente->id)
+                                        ->where('nivelprocedimiento', 'CONTINUIDAD DE TRAMITE')
+                                        ->where('tramite', 'INVALIDEZ')
+                                        ->exists();
             
             $nombreclienteita = $cliente->nombrecompleto;
             $procedimientotramites = Tramite::where('clienteitanombre', $nombreclienteita)
@@ -613,6 +633,8 @@ class TramitesController extends Controller
                                     ->where('nivelprocedimiento', '!=', 'SEGUIMIENTO')
                                     ->where('nivelprocedimiento', '!=', 'ADJUNTOS Y RESPUESTAS')
                                     ->where('nivelprocedimiento', '!=', 'CARTAS / RECLAMOS')
+                                    ->where('nivelprocedimiento', '!=', 'INICIO DE TRAMITE')
+                                    ->where('nivelprocedimiento', '!=', 'CONTINUIDAD DE TRAMITE')
                                     ->simplePaginate(10000);
             
             $cartasreclamos = Tramite::where('clienteitanombre', $nombreclienteita)
@@ -628,7 +650,35 @@ class TramitesController extends Controller
                                     ->where('nivelprocedimiento', '!=', 'ADJUNTOS Y RESPUESTAS')
                                     ->simplePaginate(10000);
 
-            return view('admin.tramites.procinvalidez', compact('tienetramiteinicio','cartasreclamos','procedimientotramites','id','cliente','nombrecompleto', 'personal'));
+            return view('admin.tramites.procinvalidez', compact('tramiteinicio','tramitecontinuidad','inicioocontinuidad','cartasreclamos','procedimientotramites','id','cliente','nombrecompleto', 'personal'));
+        }
+        public function guardariniciotramiteclienteita(Request $request, Cliente $cliente)
+        {
+            // Validar los datos recibidos, asegurando que el nivel de procedimiento esté presente
+            $request->validate([
+                'nivelprocedimiento' => 'required|in:INICIO DE TRAMITE,CONTINUIDAD DE TRAMITE',
+                'clienteitaid' => 'required|exists:clientes,id',
+                'usuarioid' => 'required|exists:users,id',
+                // Agrega validaciones adicionales según lo necesario
+            ]);
+    
+            // Crear un nuevo trámite con los datos recibidos
+            $tramite = new Tramite();
+            $tramite->clienteitaid = $request->clienteitaid;
+            $tramite->usuarioid = $request->usuarioid;
+            $tramite->usuarioregistro = $request->usuarioregistro;
+            $tramite->clienteitanombre = $request->clienteitanombre;
+            $tramite->apoderado = $request->apoderado;
+            $tramite->tramite = $request->tramite;
+            $tramite->nivelprocedimiento = $request->nivelprocedimiento; // INICIO DE TRAMITE o CONTINUIDAD DE TRAMITE
+            $tramite->save();  // Guardar el trámite en la base de datos
+    
+             // Mensaje de éxito
+            $mensaje = "REGISTRO DE {$request->nivelprocedimiento} DE INVALIDEZ EXITOSO";
+            return redirect()->route('admin.tramites.procinvalidez', $cliente)->with('success', $mensaje);
+
+            // Redirigir a una página o retornar un mensaje de éxito
+            /* return redirect()->route('admin.tramites.procinvalidez', $cliente)->with('success', 'El trámite ha sido guardado correctamente.'); */
         }
     public function actualizarEstado($id, $clienteId)
         {

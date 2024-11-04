@@ -101,7 +101,7 @@
         }
     </style>
 </head>
-<body>
+{{-- <body>
     <main>
         <div class="tipo1">Santa Cruz de la Sierra, {{ $fechaactual }}</div>
         <div class="tipo2">Señores:</div>
@@ -130,5 +130,36 @@
         <div class="tipo7">APODERADO</div>
         <div class="tipo8">Teléfono: {{ substr($cliente->celular, 3) }}</div>
     </main>
+</body> --}}
+<body> 
+    <main>
+        <div class="tipo1">Santa Cruz de la Sierra, {!! $fechaactual ?? '<strong><em style="color: green;">FECHA ACTUAL</em></strong>' !!}</div>
+        <div class="tipo2">Señores:</div>
+        <div class="tipo3">Gestora Publica de la Seguridad Social</div>
+        <div class="tipo3">de Largo Plazo.</div>
+        <div class="tipo9">Presente. -</div>
+        <div class="tipo5">REF.-SEGUNDA SOLICITUD DE INFORMACIÓN DE TRÁMITE DE</div>
+        <div class="tipo5">{!! $tipocartareclamo ?? '<strong><em style="color: green;">TIPO CARTA/RECLAMO</em></strong>' !!}</div>
+        <div class="tipo2">Distinguidos Señores:</div>
+        <div class="tipo6">
+            Yo, el Sr. {!! $personal->nombrecompleto ?? '<strong><em style="color: green;">PERSONAL/NOMBRE COMPLETO</em></strong>' !!}, con documento de Identidad {!! $personal->ci ?? '<strong><em style="color: green;">PERSONAL/CI</em></strong>' !!}. En Calidad de Apoderado con N.º de poder {!! $numeropoder ?? '<strong><em style="color: green;">CLIENTE/NUMERO DE PODER</em></strong>' !!}, del Afiliado {!! $cliente->nombrecompleto ?? '<strong><em style="color: green;">CLIENTE/NOMBRE COMPLETO</em></strong>' !!} con CUA N.º {!! $cliente->nuacua ?? '<strong><em style="color: green;">CLIENTE/NUA-CUA</em></strong>' !!}, con C.I. {!! $cliente->ci ?? '<strong><em style="color: green;">CLIENTE/CI</em></strong>' !!} {!! $cliente->ciexp ?? '<strong><em style="color: green;">CLIENTE/CI EXP</em></strong>' !!}.
+        </div>
+        <div class="tipo6">
+            Me dirijo a su Institución con la finalidad de solicitar Información sobre el estado del Trámite de {!! $tipocartareclamo ?? '<strong><em style="color: green;">TIPO CARTA/RECLAMO</em></strong>' !!}. Iniciado en su Institución Publica en fecha {!! $fechaingresotramite ?? '<strong><em style="color: green;">FECHA INGRESO DE TRAMITE</em></strong>' !!}, y que en fecha {!! $fechafirmaeap ?? '<strong><em style="color: green;">FECHA FIRMA EAP</em></strong>' !!} se firmó la Verificación del Estado de Ahorro 
+            Previsional (Extracto) con fecha de retorno para consultar por Dictamen y/o información Complementaria el {!! $fechaeap30 ?? '<strong><em style="color: green;">FECHA EAP 30</em></strong>' !!} (Sin Respuesta). Posteriormente en fecha {!! $fechaprimeracartasit ?? '<strong><em style="color: green;">FECHA PRIMERA CARTA SIT</em></strong>' !!} se Solicitó Información del Tramite. Hasta la fecha no se tiene respuesta alguna, por lo que solicito 
+            de la manera más humana a su Institución Pública puedan dar seguimiento y una respuesta del presente caso.
+        </div>
+        <div class="tipo6">
+            Sin más que decir y esperando su pronta respuesta me despido con las consideraciones más distinguidas.
+        </div>
+        <div class="tipo6">
+            Atte.<br><br><br>
+        </div>
+        <div class="tipo7">{!! $personal->nombrecompleto ?? '<strong><em style="color: green;">PERSONAL/NOMBRE COMPLETO</em></strong>' !!}</div>
+        <div class="tipo8">C.I.{!! $personal->ci ?? '<strong><em style="color: green;">PERSONAL/CI</em></strong>' !!}</div>
+        <div class="tipo7">APODERADO</div>
+        <div class="tipo8">Teléfono: {!! isset($cliente->celular) ? substr($cliente->celular, 3) : '<strong><em style="color: green;">PERSONAL/CELULAR</em></strong>' !!}</div>
+    </main>
 </body>
+
 </html>

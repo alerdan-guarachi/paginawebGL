@@ -32,37 +32,39 @@
                 </div>
             </div>
         </nav>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Cliente</th>
-                    <th>Proveedor</th>
-                    <th>Acción</th>
-                    <th>Fecha de atención</th>
-                    <th>Fecha Batería</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($clientes as $clientebanco)
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>{{$clientebanco->clientebancoid}}</td>
-                        <td>{{$clientebanco->clientebanconombre}}</td>
-                        <td>{{$clientebanco->proveedornombre}}</td>
-                        <td>{{$clientebanco->accionnombre}}</td>
-                        <td>{{$clientebanco->fechaasignada}}</td>
-                        <td>{{$clientebanco->fechabateria}}</td>
-                        <td width="10px">
-                            <abbr title="Subir documentación">
-                                <a class="btn btn-sm btn-bateria" href="{{ route('admin.asociados.creardocumentacionclientebanco', $clientebanco->clientebancoid) }}">
-                                    <i class="fas fa-file-alt"></i>
-                                </a>
-                            </abbr>
-                        </td>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Proveedor</th>
+                        <th>Acción</th>
+                        <th>Fecha de atención</th>
+                        <th>Fecha Batería</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach ($clientes as $clientebanco)
+                        <tr>
+                            <td>{{$clientebanco->clientebancoid}}</td>
+                            <td>{{$clientebanco->clientebanconombre}}</td>
+                            <td>{{$clientebanco->proveedornombre}}</td>
+                            <td>{{$clientebanco->accionnombre}}</td>
+                            <td>{{$clientebanco->fechaasignada}}</td>
+                            <td>{{$clientebanco->fechabateria}}</td>
+                            <td width="10px">
+                                <abbr title="Subir documentación">
+                                    <a class="btn btn-sm btn-bateria" href="{{ route('admin.asociados.creardocumentacionclientebanco', $clientebanco->clientebancoid) }}">
+                                        <i class="fas fa-file-alt"></i>
+                                    </a>
+                                </abbr>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 

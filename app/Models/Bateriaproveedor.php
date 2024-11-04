@@ -30,7 +30,7 @@ class Bateriaproveedor extends Model
         'asociado'=>'required',
         'asociadoid'=>'',
         'servicio'=>'',
-        'estado'=>'',
+        'estado'=>'required',
         'tipoid'=>'',
         'areasid'=>'',
     ]; 

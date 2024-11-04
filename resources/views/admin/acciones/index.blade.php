@@ -45,6 +45,7 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
+                                <th>ID</th>
                                 <th>Área</th>
                                 <th>Acción</th>
                                 <th>Sucursal</th>
@@ -57,6 +58,7 @@
                         <tbody>
                             @foreach ($areaacciones as $areaaccion)
                                 <tr>
+                                    <td>{{ $areaaccion->id }}</td>
                                     <td>{{ $areaaccion->area }}</td>
                                     <td>{{ $areaaccion->accion }}</td>
                                     <td>{{ $areaaccion->sucursal }}</td>

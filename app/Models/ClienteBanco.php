@@ -59,5 +59,10 @@ class ClienteBanco extends Model
     {
         return $this->hasMany(AreaAccion::class, 'asociadoid', 'asociadoid');
     } */
+   // Relación con Asociado
+   public function asociado()
+   {
+       return $this->belongsTo(Asociado::class, 'asociadoid');
+    }
 
 }

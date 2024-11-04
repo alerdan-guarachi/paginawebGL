@@ -107,7 +107,7 @@
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
-                            @if ($item['estado'] === 'COMPLETO' && $item['estadoGeneral'] === 'COMPLETO' || $item['estadoGeneralss'] === 'COMPLETO' || $item['estadoGeneralap'] === 'COMPLETO' || $item['estadoGeneralauditoria'] === 'COMPLETO')
+                            @if ($item['estado'] === 'COMPLETO' && $item['estadoGeneral'] === 'COMPLETO')
                                 <tr>
                                     {{-- ID DEL CLIENTE --}}
                                     <td>{{ $item['clienteitaid'] }}</td>
@@ -138,26 +138,14 @@
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></button>
+                                            <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
                                         </abbr>
                                     </td>
 
-                                    {{-- DOCUMENTACION --}}
-                                    {{-- <td class="{{ $item['estadoGeneral'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                        {{ $item['estadoGeneral'] }}
-                                        @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
-                                            <abbr title="VER DOCUMENTACIÓN">
-                                                <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
-                                                    <i class="fas fa-address-book"></i>
-                                                </button>
-                                            </abbr>
-                                        @endif
-                                    </td> --}}
-                                    {{-- DOCUMENTACION --}}
                                     <td>
-                                        @if (in_array('INVALIDEZ', $item['tramite']))
+                                        @if ($item['tramite'])
                                         <p class="{{ $item['estadoGeneral'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            INVALIDEZ
+                                            {{ $item['estadoGeneral'] }}
                                             @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
                                                 <abbr title="VER DOCUMENTACIÓN">
                                                     <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
@@ -165,49 +153,8 @@
                                                     </button>
                                                 </abbr>
                                             @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('AUDITORIA MEDICA', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            AUD. MEDICA
-                                            @if ($item['estadoGeneralauditoria'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionauditoria{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('APELACION', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralap'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralap'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            APELACION
-                                            @if ($item['estadoGeneralap'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralap'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneralap'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionapelacion{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SEGUNDA SOLICITUD', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralss'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralss'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            SEG. SOLICITUD
-                                            @if ($item['estadoGeneralss'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralss'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneralss'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionsegundasolicitud{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SIN SERVICIO', $item['tramite']))
+                                        </p>
+                                        @else
                                             <p class="text-noregistrado">NO REGISTRADO</p>
                                         @endif
                                     </td>
@@ -251,8 +198,7 @@
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
-                            {{-- @if ($item['estado'] === 'COMPLETO' && $item['estadoGeneral'] === 'PENDIENTE' || $item['estadoGeneralauditoria'] === 'PENDIENTE') --}}
-                            @if ($item['estado'] === 'COMPLETO' && ($item['estadoGeneral'] === 'PENDIENTE' || $item['estadoGeneralauditoria'] === 'PENDIENTE' || $item['estadoGeneralss'] === 'PENDIENTE' || $item['estadoGeneralap'] === 'PENDIENTE'))
+                            @if ($item['estado'] === 'COMPLETO' && $item['estadoGeneral'] === 'PENDIENTE')
 
                             <tr>
                                     {{-- ID DEL CLIENTE --}}
@@ -304,9 +250,9 @@
 
                                     {{-- DOCUMENTACION --}}
                                     <td>
-                                        @if (in_array('INVALIDEZ', $item['tramite']))
+                                        @if ($item['tramite'])
                                         <p class="{{ $item['estadoGeneral'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            INVALIDEZ
+                                            {{ $item['estadoGeneral'] }}
                                             @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
                                                 <abbr title="VER DOCUMENTACIÓN">
                                                     <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
@@ -314,49 +260,8 @@
                                                     </button>
                                                 </abbr>
                                             @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('AUDITORIA MEDICA', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            AUD. MEDICA
-                                            @if ($item['estadoGeneralauditoria'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionauditoria{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('APELACION', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralap'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralap'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            APELACION
-                                            @if ($item['estadoGeneralap'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralap'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneralap'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionapelacion{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SEGUNDA SOLICITUD', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralss'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralss'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            SEG. SOLICITUD
-                                            @if ($item['estadoGeneralss'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralss'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneralss'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionsegundasolicitud{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SIN SERVICIO', $item['tramite']))
+                                        </p>
+                                        @else
                                             <p class="text-noregistrado">NO REGISTRADO</p>
                                         @endif
                                     </td>
@@ -399,7 +304,7 @@
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
-                            @if ($item['estado'] === 'INCOMPLETO' && ($item['estadoGeneral'] === 'COMPLETO' || $item['estadoGeneralauditoria'] === 'COMPLETO' || $item['estadoGeneralss'] === 'COMPLETO' || $item['estadoGeneralap'] === 'COMPLETO'))
+                            @if ($item['estadoGeneral'] === 'COMPLETO' && $item['estado'] === 'INCOMPLETO')
                                 <tr>
                                     {{-- ID DEL CLIENTE --}}
                                     <td>{{ $item['clienteitaid'] }}</td>
@@ -418,7 +323,6 @@
                                     </td>
 
                                     {{-- FECHA DE BATERIA --}}
-                                    {{-- <td>{{ $item['fechabateria'] }} - {{ $item['tramite'] }}</td> --}}
                                     <td>
                                         @if (is_array($item['tramite']) && count($item['tramite']) > 0)
                                             {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }} {{-- Muestra la fecha seguida de los trámites --}}
@@ -427,14 +331,6 @@
                                         @endif
                                     </td>
 
-
-                                    {{-- RESULTADOS MEDICOS --}}
-                                    {{-- <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></button>
-                                        </abbr>
-                                    </td> --}}
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER RESULTADOS MÉDICOS">
@@ -457,21 +353,10 @@
                                                 }
                                     </style>
                                 
-                                    {{-- DOCUMENTACION --}}
-                                    {{-- <td class="{{ $item['estadoGeneral'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                        {{ $item['estadoGeneral'] }}
-                                        @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
-                                            <abbr title="VER DOCUMENTACIÓN">
-                                                <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
-                                                    <i class="fas fa-address-book"></i>
-                                                </button>
-                                            </abbr>
-                                        @endif
-                                    </td> --}}
                                     <td>
-                                        @if (in_array('INVALIDEZ', $item['tramite']))
+                                        @if ($item['tramite'])
                                         <p class="{{ $item['estadoGeneral'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            INVALIDEZ
+                                            {{ $item['estadoGeneral'] }}
                                             @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
                                                 <abbr title="VER DOCUMENTACIÓN">
                                                     <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
@@ -479,49 +364,8 @@
                                                     </button>
                                                 </abbr>
                                             @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('AUDITORIA MEDICA', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            AUD. MEDICA
-                                            @if ($item['estadoGeneralauditoria'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionauditoria{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('APELACION', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralap'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralap'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            APELACION
-                                            @if ($item['estadoGeneralap'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralap'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneralap'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionapelacion{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SEGUNDA SOLICITUD', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralss'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralss'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            SEG. SOLICITUD
-                                            @if ($item['estadoGeneralss'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralss'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneralss'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionsegundasolicitud{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SIN SERVICIO', $item['tramite']))
+                                        </p>
+                                        @else
                                             <p class="text-noregistrado">NO REGISTRADO</p>
                                         @endif
                                     </td>
@@ -584,7 +428,6 @@
                                     </td>
 
                                     {{-- FECHA DE BATERIA --}}
-                                    {{-- <td>{{ $item['fechabateria'] }} - {{ $item['tramite'] }}</td>--}}
                                     <td>
                                         @if (is_array($item['tramite']) && count($item['tramite']) > 0)
                                             {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }} {{-- Muestra la fecha seguida de los trámites --}}
@@ -601,21 +444,10 @@
                                         </abbr>
                                     </td>
 
-                                    {{-- DOCUMENTACION --}}
-                                    {{-- <td class="{{ $item['estadoGeneral'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                        {{ $item['estadoGeneral'] }}
-                                        @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
-                                            <abbr title="VER DOCUMENTACIÓN">
-                                                <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
-                                                    <i class="fas fa-address-book"></i>
-                                                </button>
-                                            </abbr>
-                                        @endif
-                                    </td> --}}
                                     <td>
-                                        @if (in_array('INVALIDEZ', $item['tramite']))
+                                        @if ($item['tramite'])
                                         <p class="{{ $item['estadoGeneral'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            INVALIDEZ
+                                            {{ $item['estadoGeneral'] }}
                                             @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
                                                 <abbr title="VER DOCUMENTACIÓN">
                                                     <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
@@ -623,49 +455,8 @@
                                                     </button>
                                                 </abbr>
                                             @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('AUDITORIA MEDICA', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            AUD. MEDICA
-                                            @if ($item['estadoGeneralauditoria'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionauditoria{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('APELACION', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralap'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralap'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            APELACION
-                                            @if ($item['estadoGeneralap'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralap'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneralap'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionapelacion{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SEGUNDA SOLICITUD', $item['tramite']))
-                                        <p class="{{ $item['estadoGeneralss'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralss'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
-                                            SEG. SOLICITUD
-                                            @if ($item['estadoGeneralss'] !== 'NO REGISTRADO')
-                                                <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneralss'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneralss'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacionsegundasolicitud{{ $loop->index }}">
-                                                        <i class="fas fa-address-book"></i>
-                                                    </button>
-                                                </abbr>
-                                            @endif
-                                            </p>
-                                        @endif
-
-                                        @if (in_array('SIN SERVICIO', $item['tramite']))
+                                        </p>
+                                        @else
                                             <p class="text-noregistrado">NO REGISTRADO</p>
                                         @endif
                                     </td>
@@ -929,11 +720,11 @@
 
     <!-- DOCUMENTACIÓN -->
     <div class="modal fade" id="modalDocumentacion{{ $loop->index }}" tabindex="-1" role="dialog" aria-labelledby="modalLabelDocumentacion{{ $loop->index }}" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" id="modalLabelDocumentacion{{ $loop->index }}">
-                        <strong>DOCUMENTACIÓN INVALIDEZ</strong>
+                        <strong>DOCUMENTACION</strong>
                     </h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -944,6 +735,7 @@
                         <thead>
                             <tr>
                                 <th>Documento</th>
+                                <th>Servicio</th>
                                 <th>Ver Doc.</th>
                             </tr>
                         </thead>
@@ -1011,9 +803,11 @@
                                 $mostrarpoderciapoderadopendiente = $accion['poderciapoderado'] === 'PENDIENTE';
                             @endphp
 
+
                             @if ($mostrarpoder || $mostrarpoderpendiente)
                                 <tr>
                                     <td>PODER: {{ $accion['numeropoder'] }}</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarpoderpendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1028,6 +822,7 @@
                             @if ($mostraravcci || $mostraravccipendiente)
                                 <tr>
                                     <td>AVC / CARNET DE ASEGURADO</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostraravccipendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1040,6 +835,7 @@
                             @if ($mostrarcnacasegurado || $mostrarcnacaseguradopendiente)
                                 <tr>
                                     <td>CERTIFICADO NACIMIENTO DE ASEGURADO</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcnacaseguradopendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1052,6 +848,7 @@
                             @if ($mostrarciasegurado || $mostrarciaseguradopendiente)
                                 <tr>
                                     <td>CARNET IDENTIDAD DE ASEGURADO</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarciaseguradopendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1064,6 +861,7 @@
                             @if ($mostrarcimatrimonio || $mostrarcimatrimoniopendiente)
                                 <tr>
                                     <td>CERTIFICADO DE MATRIMONIO</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcimatrimoniopendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1076,6 +874,7 @@
                             @if ($mostrarcnacconyuge || $mostrarcnacconyugependiente)
                                 <tr>
                                     <td>CERTIFICADO NACIMIENTO DE CONYUGE</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcnacconyugependiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1088,6 +887,7 @@
                             @if ($mostrarciconyuge || $mostrarciconyugependiente)
                                 <tr>
                                     <td>CARNET IDENTIDAD DE CONYUGE</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarciconyugependiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1100,6 +900,7 @@
                             @if ($mostrarcnacjihos || $mostrarcnacjihospendiente)
                                 <tr>
                                     <td>CERTIFICADO NACIMIENTO DE HIJOS < 25</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcnacjihospendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1112,6 +913,7 @@
                             @if ($mostrarcihijos || $mostrarcihijospendiente)
                                 <tr>
                                     <td>CARNET IDENTIDAD DE HIJOS < 25</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcihijospendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1124,6 +926,7 @@
                             @if ($mostrardenfaccidente || $mostrardenfaccidentependiente)
                                 <tr>
                                     <td>DENUNCIA ENFERMEDAD ACCIDENTE</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrardenfaccidentependiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1136,6 +939,7 @@
                             @if ($mostrarcrodomicilio || $mostrarcrodomiciliopendiente)
                                 <tr>
                                     <td>CROQUIS DE DOMICILIO</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcrodomiciliopendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1148,6 +952,7 @@
                             @if ($mostrarcontrato || $mostrarcontratopendiente)
                                 <tr>
                                     <td>CONTRATO</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcontratopendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1168,6 +973,7 @@
                             @if ($mostraregestora || $mostraregestorapendiente)
                                 <tr>
                                     <td>EXTRACTO DE GESTORA</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostraregestorapendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1180,6 +986,7 @@
                             @if ($mostrardictamencalentenc || $mostrardictamencalentencpendiente)
                                 <tr>
                                     <td>DICTAMEN CALIFICACION ENTIDAD ENCARGADA</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrardictamencalentencpendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1192,6 +999,7 @@
                             @if ($mostrarinfomedicasalud || $mostrarinfomedicasaludpendiente)
                                 <tr>
                                     <td>INFORMACION MEDICA</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarinfomedicasaludpendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1204,6 +1012,7 @@
                             @if ($mostrarctrabajo || $mostrarctrabajopendiente)
                                 <tr>
                                     <td>CERTIFICADO DE TRABAJO</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarctrabajopendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1216,6 +1025,7 @@
                             @if ($mostrarboletapago || $mostrarboletapagopendiente)
                                 <tr>
                                     <td>BOLETA DE PAGO</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarboletapagopendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1228,6 +1038,7 @@
                             @if ($mostraractdatos || $mostraractdatospendiente)
                                 <tr>
                                     <td>ACTUALIZACION DE DATOS</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostraractdatospendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1240,6 +1051,7 @@
                             @if ($mostrarresolinvhijos || $mostrarresolinvhijospendiente)
                                 <tr>
                                     <td>RESOLUCION INVALIDEZ DE HIJOS < 25</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarresolinvhijospendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1252,6 +1064,7 @@
                             @if ($mostrarcunionlibre || $mostrarcunionlibrependiente)
                                 <tr>
                                     <td>CERTIFICADO DE UNION LIBRE</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcunionlibrependiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1264,6 +1077,7 @@
                             @if ($mostrarcnacimientounionlibre || $mostrarcnacimientounionlibrependiente)
                                 <tr>
                                     <td>CERTIFICADO NACIMIENTO DE UNION LIBRE</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcnacimientounionlibrependiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1276,6 +1090,7 @@
                             @if ($mostrarciunionlibre || $mostrarciunionlibrependiente)
                                 <tr>
                                     <td>CARNET IDENTIDAD DE UNION LIBRE</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarciunionlibrependiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1288,6 +1103,7 @@
                             @if ($mostrarcdivorcio || $mostrarcdivorciopendiente)
                                 <tr>
                                     <td>CERTIFICADO DE DIVORCIO</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcdivorciopendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1300,6 +1116,7 @@
                             @if ($mostrarcdefuncion || $mostrarcdefuncionpendiente)
                                 <tr>
                                     <td>CERTIFICADO DE DIFUNCION</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarcdefuncionpendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1312,6 +1129,7 @@
                             @if ($mostrarpolizasgen || $mostrarpolizasgenpendiente)
                                 <tr>
                                     <td>POLIZAS GENERALES</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarpolizasgenpendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1324,6 +1142,7 @@
                             @if ($mostrardeclasalud || $mostrardeclasaludpendiente)
                                 <tr>
                                     <td>DECLARACION SALUD</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrardeclasaludpendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1336,6 +1155,7 @@
                             @if ($mostrarpolizaseguro || $mostrarpolizaseguropendiente)
                                 <tr>
                                     <td>POLIZA SEGURO DESGRAVAMEN</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarpolizaseguropendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1348,6 +1168,7 @@
                             @if ($mostraranteriordictamen || $mostraranteriordictamenpendiente)
                                 <tr>
                                     <td>ANTERIOR DICTAMEN O RESOLUCION</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostraranteriordictamenpendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1360,6 +1181,7 @@
                             @if ($mostrarpoderciapoderado || $mostrarpoderciapoderadopendiente)
                                 <tr>
                                     <td>PODER Y CARNET IDENTIDAD APODERADO</td>
+                                    <td>{{ $accion['servicio'] }}</td>
                                     <td>
                                         @if ($mostrarpoderciapoderadopendiente)
                                             <div class="pendiente">PENDIENTE</div>
@@ -1369,8 +1191,7 @@
                                     </td>
                                 </tr>
                             @endif
-                        </tbody>
-                        <tbody>
+
                         </tbody>
                     </table>
                 </div>
@@ -1381,1020 +1202,7 @@
         </div>
     </div>
 
-    <!-- DOCUMENTACIÓN SEGUNDA SOLICITUD-->
-    <div class="modal fade" id="modalDocumentacionsegundasolicitud{{ $loop->index }}" tabindex="-1" role="dialog" aria-labelledby="modalLabelDocumentacion{{ $loop->index }}" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="modalLabelDocumentacionsegundasolicitud{{ $loop->index }}">
-                        <strong>DOCUMENTACIÓN SEGUNDA SOLICITUD</strong>
-                    </h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Documento</th>
-                                <th>Ver Doc.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $mostrarpoderss = !empty($accion['poderss']);
-                                $mostrarpoderpendientess = $accion['poderss'] === 'PENDIENTE';
-                                $mostraravcciss = !empty($accion['avcciss']);
-                                $mostraravccipendientess = $accion['avcciss'] === 'PENDIENTE';
-                                $mostrarcnacaseguradoss = !empty($accion['cnacaseguradoss']);
-                                $mostrarcnacaseguradopendientess = $accion['cnacaseguradoss'] === 'PENDIENTE';
-                                $mostrarciaseguradoss = !empty($accion['ciaseguradoss']);
-                                $mostrarciaseguradopendientess = $accion['ciaseguradoss'] === 'PENDIENTE';
-                                $mostrarcimatrimonioss = !empty($accion['cmatrimonioss']);
-                                $mostrarcimatrimoniopendientess = $accion['cmatrimonioss'] === 'PENDIENTE';
-                                $mostrarcnacconyugess = !empty($accion['cnacconyugess']);
-                                $mostrarcnacconyugependientess = $accion['cnacconyugess'] === 'PENDIENTE';
-                                $mostrarciconyugess = !empty($accion['ciconyugess']);
-                                $mostrarciconyugependientess = $accion['ciconyugess'] === 'PENDIENTE';
-                                $mostrarcnacjihosss = !empty($accion['cnacjihosss']);
-                                $mostrarcnacjihospendientess = $accion['cnacjihosss'] === 'PENDIENTE';
-                                $mostrarcihijosss = !empty($accion['cihijosss']);
-                                $mostrarcihijospendientess = $accion['cihijosss'] === 'PENDIENTE';
-                                $mostrardenfaccidentess = !empty($accion['denfaccidentess']);
-                                $mostrardenfaccidentependientess = $accion['denfaccidentess'] === 'PENDIENTE';
-                                $mostrarcrodomicilioss = !empty($accion['crodomicilioss']);
-                                $mostrarcrodomiciliopendientess = $accion['crodomicilioss'] === 'PENDIENTE';
-                                $mostrarcontratoss = !empty($accion['contratoss']);
-                                $mostrarcontratopendientess = $accion['contratoss'] === 'PENDIENTE';
-                                $mostraregestorass = !empty($accion['egestorass']);
-                                $mostraregestorapendientess = $accion['egestorass'] === 'PENDIENTE';
-                                $mostrardictamencalentencss = !empty($accion['dictamencalentencss']);
-                                $mostrardictamencalentencpendientess = $accion['dictamencalentencss'] === 'PENDIENTE';
-                                $mostrarinfomedicasaludss = !empty($accion['infomedicasaludss']);
-                                $mostrarinfomedicasaludpendientess = $accion['infomedicasaludss'] === 'PENDIENTE';
-                                $mostrarctrabajoss = !empty($accion['ctrabajoss']);
-                                $mostrarctrabajopendientess = $accion['ctrabajoss'] === 'PENDIENTE';
-                                $mostrarboletapagoss = !empty($accion['boletapagoss']);
-                                $mostrarboletapagopendientess = $accion['boletapagoss'] === 'PENDIENTE';
-                                $mostraractdatosss = !empty($accion['actdatosss']);
-                                $mostraractdatospendientess = $accion['actdatosss'] === 'PENDIENTE';
-                                $mostrarresolinvhijosss = !empty($accion['resolinvhijosss']);
-                                $mostrarresolinvhijospendientess = $accion['resolinvhijosss'] === 'PENDIENTE';
-                                $mostrarcunionlibress = !empty($accion['cunionlibress']);
-                                $mostrarcunionlibrependientess = $accion['cunionlibress'] === 'PENDIENTE';
-                                $mostrarcnacimientounionlibress = !empty($accion['cnacimientounionlibress']);
-                                $mostrarcnacimientounionlibrependientess = $accion['cnacimientounionlibress'] === 'PENDIENTE';
-                                $mostrarciunionlibress = !empty($accion['ciunionlibress']);
-                                $mostrarciunionlibrependientess = $accion['ciunionlibress'] === 'PENDIENTE';
-                                $mostrarcdivorcioss = !empty($accion['cdivorcioss']);
-                                $mostrarcdivorciopendientess = $accion['cdivorcioss'] === 'PENDIENTE';
-                                $mostrarcdefuncionss = !empty($accion['cdefuncionss']);
-                                $mostrarcdefuncionpendientess = $accion['cdefuncionss'] === 'PENDIENTE';
-                                $mostrarpolizasgenss = !empty($accion['polizasgenss']);
-                                $mostrarpolizasgenpendientess = $accion['polizasgenss'] === 'PENDIENTE';
-                                $mostrardeclasaludss = !empty($accion['declasaludss']);
-                                $mostrardeclasaludpendientess = $accion['declasaludss'] === 'PENDIENTE';
-                                $mostrarpolizaseguross = !empty($accion['polizaseguross']);
-                                $mostrarpolizaseguropendientess = $accion['polizaseguross'] === 'PENDIENTE';
-                                $mostraranteriordictamenss = !empty($accion['anteriordictamenss']);
-                                $mostraranteriordictamenpendientess = $accion['anteriordictamenss'] === 'PENDIENTE';
-                                $mostrarpoderciapoderadoss = !empty($accion['poderciapoderadoss']);
-                                $mostrarpoderciapoderadopendientess = $accion['poderciapoderadoss'] === 'PENDIENTE';
-                            @endphp
-
-                            @if ($mostrarpoderss || $mostrarpoderpendientess)
-                                <tr>
-                                    <td>PODER: {{ $accion['numeropoderss'] }}</td>
-                                    <td>
-                                        @if ($mostrarpoderpendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarpoderss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['poderss']) }}" class="btn btn-verdocumentacion" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostraravcci || $mostraravccipendiente)
-                                <tr>
-                                    <td>AVC / CARNET DE ASEGURADO</td>
-                                    <td>
-                                        @if ($mostraravccipendiente)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostraravcci)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['avcci']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcnacaseguradoss || $mostrarcnacaseguradopendientess)
-                                <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE ASEGURADO</td>
-                                    <td>
-                                        @if ($mostrarcnacaseguradopendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacaseguradoss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacaseguradoss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarciaseguradoss || $mostrarciaseguradopendientess)
-                                <tr>
-                                    <td>CARNET IDENTIDAD DE ASEGURADO</td>
-                                    <td>
-                                        @if ($mostrarciaseguradopendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarciaseguradoss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ciaseguradoss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcimatrimonioss || $mostrarcimatrimoniopendientess)
-                                <tr>
-                                    <td>CERTIFICADO DE MATRIMONIO</td>
-                                    <td>
-                                        @if ($mostrarcimatrimoniopendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcimatrimonioss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cmatrimonioss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>   
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcnacconyugess || $mostrarcnacconyugependientess)
-                                <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE CONYUGE</td>
-                                    <td>
-                                        @if ($mostrarcnacconyugependientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacconyugess)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacconyugess']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarciconyugess || $mostrarciconyugependientess)
-                                <tr>
-                                    <td>CARNET IDENTIDAD DE CONYUGE</td>
-                                    <td>
-                                        @if ($mostrarciconyugependientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarciconyugess)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ciconyugess']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcnacjihosss || $mostrarcnacjihospendientess)
-                                <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE HIJOS < 25</td>
-                                    <td>
-                                        @if ($mostrarcnacjihospendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacjihosss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacjihosss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a> 
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcihijosss || $mostrarcihijospendientess)
-                                <tr>
-                                    <td>CARNET IDENTIDAD DE HIJOS < 25</td>
-                                    <td>
-                                        @if ($mostrarcihijospendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcihijosss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cihijosss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a> 
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrardenfaccidentess || $mostrardenfaccidentependientess)
-                                <tr>
-                                    <td>DENUNCIA ENFERMEDAD ACCIDENTE</td>
-                                    <td>
-                                        @if ($mostrardenfaccidentependientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrardenfaccidentess)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['denfaccidentess']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a> 
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcrodomicilioss || $mostrarcrodomiciliopendientess)
-                                <tr>
-                                    <td>CROQUIS DE DOMICILIO</td>
-                                    <td>
-                                        @if ($mostrarcrodomiciliopendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcrodomicilioss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['crodomicilioss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcontratoss || $mostrarcontratopendientess)
-                                <tr>
-                                    <td>CONTRATO</td>
-                                    <td>
-                                        @if ($mostrarcontratopendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcontratoss)
-                                            @if ($userRole === 'MAESTRO' || $userRole === 'ADMINISTRADOR')
-                                                <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['contratoss']) }}" class="btn btn-verdocumentacion" target="_blank">
-                                                    <i class="fas fa-eye"></i>
-                                                </a> 
-                                            @else
-                                                <button class="btn btn-verdocumentacion" disabled>
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            @endif
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostraregestorass || $mostraregestorapendientess)
-                                <tr>
-                                    <td>EXTRACTO DE GESTORA</td>
-                                    <td>
-                                        @if ($mostraregestorapendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostraregestorass)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['egestorass']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrardictamencalentencss || $mostrardictamencalentencpendientess)
-                                <tr>
-                                    <td>DICTAMEN CALIFICACION ENTIDAD ENCARGADA</td>
-                                    <td>
-                                        @if ($mostrardictamencalentencpendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrardictamencalentencss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['dictamencalentencss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarinfomedicasaludss || $mostrarinfomedicasaludpendientess)
-                                <tr>
-                                    <td>INFORMACION MEDICA</td>
-                                    <td>
-                                        @if ($mostrarinfomedicasaludpendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarinfomedicasaludss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['infomedicasaludss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarctrabajoss || $mostrarctrabajopendientess)
-                                <tr>
-                                    <td>CERTIFICADO DE TRABAJO</td>
-                                    <td>
-                                        @if ($mostrarctrabajopendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarctrabajoss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ctrabajoss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarboletapagoss || $mostrarboletapagopendientess)
-                                <tr>
-                                    <td>BOLETA DE PAGO</td>
-                                    <td>
-                                        @if ($mostrarboletapagopendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarboletapagoss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['boletapagoss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostraractdatosss || $mostraractdatospendientess)
-                                <tr>
-                                    <td>ACTUALIZACION DE DATOS</td>
-                                    <td>
-                                        @if ($mostraractdatospendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostraractdatosss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['actdatosss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarresolinvhijosss || $mostrarresolinvhijospendientess)
-                                <tr>
-                                    <td>RESOLUCION INVALIDEZ DE HIJOS < 25</td>
-                                    <td>
-                                        @if ($mostrarresolinvhijospendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarresolinvhijosss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['resolinvhijosss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcunionlibress || $mostrarcunionlibrependientess)
-                                <tr>
-                                    <td>CERTIFICADO DE UNION LIBRE</td>
-                                    <td>
-                                        @if ($mostrarcunionlibrependientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcunionlibress)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cunionlibress']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcnacimientounionlibress || $mostrarcnacimientounionlibrependientess)
-                                <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE UNION LIBRE</td>
-                                    <td>
-                                        @if ($mostrarcnacimientounionlibrependientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacimientounionlibress)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacimientounionlibress']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarciunionlibress || $mostrarciunionlibrependientess)
-                                <tr>
-                                    <td>CARNET IDENTIDAD DE UNION LIBRE</td>
-                                    <td>
-                                        @if ($mostrarciunionlibrependientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarciunionlibress)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ciunionlibress']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcdivorcioss || $mostrarcdivorciopendientess)
-                                <tr>
-                                    <td>CERTIFICADO DE DIVORCIO</td>
-                                    <td>
-                                        @if ($mostrarcdivorciopendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcdivorcioss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cdivorcioss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcdefuncionss || $mostrarcdefuncionpendientess)
-                                <tr>
-                                    <td>CERTIFICADO DE DIFUNCION</td>
-                                    <td>
-                                        @if ($mostrarcdefuncionpendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcdefuncionss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cdefuncionss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarpolizasgenss || $mostrarpolizasgenpendientess)
-                                <tr>
-                                    <td>POLIZAS GENERALES</td>
-                                    <td>
-                                        @if ($mostrarpolizasgenpendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarpolizasgenss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['polizasgenss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrardeclasaludss || $mostrardeclasaludpendientess)
-                                <tr>
-                                    <td>DECLARACION SALUD</td>
-                                    <td>
-                                        @if ($mostrardeclasaludpendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrardeclasaludss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['declasaludss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarpolizaseguross || $mostrarpolizaseguropendientess)
-                                <tr>
-                                    <td>POLIZA SEGURO DESGRAVAMEN</td>
-                                    <td>
-                                        @if ($mostrarpolizaseguropendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarpolizaseguross)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['polizaseguross']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostraranteriordictamenss || $mostraranteriordictamenpendientess)
-                                <tr>
-                                    <td>ANTERIOR DICTAMEN O RESOLUCION</td>
-                                    <td>
-                                        @if ($mostraranteriordictamenpendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostraranteriordictamenss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['anteriordictamenss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarpoderciapoderadoss || $mostrarpoderciapoderadopendientess)
-                                <tr>
-                                    <td>PODER Y CARNET IDENTIDAD APODERADO</td>
-                                    <td>
-                                        @if ($mostrarpoderciapoderadopendientess)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarpoderciapoderadoss)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['poderciapoderadoss']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            
-                        </tbody>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- DOCUMENTACIÓN APELACIÓN-->
-    <div class="modal fade" id="modalDocumentacionapelacion{{ $loop->index }}" tabindex="-1" role="dialog" aria-labelledby="modalLabelDocumentacion{{ $loop->index }}" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="modalLabelDocumentacion{{ $loop->index }}">
-                        <strong>DOCUMENTACIÓN APELACION</strong>
-                    </h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Documento</th>
-                                <th>Ver Doc.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $mostrarpoderap = !empty($accion['poderap']);
-                                $mostrarpoderpendienteap = $accion['poderap'] === 'PENDIENTE';
-                                $mostraravcciap = !empty($accion['avcciap']);
-                                $mostraravccipendienteap = $accion['avcciap'] === 'PENDIENTE';
-                                $mostrarcnacaseguradoap = !empty($accion['cnacaseguradoap']);
-                                $mostrarcnacaseguradopendienteap = $accion['cnacaseguradoap'] === 'PENDIENTE';
-                                $mostrarciaseguradoap = !empty($accion['ciaseguradoap']);
-                                $mostrarciaseguradopendienteap = $accion['ciaseguradoap'] === 'PENDIENTE';
-                                $mostrarcimatrimonioap = !empty($accion['cmatrimonioap']);
-                                $mostrarcimatrimoniopendienteap = $accion['cmatrimonioap'] === 'PENDIENTE';
-                                $mostrarcnacconyugeap = !empty($accion['cnacconyugeap']);
-                                $mostrarcnacconyugependienteap = $accion['cnacconyugeap'] === 'PENDIENTE';
-                                $mostrarciconyugeap = !empty($accion['ciconyugeap']);
-                                $mostrarciconyugependienteap = $accion['ciconyugeap'] === 'PENDIENTE';
-                                $mostrarcnacjihosap = !empty($accion['cnacjihosap']);
-                                $mostrarcnacjihospendienteap = $accion['cnacjihosap'] === 'PENDIENTE';
-                                $mostrarcihijosap = !empty($accion['cihijosap']);
-                                $mostrarcihijospendienteap = $accion['cihijosap'] === 'PENDIENTE';
-                                $mostrardenfaccidenteap = !empty($accion['denfaccidenteap']);
-                                $mostrardenfaccidentependienteap = $accion['denfaccidenteap'] === 'PENDIENTE';
-                                $mostrarcrodomicilioap = !empty($accion['crodomicilioap']);
-                                $mostrarcrodomiciliopendienteap = $accion['crodomicilioap'] === 'PENDIENTE';
-                                $mostrarcontratoap = !empty($accion['contratoap']);
-                                $mostrarcontratopendienteap = $accion['contratoap'] === 'PENDIENTE';
-                                $mostraregestoraap = !empty($accion['egestoraap']);
-                                $mostraregestorapendienteap = $accion['egestoraap'] === 'PENDIENTE';
-                                $mostrardictamencalentencap = !empty($accion['dictamencalentencap']);
-                                $mostrardictamencalentencpendienteap = $accion['dictamencalentencap'] === 'PENDIENTE';
-                                $mostrarinfomedicasaludap = !empty($accion['infomedicasaludap']);
-                                $mostrarinfomedicasaludpendienteap = $accion['infomedicasaludap'] === 'PENDIENTE';
-                                $mostrarctrabajoap = !empty($accion['ctrabajoap']);
-                                $mostrarctrabajopendienteap = $accion['ctrabajoap'] === 'PENDIENTE';
-                                $mostrarboletapagoap = !empty($accion['boletapagoap']);
-                                $mostrarboletapagopendienteap = $accion['boletapagoap'] === 'PENDIENTE';
-                                $mostraractdatosap = !empty($accion['actdatosap']);
-                                $mostraractdatospendienteap = $accion['actdatosap'] === 'PENDIENTE';
-                                $mostrarresolinvhijosap = !empty($accion['resolinvhijosap']);
-                                $mostrarresolinvhijospendienteap = $accion['resolinvhijosap'] === 'PENDIENTE';
-                                $mostrarcunionlibreap = !empty($accion['cunionlibreap']);
-                                $mostrarcunionlibrependienteap = $accion['cunionlibreap'] === 'PENDIENTE';
-                                $mostrarcnacimientounionlibreap = !empty($accion['cnacimientounionlibreap']);
-                                $mostrarcnacimientounionlibrependienteap = $accion['cnacimientounionlibreap'] === 'PENDIENTE';
-                                $mostrarciunionlibreap = !empty($accion['ciunionlibreap']);
-                                $mostrarciunionlibrependienteap = $accion['ciunionlibreap'] === 'PENDIENTE';
-                                $mostrarcdivorcioap = !empty($accion['cdivorcioap']);
-                                $mostrarcdivorciopendienteap = $accion['cdivorcioap'] === 'PENDIENTE';
-                                $mostrarcdefuncionap = !empty($accion['cdefuncionap']);
-                                $mostrarcdefuncionpendienteap = $accion['cdefuncionap'] === 'PENDIENTE';
-                                $mostrarpolizasgenap = !empty($accion['polizasgenap']);
-                                $mostrarpolizasgenpendienteap = $accion['polizasgenap'] === 'PENDIENTE';
-                                $mostrardeclasaludap = !empty($accion['declasaludap']);
-                                $mostrardeclasaludpendienteap = $accion['declasaludap'] === 'PENDIENTE';
-                                $mostrarpolizaseguroap = !empty($accion['polizaseguroap']);
-                                $mostrarpolizaseguropendienteap = $accion['polizaseguroap'] === 'PENDIENTE';
-                                $mostraranteriordictamenap = !empty($accion['anteriordictamenap']);
-                                $mostraranteriordictamenpendienteap = $accion['anteriordictamenap'] === 'PENDIENTE';
-                                $mostrarpoderciapoderadoap = !empty($accion['poderciapoderadoap']);
-                                $mostrarpoderciapoderadopendienteap = $accion['poderciapoderadoap'] === 'PENDIENTE';
-                            @endphp
-
-                            @if ($mostrarpoderap || $mostrarpoderpendienteap)
-                                <tr>
-                                    <td>PODER: {{ $accion['numeropoderap'] }}</td>
-                                    <td>
-                                        @if ($mostrarpoderpendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarpoderap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['poderap']) }}" class="btn btn-verdocumentacion" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostraravcciap || $mostraravccipendienteap)
-                                <tr>
-                                    <td>AVC / CARNET DE ASEGURADO</td>
-                                    <td>
-                                        @if ($mostraravccipendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostraravcciap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['avcciap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcnacaseguradoap || $mostrarcnacaseguradopendienteap)
-                                <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE ASEGURADO</td>
-                                    <td>
-                                        @if ($mostrarcnacaseguradopendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacaseguradoap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacaseguradoap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarciaseguradoap || $mostrarciaseguradopendienteap)
-                                <tr>
-                                    <td>CARNET IDENTIDAD DE ASEGURADO</td>
-                                    <td>
-                                        @if ($mostrarciaseguradopendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarciaseguradoap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ciaseguradoap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcimatrimonioap || $mostrarcimatrimoniopendienteap)
-                                <tr>
-                                    <td>CERTIFICADO DE MATRIMONIO</td>
-                                    <td>
-                                        @if ($mostrarcimatrimoniopendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcimatrimonioap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cmatrimonioap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>   
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcnacconyugeap || $mostrarcnacconyugependienteap)
-                                <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE CONYUGE</td>
-                                    <td>
-                                        @if ($mostrarcnacconyugependienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacconyugeap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacconyugeap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarciconyugeap || $mostrarciconyugependienteap)
-                                <tr>
-                                    <td>CARNET IDENTIDAD DE CONYUGE</td>
-                                    <td>
-                                        @if ($mostrarciconyugependienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarciconyugeap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ciconyugeap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcnacjihosap || $mostrarcnacjihospendienteap)
-                                <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE HIJOS < 25</td>
-                                    <td>
-                                        @if ($mostrarcnacjihospendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacjihosap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacjihosap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a> 
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcihijosap || $mostrarcihijospendienteap)
-                                <tr>
-                                    <td>CARNET IDENTIDAD DE HIJOS < 25</td>
-                                    <td>
-                                        @if ($mostrarcihijospendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcihijosap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cihijosap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a> 
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrardenfaccidenteap || $mostrardenfaccidentependienteap)
-                                <tr>
-                                    <td>DENUNCIA ENFERMEDAD ACCIDENTE</td>
-                                    <td>
-                                        @if ($mostrardenfaccidentependienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrardenfaccidenteap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['denfaccidenteap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a> 
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcrodomicilioap || $mostrarcrodomiciliopendienteap)
-                                <tr>
-                                    <td>CROQUIS DE DOMICILIO</td>
-                                    <td>
-                                        @if ($mostrarcrodomiciliopendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcrodomicilioap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['crodomicilioap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcontratoap || $mostrarcontratopendienteap)
-                                <tr>
-                                    <td>CONTRATO</td>
-                                    <td>
-                                        @if ($mostrarcontratopendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcontratoap)
-                                            @if ($userRole === 'MAESTRO' || $userRole === 'ADMINISTRADOR')
-                                                <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['contratoap']) }}" class="btn btn-verdocumentacion" target="_blank">
-                                                    <i class="fas fa-eye"></i>
-                                                </a> 
-                                            @else
-                                                <button class="btn btn-verdocumentacion" disabled>
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                            @endif
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostraregestoraap || $mostraregestorapendienteap)
-                                <tr>
-                                    <td>EXTRACTO DE GESTORA</td>
-                                    <td>
-                                        @if ($mostraregestorapendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostraregestoraap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['egestoraap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrardictamencalentencap || $mostrardictamencalentencpendienteap)
-                                <tr>
-                                    <td>DICTAMEN CALIFICACION ENTIDAD ENCARGADA</td>
-                                    <td>
-                                        @if ($mostrardictamencalentencpendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrardictamencalentencap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['dictamencalentencap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarinfomedicasaludap || $mostrarinfomedicasaludpendienteap)
-                                <tr>
-                                    <td>INFORMACION MEDICA</td>
-                                    <td>
-                                        @if ($mostrarinfomedicasaludpendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarinfomedicasaludap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['infomedicasaludap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarctrabajoap || $mostrarctrabajopendienteap)
-                                <tr>
-                                    <td>CERTIFICADO DE TRABAJO</td>
-                                    <td>
-                                        @if ($mostrarctrabajopendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarctrabajoap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ctrabajoap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarboletapagoap || $mostrarboletapagopendienteap)
-                                <tr>
-                                    <td>BOLETA DE PAGO</td>
-                                    <td>
-                                        @if ($mostrarboletapagopendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarboletapagoap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['boletapagoap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostraractdatosap || $mostraractdatospendienteap)
-                                <tr>
-                                    <td>ACTUALIZACION DE DATOS</td>
-                                    <td>
-                                        @if ($mostraractdatospendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostraractdatosap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['actdatosap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarresolinvhijosap || $mostrarresolinvhijospendienteap)
-                                <tr>
-                                    <td>RESOLUCION INVALIDEZ DE HIJOS < 25</td>
-                                    <td>
-                                        @if ($mostrarresolinvhijospendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarresolinvhijosap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['resolinvhijosap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcunionlibreap || $mostrarcunionlibrependienteap)
-                                <tr>
-                                    <td>CERTIFICADO DE UNION LIBRE</td>
-                                    <td>
-                                        @if ($mostrarcunionlibrependienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcunionlibreap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cunionlibreap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcnacimientounionlibreap || $mostrarcnacimientounionlibrependienteap)
-                                <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE UNION LIBRE</td>
-                                    <td>
-                                        @if ($mostrarcnacimientounionlibrependienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacimientounionlibreap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacimientounionlibreap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarciunionlibreap || $mostrarciunionlibrependienteap)
-                                <tr>
-                                    <td>CARNET IDENTIDAD DE UNION LIBRE</td>
-                                    <td>
-                                        @if ($mostrarciunionlibrependienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarciunionlibreap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ciunionlibreap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcdivorcioap || $mostrarcdivorciopendienteap)
-                                <tr>
-                                    <td>CERTIFICADO DE DIVORCIO</td>
-                                    <td>
-                                        @if ($mostrarcdivorciopendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcdivorcioap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cdivorcioap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarcdefuncionap || $mostrarcdefuncionpendienteap)
-                                <tr>
-                                    <td>CERTIFICADO DE DIFUNCION</td>
-                                    <td>
-                                        @if ($mostrarcdefuncionpendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcdefuncionap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cdefuncionap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarpolizasgenap || $mostrarpolizasgenpendienteap)
-                                <tr>
-                                    <td>POLIZAS GENERALES</td>
-                                    <td>
-                                        @if ($mostrarpolizasgenpendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarpolizasgenap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['polizasgenap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrardeclasaludap || $mostrardeclasaludpendienteap)
-                                <tr>
-                                    <td>DECLARACION SALUD</td>
-                                    <td>
-                                        @if ($mostrardeclasaludpendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrardeclasaludap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['declasaludap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarpolizaseguroap || $mostrarpolizaseguropendienteap)
-                                <tr>
-                                    <td>POLIZA SEGURO DESGRAVAMEN</td>
-                                    <td>
-                                        @if ($mostrarpolizaseguropendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarpolizaseguroap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['polizaseguroap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostraranteriordictamenap || $mostraranteriordictamenpendienteap)
-                                <tr>
-                                    <td>ANTERIOR DICTAMEN O RESOLUCION</td>
-                                    <td>
-                                        @if ($mostraranteriordictamenpendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostraranteriordictamenap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['anteriordictamenap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarpoderciapoderadoap || $mostrarpoderciapoderadopendienteap)
-                                <tr>
-                                    <td>PODER Y CARNET IDENTIDAD APODERADO</td>
-                                    <td>
-                                        @if ($mostrarpoderciapoderadopendienteap)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarpoderciapoderadoap)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['poderciapoderadoap']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>  
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                        </tbody>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- DOCUMENTACIÓN AUDITORIA-->
-    <div class="modal fade" id="modalDocumentacionauditoria{{ $loop->index }}" tabindex="-1" role="dialog" aria-labelledby="modalLabelDocumentacion{{ $loop->index }}" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="modalLabelDocumentacionauditoria{{ $loop->index }}">
-                        <strong>DOCUMENTACIÓN AUDITORIA MEDICA</strong>
-                    </h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Documento</th>
-                                <th>Ver Doc.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                $mostrarcnacaseguradoau = !empty($accion['cnacaseguradoau']);
-                                $mostrarcnacaseguradopendienteau = $accion['cnacaseguradoau'] === 'PENDIENTE';
-                                $mostrarciaseguradoau = !empty($accion['ciaseguradoau']);
-                                $mostrarciaseguradopendienteau = $accion['ciaseguradoau'] === 'PENDIENTE';
-                            @endphp
-
-                            
-                            @if ($mostrarcnacaseguradoau || $mostrarcnacaseguradopendienteau)
-                                <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE ASEGURADO</td>
-                                    <td>
-                                        @if ($mostrarcnacaseguradopendienteau)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacaseguradoau)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['cnacaseguradoau']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            @if ($mostrarciaseguradoau || $mostrarciaseguradopendienteau)
-                                <tr>
-                                    <td>CARNET IDENTIDAD DE ASEGURADO</td>
-                                    <td>
-                                        @if ($mostrarciaseguradopendienteau)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarciaseguradoau)
-                                            <a href="{{ asset('/requisitosclientesita/' . $item['clienteitaid'] . '/' . $accion['ciaseguradoau']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
-                            <table class="table">
-                                <thead>
-                                    <tr> 
-                                        <th>Banco</th>
-                                        <th>Nro. Póliza General</th>
-                                        <th>Póliza General</th>
-                                        <th>Declaración Salud</th>
-                                        <th>Nro. Póliza Desgravamen</th>
-                                        <th>Poliza seguro desgravamen</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($requisitosClientepolizas as $requisito)
-                                    <tr>
-                                        <td>{{ $requisito->banco }}</td>
-                                        <td>{{ $requisito->nropolizageneral ?? '' }}</td>
-                                        <td>
-                                            @if ($requisito->polizageneral === 'PENDIENTE')
-                                                <div class="pendiente">PENDIENTE</div>
-                                            @else
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->polizageneral}") }}" target="_blank" class="verdoc">VER DOC.</a>
-                                            @endif
-                                        </td>
-                                        <td> 
-                                            @if ($requisito->declasalud === 'PENDIENTE')
-                                                <div class="pendiente">PENDIENTE</div>
-                                            @elseif ($requisito->declasalud === 'NO APLICA')
-                                                <div class="noaplica">NO APLICA</div>
-                                            @else
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->declasalud}") }}" target="_blank" class="verdoc">VER DOC.</a>
-                                            @endif
-                                        </td>
-                                        
-                                        <td>{{ $requisito->nropolizadesgravamen ?? '' }}</td>
-                                        <td>
-                                            @if ($requisito->polizasegurodesgravamen === 'PENDIENTE')
-                                                <div class="pendiente">PENDIENTE</div>
-                                            @else
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->polizasegurodesgravamen}") }}" target="_blank" class="verdoc">VER DOC.</a> 
-                                            @endif
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </tbody>
-                        <tbody>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
 @endforeach
 
@@ -2930,3 +1738,4 @@ margin-top: -10px;
         });
     </script>
 @endsection
+

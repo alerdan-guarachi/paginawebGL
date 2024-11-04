@@ -251,7 +251,7 @@
                     <style>
                         /* Reduce el interlineado entre filas */
                         table tbody tr {
-                            line-height: 0.5; /* Menor interlineado */
+                            line-height: 0.8; /* Menor interlineado */
                         }
                     
                         table tbody tr td {

@@ -46,6 +46,7 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Acciones</th>
                         <th>Proveedor</th>
                         <th>Fecha bateria</th>
@@ -57,39 +58,49 @@
                 <tbody>
                     @foreach($accionesDisponibles as $accion)
                     <?php
+                    // Mensaje principal
                     $mensaje = "Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: " .
                             $accion->proveedornombre . ", para realizarse: " .
-                            $accion->accionnombre . ", para la fecha: " .
+                            $accion->areanombre . ", para la fecha: " .
                             $accion->fechaasignada . ", a la hora: " . 
-                            $accion->horadesde . ". Que tenga un excelente dia.";
-
+                            $accion->horadesde . " en: " . 
+                            $accion->direccion . ". Que tenga un excelente día.";
+                    
+                    // Mensaje de ubicación en un párrafo separado, si está disponible
+                    if (!empty($accion->linkubicacion)) {
+                        $mensaje .= "\n\nVer ubicación: " . $accion->linkubicacion;
+                    }
+                    
                     $mensajeCodificado = urlencode($mensaje);
                     ?>
                     <tr>
+                        <td class="align-middle">{{ $accion->id }}</td>
                         <td class="align-middle">{{ $accion->accionnombre }}</td>
                         <td class="align-middle">{{ $accion->proveedornombre }}</td>
                         <td class="align-middle">{{ $accion->fechabateria }}</td>
                         <td class="align-middle">{{ $accion->fechaasignada }}</td>
                         <td class="align-middle">{{ $accion->horadesde }} - {{ $accion->horahasta }}</td>
                         <td width="10px">
-                            @if(in_array($accion->accionnombre, $estadoRegistrados))
+                            @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria]))
                                 <i class="fas fa-check-circle fa-2x checkverde"></i>
                             @else
                                 <i class="fas fa-times-circle fa-2x text-danger"></i>
                             @endif
                         </td>
-                        <td width="10px">
+                        
+                        <td width="10px"> 
                             <abbr title="Recordar">
-                                <a class="btn btn-sm btn-whatsapp @if(in_array($accion->accionnombre, $estadoRegistrados)) disabled @endif" 
-                                @if(in_array($accion->accionnombre, $estadoRegistrados)) 
-                                    onclick="return false;" 
-                                @else 
-                                    href="https://wa.me/{{ $clientecomun->celular }}?text={{ $mensajeCodificado }}" 
-                                @endif>
+                                <a class="btn btn-sm btn-whatsapp 
+                                    @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria])) disabled @endif" 
+                                    @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria])) 
+                                        onclick="return false;" 
+                                    @else 
+                                        href="https://wa.me/{{ $clientecomun->celular }}?text={{ $mensajeCodificado }}" 
+                                    @endif>
                                     <i class="fas fa-sms"></i>
                                 </a>
                             </abbr>
-                        </td>
+                        </td>                        
                     </tr>
                 @endforeach
                 </tbody>
@@ -116,11 +127,11 @@
                 {!! Form::open(['route' => ['admin.asociados.guardarestadoprogramacionclientecomun', $clientecomun], 'method' => 'POST']) !!}
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                {!! Form::hidden('clientecomunid', $id) !!}
-                {!! Form::hidden('clientecomunnombre', $nombreclientecomun) !!}
+                {!! Form::hidden('clientecomunid', $clientecomun->id) !!}
+                {!! Form::hidden('clientecomunnombre', $clientecomun->nombrecompleto) !!}
                 {!! Form::hidden('accionid', '', ['id' => 'modalAccionId']) !!}
 
-                <div class="form-group">
+                <div class="form-group">   
                     {!! Form::label('', 'Fecha de Bateria:') !!}
                     <select class="form-control" id="fecha_bateria">
                         <option value="" disabled selected></option>
@@ -135,19 +146,107 @@
                     @enderror
                 </div>
                 <input type="hidden" id="fechabateria" name="fechabateria">
+                
+                <script>
+                    document.getElementById('fecha_bateria').addEventListener('change', function() {
+                        var selectedValue = this.value; 
+                        document.getElementById('fechabateria').value = selectedValue;
+                    });
+                </script>
+                
+                <div class="form-group"> 
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        {!! Form::label('', 'Acciones disponibles:') !!}
 
-                <div class="form-group" id="acciones_select">
-                    {!! Form::label('', 'Acciones disponibles:') !!}
-                    <select class="form-control" id="accion" name="accion">
-                        <option value="" disabled selected></option>
-                    </select>
-                    @error('accion')
+                        <!-- Checkbox "Seleccionar Todo" -->
+                        <div id="select-all-container" style="display: none;">
+                            <label style="font-weight: bold; font-size: 14px; margin-bottom: 0;">
+                                <input type="checkbox" id="select-all" style="margin-right: 5px;">
+                                SELECCIONAR TODO
+                            </label>
+                        </div>
+                    </div>
+                
+                    <div id="acciones_select">
+                        @foreach($accionesPorFecha as $fecha => $acciones)
+                            <div class="acciones-{{ $fecha }}" style="display:none;">
+                                @foreach($acciones as $accion)
+                                    @if (in_array($accion, $accionesNoRegistradas))
+                                        <div>
+                                            <label style="font-weight: normal;">
+                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}" class="accion-checkbox"> {{ $accion }}
+                                            </label>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                    @error('accionesSeleccionadas')
                         <small class="text-danger fas fa-exclamation-circle">
                             {{$message}}
                         </small>
                     @enderror
                 </div>
-                <input type="hidden" id="accionnombre" name="accionnombre">
+                
+                <script>
+                    document.getElementById('fecha_bateria').addEventListener('change', function() {
+                        const selectedFecha = this.value;
+                        const accionesDivs = document.querySelectorAll('.acciones-' + selectedFecha);
+
+                        // Oculta todas las acciones
+                        document.querySelectorAll('[class^="acciones-"]').forEach(div => {
+                            div.style.display = 'none';
+                        });
+
+                        // Reinicia el estado del checkbox "Seleccionar Todo"
+                        document.getElementById('select-all').checked = false;
+
+                        // Muestra las acciones para la fecha seleccionada
+                        accionesDivs.forEach(div => {
+                            div.style.display = 'block';
+                        });
+
+                        // Obtener todos los checkboxes de acciones visibles
+                        const accionesCheckboxes = document.querySelectorAll('.acciones-' + selectedFecha +
+                            ' .accion-checkbox');
+
+                        // Muestra el checkbox "Seleccionar Todo" si hay acciones disponibles
+                        if (accionesCheckboxes.length > 0) {
+                            document.getElementById('select-all-container').style.display = 'block';
+                        } else {
+                            document.getElementById('select-all-container').style.display = 'none';
+                        }
+                    });
+
+                    // Función para manejar el "Seleccionar Todo"
+                    document.getElementById('select-all').addEventListener('change', function() {
+                        const isChecked = this.checked;
+                        const selectedFecha = document.getElementById('fecha_bateria').value;
+
+                        if (selectedFecha) {
+                            const accionesCheckboxes = document.querySelectorAll('.acciones-' + selectedFecha +
+                                ' .accion-checkbox');
+                            accionesCheckboxes.forEach(checkbox => {
+                                checkbox.checked = isChecked;
+                            });
+                        }
+                    });
+
+                    // Opcional: Actualizar el estado del checkbox "Seleccionar Todo" si se desmarca algún checkbox individual
+                    document.addEventListener('change', function(e) {
+                        if (e.target.classList.contains('accion-checkbox')) {
+                            const selectedFecha = document.getElementById('fecha_bateria').value;
+                            const accionesCheckboxes = document.querySelectorAll('.acciones-' + selectedFecha +
+                                ' .accion-checkbox');
+                            const allChecked = Array.from(accionesCheckboxes).every(checkbox => checkbox.checked);
+                            document.getElementById('select-all').checked = allChecked;
+                        }
+                    });
+                    </script>
+
+                
+                                 
                 <div class="form-group" hidden>
                     {!! Form::label('nombrecompleto', 'Nombre del Cliente:') !!}
                     {!! Form::text('nombrecompleto', $clientecomun->nombrecompleto, ['id' => 'modalNombreCompleto', 'class' => 'form-control', 'readonly']) !!}
@@ -176,188 +275,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/js/dropify.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function(){
-        $('#fecha_bateria').on('change', function(){
-            $('#accion').val('');
-            $('#accionnombre').val('');
-        });
-
-        $('#accion').on('change', function(){
-            var selectedOption = $(this).val();
-            $('#accionnombre').val(selectedOption);
-        });
-    });
-
-document.getElementById('fecha_bateria').addEventListener('change', function() {
-    var fechaSeleccionada = this.value;
-    var accionesDisponibles = document.getElementById('accion');
-    accionesDisponibles.innerHTML = '';
-    var accionesPorFecha = @json($accionesPorFecha);
-    var accionesRegistradas = @json($accionesRegistradas);
-
-    var opcionVacia = document.createElement('option');
-    opcionVacia.value = '';
-    opcionVacia.text = '';
-    accionesDisponibles.appendChild(opcionVacia);
-
-    var accionesFechaSeleccionada = accionesPorFecha[fechaSeleccionada];
-
-    var accionesDisponiblesFiltradas = accionesFechaSeleccionada.filter(function(accion) {
-        return !accionesRegistradas.includes(accion);
-    });
-
-    accionesDisponiblesFiltradas.forEach(function(accion) {
-        var opcion = document.createElement('option');
-        opcion.value = accion;
-        opcion.text = accion;
-        accionesDisponibles.appendChild(opcion);
-    });
-    
-    document.getElementById('acciones_select').style.display = 'block';
-});
-</script>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#fechabateria').change(function() {
-            var selectedOption = $(this).children("option:selected").text();
-            $('#fechaSeleccionada').val(selectedOption);
-        });
-    });
-
-    document.getElementById('fecha_bateria').addEventListener('change', function() {
-        var selectedDate = this.value;
-        document.getElementById('fechabateria').value = selectedDate;
-    });
-
-    $(document).ready(function() {
-        $('.dropify').dropify({
-            messages: {
-                'default': 'Arrastre y suelte un archivo o haga clic aquí',
-                'replace': 'Arrastre y suelte o haga clic para reemplazar',
-                'remove': 'Eliminar',
-                'error': 'Ooops, algo salió mal.'
-            }
-        });
-    
-        $('.dropify').on('dropify.error.fileSize', function(event, element) {
-            var maxSize = element.input.files[0].size / (1024 * 1024);
-            var errorMessage = 'El archivo es demasiado grande (' + maxSize.toFixed(2) + ' MB máx.).';
-            $(element.input).siblings('.dropify-error').text(errorMessage);
-        });
-    });
-
-    $(document).ready(function() {
-        $('#area').change(function() {
-            var areaId = $(this).val();
-            $('.acciones').hide();
-            $('#acciones_' + areaId).show();
-        });
-    });
-
-    document.getElementById('archivo').addEventListener('change', function(event) {
-        var file = event.target.files[0];
-        if (file) {
-            var fileURL = URL.createObjectURL(file);
-            var previewCard = document.getElementById('preview-card');
-            var documentPreview = document.getElementById('document-preview');
-    
-            previewCard.style.display = 'block';
-            documentPreview.src = fileURL;
-        } else {
-            var previewCard = document.getElementById('preview-card');
-            previewCard.style.display = 'none';
-            documentPreview.src = '';
-        }
-    });
-
-//CANCELAR FUNCION DE LA TECLA ENTER
-    document.addEventListener('DOMContentLoaded', function() {
-        document.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-            }
-        });
-    });
-
-    document.getElementById('area_select').addEventListener('change', function() {
-        var select = document.getElementById('area_select');
-        var selectedOption = select.options[select.selectedIndex];
-        if (selectedOption.value !== '') {
-            // Oculta el campo select
-            select.style.display = 'none';
-            // Oculta el label
-            document.getElementById('area_label').style.display = 'none';
-            // Muestra el nombre del área seleccionada como título para acciones correspondientes
-            var areaName = selectedOption.text;
-            var accionesDiv = document.getElementById('acciones_' + selectedOption.value);
-            accionesDiv.style.display = 'block'; // Muestra las acciones correspondientes al área seleccionada
-            // Añade el nombre del área seleccionada como título para acciones correspondientes si no existe ya
-            if (!document.getElementById('acciones_label_' + selectedOption.value)) {
-                var accionesLabel = document.createElement('label');
-                accionesLabel.innerHTML = 'Acciones para: ' + areaName;
-                accionesLabel.id = 'acciones_label_' + selectedOption.value;
-                accionesDiv.prepend(accionesLabel);
-            }
-            // Muestra el botón solo si no está visible
-            var resetButton = document.getElementById('reset_button');
-            if (!resetButton) {
-                var button = document.createElement('button');
-                button.type = 'button';
-                button.innerHTML = 'Elegir otra area';
-                button.classList.add('custom-button');
-
-                button.id = 'reset_button';
-                button.onclick = resetSelectAndCheckboxes;
-                document.getElementById('reset_button_container').appendChild(button);
-            }
-        }
-    });
-
-    function resetSelectAndCheckboxes() {
-        var select = document.getElementById('area_select');
-        select.style.display = 'block'; // Mostrar el select nuevamente
-        select.value = ''; // Restablecer el valor del select
-
-        // Mostrar el label nuevamente
-        document.getElementById('area_label').style.display = 'block';
-
-        // Desmarcar todos los checkboxes de acciones
-        var checkboxes = document.querySelectorAll('[id^="accionnombre_"]');
-        checkboxes.forEach(function(checkbox) {
-            checkbox.checked = false;
-        });
-
-        // Ocultar todas las secciones de acciones y etiquetas de "Acciones para"
-        var accionesDivs = document.querySelectorAll('[id^="acciones_"]');
-        accionesDivs.forEach(function(div) {
-            div.style.display = 'none';
-            var label = document.getElementById('acciones_label_' + div.id.split('_')[1]);
-            if (label) {
-                label.remove();
-            }
-        });
-
-        // Ocultar el botón de restablecimiento
-        var resetButton = document.getElementById('reset_button');
-        if (resetButton) {
-            resetButton.remove();
-        }
-    }
-    $(document).ready(function() {
-        $('input[name="buscarpor"]').on('keyup', function() {
-            var query = $(this).val();
-            var botonBuscar = $('#btn-buscar');
-            if (query.trim() === '') {
-                botonBuscar.prop('disabled', true);
-            } else {
-                botonBuscar.prop('disabled', false);
-            }
-        });
-    });
-</script>
 @endsection
 
 @section('css')

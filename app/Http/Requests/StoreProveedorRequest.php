@@ -47,6 +47,7 @@ class StoreProveedorRequest extends FormRequest
             'personacontacto' => '',
             'celularreferencia' => '',
             'telefonoreferencia' => '',
+            'linkubicacion' => '',
             
         ]; 
         return $rules;

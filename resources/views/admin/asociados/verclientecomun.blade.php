@@ -29,63 +29,139 @@
                     <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="ventanaModalLabel" aria-hidden="true">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="ventanaModalLabel"><strong>ACCIONES DEL CLIENTE</strong></h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
+                                <strong style="text-align: center; font-size:20px; margin-top: 20px;">ACCIONES DEL CLIENTE</strong>
+                                <style>
+                                    .bordeetapa1 {
+                                        border-top: 2px solid #26a1c0;
+                                        border-bottom: 2px solid #26a1c0;
+                                        border-right: 2px solid #26a1c0;
+                                        border-left: 2px solid #26a1c0;
+                                    }
+                                    .bordeetapa2 {
+                                        border-top: 2px solid #409c3e;
+                                        border-bottom: 2px solid #409c3e;
+                                        border-right: 2px solid #409c3e;
+                                        border-left: 2px solid #409c3e;
+                                    }
+                                    .bordeetapa3 {
+                                        border-top: 2px solid #a3bc35;
+                                        border-bottom: 2px solid #a3bc35;
+                                        border-right: 2px solid #a3bc35;
+                                        border-left: 2px solid #a3bc35;
+                                    }
+                                    .otros {
+                                        border-top: 2px solid #c47a35;
+                                        border-bottom: 2px solid #c47a35;
+                                        border-right: 2px solid #c47a35;
+                                        border-left: 2px solid #c47a35;
+                                    }
+                                </style>
                                 <div class="modal-body">
-                                    <div class="row text-center">
-                                        @can('admin.asociados.editarclientecomun')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.editarclientecomun', $clientecomun) }}" class="btn btn-editar btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
-                                                <i class="fas fa-edit fa-2x"></i>
-                                            </a>
+                                    <div style="background-color: #e9fbff;  border-radius: 40px;">
+                                        <div style="text-align: center;padding: 1.5px;">
+                                            <strong style="color: #26a1c0; font-size:20px;">ETAPA 1</strong>
                                         </div>
-                                        @endcan
-                                        @can('admin.asociados.crearbateriaclientecomun')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.crearbateriaclientecomun', $clientecomun) }}" class="btn btn-bateria btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
-                                                <i class="fas fa-charging-station fa-2x"></i>
-                                            </a>
+                                        <div class="row text-center">
+                                            @can('admin.asociados.crearbateriaclientecomun')
+                                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.crearbateriaclientecomun', $clientecomun) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
+                                                    <i class="fas fa-charging-station"></i>
+                                                    <strong>BATERIA</strong>
+                                                </a>
+                                            </div>
+                                            @endcan
+                                            @can('admin.asociados.aprobacioncotizacionclientecomun')
+                                            @if ($tieneBateria)
+                                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                    <a href="{{ route('admin.asociados.aprobacioncotizacionclientecomun', $clientecomun) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
+                                                        <i class="fas fa-donate"></i>
+                                                        <strong>COTIZACIÓN</strong>
+                                                    </a>
+                                                </div>
+                                                @else
+                                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                    <a href="#" class="btn btn-etapa1 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
+                                                        <i class="fas fa-donate"></i>
+                                                        <strong>COTIZACIÓN</strong>
+                                                    </a>
+                                                </div>
+                                            @endif
+                                            @endcan
                                         </div>
-                                        @endcan
-                                        @can('admin.asociados.aprobacioncotizacionclientecomun')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.aprobacioncotizacionclientecomun', $clientecomun) }}" class="btn btn-cotizacion btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
-                                                <i class="fas fa-donate fa-2x"></i>
-                                            </a>
+                                    </div>
+                                    <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
+                                        <div style="text-align: center; padding: 1.5px;">
+                                            <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
+                                        </div> 
+                                        <div class="row text-center">
+                                            @can('admin.asociados.crearprogramacionclientecomun')
+                                                @if ($tieneCotizacionaprobada)
+                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                        <a href="{{ route('admin.asociados.crearprogramacionclientecomun', $clientecomun) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
+                                                            <i class="fas fa-calendar-alt"></i>
+                                                            <strong>PROG.</strong>
+                                                        </a>
+                                                    </div>
+                                                    @else
+                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                        <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                                            <i class="fas fa-calendar-alt"></i>
+                                                            <strong>PROG.</strong>
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            @endcan
+                                            @can('admin.asociados.estadoprogramacionclientecomun')
+                                                @if ($tieneProgramacion)
+                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                        <a href="{{ route('admin.asociados.estadoprogramacionclientecomun', $clientecomun) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ESTADO DE PROGRAMACIÓN">
+                                                            <i class="fas fa-calendar-check"></i>
+                                                            <strong>ESTADO P.</strong>
+                                                        </a>
+                                                    </div>
+                                                    @else
+                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                        <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                                            <i class="fas fa-calendar-check"></i>
+                                                            <strong>ESTADO P.</strong>
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            @endcan
+                                            @can('admin.asociados.creardocumentacionclientecomun')
+                                                @if ($tieneProgramacionatentido)
+                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                        <a href="{{ route('admin.asociados.creardocumentacionclientecomun', $clientecomun) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                                            <i class="fas fa-list-alt"></i>
+                                                            <strong>INFORMES</strong>
+                                                        </a>
+                                                    </div>
+                                                    @else
+                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                        <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                                            <i class="fas fa-list-alt"></i>
+                                                            <strong>INFORMES</strong>
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            @endcan
                                         </div>
-                                        @endcan
-                                        @can('admin.asociados.crearprogramacionclientecomun')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.crearprogramacionclientecomun', $clientecomun) }}" class="btn btn-programar btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
-                                                <i class="fas fa-calendar-alt fa-2x"></i>
-                                            </a>
+                                    </div>
+                
+                                    <div style="margin-top: 10px; background-color: #fff0e3;  border-radius: 40px;">
+                                        <div style="text-align: center; padding: 1.5px;">
+                                            <strong  style="color: #c47a35; font-size:20px;">OTROS</strong>
                                         </div>
-                                        @endcan
-                                        @can('admin.asociados.estadoprogramacionclientecomun')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.estadoprogramacionclientecomun', $clientecomun) }}" class="btn btn-estado btn-block" data-toggle="tooltip" data-placement="top" title="ESTADO DE PROGRAMACIÓN">
-                                                <i class="fas fa-calendar-check fa-2x"></i>
-                                            </a>
+                                        <div class="row text-center">
+                                            @can('admin.asociados.editarclientecomun')
+                                            <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.editarclientecomun', $clientecomun) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
+                                                    <i class="fas fa-edit"></i>
+                                                    <strong>EDITAR</strong>
+                                                </a>
+                                            </div>
+                                            @endcan
                                         </div>
-                                        @endcan
-                                        @can('admin.asociados.creardocumentacionclientecomun')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.creardocumentacionclientecomun', $clientecomun) }}" class="btn btn-subirdocumento btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
-                                                <i class="fas fa-file-upload fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan
-                                        @can('admin.asociados.listadodocumentacionclientecomun')
-                                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.listadodocumentacionclientecomun', $clientecomun) }}" class="btn btn-listadodocumentos btn-block" data-toggle="tooltip" data-placement="top" title="LISTA DE DOCUMENTOS">
-                                                <i class="fas fa-list-alt fa-2x"></i>
-                                            </a>
-                                        </div>
-                                        @endcan
                                     </div>
                                 </div>
                                 <div class="modal-footer">
@@ -186,52 +262,11 @@ $('.dropify').dropify();
 @stop
 
 @section('css')
-
 <style>
-    .custom-dropdown {
-        position: relative;
-        display: inline-block;
-    }
-    
-    .custom-select-wrapper {
-        border: 1px solid black; /* Agrega un borde alrededor del texto */
-        background-color: #fceacf; /* Cambia el color de fondo */
-        padding: 1px; /* Ajusta el padding según sea necesario */
-        text-align: center;
-        border-radius: 5px;
-        width: 140px; 
-    }
-
-    .custom-dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #f9f9f9;
-        width: 200px; /* Ajusta el ancho del menú desplegable según sea necesario */
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
-
-    .custom-dropdown-content a {
-        color: black;
-        padding: 0px 5px; /* Ajusta el padding según sea necesario */
-        text-decoration: none;
-        display: block;
-    }
-
-    .custom-dropdown-content a:hover {
-        background-color: #eefed3;
-    }
-
-    .custom-dropdown:hover .custom-dropdown-content {
-        display: block;
-    }
-    th, td {
-        border-bottom: 1px solid #94c93b;
-    }
     h1, th {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 900;
+        font-weight: 700;
         }
     h5 {
         color:#94c93b; 
@@ -244,19 +279,13 @@ $('.dropify').dropify();
         font-family: "Segoe UI";
         font-weight: 1000;
         }
-    #vista-previa {
-        display: block;
-        height: auto;
-        border: 1px solid #ccc;
-        padding: 5px;
-        box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
-        }
     table {
         border-collapse: separate;
         border-spacing: 2px;
     }
     th, td {
         padding: 15px;
+        border-bottom: 1px solid #94c93b;
     }
     td{
         text-align: right;
@@ -285,259 +314,79 @@ $('.dropify').dropify();
         background-color: #94c93b;
         color: #ffffff;
     }
-</style>
-<style>
     .btn-cerrar {
         background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
+        color: #e22424;
+        border-color: #e22424;
         border-radius: 5px;
         padding: 5px 10px;
     }
     .btn-cerrar:hover {
-        background-color: #94c93b;
+        background-color: #e22424;
         color: #ffffff;
+    }
+    .btn-icono i {
+        font-size: 4em;
     }
     .btn-editar {
         width: 100px;
         height: 90px;
-        font-size: 24px;
-        line-height: 80px;
+        font-size: 13px;
+        flex-direction: column;
         text-align: center;
-        padding: 0;
+        padding: 10px;
         background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
+        color: #e05f28;
+        border-color: #e05f28;
         border-radius: 5px;
     }
     .btn-editar:hover {
-        background-color: #faa625;
+        background-color: #e05f28;
         color: #ffffff;
     }
     .btn-editar i {
         display: inline-block;
         vertical-align: middle;
     }
-    .btn-bateria {
+    .btn-etapa1 {
         width: 100px;
         height: 90px;
-        font-size: 24px;
-        line-height: 80px;
+        font-size: 13px;
+        flex-direction: column;
         text-align: center;
-        padding: 0;
+        padding: 10px;
         background-color: #ffffff;
-        color: #47b4e7;
-        border-color: #47b4e7;
+        color: #26a1c0;
+        border-color: #26a1c0;
         border-radius: 5px;
     }
-    .btn-bateria:hover {
-        background-color: #47b4e7;
+    .btn-etapa1:hover {
+        background-color: #26a1c0;
         color: #ffffff;
     }
-    .btn-bateria i {
+    .btn-etapa1 i {
         display: inline-block;
         vertical-align: middle;
     }
-    .btn-cotizacion {
+    .btn-etapa2 {
         width: 100px;
         height: 90px;
-        font-size: 24px;
-        line-height: 80px;
+        font-size: 13px;
+        flex-direction: column;
         text-align: center;
-        padding: 0;
+        padding: 10px;
         background-color: #ffffff;
-        color: #c8ce22;
-        border-color: #c8ce22;
+        color: #148734;
+        border-color: #148734;
         border-radius: 5px;
     }
-    .btn-cotizacion:hover {
-        background-color: #c8ce22;
+    .btn-etapa2:hover {
+        background-color: #148734;
         color: #ffffff;
     }
-    .btn-cotizacion i {
+    .btn-etapa2 i {
         display: inline-block;
         vertical-align: middle;
     }
-    .btn-aprobacion {
-        width: 100px;
-        height: 90px;
-        font-size: 24px;
-        line-height: 80px;
-        text-align: center;
-        padding: 0;
-        background-color: #ffffff;
-        color: #20a425;
-        border-color: #20a425;
-        border-radius: 5px;
-    }
-    .btn-aprobacion:hover {
-        background-color: #20a425;
-        color: #ffffff;
-    }
-    .btn-aprobacion i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-programar {
-        width: 100px;
-        height: 90px;
-        font-size: 24px;
-        line-height: 80px;
-        text-align: center;
-        padding: 0;
-        background-color: #ffffff;
-        color: #1d31e2;
-        border-color: #1d31e2;
-        border-radius: 5px;
-    }
-    .btn-programar:hover {
-        background-color: #1d31e2;
-        color: #ffffff;
-    }
-    .btn-programar i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-estado {
-        width: 100px;
-        height: 90px;
-        font-size: 24px;
-        line-height: 80px;
-        text-align: center;
-        padding: 0;
-        background-color: #ffffff;
-        color: #2f755a;
-        border-color: #2f755a;
-        border-radius: 5px;
-    }
-    .btn-estado:hover {
-        background-color: #2f755a;
-        color: #ffffff;
-    }
-    .btn-estado i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-subirdocumento {
-        width: 100px;
-        height: 90px;
-        font-size: 24px;
-        line-height: 80px;
-        text-align: center;
-        padding: 0;
-        background-color: #ffffff;
-        color: #c547e8;
-        border-color: #c547e8;
-        border-radius: 5px;
-    }
-    .btn-subirdocumento:hover {
-        background-color: #c547e8;
-        color: #ffffff;
-    }
-    .btn-subirdocumento i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-listadodocumentos {
-        width: 100px;
-        height: 90px;
-        font-size: 24px;
-        line-height: 80px;
-        text-align: center;
-        padding: 0;
-        background-color: #ffffff;
-        color: #531f84;
-        border-color: #531f84;
-        border-radius: 5px;
-    }
-    .btn-listadodocumentos:hover {
-        background-color: #531f84;
-        color: #ffffff;
-    }
-    .btn-listadodocumentos i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-formulario {
-        width: 100px;
-        height: 90px;
-        font-size: 24px;
-        line-height: 80px;
-        text-align: center;
-        padding: 0;
-        background-color: #ffffff;
-        color: #8f6542;
-        border-color: #8f6542;
-        border-radius: 5px;
-    }
-    .btn-formulario:hover {
-        background-color: #8f6542;
-        color: #ffffff;
-    }
-    .btn-formulario i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-etiqueta {
-        width: 100px;
-        height: 90px;
-        font-size: 24px;
-        line-height: 80px;
-        text-align: center;
-        padding: 0;
-        background-color: #ffffff;
-        color: #2e5362;
-        border-color: #2e5362;
-        border-radius: 5px;
-    }
-    .btn-etiqueta:hover {
-        background-color: #2e5362;
-        color: #ffffff;
-    }
-    .btn-etiqueta i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-requisitos {
-        width: 100px;
-        height: 90px;
-        font-size: 24px;
-        line-height: 80px;
-        text-align: center;
-        padding: 0;
-        background-color: #ffffff;
-        color: #556f34;
-        border-color: #556f34;
-        border-radius: 5px;
-    }
-    .btn-requisitos:hover {
-        background-color: #556f34;
-        color: #ffffff;
-    }
-    .btn-requisitos i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-contactos {
-        width: 100px;
-        height: 90px;
-        font-size: 24px;
-        line-height: 80px;
-        text-align: center;
-        padding: 0;
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-    }
-    .btn-contactos:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
-    .btn-contactos i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    
 </style>
 @stop
