@@ -74,7 +74,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
-                    PENDIENTES
+                    INFORMES PENDIENTES
                     <?php if ($informependienteCount > 0): ?>
                         <span class="circle"><?= $informependienteCount ?></span>
                     <?php endif; ?>
@@ -223,6 +223,7 @@
                                     <td>{{$reservasmedica->accionnombre}}</td>
                                     <td>{{$reservasmedica->fechaasignada}}</td>
                                     <td>{{$reservasmedica->horadesde}} - {{$reservasmedica->horahasta}}</td>
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
                                     <td width="10px">
                                         @if($reservasmedica->fichamedicaita)
                                             <a href="{{ asset('/fichamedicaclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->fichamedicaita) }}" class="btn btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
@@ -243,6 +244,7 @@
                                             </a>
                                         </abbr>
                                     </td>
+                                    @endif
                                     <td width="10px">
                                         @if($reservasmedica->informeDisponible)
                                             <abbr title="SUBIR INFORME">
@@ -422,7 +424,7 @@
     
                                                 <div class="modal-footer">
                                                     <div class="text-center w-100">
-                                                        {!! Form::submit('SUBIR DOCUMENTACION', ['class' => 'btn btn-crear']) !!}
+                                                        {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
                                                     </div>
                                                 </div>
                                                 {!! Form::close() !!}
@@ -469,7 +471,7 @@
                                     <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
                                     <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
                                     <td width="10px">
-                                        @if($tienefichamedicaauditoria)
+                                        @if($reservasmedicaauditoria->$tienefichamedicaauditoria)
                                             <a href="{{ asset('/fichamedicaclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->fichamedicaauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
                                                 <i class="fas fa-eye"></i>
                                             </a>
@@ -667,7 +669,7 @@
     
                                                 <div class="modal-footer">
                                                     <div class="text-center w-100">
-                                                        {!! Form::submit('SUBIR DOCUMENTACION', ['class' => 'btn btn-crear']) !!}
+                                                        {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
                                                     </div>
                                                 </div>
                                                 {!! Form::close() !!}

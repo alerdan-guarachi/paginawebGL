@@ -317,10 +317,9 @@ class AsociadoController extends Controller
     }
     public function verclienteita(Cliente $cliente)
     {
+        $nombreusuario = auth()->user()->name; 
         $requisitosubclientes = ProveedorInformefinal::where('clienteitaid', $cliente->id)->get();
-
         $proveedores = Proveedor::where('id', 3)->get(['id', 'proveedor', 'celular']);
-
         $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
         $tieneBateria = Bateriasubcliente::where('clienteitaid', $cliente->id)->exists();
         $tieneContactos = ContactoSubCliente::where('clienteitaid', $cliente->id)->exists();
@@ -382,7 +381,7 @@ class AsociadoController extends Controller
             $accionesPorFecha[$fecha][] = $accion;
         }
 
-        return view('admin.asociados.verclienteita', compact('tienerequisitosapelacion','tienerequisitossegundasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion'));
+        return view('admin.asociados.verclienteita', compact('nombreusuario','tienerequisitosapelacion','tienerequisitossegundasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion'));
     }
     public function editarclienteita(Cliente $cliente)
     {
@@ -692,6 +691,7 @@ class AsociadoController extends Controller
     } */
     public function crearbateriaclienteita(Cliente $cliente)
     {
+        $nombreusuario = auth()->user()->name; 
         $sucursalCliente = $cliente->sucursal;
         $rolusuario = auth()->user()->getRoleNames()->first(); 
         $areas = Area::orderBy('nombrearea', 'asc')
@@ -800,7 +800,7 @@ class AsociadoController extends Controller
             }
         }
  
-        return view('admin.asociados.crearbateriaclienteita', compact('accionesPorFecha','fechasBateriaPorAccion','departamentos','estadoproveedor','areas','accionesPorArea','cliente','id','accionesCliente','areas2','rolusuario'));
+        return view('admin.asociados.crearbateriaclienteita', compact('nombreusuario','accionesPorFecha','fechasBateriaPorAccion','departamentos','estadoproveedor','areas','accionesPorArea','cliente','id','accionesCliente','areas2','rolusuario'));
     }
     public function generarPDFCliente(Request $request, $clienteId) 
     {
@@ -1752,6 +1752,41 @@ class AsociadoController extends Controller
             'buscarpor' => $fechaBateria // Incluye la fecha en la redirección
         ])->with('info', 'El estado se actualizó con éxito');
     }
+    public function actualizarProveedorFecha(Cliente $cliente, Request $request)
+    {
+        $data = $request->validate([
+            'id' => 'required|integer',
+            'proveedor' => 'required|string',
+            'fechaasignada' => 'required|date',
+        ]);
+
+        $id = $data['id'];
+        $proveedorNombre = $data['proveedor'];
+        $fechaAsignada = $data['fechaasignada'];
+
+        // Actualizar en programacionsubclientes
+        $programacion = Programacionsubcliente::find($id);
+        if ($programacion) {
+            $programacion->proveedornombre = $proveedorNombre;
+            $programacion->fechaasignada = $fechaAsignada;
+            $programacion->save();
+
+            // Actualizar en estadoprogramacionsubclientes
+            $estadoProgramacion = Estadoprogramacionsubcliente::where('clienteitaid', $programacion->clienteitaid)
+                ->where('fechabateria', $programacion->fechabateria)
+                ->where('accionnombre', $programacion->accionnombre)
+                ->first();
+            if ($estadoProgramacion) {
+                $estadoProgramacion->fechaatencionprogramacion = $fechaAsignada;
+                $estadoProgramacion->save();
+            }
+
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json(['success' => false], 400);
+    }
+
 //
 //CREAR DOCUMENTACION DE CLIENTE ITA
     public function creardocumentacionclienteita(Cliente $cliente, Asociado $asociado)
@@ -4386,8 +4421,8 @@ class AsociadoController extends Controller
     }
     public function verclientecomun(ClienteComun $clientecomun)
     {
+        $nombreusuario = auth()->user()->name; 
         $proveedores = Proveedor::where('id', 3)->get(['id', 'proveedor', 'celular']);
-
         $tieneBateria = Bateriasubcliente::where('clientecomunid', $clientecomun->id)->exists();
         $tieneCotizacionaprobada = Estadocotizacionsubcliente::where('clientecomunid', $clientecomun->id)->exists();
         $tieneProgramacion = Programacionsubcliente::where('clientecomunid', $clientecomun->id)->exists();
@@ -4412,7 +4447,7 @@ class AsociadoController extends Controller
             $accionesPorFecha[$fecha][] = $accion;
         }
 
-        return view('admin.asociados.verclientecomun', compact('tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','tieneBateria','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'clientecomun'));
+        return view('admin.asociados.verclientecomun', compact('nombreusuario','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','tieneBateria','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'clientecomun'));
     }
     public function editarclientecomun(ClienteComun $clientecomun)
     {
@@ -5592,6 +5627,7 @@ class AsociadoController extends Controller
     }
     public function verclienteauditoria(ClienteAuditoria $clienteauditoria)
     {
+        $nombreusuario = auth()->user()->name; 
         $tieneRequisitos = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->exists();
         $tieneContactos = ContactoSubCliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
         $tieneTramites = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
@@ -5611,7 +5647,7 @@ class AsociadoController extends Controller
                     ->where('accion', 'HISTORIA MÉDICA')
                     ->first();
 
-        return view('admin.asociados.verclienteauditoria', compact('tieneCotizacionaprobada','documentacion','tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
+        return view('admin.asociados.verclienteauditoria', compact('nombreusuario','tieneCotizacionaprobada','documentacion','tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
         'tieneContactos','tieneTramites','clienteauditoria','tieneRequisitos','tieneProgramacion','tieneProgramacionatentido'));
     }
     public function editarclienteauditoria(ClienteAuditoria $clienteauditoria)

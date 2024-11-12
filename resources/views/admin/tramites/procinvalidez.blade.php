@@ -48,15 +48,15 @@
                         <h5 style="text-align: center; font-size: 25px; margin-bottom:30px; margin-top:20px;">ELIGE UNA OPCIÓN</h5>
                         <div class="row">
                             <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
-                                <button type="button" class="btn btn-custom" style="width: 80%;" onclick="confirmarTramite('INICIO DE TRAMITE')">
+                                <button type="button" class="btn btn-custom" style="width: 80%;" onclick="confirmarTramite('INICIO DE TRÁMITE')">
                                     <div class="d-flex flex-column align-items-center justify-content-center">
-                                        <i class="fas fa-pencil-alt fa-5x mb-2"></i>
+                                        <i class="fas fa-file-signature fa-5x mb-2"></i>
                                         <span class="h6 mb-0">INICIO DE TRAMITE</span>
                                     </div>
                                 </button>
                             </div>
                             <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
-                                <button type="button" class="btn btn-custom" style="width: 80%;" onclick="confirmarTramite('CONTINUIDAD DE TRAMITE')">
+                                <button type="button" class="btn btn-custom" style="width: 80%;" onclick="confirmarTramite('CONTINUIDAD DE TRÁMITE')">
                                     <div class="d-flex flex-column align-items-center justify-content-center">
                                         <i class="fas fa-sync-alt fa-5x mb-2"></i>
                                         <span class="h6 mb-0">CONTINUIDAD DE TRAMITE</span>
@@ -2451,21 +2451,15 @@
                         @endphp
 
                         <div class="col-lg-4">
-                            <div class="form-group col-lg-12">
-                                {!! Form::label('tipo_pdf', 'Tipo de Carta / Reclamo:') !!}
-                                {!! Form::select('tipo_pdf', [
-                                    'PRIMERA CARTA SIT' => 'PRIMERA CARTA SIT',
-                                    'SEGUNDA CARTA SIT' => 'SEGUNDA CARTA SIT',
-                                    'TERCERA CARTA SIT' => 'TERCERA CARTA SIT',
-                                    'PRIMERA CARTA DE RECLAMO' => 'PRIMERA CARTA DE RECLAMO',
-                                    'SEGUNDA CARTA DE RECLAMO' => 'SEGUNDA CARTA DE RECLAMO',
-                                    'TERCERA CARTA DE RECLAMO' => 'TERCERA CARTA DE RECLAMO',
-                                    'CARTA DE RECLAMO APS' => 'CARTA DE RECLAMO APS',
-                                ], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoPdfSelectcartas', 'required' => 'required']) !!}
-                                @error('tipo_pdf')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
-                            </div>
+                                <div class="form-group col-lg-12">
+                                    {!! Form::label('tipo_pdf', 'Carta / Reclamo:') !!}
+                                    {!! Form::select('tipo_pdf', $modelocartasreclamos, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                    @error('tipo_pdf')
+                                        <small class="text-danger fas fa-exclamation-circle">
+                                            {{ $message }}
+                                        </small>
+                                    @enderror
+                                </div>
 
                             <script>
                                 document.addEventListener('DOMContentLoaded', function () {
@@ -2506,27 +2500,6 @@
                                     const terceracartareclamo = tipoPdfSelectcartas.querySelector('option[value="TERCERA CARTA DE RECLAMO"]');
                                     const cartareclamoaps = tipoPdfSelectcartas.querySelector('option[value="CARTA DE RECLAMO APS"]');
 
-                                    /* @if (!$fechaingresoyeap)
-                                        primeracartasit.disabled = true;
-                                    @endif
-                                    @if (!$primeracartasit)
-                                        segundacartasit.disabled = true;
-                                    @endif
-                                    @if (!$segundacartasit)
-                                        terceracartasit.disabled = true;
-                                    @endif
-                                    @if (!$terceracartasit)
-                                        primeracartareclamo.disabled = true;
-                                    @endif
-                                    @if (!$primeracartareclamo)
-                                        segundacartareclamo.disabled = true;
-                                    @endif
-                                    @if (!$segundacartareclamo)
-                                        terceracartareclamo.disabled = true;
-                                    @endif
-                                    @if (!$terceracartareclamo)
-                                        cartareclamoaps.disabled = true;
-                                    @endif */
                                     @if (!$fechaingresoyeap)
                                         primeracartasit.disabled = true;
                                     @endif
@@ -2552,9 +2525,24 @@
                             </script>
 
                             <div class="form-group  col-lg-12">
-                                {!! Form::label('notaseguimiento', 'Proceso:') !!}
-                                {!! Form::text('notaseguimiento', null, ['class' => 'form-control', 'placeholder' => '', 'required' => 'required']) !!}
-                                @error('notaseguimiento')
+                                {!! Form::label('notaseguimiento', 'Nivel de procedimiento:') !!}
+                                {!! Form::select('notaseguimiento', [
+                                    'INGRESO DE TRÁMITE' => 'INGRESO DE TRÁMITE',
+                                    'NOTIFICACIÓN DEL PODER' => 'NOTIFICACIÓN DEL PODER',
+                                    'FIRMA EAP' => 'FIRMA EAP',
+                                    'SITM ENTE GESTOR DE SALUD' => 'SITM ENTE GESTOR DE SALUD',
+                                    'SITM NOTIFICACIÓN TMC' => 'SITM NOTIFICACIÓN TMC',
+                                    'SITM NOTIFICACIÓN TMR' => 'SITM NOTIFICACIÓN TMR',
+                                    'SITM EMPLEADOR' => 'SITM EMPLEADOR',
+                                    'COMPRA DE SERVICIOS' => 'COMPRA DE SERVICIOS',
+                                    'SIC ENTE GESTOR DE SALUD' => 'SIC ENTE GESTOR DE SALUDO',
+                                    'SIC NOTIFICACIÓN TMC' => 'SIC NOTIFICACIÓN TMCO',
+                                    'SIC NOTIFICACIÓN TMR' => 'SIC NOTIFICACIÓN TMR',
+                                    'SIC EMPLEADOR' => 'SIC EMPLEADOR',
+                                    'DICTAMEN' => 'DICTAMEN',
+                                
+                                ], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoPdfSelect', 'required' => 'required']) !!}
+                                @error('tipo_pdf')
                                     <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
                                 @enderror
                             </div>

@@ -160,9 +160,10 @@ class ReporteController extends Controller
                             }
                         }
                     });
+                    $data = $data->sortBy('clienteitanombre');
                     break;
                 case 'programacionsubclientescomunes':
-                    $data = Programacionsubcliente::with('estadoprogramacionsubcliente', 'documentacionsubcliente')
+                    $data = Programacionsubcliente::with('estadoprogramacionsubclientecomun', 'documentacionsubclientecomun')
                         ->whereBetween('created_at', [$fechaInicial, $fechaFinal])
                         ->whereNotNull('clientecomunid')
                         ->get();
@@ -192,9 +193,10 @@ class ReporteController extends Controller
                             }
                         }
                     });
+                    $data = $data->sortBy('clientecomunnombre');
                     break;
                 case 'programacionsubclientesauditoria':
-                    $data = Programacionsubcliente::with('estadoprogramacionsubcliente', 'documentacionsubcliente')
+                    $data = Programacionsubcliente::with('estadoprogramacionsubclienteauditoria', 'documentacionsubclienteauditoria')
                         ->whereBetween('created_at', [$fechaInicial, $fechaFinal])
                         ->whereNotNull('clienteauditoriaid')
                         ->get();
@@ -224,6 +226,7 @@ class ReporteController extends Controller
                             }
                         }
                     });
+                    $data = $data->sortBy('clienteauditorianombre');
                     break;
                 default:
                     $data = [];
@@ -321,6 +324,7 @@ class ReporteController extends Controller
                             }
                         }
                     });
+                    $data = $data->sortBy('clienteitanombre');
                     break;
                 case 'programacionsubclientescomunes':
                     $data = Programacionsubcliente::whereNotNull('clientecomunid')->get();
@@ -351,6 +355,7 @@ class ReporteController extends Controller
                             }
                         }
                     });
+                    $data = $data->sortBy('clientecomunnombre');
                     break;
                 case 'programacionsubclientesauditoria':
                     $data = Programacionsubcliente::whereNotNull('clienteauditoriaid')->get();
@@ -381,6 +386,7 @@ class ReporteController extends Controller
                             }
                         }
                     });
+                    $data = $data->sortBy('clienteauditorianombre');
                     break;
                 default:
                     $data = [];

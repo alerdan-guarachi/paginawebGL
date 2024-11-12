@@ -403,7 +403,7 @@
 </div>
 @stop
 
-<div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">    
+{{-- <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">    
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -503,7 +503,236 @@
             </div>
         </div>
     </div>
+</div> --}}
+<div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">PROGRAMACIONES DEL CLIENTE:</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <strong>Fecha de Batería:</strong>
+                <select id="select-fechas" class="form-control">
+                    <option value="">Seleccione una fecha</option>
+                    @foreach ($fechasBateria as $fecha)
+                        <option value="{{ $fecha }}">{{ $fecha }}</option>
+                    @endforeach
+                </select>
+                <form id="update-form" method="post"
+                    action="{{ route('admin.asociados.actualizarproveedorfecha', ['cliente' => $cliente->id]) }}">
+                    @csrf
+                    <div id="acciones-container" class="mt-3">
+                        <strong>Acciones programadas:</strong>
+                        <table class="table mt-3" id="acciones-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Acción</th>
+                                    <th>Proveedor</th>
+                                    <th>Fecha Asignada</th>
+                                    <th>Hora Asignada</th>
+                                    @if (!$esProveedor)
+                                        <th>Precio</th>
+                                    @endif
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="acciones-lista"></tbody>
+                        </table>
+                    </div>
+                    {{-- <button type="submit" class="btn btn-primary">Guardar Cambios</button> --}}
+                </form>
+            </div>
+
+            <script>
+                document.getElementById('select-fechas').addEventListener('change', function() {
+                    const fechaSeleccionada = this.value;
+                    const accionesBateria = @json($accionesPorFechaBateria);
+                    const accionesDetalles = @json($accionesDetallesPorFecha);
+                    const esProveedor = @json($esProveedor);
+            
+                    const accionesLista = document.getElementById('acciones-lista');
+                    const accionesTable = document.getElementById('acciones-table');
+            
+                    // Limpiar el contenido de la tabla antes de agregar nuevas filas
+                    accionesLista.innerHTML = '';
+            
+                    // Verificar si hay algún proveedor ajeno
+                    let hasProveedorAjeno = false;
+            
+                    if (fechaSeleccionada && accionesBateria[fechaSeleccionada]) {
+                        // Comprobar si existe un proveedor ajeno
+                        accionesBateria[fechaSeleccionada].forEach(function(accionNombre) {
+                            const detalles = accionesDetalles[fechaSeleccionada]?.[accionNombre];
+                            if (detalles && detalles.proveedornombre === 'PROVEEDOR AJENO') {
+                                hasProveedorAjeno = true;
+                            }
+                        });
+            
+                        // Construir el encabezado de la tabla dinámicamente
+                        let tableHeader = `
+                            <tr>
+                                <th>ID</th>
+                                <th>Acción</th>
+                                <th>Proveedor</th>
+                                <th>Fecha Asignada</th>
+                                <th>Hora Asignada</th>
+                                ${!esProveedor ? `<th>Precio</th>` : ''}
+                                ${hasProveedorAjeno ? `<th>Acciones</th>` : ''}
+                            </tr>
+                        `;
+                        accionesTable.querySelector('thead').innerHTML = tableHeader;
+            
+                        // Construir las filas de la tabla
+                        accionesBateria[fechaSeleccionada].forEach(function(accionNombre) {
+                            const detalles = accionesDetalles[fechaSeleccionada]?.[accionNombre];
+                            const row = document.createElement('tr');
+            
+                            if (detalles) {
+                                const isProveedorAjeno = detalles.proveedornombre === 'PROVEEDOR AJENO';
+            
+                                // Columna de acciones (si existe el proveedor ajeno)
+                                let accionesColumn = '';
+                                if (hasProveedorAjeno) {
+                                    accionesColumn = `
+                                        <td>
+                                            ${isProveedorAjeno ? `
+                                                <button type="button" class="btn btn-sm btn-edit">
+                                                    <i class="fas fa-edit icono-editar"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-save" style="display: none;">
+                                                    <i class="fas fa-save icono-guardar"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-cancel" style="display: none;">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            ` : ''}
+                                        </td>
+                                    `;
+                                }
+            
+                                // Columna de precio (si no es proveedor)
+                                let precioColumn = '';
+                                if (!esProveedor) {
+                                    precioColumn = `<td>${detalles.precio || 'No registrado'}</td>`;
+                                }
+            
+                                // Crear fila con datos
+                                row.innerHTML = `
+                                    <td>${detalles.id || '0'}</td>
+                                    <td>${accionNombre}</td>
+                                    <td>
+                                        <span class="valor-proveedor">${detalles.proveedornombre || 'No registrado'}</span>
+                                        <input type="text" name="proveedor" class="input-proveedor form-control" value="${detalles.proveedornombre || ''}" style="display: none;" />
+                                    </td>
+                                    <td>
+                                        <span class="valor-fecha">${detalles.fechaasignada || 'No registrado'}</span>
+                                        <input type="date" name="fechaasignada" class="input-fecha form-control" value="${detalles.fechaasignada || ''}" style="display: none;" />
+                                    </td>
+                                    <td>${detalles.horadesde || 'No registrado'} - ${detalles.horahasta || 'No registrado'}</td>
+                                    ${precioColumn}
+                                    ${accionesColumn}
+                                `;
+                                row.style.color = 'green';
+                            } else {
+                                // Si no hay detalles, crear fila con datos "No registrado"
+                                let accionesColumn = hasProveedorAjeno ? `<td></td>` : '';
+                                let precioColumn = !esProveedor ? `<td>No registrado</td>` : '';
+                                row.innerHTML = `
+                                    <td>0</td>
+                                    <td>${accionNombre}</td>
+                                    <td>No registrado</td>
+                                    <td>No registrado</td>
+                                    <td>No registrado</td>
+                                    ${precioColumn}
+                                    ${accionesColumn}
+                                `;
+                                row.style.color = 'red';
+                            }
+            
+                            // Agregar fila a la tabla
+                            accionesLista.appendChild(row);
+                        });
+                    } else {
+                        // Si no hay acciones para la fecha seleccionada, limpiamos el encabezado y el cuerpo de la tabla
+                        accionesTable.querySelector('thead').innerHTML = '';
+                        accionesLista.innerHTML = '';
+                    }
+                });
+            </script>
+            
+            {{-- <script>
+                document.getElementById('select-fechas').addEventListener('change', function() {
+                    const fechaSeleccionada = this.value;
+                    const accionesBateria = @json($accionesPorFechaBateria);
+                    const accionesDetalles = @json($accionesDetallesPorFecha);
+                    const esProveedor = @json($esProveedor);
+    
+                    const accionesLista = document.getElementById('acciones-lista');
+                    accionesLista.innerHTML = '';
+    
+                    if (fechaSeleccionada && accionesBateria[fechaSeleccionada]) {
+                        accionesBateria[fechaSeleccionada].forEach(function(accionNombre) {
+                            const row = document.createElement('tr');
+                            const detalles = accionesDetalles[fechaSeleccionada]?.[accionNombre];
+    
+                            if (detalles) {
+                                row.innerHTML = `
+                                    <td>${detalles.id || '0'}</td>
+                                    <td>${accionNombre}</td>
+                                    <td>${detalles.proveedornombre || 'No registrado'}</td>
+                                    <td>${detalles.fechaasignada || 'No registrado'}</td>
+                                    <td>${detalles.horadesde || 'No registrado'} - ${detalles.horahasta}</td>
+                                    ${!esProveedor ? `<td>${detalles.precio || 'No registrado'}</td>` : ''}
+                                `;
+                                row.style.color = 'green';
+                            } else {
+                                row.innerHTML = `
+                                    <td>0</td>
+                                    <td>${accionNombre}</td>
+                                    <td>No registrado</td>
+                                    <td>No registrado</td>
+                                    <td>No registrado</td>
+                                    ${!esProveedor ? `<td>No registrado</td>` : ''}
+                                `;
+                                row.style.color = 'red';
+                            }
+    
+                            accionesLista.appendChild(row);
+                        });
+                    }
+                });
+    
+                </script> --}}
+            <style>
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    line-height: 1;
+                }
+
+                th,
+                td {
+                    padding: 8px;
+                    text-align: left;
+                }
+
+                tbody tr:nth-child(odd) {
+                    background-color: #f7f7f7;
+                }
+            </style>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
 </div>
+
 
 
 @section('js')
@@ -511,6 +740,75 @@
 <script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    document.getElementById('acciones-lista').addEventListener('click', function(event) {
+
+    const target = event.target;
+    const row = target.closest('tr');
+    if (target.closest('.btn-edit')) {
+        // Hacer campos editables
+        row.querySelector('.valor-proveedor').style.display = 'none';
+        row.querySelector('.input-proveedor').style.display = 'block';
+        row.querySelector('.valor-fecha').style.display = 'none';
+        row.querySelector('.input-fecha').style.display = 'block';
+        row.querySelector('.btn-edit').style.display = 'none';
+        row.querySelector('.btn-save').style.display = 'inline-block';
+    } else if (target.closest('.btn-save')) {
+        // Enviar datos al servidor
+        const id = row.cells[0].textContent.trim();
+        const proveedor = row.querySelector('.input-proveedor').value;
+        const fechaAsignada = row.querySelector('.input-fecha').value;
+
+    // Realizar petición AJAX
+    fetch('{{ route('admin.asociados.actualizarproveedorfecha', ['cliente' => $cliente->id]) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                id: id,
+                proveedor: proveedor,
+                fechaasignada: fechaAsignada
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Actualizar valores en la fila
+                row.querySelector('.valor-proveedor').textContent = proveedor;
+                row.querySelector('.valor-fecha').textContent = fechaAsignada;
+                // Ocultar campos de entrada y mostrar valores
+                row.querySelector('.valor-proveedor').style.display = 'inline';
+                row.querySelector('.input-proveedor').style.display = 'none';
+                row.querySelector('.valor-fecha').style.display = 'inline';
+                row.querySelector('.input-fecha').style.display = 'none';
+                row.querySelector('.btn-edit').style.display = 'inline-block';
+                row.querySelector('.btn-save').style.display = 'none';
+                alert('Los cambios se han guardado correctamente.');
+
+                // Verificar si el proveedor sigue siendo 'PROVEEDOR AJENO'
+                if (proveedor === 'PROVEEDOR AJENO') {
+                    row.querySelector('.btn-edit').style.display = 'inline-block';
+                } else {
+                    // Si no es 'PROVEEDOR AJENO', remover el botón de editar
+                    row.querySelector('.btn-edit').remove();
+                }
+
+            } else {
+                alert('Error al guardar los cambios.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al guardar los cambios.');
+        });
+    }
+    });
+
+</script>
+
+
 <script>
     document.querySelector('.horariodisponible').addEventListener('change', function() {
         var horarioSeleccionado = this.value;
@@ -681,6 +979,46 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    /* Estilos para los iconos */
+    .icono-editar {
+            font-size: 1.2em;
+            /* Aumenta el tamaño del icono */
+            color: #00008B;
+            /* Azul oscuro */
+        }
+
+        .icono-guardar {
+            font-size: 1.2em;
+            /* Aumenta el tamaño del icono */
+            color: #94c93b;
+            /* Color especificado */
+        }
+
+        /* Cambiar el color del botón para que coincida con el icono */
+        .btn-edit {
+            background-color: transparent;
+            border: none;
+        }
+
+        .btn-save {
+            background-color: transparent;
+            border: none;
+        }
+
+        /* Cambiar el cursor al pasar sobre los botones */
+        .btn-edit:hover,
+        .btn-save:hover {
+            cursor: pointer;
+        }
+
+        .input-proveedor,
+        .input-fecha {
+            width: 100%;
+        }
+
+
+
+
     .hidden-field {
         display: none;
     }

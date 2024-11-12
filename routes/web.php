@@ -97,6 +97,8 @@ Route::get('asociados/{id}/download-pdf', [AsociadoController::class, 'downloadP
     Route::get('informesfinales/reservasmedicas/8', 'App\Http\Controllers\Admin\InformeFinalController@reservasmedicas')->name('admin.informesfinales.reservasmedicas');
     Route::get('informesfinales/consiliacionesclientesbanco/10', 'App\Http\Controllers\Admin\InformeFinalController@consiliacionesclientesbanco')->name('admin.informesfinales.consiliacionesclientesbanco');
 
+    Route::get('/buscarresultadosmedicosclientesauditoria', 'App\Http\Controllers\Admin\InformeFinalController@buscarresultadosmedicosclientesauditoria')->name('buscarresultadosmedicosclientesauditoria');
+    
     Route::post('/update-observacion', [InformeFinalController::class, 'updateObservacion'])->name('updateObservacion');
     Route::post('/update-document/{id}', [InformeFinalController::class, 'updateDocument'])->name('updateDocument');
 //
@@ -204,6 +206,7 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
         Route::get('/buscarprogramacionclientesita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@buscarprogramacionclientesita')->name('buscarprogramacionclientesita');
         Route::get('asociados/generarpdfprogramacionclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@generarpdfprogramacionclienteita')->name('admin.asociados.generarpdfprogramacionclienteita');
         Route::post('asociados/guardarestadoprogramacionclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardarestadoprogramacionclienteita')->name('admin.asociados.guardarestadoprogramacionclienteita');
+        Route::post('asociados/actualizarproveedorfecha/{cliente}', [AsociadoController::class, 'actualizarProveedorFecha'])->name('admin.asociados.actualizarproveedorfecha');
     //CREAR DOCUMENTACION DE CLIENTE ITA
         Route::get('asociados/creardocumentacionclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@creardocumentacionclienteita')->name('admin.asociados.creardocumentacionclienteita');
         Route::post('asociados/guardardocumentacionclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardardocumentacionclienteita')->name('admin.asociados.guardardocumentacionclienteita');

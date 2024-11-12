@@ -315,43 +315,82 @@
                     <div style="text-align: center; padding: 1.5px;">
                         <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
                     </div>
-                    <div class="row text-center">
-                        @can('admin.asociados.crearbateriaclienteita')
-                            @if (($tieneRequisitos && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.crearbateriaclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
-                                    <i class="fas fa-charging-station"></i>
-                                    <strong>BATERIA</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
-                                    <i class="fas fa-charging-station"></i>
-                                    <strong>BATERIA</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
+                    {{-- @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'VANESSA MAMANI HUANACO' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                        <div class="row text-center">
+                            @can('admin.asociados.crearbateriaclienteita')
+                                @if (($tieneRequisitos && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.crearbateriaclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
+                                        <i class="fas fa-charging-station"></i>
+                                        <strong>BATERIA</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-charging-station"></i>
+                                        <strong>BATERIA</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
 
-                        @can('admin.asociados.aprobacioncotizacionclienteita')
-                        @if ($tieneBateria)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.aprobacioncotizacionclienteita', $cliente) }}" class="btn btn-cotizacion btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
-                                    <i class="fas fa-donate"></i>
-                                    <strong>COTIZACIÓN</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-cotizacion btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
-                                    <i class="fas fa-donate"></i>
-                                    <strong>COTIZACIÓN</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-                    </div>
+                            @can('admin.asociados.aprobacioncotizacionclienteita')
+                            @if ($tieneBateria)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.aprobacioncotizacionclienteita', $cliente) }}" class="btn btn-cotizacion btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
+                                        <i class="fas fa-donate"></i>
+                                        <strong>COTIZACIÓN</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-cotizacion btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
+                                        <i class="fas fa-donate"></i>
+                                        <strong>COTIZACIÓN</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
+                    @else --}}
+                        <div class="row text-center">
+                            @can('admin.asociados.crearbateriaclienteita')
+                                @if (($tieneRequisitos && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.crearbateriaclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
+                                        <i class="fas fa-charging-station"></i>
+                                        <strong>BATERIA</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-charging-station"></i>
+                                        <strong>BATERIA</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                            @can('admin.asociados.aprobacioncotizacionclienteita')
+                            @if ($tieneBateria)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.aprobacioncotizacionclienteita', $cliente) }}" class="btn btn-cotizacion btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
+                                        <i class="fas fa-donate"></i>
+                                        <strong>COTIZACIÓN</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-cotizacion btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
+                                        <i class="fas fa-donate"></i>
+                                        <strong>COTIZACIÓN</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
+                    {{-- @endif --}}
                 </div>
 
                 <div style="margin-top: 10px; background-color: #fbffe7;  border-radius: 40px;">

@@ -119,32 +119,29 @@
                     <th>Sucursal</th>
                     <th>Usuario Registro</th>
                 @elseif ($tabla == 'programacionsubclientesita')
-                    <th>Proveedor</th>
                     <th>Cliente</th>
+                    <th>Proveedor</th>
                     <th>Fecha de Batería</th>
-                    <th>Fecha asignada</th>
-                    <th>Área</th>
                     <th>Acción</th>
+                    <th>Fecha programada</th>
                     <th>Fecha de atención</th>
-                    <th>Documentación</th>
+                    <th>Fecha de informe</th>
                 @elseif ($tabla == 'programacionsubclientescomunes')
-                    <th>Proveedor</th>
                     <th>Cliente</th>
+                    <th>Proveedor</th>
                     <th>Fecha de Batería</th>
-                    <th>Fecha asignada</th>
-                    <th>Área</th>
                     <th>Acción</th>
+                    <th>Fecha programada</th>
                     <th>Fecha de atención</th>
-                    <th>Documentación</th>
+                    <th>Fecha de informe</th>
                 @elseif ($tabla == 'programacionsubclientesauditoria')
-                    <th>Proveedor</th>
                     <th>Cliente</th>
+                    <th>Proveedor</th>
                     <th>Fecha de Batería</th>
-                    <th>Fecha asignada</th>
-                    <th>Área</th>
                     <th>Acción</th>
+                    <th>Fecha programada</th>
                     <th>Fecha de atención</th>
-                    <th>Documentación</th>
+                    <th>Fecha de informe</th>
                 @endif
             </tr>
         </thead>
@@ -240,12 +237,11 @@
                     <td>{{ $item->sucursal }}</td>
                     <td>{{ $item->usuarioregistro }}</td>
                 @elseif ($tabla == 'programacionsubclientesita')
-                    <td>{{ $item->proveedornombre }}</td>
                     <td>{{ $item->clienteitanombre }}</td>
+                    <td>{{ $item->proveedornombre }}</td>
                     <td>{{ $item->fechabateria }}</td>
-                    <td>{{ $item->fechaasignada }}</td>
-                    <td>{{ $item->areanombre }}</td>
                     <td>{{ $item->accionnombre }}</td>
+                    <td>{{ $item->fechaasignada }}</td>
                     <td>
                         @if ($item->fechaatencionprogramacion !== "PENDIENTE" && $item->fechaatencionprogramacion !== null)
                             {{ $item->fechaatencionprogramacion }}
@@ -261,12 +257,11 @@
                         @endif
                     </td>
                 @elseif ($tabla == 'programacionsubclientescomunes')
-                    <td>{{ $item->proveedornombre }}</td>
                     <td>{{ $item->clientecomunnombre }}</td>
+                    <td>{{ $item->proveedornombre }}</td>
                     <td>{{ $item->fechabateria }}</td>
-                    <td>{{ $item->fechaasignada }}</td>
-                    <td>{{ $item->areanombre }}</td>
                     <td>{{ $item->accionnombre }}</td>
+                    <td>{{ $item->fechaasignada }}</td>
                     <td>
                         @if ($item->fechaatencionprogramacion !== "PENDIENTE" && $item->fechaatencionprogramacion !== null)
                             {{ $item->fechaatencionprogramacion }}
@@ -282,12 +277,11 @@
                         @endif
                     </td>
                 @elseif ($tabla == 'programacionsubclientesauditoria')
-                    <td>{{ $item->proveedornombre }}</td>
                     <td>{{ $item->clienteauditorianombre }}</td>
+                    <td>{{ $item->proveedornombre }}</td>
                     <td>{{ $item->fechabateria }}</td>
-                    <td>{{ $item->fechaasignada }}</td>
-                    <td>{{ $item->areanombre }}</td>
                     <td>{{ $item->accionnombre }}</td>
+                    <td>{{ $item->fechaasignada }}</td>
                     <td>
                         @if ($item->fechaatencionprogramacion !== "PENDIENTE" && $item->fechaatencionprogramacion !== null)
                             {{ $item->fechaatencionprogramacion }}

@@ -614,6 +614,7 @@ class TramitesController extends Controller
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
             $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+            $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')->pluck('tipocarta', 'id');
 
             $inicioocontinuidad = Tramite::where('clienteitaid', $cliente->id)
                                         ->whereIn('nivelprocedimiento', ['INICIO DE TRAMITE', 'CONTINUIDAD DE TRAMITE'])
@@ -639,6 +640,8 @@ class TramitesController extends Controller
             
             $cartasreclamos = Tramite::where('clienteitanombre', $nombreclienteita)
                                     ->where('tramite', 'INVALIDEZ')
+                                    ->where('nivelprocedimiento', '!=', 'INICIO DE TRÁMITE')
+                                    ->where('nivelprocedimiento', '!=', 'CONTINUIDAD DE TRÁMITE')
                                     ->where('nivelprocedimiento', '!=', 'INGRESO DE TRÁMITE')
                                     ->where('nivelprocedimiento', '!=', 'NOTIFICACIÓN DE PODER')
                                     ->where('nivelprocedimiento', '!=', 'FIRMA EAP')
@@ -650,13 +653,13 @@ class TramitesController extends Controller
                                     ->where('nivelprocedimiento', '!=', 'ADJUNTOS Y RESPUESTAS')
                                     ->simplePaginate(10000);
 
-            return view('admin.tramites.procinvalidez', compact('tramiteinicio','tramitecontinuidad','inicioocontinuidad','cartasreclamos','procedimientotramites','id','cliente','nombrecompleto', 'personal'));
+            return view('admin.tramites.procinvalidez', compact('modelocartasreclamos','tramiteinicio','tramitecontinuidad','inicioocontinuidad','cartasreclamos','procedimientotramites','id','cliente','nombrecompleto', 'personal'));
         }
-        public function guardariniciotramiteclienteita(Request $request, Cliente $cliente)
+    public function guardariniciotramiteclienteita(Request $request, Cliente $cliente)
         {
             // Validar los datos recibidos, asegurando que el nivel de procedimiento esté presente
             $request->validate([
-                'nivelprocedimiento' => 'required|in:INICIO DE TRAMITE,CONTINUIDAD DE TRAMITE',
+                'nivelprocedimiento' => 'required|in:INICIO DE TRÁMITE,CONTINUIDAD DE TRÁMITE',
                 'clienteitaid' => 'required|exists:clientes,id',
                 'usuarioid' => 'required|exists:users,id',
                 // Agrega validaciones adicionales según lo necesario

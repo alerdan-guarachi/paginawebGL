@@ -19,7 +19,7 @@
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid justify-content-end">
             <div class="d-flex flex-wrap align-items-center">
-                <form id="search-form" action="{{ route('buscarprogramacionescomclienteita') }}" method="get" class="form-inline">
+                <form id="search-form" action="{{ route('buscarresultadosmedicosclientesauditoria') }}" method="get" class="form-inline">
                     <div class="flex-grow-1">
                         <input type="text" name="buscarporcliente" class="form-control mr-sm-2" placeholder="Nombre del Cliente">
                     </div>
@@ -32,7 +32,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('btn-mostrar-todo').addEventListener('click', function() {
-                window.location.href = "{{ route('buscarprogramacionescomclienteita') }}";
+                window.location.href = "{{ route('buscarresultadosmedicosclientesauditoria') }}";
             });
     
             const activeTabId = localStorage.getItem('activeTab') || 'tab-1';

@@ -388,48 +388,48 @@ class InformeFinalController extends Controller
     }
 
     public function updateDocument(Request $request, $id)
-{
-    // Encontrar el registro en la base de datos
-    $documentacion = Documentacionsubcliente::find($id);
+    {
+        // Encontrar el registro en la base de datos
+        $documentacion = Documentacionsubcliente::find($id);
 
-    if (!$documentacion) {
-        return redirect()->back()->with('error', 'Documento no encontrado.');
-    }
-
-    // Validar el archivo
-    $request->validate([
-        'archivo' => 'required|file|mimes:pdf,doc,docx,jpg,png', // Ajusta los tipos de archivo según tus necesidades
-    ]);
-
-    // Manejar el archivo subido
-    $archivo_name = null;
-    if ($request->hasFile('archivo')) {
-        $file = $request->file('archivo');
-        $clienteId = $documentacion->clienteitaid;
-        // Crear la carpeta si no existe
-        $carpetaCliente = public_path("/documentacionclientesita/{$clienteId}");
-        if (!file_exists($carpetaCliente)) {
-            mkdir($carpetaCliente, 0755, true);
+        if (!$documentacion) {
+            return redirect()->back()->with('error', 'Documento no encontrado.');
         }
 
-        // Generar el nombre del archivo y moverlo a la carpeta deseada
-        $archivo_name = time() . '_' . $file->getClientOriginalName();
-        $file->move($carpetaCliente, $archivo_name);
+        // Validar el archivo
+        $request->validate([
+            'archivo' => 'required|file|mimes:pdf,doc,docx,jpg,png', // Ajusta los tipos de archivo según tus necesidades
+        ]);
 
-        // Actualizar la ruta del archivo en la base de datos
-        $documentacion->document = $archivo_name;
-    }
+        // Manejar el archivo subido
+        $archivo_name = null;
+        if ($request->hasFile('archivo')) {
+            $file = $request->file('archivo');
+            $clienteId = $documentacion->clienteitaid;
+            // Crear la carpeta si no existe
+            $carpetaCliente = public_path("/documentacionclientesita/{$clienteId}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
 
-    // Eliminar la observación
-    $documentacion->observacion = null;
-    
-    // Guardar los cambios
-    $documentacion->save();
+            // Generar el nombre del archivo y moverlo a la carpeta deseada
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
 
-    return redirect()->back()->with('info', 'Documento actualizado exitosamente.');
-} 
+            // Actualizar la ruta del archivo en la base de datos
+            $documentacion->document = $archivo_name;
+        }
 
-public function estadodocumentacionprogramacion(Cliente $cliente, Request $request)
+        // Eliminar la observación
+        $documentacion->observacion = null;
+        
+        // Guardar los cambios
+        $documentacion->save();
+
+        return redirect()->back()->with('info', 'Documento actualizado exitosamente.');
+    } 
+
+    public function estadodocumentacionprogramacion(Cliente $cliente, Request $request)
     {
         $sucursal = $cliente->sucursal;
 
@@ -722,6 +722,7 @@ public function estadodocumentacionprogramacion(Cliente $cliente, Request $reque
 
     public function resultadosmedicosclientesauditoria(ClienteAuditoria $clienteauditoria, Request $request)
     {
+        $estadoGeneralauditoria = 'NO REGISTRADO';
         $sucursal = $clienteauditoria->sucursal;
         $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
         $aprobaciones = AprobacionInformeFinal::all();
@@ -920,9 +921,20 @@ public function estadodocumentacionprogramacion(Cliente $cliente, Request $reque
             return $count;
         }, 0);
         
-        $requisitosClientepolizas = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoriaid)->wherenotNull('banco')->get();
+        /* $requisitosClientepolizas = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoriaid)->wherenotNull('banco')->get(); */
+
+        if (isset($clienteauditoriaid)) {
+            $requisitosClientepolizas = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoriaid)->wherenotNull('banco')->get();
+        } else {
+            $requisitosClientepolizas = collect(); // Colección vacía si no hay clienteauditoriaid
+            }
 
         return view('admin.informesfinales.resultadosmedicosclientesauditoria', compact('requisitosClientepolizas','estadoGeneralauditoria', 'documentosCount','resultadosCount','userRole','abandonaronCount','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'clienteauditoria', 'fechas', 'aprobaciones'));
+    }
+
+    public function buscarresultadosmedicosclientesauditoria(ClienteAuditoria $clienteauditoria, Request $request)
+    {
+        return $this->resultadosmedicosclientesauditoria($clienteauditoria, $request);
     }
 
     public function resultadosmedicosclientesbancos(ClienteBanco $clientebanco, Request $request)
@@ -1595,6 +1607,7 @@ public function guardarinformefinal(StoreInformefinalRequest $request, $id, Clie
     public function reservasmedicas(Cliente $cliente, ClienteAuditoria $clienteauditoria, Request $request)
 {
 
+    $nombreusuario = auth()->user()->name;
     $proveedores = Programacionsubcliente::select('proveedornombre')
                     ->distinct()
                     ->get();
@@ -1751,7 +1764,7 @@ public function guardarinformefinal(StoreInformefinalRequest $request, $id, Clie
         }
     }
 
-    return view('admin.informesfinales.reservasmedicas', compact('tienefichamedicaauditoria','tienefichamedica','reservasmedicasauditorias','proveedores', 'rolusuario', 'reservasmedicas', 'cliente', 'atencionpendienteCount', 'informependienteCount', 'informecompletoCount', 'atencionpendienteauditoriaCount', 'informependienteauditoriaCount', 'informecompletoauditoriaCount'));
+    return view('admin.informesfinales.reservasmedicas', compact('nombreusuario','tienefichamedicaauditoria','tienefichamedica','reservasmedicasauditorias','proveedores', 'rolusuario', 'reservasmedicas', 'cliente', 'atencionpendienteCount', 'informependienteCount', 'informecompletoCount', 'atencionpendienteauditoriaCount', 'informependienteauditoriaCount', 'informecompletoauditoriaCount'));
 }
 
 
