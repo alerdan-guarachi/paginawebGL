@@ -74,7 +74,6 @@
                         <div class="form-group" id="acciones_select" style="display: none;">
                             {!! Form::label('', 'Acciones disponibles:') !!}
                             <div id="acciones_disponibles">
-                                <!-- Checkbox para seleccionar todo -->
                                 <label>
                                     <input type="checkbox" id="select_all"> Seleccionar todo
                                 </label>
@@ -96,7 +95,7 @@
                     <div class="col-lg-3">
                         <div class="form-group">
                             {!! Form::label('file', 'Informe:') !!}
-                            <input type="file" name="archivo" id="archivo" class="dropify" />
+                            <input type="file" name="archivo" id="archivo" class="dropify" accept=".pdf"/>
                             @error('archivo')
                             <small class="text-danger fas fa-exclamation-circle">
                                 {{$message}}
@@ -417,15 +416,14 @@
 <script>
     $(document).ready(function(){
         $('#fecha_bateria').on('change', function(){
-            $('#accionselec').val('');  // Limpia el valor previo
+            $('#accionselec').val('');
         });
 
         document.getElementById('fecha_bateria').addEventListener('change', function() {
             var fechaSeleccionada = this.value;
             var accionesContainer = document.getElementById('acciones_disponibles');
-            accionesContainer.innerHTML = '';  // Limpia los checkboxes previos
+            accionesContainer.innerHTML = '';
             
-            // Agregar el checkbox de "Seleccionar todo"
             var selectAllCheckbox = document.createElement('input');
             selectAllCheckbox.type = 'checkbox';
             selectAllCheckbox.id = 'select_all';
@@ -440,30 +438,25 @@
 
             if (accionesNoRegistradasPorFecha[fechaSeleccionada]) {
                 accionesNoRegistradasPorFecha[fechaSeleccionada].forEach(function(accion) {
-                    // Crear el checkbox para cada acción
                     var checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.name = 'acciones[]';
                     checkbox.value = accion.accionnombre;
-                    checkbox.classList.add('accion_checkbox'); // Clase para identificar los checkboxes de acciones
+                    checkbox.classList.add('accion_checkbox');
                     checkbox.id = 'accion_' + accion.accionnombre;
 
-                    // Crear la etiqueta del checkbox
                     var label = document.createElement('label');
                     label.htmlFor = 'accion_' + accion.accionnombre;
                     label.textContent = accion.accionnombre;
 
-                    // Añadir checkbox y etiqueta al contenedor
                     accionesContainer.appendChild(checkbox);
                     accionesContainer.appendChild(label);
                     accionesContainer.appendChild(document.createElement('br'));
                 });
             }
 
-            // Mostrar el div de acciones
             document.getElementById('acciones_select').style.display = 'block';
 
-            // Evento para seleccionar/deseleccionar todos los checkboxes
             document.getElementById('select_all').addEventListener('change', function() {
                 var checkboxes = document.querySelectorAll('.accion_checkbox');
                 checkboxes.forEach(function(checkbox) {
@@ -480,7 +473,6 @@
 </script>
 
 <script>
-    // Función para cargar la vista previa del documento seleccionado en el iframe del modal
     function cargarVistaPrevia() {
       var archivo = document.getElementById('archivo').files[0];
       if (archivo) {
@@ -492,8 +484,6 @@
         reader.readAsDataURL(archivo);
       }
     }
-  
-    // Evento cuando se selecciona un archivo
     document.getElementById('archivo').addEventListener('change', function() {
       cargarVistaPrevia();
     });

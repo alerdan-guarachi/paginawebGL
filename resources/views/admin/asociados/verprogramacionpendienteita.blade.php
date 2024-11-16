@@ -39,7 +39,7 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th style="width: 20px;">ID</th>
+                            <th style="width: 20px;">ID Bateria</th>
                             <th style="width: 200px;">Nombres y Apellidos</th>
                             <th style="width: 150px;">Acción</th>
                             <th style="width: 100px;">Proveedor</th>
@@ -57,9 +57,9 @@
                                 <td class="align-middle">{{ $accion->ps_fechabateria }}</td>
                                 <td class="align-middle">
                                     @if ($accion->Estado == 'Activo')
-                                        <i class="fas fa-check-circle fa-2x text-success"></i> <!-- Indica estado activo -->
+                                        <i class="fas fa-check-circle fa-2x text-success"></i>
                                     @else
-                                        <i class="fas fa-times-circle fa-2x text-danger"></i> <!-- Indica estado pendiente -->
+                                        <i class="fas fa-times-circle fa-2x text-danger"></i>
                                     @endif
                                 </td>
                                 <td class="align-middle" width="10px">

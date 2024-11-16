@@ -31,7 +31,6 @@
 @endif
 
 <div class="card">
-
     @if(!$inicioocontinuidad)
         <div class="card-body">
             <div class="tab-content" id="myTabContent">
@@ -185,14 +184,14 @@
                             $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
                         @endphp
                         <div class="col-12 col-md-6 mb-3">
-                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalFirmaEAP" @if (!$documento3) disabled @endif>
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalFirmaEAP" @if (!$documento1) disabled @endif>
                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                     <i class="fas fa-signature fa-5x mb-2"></i>
                                     <span class="h6 mb-0">FIRMA EAP</span>
                                     @php
-                                        $documento5 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                                        $documento1 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
                                     @endphp
-                                    @if (!$documento5)
+                                    @if (!$documento1)
                                         @if ($documento3)
                                             @php
                                                 $fechaSubidaEAP = \Carbon\Carbon::parse($documento3->fechasubida);
@@ -209,7 +208,7 @@
                                 $documento5 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
                             @endphp
                             <div class="text-center">
-                                @if (!$documento5)
+                                @if (!$documento1)
                                     <span class="mb-0 checkamarillo">
                                         <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
                                     </span>

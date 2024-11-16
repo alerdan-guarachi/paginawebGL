@@ -476,6 +476,12 @@ return [
                     'icon' => 'fas fa-fw fas fa-user-lock',
                     'can'  => 'admin.roles.index',
                 ],
+                [
+                    'text' => 'Asignar Código',
+                    'route'  => 'admin.codigo.index',
+                    'icon' => 'fas fa-fw fa-key',
+                    'can'  => 'admin.codigo.index',
+                ],
             ],
         ],
         [

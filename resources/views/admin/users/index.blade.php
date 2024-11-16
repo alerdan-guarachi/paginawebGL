@@ -33,20 +33,30 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Nombres y Apellidos</th>
-                        <th>Rol</th>
                         <th>Email</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($users as $user)
                         <tr>
+                            <td>{{$user->id}}</td>
                             <td>{{$user->name}}</td>
+                            <td>{{$user->email}}</td>
                             <td>
                                 {{ $user->rolesFormatted }}
                             </td>
-                            <td>{{$user->email}}</td>
-                            
+                            <td>
+                                @if ($user->estado == 'ACTIVO')
+                                    <span class="badge badge-success">{{ $user->estado }}</span>
+                                @else
+                                    <span class="badge badge-danger">{{ $user->estado }}</span>
+                                @endif
+                            </td>
                             <td width="10px">
                                 @can('admin.users.edit')
                                 <abbr title="ASIGNAR ROL">

@@ -42,7 +42,7 @@
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
 
-            {{-- DERIVAR --}}
+            {{-- DERIVAR A APODERADOS--}}
             <div class="tab-pane fade show active" id="tab-content-11" role="tabpanel" aria-labelledby="tab-11">
                 <div class="table-responsive">
                     <table class="table table-striped">
@@ -71,6 +71,7 @@
                                             {!! Form::open(['route' => ['admin.tramites.asignarapoderadotramiteclienteita', $item['clienteitaid']], 'method' => 'POST']) !!}
                                             {!! Form::hidden('clienteitaid', $item['clienteitaid']) !!}
                                             {!! Form::hidden('fechabateria', $item['fechabateria']) !!}
+                                            {!! Form::hidden('tramite', $item['tipocliente']) !!}
                                             <!-- Campo select deshabilitado para visualización -->
                                             {!! Form::select('apoderadoasignado_display', $apoderados, $apoderadoSiguiente, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90', 'disabled' => 'disabled', 'style' => 'width: 300px;']) !!}
 
@@ -88,7 +89,6 @@
                                 @endif
                             @endforeach
                         </tbody>
-                        
                     </table>
                 </div>
             </div>

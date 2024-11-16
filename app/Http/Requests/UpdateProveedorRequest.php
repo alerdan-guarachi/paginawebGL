@@ -50,7 +50,8 @@ class UpdateProveedorRequest extends FormRequest
             'usuarioactualizacion' => '',
             'usuarioeliminacion' => '',
             'linkubicacion' => '',
-            
+            'firmadigital' => '',
+            'sellodigital' => '',
         ]; 
         return $rules;
     }

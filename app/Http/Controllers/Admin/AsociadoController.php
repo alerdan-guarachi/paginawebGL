@@ -69,6 +69,8 @@ use App\Http\Requests\StoreProveedorInformefinalRequest;
 use App\Models\ProveedorInformefinal;
 use App\Models\Proveedor;
 use Illuminate\Support\Facades\File;
+use App\Models\PermisoCodigo;
+use Carbon\Carbon;
 
 class AsociadoController extends Controller
 {
@@ -691,7 +693,62 @@ class AsociadoController extends Controller
     } */
     public function crearbateriaclienteita(Cliente $cliente)
     {
-        $nombreusuario = auth()->user()->name; 
+        $nombreusuario = auth()->user()->name;
+        $fechaHoraActual = now();
+        $fechaActual = $fechaHoraActual->toDateString();
+
+        $usuariosConPermisoSiempre = [
+            'CARLOS ALEJANDRO GUARACHI SANDOVAL',
+            'DENISSE MAUREN LOPEZ FLORES',
+            'VANESSA MAMANI HUANACO',
+            'JHOSELINE EVA VELASQUEZ ESCOBAR',
+        ];
+
+        $permisoValido = false;
+        $permisoCodigo = false;
+        $fechaExpiracion = null;
+
+        if (in_array($nombreusuario, $usuariosConPermisoSiempre)) {
+            $permisoValido = true;
+        } else {
+            $permisoCodigo = PermisoCodigo::where('usuarioSolicitante', $nombreusuario)
+                ->where('estado', 'activo')
+                ->whereDate('fechaSolicitada', $fechaActual)
+                ->latest('horaActivacion')
+                ->first();
+
+            if ($permisoCodigo) {
+                // Verificar que 'permisoSolicitado' coincide exactamente con el permiso requerido
+                if ($permisoCodigo->permisoSolicitado === 'admin.asociados.crearbateriaclienteita') {
+                    $horaActivacion = Carbon::parse($permisoCodigo->horaActivacion);
+                    $tiempoLimite = $permisoCodigo->tiempoLimite;
+                    $horaExpiracion = $horaActivacion->copy()->addMinutes($tiempoLimite);
+
+                    if ($fechaHoraActual->lessThanOrEqualTo($horaExpiracion)) {
+                        $permisoValido = true;
+                        $fechaExpiracion = $horaExpiracion;
+                    } else {
+                        // El permiso ha expirado
+                        $permisoCodigo->estado = 'expirado';
+                        $permisoCodigo->save();
+                    }
+                } else {
+                    // Si 'permisoSolicitado' no coincide con el permiso requerido, invalidar el permiso
+                    $permisoCodigo->estado = 'expirado';
+                    $permisoCodigo->save();
+                }
+            }
+        }
+
+        if ($permisoValido && $permisoCodigo) {
+            $fechaExpiracion = Carbon::parse($permisoCodigo->horaActivacion)->addMinutes($permisoCodigo->tiempoLimite);
+        } else {
+            $fechaExpiracion =null;
+        }
+
+
+
+
         $sucursalCliente = $cliente->sucursal;
         $rolusuario = auth()->user()->getRoleNames()->first(); 
         $areas = Area::orderBy('nombrearea', 'asc')
@@ -800,7 +857,7 @@ class AsociadoController extends Controller
             }
         }
  
-        return view('admin.asociados.crearbateriaclienteita', compact('nombreusuario','accionesPorFecha','fechasBateriaPorAccion','departamentos','estadoproveedor','areas','accionesPorArea','cliente','id','accionesCliente','areas2','rolusuario'));
+        return view('admin.asociados.crearbateriaclienteita', compact('permisoValido', 'fechaExpiracion','nombreusuario','accionesPorFecha','fechasBateriaPorAccion','departamentos','estadoproveedor','areas','accionesPorArea','cliente','id','accionesCliente','areas2','rolusuario'));
     }
     public function generarPDFCliente(Request $request, $clienteId) 
     {
@@ -879,8 +936,105 @@ class AsociadoController extends Controller
             return response()->json(['status' => 'Archivo no encontrado'], 404);
         }
     }
-    public function guardarbateriaclienteita(StoreBateriasubclienteRequest $request)
+    public function guardarbateriaclienteita(StoreBateriasubclienteRequest $request, Cliente $cliente)
     {
+        if ($request->filled('codigo')) {
+
+            $codigoIngresado = strtoupper($request->input('codigo'));
+
+            // Obtener el usuario autenticado
+            $usuarioSolicitante = auth()->user()->name; // Si usas el ID, cambia a 'id'
+
+            // Obtener la fecha actual
+            $fechaHoy = now()->toDateString();
+
+            // Buscar el registro en 'permisos_codigo' que cumpla con las condiciones
+            $permisoCodigo = PermisoCodigo::where('codigo', $codigoIngresado)
+                ->where('usuarioSolicitante', $usuarioSolicitante)
+                ->whereDate('fechaSolicitada', $fechaHoy)
+                ->where('estado', 'pendiente')
+                ->first();
+
+            // Aquí implementas la lógica específica para el código ingresado
+            if ($permisoCodigo) {
+
+                // Verificar que 'permisoSolicitado' coincide exactamente con el permiso requerido
+                if ($permisoCodigo->permisoSolicitado === 'admin.asociados.crearbateriaclienteita') {
+                    // Actualizar 'horaActivacion' y 'estado'
+                    $permisoCodigo->horaActivacion = now();
+                    $permisoCodigo->estado = 'activo';
+                    $permisoCodigo->save();
+
+                    // Redirigir a la ruta con mensaje de éxito
+                    return redirect()->route('admin.asociados.crearbateriaclienteita', ['cliente' => $cliente->id])
+                        ->with('success', 'Código ingresado correctamente.');
+                } else {
+                    // Si 'permisoSolicitado' no coincide con el permiso requerido, invalidar el permiso
+                    $permisoCodigo->estado = 'expirado';
+                    $permisoCodigo->save();
+
+                    // Redirigir con mensaje de error
+                    return redirect()->route('admin.asociados.crearbateriaclienteita', ['cliente' => $cliente->id])
+                        ->withErrors(['mensaje' => 'El permiso solicitado no es válido.'])
+                        ->withInput();
+                }
+            } else {
+                // Si el código es incorrecto, regresas con un mensaje de error
+                return redirect()->route('admin.asociados.crearbateriaclienteita', ['cliente' => $cliente->id])
+                    ->withErrors(['codigo' => 'El código ingresado es incorrecto, no está autorizado o ha expirado.'])
+                    ->withInput();
+            }
+        } else {
+
+            // Antes de crear la batería, verifica si el usuario tiene permiso
+
+            $nombreusuario = auth()->user()->name;
+            $fechaHoraActual = now();
+            $fechaActual = $fechaHoraActual->toDateString();
+
+            $usuariosConPermisoSiempre = [
+                'CARLOS ALEJANDRO GUARACHI SANDOVAL',
+                'DENISSE MAUREN LOPEZ FLORES',
+                'VANESSA MAMANI HUANACO',
+                'JHOSELINE EVA VELASQUEZ ESCOBAR',
+            ];
+
+            $permisoValido = false;
+
+            if (in_array($nombreusuario, $usuariosConPermisoSiempre)) {
+                $permisoValido = true;
+            } else {
+                $permisoCodigo = PermisoCodigo::where('usuarioSolicitante', $nombreusuario)
+                    ->where('estado', 'activo')
+                    ->whereDate('fechaSolicitada', $fechaActual)
+                    ->latest('horaActivacion')
+                    ->first();
+
+                if ($permisoCodigo) {
+                    $horaActivacion = Carbon::parse($permisoCodigo->horaActivacion);
+                    $tiempoLimite = $permisoCodigo->tiempoLimite;
+                    $horaExpiracion = $horaActivacion->copy()->addMinutes($tiempoLimite);
+
+                    if ($fechaHoraActual->lessThanOrEqualTo($horaExpiracion)) {
+                        $permisoValido = true;
+                    } else {
+                        // El permiso ha expirado
+                        $permisoCodigo->estado = 'expirado';
+                        $permisoCodigo->save();
+                    }
+                }
+            }
+
+            // Si el permiso no es válido, redirige con un mensaje de error
+            if (!$permisoValido) {
+                return redirect()->route('admin.asociados.crearbateriaclienteita', ['cliente' => $cliente->id])
+                    ->withErrors(['mensaje' => 'Tiempo límite excedido, el permiso ha sido revocado'])
+                    ->withInput();
+                }
+            }
+
+
+            
         $clienteID = $request->input('clienteitaid');
         $cliente = Cliente::findOrFail($clienteID);
         $accionesSeleccionadas = $request->input('acciones');
@@ -1797,7 +1951,7 @@ class AsociadoController extends Controller
             ->pluck('accionnombre')
             ->unique();
 
-        $accionesRegistradasPorFecha = Documentacionsubcliente::where('clienteitaid', $IDcliente)
+        /* $accionesRegistradasPorFecha = Documentacionsubcliente::where('clienteitaid', $IDcliente)
             ->get(['accion', 'fechabateria'])
             ->groupBy('fechabateria');
 
@@ -1808,7 +1962,34 @@ class AsociadoController extends Controller
                 $accionnombre = $accion->accionnombre;
                 return !isset($accionesRegistradasPorFecha[$fechabateria]) || !in_array($accionnombre, $accionesRegistradasPorFecha[$fechabateria]->pluck('accion')->toArray());
             })
+            ->groupBy('fechabateria'); */
+
+        $usuario = Auth::user();
+
+        $accionesRegistradasPorFecha = Documentacionsubcliente::where('clienteitaid', $IDcliente)
+            ->get(['accion', 'fechabateria'])
             ->groupBy('fechabateria');
+
+        $accionesNoRegistradasPorFecha = Estadoprogramacionsubcliente::join('programacionsubclientes', function ($join) {
+                $join->on('estadoprogramacionsubclientes.accionnombre', '=', 'programacionsubclientes.accionnombre')
+                    ->on('estadoprogramacionsubclientes.fechabateria', '=', 'programacionsubclientes.fechabateria');
+            })
+            ->where('estadoprogramacionsubclientes.clienteitaid', $IDcliente)
+            ->when($usuario->hasRole('PROVEEDOR'), function ($query) use ($usuario) {
+
+                return $query->where('programacionsubclientes.proveedornombre', $usuario->name);
+            })
+            ->get(['estadoprogramacionsubclientes.accionnombre', 'estadoprogramacionsubclientes.fechabateria'])
+            ->filter(function ($accion) use ($accionesRegistradasPorFecha) {
+                $fechabateria = $accion->fechabateria;
+                $accionnombre = $accion->accionnombre;
+                return !isset($accionesRegistradasPorFecha[$fechabateria]) || !in_array($accionnombre, $accionesRegistradasPorFecha[$fechabateria]->pluck('accion')->toArray());
+            })
+            ->groupBy('fechabateria');
+
+
+
+
 
         $accionesRegistradas = Documentacionsubcliente::whereIn('accion', $accionesCliente)
             ->where('clienteitaid', $IDcliente)
@@ -10895,17 +11076,14 @@ class AsociadoController extends Controller
     {
         $buscarPor = $request->get('buscarpor');
 
-        // Construir la consulta base
         $query = Bateriasubcliente::query()
             ->whereNotNull('clienteitaid')
             ->whereNotNull('clienteitanombre');
 
-        // Aplicar el filtro de búsqueda si existe
         if ($buscarPor) {
             $query->where('accionnombre', 'LIKE', "%$buscarPor%");
         }
 
-        // Filtrar solo las acciones pendientes utilizando whereNotExists
         $accionesPendientes = $query
             ->whereNotExists(function ($subquery) {
                 $subquery->select(DB::raw(1))
@@ -10921,8 +11099,6 @@ class AsociadoController extends Controller
                 'proveedorasignado as ps_proveedorasignado',
                 'accionnombre as ps_accionnombre',
                 'fechabateria as ps_fechabateria',
-                /* 'fechaasignada as ps_fechaasignada', */
-                /* DB::raw("CONCAT(IFNULL(horadesde, ''), ' - ', IFNULL(horahasta, '')) as ps_hora_asignada"), */
                 DB::raw("'Pendiente' as Estado")
             )
             ->orderBy('clienteitaid')

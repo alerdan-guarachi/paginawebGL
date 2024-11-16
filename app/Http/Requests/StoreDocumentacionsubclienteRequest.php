@@ -49,7 +49,7 @@ class StoreDocumentacionsubclienteRequest extends FormRequest
             'fechabateria' => '',
             'picture' => '',
             'picture2' => '',
-
+            'archivo2' => '',
         ]; 
         return $rules;
     }

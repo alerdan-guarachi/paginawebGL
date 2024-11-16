@@ -22,6 +22,76 @@
 @endif
 
 <div class="card">
+    @if(!$inicioocontinuidad)
+        <div class="card-body">
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
+                    <form id="formTramite" action="{{ route('admin.tramites.guardariniciotramiteclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
+                        {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                        {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                        {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                        {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
+                        {!! Form::hidden('apoderado', auth()->user()->name) !!}
+                        {!! Form::hidden('tramite', 'JUBILACIÓN') !!}
+                        {!! Form::hidden('nivelprocedimiento', '', ['id' => 'nivelprocedimiento']) !!}
+                        @csrf
+                        <h5 style="text-align: center; font-size: 25px; margin-bottom:30px; margin-top:20px;">ELIGE UNA OPCIÓN</h5>
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
+                                <button type="button" class="btn btn-custom" style="width: 80%;" onclick="confirmarTramite('INICIO DE TRÁMITE')">
+                                    <div class="d-flex flex-column align-items-center justify-content-center">
+                                        <i class="fas fa-file-signature fa-5x mb-2"></i>
+                                        <span class="h6 mb-0">INICIO DE TRAMITE</span>
+                                    </div>
+                                </button>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
+                                <button type="button" class="btn btn-custom" style="width: 80%;" onclick="confirmarTramite('CONTINUIDAD DE TRÁMITE')">
+                                    <div class="d-flex flex-column align-items-center justify-content-center">
+                                        <i class="fas fa-sync-alt fa-5x mb-2"></i>
+                                        <span class="h6 mb-0">CONTINUIDAD DE TRAMITE</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endif
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmarTramite(nivel) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: `¿DESEAS REGISTRAR ${nivel}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#94c93b',
+                cancelButtonColor: '#faa625',
+                confirmButtonText: 'Sí, continuar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('nivelprocedimiento').value = nivel;
+                    document.getElementById('formTramite').submit();
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            @if(session('success'))
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: "{{ session('success') }}",
+                    icon: 'success',
+                    confirmButtonColor: '#94c93b',
+                    confirmButtonText: 'ACEPTAR'
+                });
+            @endif
+        });
+    </script>
+
+    @if($inicioocontinuidad)
     {{-- NIVELES DE PROCEDIMIENTO --}}
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" id="myTabs">
@@ -29,9 +99,29 @@
                 <a class="nav-link active" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">INICIO DE TRÁMITE</a>
             </li>
             @php
-                $documento5 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->where('estadocomunicado', 'COMUNICADO')->first();
+                $documento5 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')
+                ->where('nivelprocedimiento', 'FIRMA EAP')
+                ->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')
+                ->where('estadocomunicado', 'COMUNICADO')
+                ->where(function ($query) {
+                    $query->whereNotNull('capturacomunicacion')
+                        ->where(function ($subQuery) {
+                            $subQuery->where('capturacomunicacion', 'like', '%.jpg');
+                        });
+                })
+                ->first();
+
+                $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE PODER')
+                ->where('tramite', 'JUBILACIÓN')
+                ->where(function ($query) {
+                    $query->whereNotNull('capturacomunicacion')
+                        ->where(function ($subQuery) {
+                            $subQuery->where('capturacomunicacion', 'like', '%.jpg');
+                        });
+                })
+                ->first();
             @endphp
-            @if (!$documento5)
+            @if (!$documento5 && !$documento3)
             <li class="nav-item">
                 <a class="nav-link disabled" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="false">PROCESO EN CURSO</a>
             </li>
@@ -48,112 +138,403 @@
             @endif
         </ul>
     </div>
-  
+    
 
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
             {{-- 1.- INICIO DE TRÁMITE --}}
-            <br><br>
             <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
-                <div class="row">
-
-                    {{-- INGRESO DE TRAMITE --}}
-                    <div class="col-12 col-md-4 mb-3">
-                        <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalIngresoTramite">
-                            <div class="d-flex flex-column align-items-center justify-content-center">
-                                <i class="fas fa-folder-plus fa-5x mb-2"></i>
-                                <span class="h6 mb-0 btn-block text-center">INGRESO DE TRÁMITE</span>
-                            </div>
-                        </button>
-                        <br>
-                        @php
-                            $documento1 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
-                            $documento2 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'INCLUSIÓN DE PODER')->first();
-                        @endphp
-                        <div class="text-center">
-                            @if (!$documento1 || !$documento2)
-                                <span class="mb-0 checkamarillo">
-                                    <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
-                                </span>
-                            @else
-                                <span class="mb-0 checkverde">
-                                    <i class="fas fa-check-circle"></i> COMPLETO
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- NOTIFICACION DEL PODER --}}
-                    @php
-                        $documento1 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'RECEPCION DE TRÁMITE')->where('estadocomunicado', 'COMUNICADO')->first();
-                        $documento2 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'INCLUSION DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
-                    @endphp
-                    <div class="col-12 col-md-4 mb-3">
-                        <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalNotificacionPoder" @if (!$documento1 || !$documento2) disabled @endif>
-                            <div class="d-flex flex-column align-items-center justify-content-center">
-                                <i class="fas fa-envelope-open-text fa-5x mb-2"></i>
-                                <span class="h6 mb-0">NOTIFICACIÓN DEL PODER</span>
-                            </div>
-                        </button>
-                        <br>
-                        @php
-                            $documento3 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
-                        @endphp
-                        <div class="text-center">
-                            @if (!$documento3)
-                                <span class="mb-0 checkamarillo">
-                                    <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
-                                </span>
-                            @else
-                                <span class="mb-0 checkverde">
-                                    <i class="fas fa-check-circle"></i> COMPLETO
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- FIRMA EAP --}}
-                    @php
-                        $documento3 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
-                    @endphp
-                    <div class="col-12 col-md-4 mb-3">
-                        <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalFirmaEAP" @if (!$documento3) disabled @endif>
-                            <div class="d-flex flex-column align-items-center justify-content-center">
-                                <i class="fas fa-signature fa-5x mb-2"></i>
-                                <span class="h6 mb-0">FIRMA EAP</span>
-                                @php
-                                    $documento5 = $cliente->tramites()->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
-                                @endphp
-                                @if (!$documento5)
-                                    @if ($documento3)
-                                        @php
-                                            $fechaSubidaEAP = \Carbon\Carbon::parse($documento3->fechasubida);
-                                            $diasRestantesEAP = max(0, 10 - $fechaSubidaEAP->diffInDays(\Carbon\Carbon::now()));
-                                            $mensajeDias = $diasRestantesEAP == 1 ? '1 DIA RESTANTE' : "$diasRestantesEAP DIAS RESTANTES";
-                                        @endphp
-                                        <span class="badge badge-orange mt-2">{{ $mensajeDias }}</span>
-                                    @endif
+                @if($tramiteinicio)
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalIngresoTramite">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-folder-plus fa-5x mb-2"></i>
+                                    <span class="h6 mb-0 btn-block text-center">INGRESO DE TRÁMITE</span>
+                                </div>
+                            </button>
+                            <br>
+                            @php
+                                $documento1 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
+                                $documento2 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'INCLUSIÓN DE PODER')->first();
+                            @endphp
+                            <div class="text-center"> 
+                                @if (!$documento1 && !$documento2)
+                                    <span class="mb-0 checkamarillo">
+                                        <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
+                                    </span>
+                                @elseif ($documento1 || $documento2)
+                                    <span class="mb-0 checkverde">
+                                        <i class="fas fa-check-circle"></i> COMPLETO
+                                    </span>
                                 @endif
                             </div>
-                        </button>
-                        <br>
+                        </div>
+
                         @php
-                            $documento5 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                            $documento3 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
                         @endphp
-                        <div class="text-center">
-                            @if (!$documento5)
-                                <span class="mb-0 checkamarillo">
-                                    <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
-                                </span>
-                            @else
-                                <span class="mb-0 checkverde">
-                                    <i class="fas fa-check-circle"></i> COMPLETO
-                                </span>
-                            @endif
+                        <div class="col-12 col-md-6 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalFirmaEAP" @if (!$documento1) disabled @endif>
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-signature fa-5x mb-2"></i>
+                                    <span class="h6 mb-0">FIRMA EAP</span>
+                                    @php
+                                        $documento1 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                                    @endphp
+                                    @if (!$documento1)
+                                        @if ($documento3)
+                                            @php
+                                                $fechaSubidaEAP = \Carbon\Carbon::parse($documento3->fechasubida);
+                                                $diasRestantesEAP = max(0, 10 - $fechaSubidaEAP->diffInDays(\Carbon\Carbon::now()));
+                                                $mensajeDias = $diasRestantesEAP == 1 ? '1 DIA RESTANTE' : "$diasRestantesEAP DIAS RESTANTES";
+                                            @endphp
+                                            <span class="badge badge-orange mt-2">{{ $mensajeDias }}</span>
+                                        @endif
+                                    @endif
+                                </div>
+                            </button>
+                            <br>
+                            @php
+                                $documento5 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                            @endphp
+                            <div class="text-center">
+                                @if (!$documento1)
+                                    <span class="mb-0 checkamarillo">
+                                        <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
+                                    </span>
+                                @else
+                                    <span class="mb-0 checkverde">
+                                        <i class="fas fa-check-circle"></i> COMPLETO
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                @if($tramitecontinuidad)
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalIngresoTramite">
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-folder-plus fa-5x mb-2"></i>
+                                    <span class="h6 mb-0 btn-block text-center">INGRESO DE TRÁMITE</span>
+                                </div>
+                            </button>
+                            <br>
+                            @php
+                                $documento1 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
+                                $documento2 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'INCLUSIÓN DE PODER')->first();
+                            @endphp
+                            <div class="text-center"> 
+                                @if (!$documento1 && !$documento2)
+                                    <span class="mb-0 checkamarillo">
+                                        <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
+                                    </span>
+                                @elseif ($documento1 || $documento2)
+                                    <span class="mb-0 checkverde">
+                                        <i class="fas fa-check-circle"></i> COMPLETO
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalNotificacionPoder" @if (!$documento1 && !$documento2) disabled @endif>
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-envelope-open-text fa-5x mb-2"></i>
+                                    <span class="h6 mb-0">NOTIFICACIÓN DEL PODER</span>
+                                </div>
+                            </button>
+                            <br>
+                            @php
+                                $documento3 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
+                            @endphp
+                            <div class="text-center">
+                                @if (!$documento3)
+                                    <span class="mb-0 checkamarillo">
+                                        <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
+                                    </span>
+                                @else
+                                    <span class="mb-0 checkverde">
+                                        <i class="fas fa-check-circle"></i> COMPLETO
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+                <!-- Ingreso de Trámite -->
+                <div class="modal fade" id="modalIngresoTramite" tabindex="-1" role="dialog" aria-labelledby="modalIngresoTramiteLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE TRÁMITE</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{{ route('admin.tramites.guardartramitesclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
+                                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                    {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
+                                    {!! Form::hidden('apoderado', auth()->user()->name) !!}
+                                    @csrf
+                                    <br>
+                                    <div class="container">
+                                        <div class="row mb-3 titulos">
+                                            <div class="col-md-4 text-center">
+                                                <strong>SUB PROCEDIMIENTO</strong>
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                <strong>FECHA DE SUBIDA</strong>
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                <strong>DOCUMENTO</strong>
+                                            </div>
+                                        </div><br>
+
+                                        @if($tramiteinicio)
+                                            <div class="row mb-3 align-items-center {{ !$documento1 ? 'no-documento' : '' }}">
+                                                <div class="col-md-4 text-center">
+                                                    <p class="mb-0">RECEPCIÓN DE TRÁMITE</p>
+                                                    @if (!$documento1)
+                                                    <input type="text" class="form-control" id="tramite1" name="tramite[]" value="JUBILACIÓN" hidden>
+                                                    <input type="text" class="form-control" id="nivelprocedimiento1" name="nivelprocedimiento[]" value="INGRESO DE TRÁMITE" hidden>
+                                                    <input type="text" class="form-control" id="subprocedimiento1" name="subprocedimiento[]" value="RECEPCIÓN DE TRÁMITE" hidden>
+                                                    @endif
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    @php
+                                                        $documento1 = $cliente->tramites()->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->where('tramite', 'JUBILACIÓN')->first();
+                                                    @endphp
+                                                    @if ($documento1)
+                                                        <p class="mb-0">{{ $documento1->fechasubida }}</p>
+                                                    @else
+                                                    <input type="date" class="form-control" id="fechasubida1" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                    @endif
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    @if ($documento1)
+                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento1->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                    @else
+                                                    <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block" accept="application/pdf">
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endif
+                                        @if($tramitecontinuidad)
+                                            <div class="row mb-3 align-items-center {{ !$documento2 ? 'no-documento' : '' }}">
+                                                <div class="col-md-4 text-center">
+                                                    <p class="mb-0">INCLUSIÓN DE PODER</p>
+                                                    <input type="text" class="form-control" id="tramite2" name="tramite[]" value="JUBILACIÓN" hidden>
+                                                    <input type="text" class="form-control" id="nivelprocedimiento2" name="nivelprocedimiento[]" value="INGRESO DE TRÁMITE" hidden>
+                                                    <input type="text" class="form-control" id="subprocedimiento2" name="subprocedimiento[]" value="INCLUSIÓN DE PODER" hidden>
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    @php
+                                                        $documento2 = $cliente->tramites()->where('subprocedimiento', 'INCLUSIÓN DE PODER')->where('tramite', 'JUBILACIÓN')->first();
+                                                    @endphp
+                                                    @if ($documento2)
+                                                        <p class="mb-0">{{ $documento2->fechasubida }}</p>
+                                                    @else
+                                                    <input type="date" class="form-control" id="fechasubida2" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                    @endif
+                                                </div>
+                                                <div class="col-md-4 text-center">
+                                                    @if ($documento2)
+                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento2->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                    @else
+
+                                                    <input type="file" name="archivo[]" id="archivo2" class="dropify mx-auto d-block" accept="application/pdf">
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    @if (!$documento1 && !$documento2)
+                                        <button type="submit" class="btn btn-subirarchivos d-block mx-auto mt-3" style="width: 200px;">SUBIR ARCHIVOS</button>
+                                    @endif
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- Notificación del Poder -->
+                <div class="modal fade" id="modalNotificacionPoder" tabindex="-1" role="dialog" aria-labelledby="modalNotificacionPoderLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title titulomodal" id="modalNotificacionPoderLabel">NOTIFICACIÓN DE PODER</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{{ route('admin.tramites.guardartramitesclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
+                                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                    {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
+                                    {!! Form::hidden('apoderado', auth()->user()->name) !!}
+                                    @csrf
+                                    <br>
+                                    <div class="container">
+                                        <div class="row mb-3 titulos">
+                                            <div class="col-md-4 text-center">
+                                                <strong>SUB PROCEDIMIENTO</strong>
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                <strong>FECHA DE SUBIDA</strong>
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                <strong>DOCUMENTO</strong>
+                                            </div>
+                                        </div><br>
+
+                                        @php
+                                        $documento3 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
+                                        @endphp
+                                        <div class="row mb-3 align-items-center {{ !$documento3 ? 'no-documento' : '' }}">
+                                            <div class="col-md-4 text-center">
+                                                <p class="mb-0">VALIDACIÓN DE PODER</p>
+                                                <input type="text" class="form-control" id="tramite1" name="tramite[]" value="JUBILACIÓN" hidden>
+                                                <input type="text" class="form-control" id="nivelprocedimiento1" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
+                                                <input type="text" class="form-control" id="subprocedimiento1" name="subprocedimiento[]" value="VALIDACIÓN DE PODER" hidden>
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($documento3)
+                                                    <p class="mb-0">{{ $documento3->fechasubida }}</p>
+                                                @else
+                                                    <input type="date" class="form-control" id="fechasubida1" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($documento3)
+                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento3->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                @else
+                                                    <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block" accept=".pdf">
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        @php
+                                        $documento4 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'RECHAZO DE PODER')->first();
+                                        @endphp
+                                        @if (!$documento3 || $documento4 && (!$documento4 || $documento4))
+                                        <div class="row mb-3 align-items-center {{ !$documento4 ? 'no-documento' : '' }}">
+                                            <div class="col-md-4 text-center">
+                                                <p class="mb-0">RECHAZO DE PODER</p>
+                                                <input type="text" class="form-control" id="tramite2" name="tramite[]" value="JUBILACIÓN" hidden>
+                                                <input type="text" class="form-control" id="nivelprocedimiento2" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
+                                                <input type="text" class="form-control" id="subprocedimiento2" name="subprocedimiento[]" value="RECHAZO DE PODER" hidden>
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($documento4)
+                                                    <p class="mb-0">{{ $documento4->fechasubida }}</p>
+                                                @else
+                                                    <input type="date" class="form-control" id="fechasubida2" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($documento4)
+                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento4->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                @else
+                                                    <input type="file" name="archivo[]" id="archivo2" class="dropify mx-auto d-block" accept=".pdf">
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @endif
+                                    </div>
+                                    @php
+                                        $documento3 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'VALIDACION DE PODER')->first();
+                                        $documento4 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'RECHAZO DE PODER')->first();
+                                    @endphp
+                                    @if (!$documento3)
+                                        <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">SUBIR ARCHIVOS</button>
+                                    @endif
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+
+                <!-- Firma EAP -->
+                <div class="modal fade" id="modalFirmaEAP" tabindex="-1" role="dialog" aria-labelledby="modalFirmaEAPLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">FIRMA EAP</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form action="{{ route('admin.tramites.guardartramitesclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
+                                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                    {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
+                                    {!! Form::hidden('apoderado', auth()->user()->name) !!}
+                                    @csrf
+                                    <br>
+                                    <div class="container">
+                                        <div class="row mb-3 titulos">
+                                            <div class="col-md-4 text-center">
+                                                <strong>SUB PROCEDIMIENTO</strong>
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                <strong>FECHA DE SUBIDA</strong>
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                <strong>DOCUMENTO</strong>
+                                            </div>
+                                        </div><br>
+                                        @php
+                                                    $documento5 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                                                @endphp
+                                        <div class="row mb-3 align-items-center {{ !$documento5 ? 'no-documento' : '' }}">
+                                            <div class="col-md-4 text-center">
+                                                <p class="mb-0">ESTADO DE AHORRO PREVISIONAL</p>
+                                                <input type="text" class="form-control" id="tramite1" name="tramite[]" value="JUBILACIÓN" hidden>
+                                                <input type="text" class="form-control" id="nivelprocedimiento1" name="nivelprocedimiento[]" value="FIRMA EAP" hidden>
+                                                <input type="text" class="form-control" id="subprocedimiento1" name="subprocedimiento[]" value="ESTADO DE AHORRO PREVISIONAL" hidden>
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @php
+                                                    $documento5 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                                                @endphp
+                                                @if ($documento5)
+                                                    <p class="mb-0">{{ $documento5->fechasubida }}</p>
+                                                @else
+                                                <input type="date" class="form-control" id="fechasubida1" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($documento5)
+                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento5->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                @else
+                                                <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block" accept=".pdf">
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @php
+                                        $documento5 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                                    @endphp
+                                    @if (!$documento5)
+                                        <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">SUBIR ARCHIVOS</button>
+                                    @endif
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
 
             {{-- 2.- PROCESO EN CURSO --}}
@@ -393,275 +774,7 @@
 </div>
 
 
-<!-- Ingreso de Trámite -->
-<div class="modal fade" id="modalIngresoTramite" tabindex="-1" role="dialog" aria-labelledby="modalIngresoTramiteLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE TRÁMITE</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form action="{{ route('admin.tramites.guardartramitesclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
-                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
-                    {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
-                    {!! Form::hidden('apoderado', auth()->user()->name) !!}
-                    @csrf
-                    <br>
-                    <div class="container">
-                        <div class="row mb-3 titulos">
-                            <div class="col-md-4 text-center">
-                                <strong>SUB PROCEDIMIENTO</strong>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <strong>FECHA DE SUBIDA</strong>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <strong>DOCUMENTO</strong>
-                            </div>
-                        </div><br>
-
-                        @php
-                            $documento1 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
-                        @endphp
-                        <div class="row mb-3 align-items-center {{ !$documento1 ? 'no-documento' : '' }}">
-                            <div class="col-md-4 text-center">
-                                <p class="mb-0">RECEPCIÓN DE TRÁMITE</p>
-                                @if (!$documento1)
-                                <input type="text" class="form-control" id="tramite1" name="tramite[]" value="JUBILACIÓN" hidden>
-                                <input type="text" class="form-control" id="nivelprocedimiento1" name="nivelprocedimiento[]" value="INGRESO DE TRÁMITE" hidden>
-                                <input type="text" class="form-control" id="subprocedimiento1" name="subprocedimiento[]" value="RECEPCIÓN DE TRÁMITE" hidden>
-                                @endif
-                            </div>
-                            <div class="col-md-4 text-center">
-                                @php
-                                    $documento1 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
-                                @endphp
-                                @if ($documento1)
-                                    <p class="mb-0">{{ $documento1->fechasubida }}</p>
-                                @else
-                                <input type="date" class="form-control" id="fechasubida1" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
-                                @endif
-                            </div>
-                            <div class="col-md-4 text-center">
-                                @if ($documento1)
-                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento1->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
-                                @else
-                                <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block" accept=".pdf">
-                                @endif
-                            </div>
-                        </div>
-
-                        <div class="row mb-3 align-items-center {{ !$documento2 ? 'no-documento' : '' }}">
-                            <div class="col-md-4 text-center">
-                                <p class="mb-0">INCLUSIÓN DE PODER</p>
-                                <input type="text" class="form-control" id="tramite2" name="tramite[]" value="JUBILACIÓN" hidden>
-                                <input type="text" class="form-control" id="nivelprocedimiento2" name="nivelprocedimiento[]" value="INGRESO DE TRÁMITE" hidden>
-                                <input type="text" class="form-control" id="subprocedimiento2" name="subprocedimiento[]" value="INCLUSIÓN DE PODER" hidden>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                @php
-                                    $documento2 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'INCLUSIÓN DE PODER')->first();
-                                @endphp
-                                @if ($documento2)
-                                    <p class="mb-0">{{ $documento2->fechasubida }}</p>
-                                @else
-                                <input type="date" class="form-control" id="fechasubida2" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
-                                @endif
-                            </div>
-                            <div class="col-md-4 text-center">
-                                @if ($documento2)
-                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento2->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
-                                @else
-                                <input type="file" name="archivo[]" id="archivo2" class="dropify mx-auto d-block" accept=".pdf">
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    @php
-                        $documento1 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
-                        $documento2 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'INCLUSIÓN DE PODER')->first();
-                    @endphp
-                    @if (!$documento1 || !$documento2)
-                        <button type="submit" class="btn btn-subirarchivos d-block mx-auto mt-3" style="width: 200px;">SUBIR ARCHIVOS</button>
-                    @endif
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Notificación del Poder -->
-<div class="modal fade" id="modalNotificacionPoder" tabindex="-1" role="dialog" aria-labelledby="modalNotificacionPoderLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title titulomodal" id="modalNotificacionPoderLabel">NOTIFICACIÓN DE PODER</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form action="{{ route('admin.tramites.guardartramitesclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
-                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
-                    {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
-                    {!! Form::hidden('apoderado', auth()->user()->name) !!}
-                    @csrf
-                    <br>
-                    <div class="container">
-                        <div class="row mb-3 titulos">
-                            <div class="col-md-4 text-center">
-                                <strong>SUB PROCEDIMIENTO</strong>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <strong>FECHA DE SUBIDA</strong>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <strong>DOCUMENTO</strong>
-                            </div>
-                        </div><br>
-
-                        @php
-                        $documento3 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
-                        @endphp
-                        <div class="row mb-3 align-items-center {{ !$documento3 ? 'no-documento' : '' }}">
-                            <div class="col-md-4 text-center">
-                                <p class="mb-0">VALIDACIÓN DE PODER</p>
-                                <input type="text" class="form-control" id="tramite1" name="tramite[]" value="JUBILACIÓN" hidden>
-                                <input type="text" class="form-control" id="nivelprocedimiento1" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
-                                <input type="text" class="form-control" id="subprocedimiento1" name="subprocedimiento[]" value="VALIDACIÓN DE PODER" hidden>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                @if ($documento3)
-                                    <p class="mb-0">{{ $documento3->fechasubida }}</p>
-                                @else
-                                    <input type="date" class="form-control" id="fechasubida1" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
-                                @endif
-                            </div>
-                            <div class="col-md-4 text-center">
-                                @if ($documento3)
-                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento3->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
-                                @else
-                                    <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block" accept=".pdf">
-                                @endif
-                            </div>
-                        </div>
-
-                        @php
-                        $documento4 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'RECHAZO DE PODER')->first();
-                        @endphp
-                        @if (!$documento3 || $documento4 && (!$documento4 || $documento4))
-                        <div class="row mb-3 align-items-center {{ !$documento4 ? 'no-documento' : '' }}">
-                            <div class="col-md-4 text-center">
-                                <p class="mb-0">RECHAZO DE PODER</p>
-                                <input type="text" class="form-control" id="tramite2" name="tramite[]" value="JUBILACIÓN" hidden>
-                                <input type="text" class="form-control" id="nivelprocedimiento2" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
-                                <input type="text" class="form-control" id="subprocedimiento2" name="subprocedimiento[]" value="RECHAZO DE PODER" hidden>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                @if ($documento4)
-                                    <p class="mb-0">{{ $documento4->fechasubida }}</p>
-                                @else
-                                    <input type="date" class="form-control" id="fechasubida2" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
-                                @endif
-                            </div>
-                            <div class="col-md-4 text-center">
-                                @if ($documento4)
-                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento4->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
-                                @else
-                                    <input type="file" name="archivo[]" id="archivo2" class="dropify mx-auto d-block" accept=".pdf">
-                                @endif
-                            </div>
-                        </div>
-                        @endif
-                    </div>
-                    @php
-                        $documento3 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'VALIDACION DE PODER')->first();
-                        $documento4 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'RECHAZO DE PODER')->first();
-                    @endphp
-                    @if (!$documento3)
-                        <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">SUBIR ARCHIVOS</button>
-                    @endif
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Firma EAP -->
-<div class="modal fade" id="modalFirmaEAP" tabindex="-1" role="dialog" aria-labelledby="modalFirmaEAPLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">FIRMA EAP</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form action="{{ route('admin.tramites.guardartramitesclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
-                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
-                    {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
-                    {!! Form::hidden('apoderado', auth()->user()->name) !!}
-                    @csrf
-                    <br>
-                    <div class="container">
-                        <div class="row mb-3 titulos">
-                            <div class="col-md-4 text-center">
-                                <strong>SUB PROCEDIMIENTO</strong>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <strong>FECHA DE SUBIDA</strong>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                <strong>DOCUMENTO</strong>
-                            </div>
-                        </div><br>
-                        <div class="row mb-3 align-items-center {{ !$documento5 ? 'no-documento' : '' }}">
-                            <div class="col-md-4 text-center">
-                                <p class="mb-0">ESTADO DE AHORRO PREVISIONAL</p>
-                                <input type="text" class="form-control" id="tramite1" name="tramite[]" value="JUBILACIÓN" hidden>
-                                <input type="text" class="form-control" id="nivelprocedimiento1" name="nivelprocedimiento[]" value="FIRMA EAP" hidden>
-                                <input type="text" class="form-control" id="subprocedimiento1" name="subprocedimiento[]" value="ESTADO DE AHORRO PREVISIONAL" hidden>
-                            </div>
-                            <div class="col-md-4 text-center">
-                                @php
-                                    $documento5 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
-                                @endphp
-                                @if ($documento5)
-                                    <p class="mb-0">{{ $documento5->fechasubida }}</p>
-                                @else
-                                <input type="date" class="form-control" id="fechasubida1" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
-                                @endif
-                            </div>
-                            <div class="col-md-4 text-center">
-                                @if ($documento5)
-                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento5->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
-                                @else
-                                <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block" accept=".pdf">
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                    @php
-                        $documento5 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
-                    @endphp
-                    @if (!$documento5)
-                        <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">SUBIR ARCHIVOS</button>
-                    @endif
-                </form>
-            </div>
-        </div>
-    </div>
-</div>      
+    
 
 {{-- CARTAS Y RECLAMOS --}}
 <div class="modal fade" id="modalcartayreclamo" tabindex="-1" role="dialog" aria-labelledby="modalcartayreclamoLabel" aria-hidden="true">
@@ -858,6 +971,9 @@
                     {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
                     {!! Form::hidden('apoderado', auth()->user()->name) !!}
                     @csrf
+                    @php
+                            $documento13 = $cliente->tramites()->where('tramite', 'JUBILACIÓN')->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->first();
+                        @endphp
                     <div class="container">
                         @if (!$documento13)
                         <div class="row mb-3 titulos">
@@ -1077,6 +1193,10 @@
                                 <th>Sub procedimiento</th>
                                 <th>Documento</th>
                                 <th>Comunicar</th>
+                                <th>Captura</th>
+                                @if ($procedimientotramites->whereNull('capturacomunicacion')->count() > 0)
+                                    <th></th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -1085,18 +1205,50 @@
                                     <td>{{ $procedimientotramite->nivelprocedimiento }}</td>
                                     <td>{{ $procedimientotramite->subprocedimiento }}</td>
                                     <td>
-                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$procedimientotramite->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">VER DOC.</a>
+                                        <abbr title="Ver documento">
+                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$procedimientotramite->document}") }}" class="btn btn-verdocumento fas fa-eye" target="_blank" ></a>
+                                        </abbr>
                                     </td>
                                     <td>
                                         @if ($procedimientotramite->estadocomunicado !== 'COMUNICADO')
-                                            <a href="{{ route('tramites.actualizarEstado', ['id' => $procedimientotramite->id, 'clienteId' => $cliente->id]) }}" class="btn btn-comunicar" target="_blank">
-                                                COMUNICAR
-                                            </a>
+                                            <a href="{{ route('tramites.actualizarEstado', ['id' => $procedimientotramite->id, 'clienteId' => $cliente->id]) }}" class="btn btn-comunicar" target="_blank" style="width: 130px;">COMUNICAR</a>
                                         @else
-                                            <button class="btn btn-whatsapp" style="width: 130px; background-color: #ccc; color: #666;" disabled>
-                                                COMUNICADO
-                                            </button>
+                                            <button class="btn btn-whatsapp" style="width: 120px; background-color: #ccc; color: #666;" disabled>COMUNICADO</button>
                                         @endif
+                                    </td>
+                                    <td>
+                                        @if ($procedimientotramite->capturacomunicacion)
+                                            <abbr title="Ver captura">
+                                            <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$procedimientotramite->capturacomunicacion}") }}" class="btn btn-verdocumento fas fa-eye" target="_blank"></a>
+                                            </abbr>
+                                            @else
+                                            <form action="{{ route('tramites.subirArchivo', ['id' => $procedimientotramite->id, 'clienteId' => $cliente->id]) }}" method="POST" enctype="multipart/form-data" class="d-inline">
+                                                @csrf
+                                                <div class="input-group">
+                                                    <input type="file" name="documento" class="dropify esdropify" accept=".jpg" required>      
+                                    </td>
+                                    <td>
+                                                <div class="input-group-append">
+                                                    <abbr title="Subir captura">
+                                                    <button type="submit" class="btn btn-subircaptura fas fa-share-square"></button>
+                                                    </abbr>
+                                                </div>
+                                            </div>
+                                            <style>
+                                                .btn-subircaptura {
+                                                    background-color:  #ffffff;
+                                                    color: #94c93b;
+                                                    border-color: #94c93b;
+                                                    border-radius: 5px;
+                                                    padding: 7px 10px;
+                                                }
+                                                .btn-subircaptura:hover {
+                                                    background-color: #94c93b;
+                                                    color: #ffffff;
+                                                }
+                                            </style>
+                                        </form>
+                                    @endif
                                     </td>
                                 </tr>
                             @endforeach

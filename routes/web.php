@@ -26,6 +26,7 @@ use App\Http\Controllers\TemporalController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PaginawebController;
 use App\Http\Controllers\Admin\AdministrarProgramacionController;
+use App\Http\Controllers\Admin\CodigoController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\ControlProgController;
 
@@ -488,6 +489,10 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
     Route::get('/generar-excel', 'App\Http\Controllers\Admin\ReporteController@generarExcel')->name('generar.excel');
 //
 
+//GENERAR CÓDIGOS
+    Route::get('codigo/asignacion', [CodigoController::class, 'index'])->name('admin.codigo.index');
+    Route::post('codigo', [CodigoController::class, 'store'])->name('admin.codigo.store');
+//
 
 Route::get('/print', [ClienteController::class, 'print'])->name('admin.clientes.print');
 Route::get('clientes/print/{cliente}', 'App\Http\Controllers\Admin\ClienteController@print')->name('admin.clientes.print');

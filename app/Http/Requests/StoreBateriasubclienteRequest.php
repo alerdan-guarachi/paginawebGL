@@ -29,6 +29,13 @@ class StoreBateriasubclienteRequest extends FormRequest
      */
     public function rules()
     {
+        if ($this->filled('codigo')) {
+            // Reglas de validación para 'INGRESAR CÓDIGO'
+            return [
+                'codigo' => 'required|max:15',
+            ];
+        }else{
+    
         $rules = [
             'id' => '',
             'clienteid' => '',
@@ -56,5 +63,7 @@ class StoreBateriasubclienteRequest extends FormRequest
             'usuarioregistro' => '',
         ]; 
         return $rules;
+        }
     }
+    
 }

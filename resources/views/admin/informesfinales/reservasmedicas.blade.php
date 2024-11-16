@@ -224,26 +224,26 @@
                                     <td>{{$reservasmedica->fechaasignada}}</td>
                                     <td>{{$reservasmedica->horadesde}} - {{$reservasmedica->horahasta}}</td>
                                     @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                    <td width="10px">
-                                        @if($reservasmedica->fichamedicaita)
-                                            <a href="{{ asset('/fichamedicaclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->fichamedicaita) }}" class="btn btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @else
-                                        <abbr title="CREAR FICHA MÉDICA">
-                                            <a class="btn btn-sm btn-fichamedica" href="{{route('admin.asociados.crearformularioclienteita', $reservasmedica->clienteitaid)}}">
-                                                <i class="fas fa-file-signature"></i>
-                                            </a>
-                                        </abbr>
-                                        @endif
-                                    </td>
-                                    <td width="10px">
-                                        <abbr title="CREAR BATERIA">
-                                            <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
-                                                <i class="fas fa-charging-station"></i>
-                                            </a>
-                                        </abbr>
-                                    </td>
+                                        <td width="10px">
+                                            @if($reservasmedica->fichamedicaita)
+                                                <a href="{{ asset('/fichamedicaclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->fichamedicaita) }}" class="btn btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @else
+                                            <abbr title="CREAR FICHA MÉDICA">
+                                                <a class="btn btn-sm btn-fichamedica" href="{{route('admin.asociados.crearformularioclienteita', $reservasmedica->clienteitaid)}}">
+                                                    <i class="fas fa-file-signature"></i>
+                                                </a>
+                                            </abbr>
+                                            @endif
+                                        </td>
+                                        <td width="10px">
+                                            <abbr title="CREAR BATERIA">
+                                                <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
+                                                    <i class="fas fa-charging-station"></i>
+                                                </a>
+                                            </abbr>
+                                        </td>
                                     @endif
                                     <td width="10px">
                                         @if($reservasmedica->informeDisponible)
@@ -465,31 +465,33 @@
                                     <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
                                     <td>{{$reservasmedicaauditoria->fechabateria}}</td>
                                     @if ($rolusuario !== 'PROVEEDOR')
-                                    <td>{{$reservasmedica->proveedornombre}}</td>
+                                    <td>{{$reservasmedicaauditoria->proveedornombre}}</td>
                                     @endif
                                     <td>{{$reservasmedicaauditoria->accionnombre}}</td>
                                     <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
                                     <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
-                                    <td width="10px">
-                                        @if($reservasmedicaauditoria->$tienefichamedicaauditoria)
-                                            <a href="{{ asset('/fichamedicaclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->fichamedicaauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @else
-                                        <abbr title="CREAR FICHA MÉDICA">
-                                            <a class="btn btn-sm btn-fichamedica" href="{{route('admin.asociados.crearformularioclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
-                                                <i class="fas fa-file-signature"></i>
-                                            </a>
-                                        </abbr>
-                                        @endif
-                                    </td>
-                                    <td width="10px">
-                                        <abbr title="CREAR BATERIA">
-                                            <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
-                                                <i class="fas fa-charging-station"></i>
-                                            </a>
-                                        </abbr>
-                                    </td>
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                        <td width="10px">
+                                            @if($reservasmedicaauditoria->$tienefichamedicaauditoria)
+                                                <a href="{{ asset('/fichamedicaclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->fichamedicaauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @else
+                                            <abbr title="CREAR FICHA MÉDICA">
+                                                <a class="btn btn-sm btn-fichamedica" href="{{route('admin.asociados.crearformularioclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
+                                                    <i class="fas fa-file-signature"></i>
+                                                </a>
+                                            </abbr>
+                                            @endif
+                                        </td>
+                                        <td width="10px">
+                                            <abbr title="CREAR BATERIA">
+                                                <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
+                                                    <i class="fas fa-charging-station"></i>
+                                                </a>
+                                            </abbr>
+                                        </td>
+                                    @endif
                                     <td width="10px">
                                         @if($reservasmedicaauditoria->informeDisponibleauditoria)
                                             <abbr title="SUBIR INFORME">
@@ -742,6 +744,7 @@
                                     <td>{{$reservasmedica->fechaasignada}}</td>
                                     <td>{{$reservasmedica->horadesde}} - {{$reservasmedica->horahasta}}</td>
                                     <td>{{$reservasmedica->fechainforme}}</td>
+                                    
                                     <td width="10px">
                                         <div class="dropdown-container">
                                             <button class="btn btn-dropdown" type="button">
@@ -763,7 +766,16 @@
                                                     @endif
                                             </div>
                                         </div>   
-                                    </td>                                 
+                                    </td>  
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                        <td width="10px">
+                                            <abbr title="CREAR BATERIA">
+                                                <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
+                                                    <i class="fas fa-charging-station"></i>
+                                                </a>
+                                            </abbr>
+                                        </td>
+                                    @endif                               
                                 </tr>
                             @endif
                         @endforeach
@@ -781,6 +793,7 @@
                                     <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
                                     <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
                                     <td>{{$reservasmedicaauditoria->fechainformeauditoria}}</td>
+                                    
                                     <td width="10px">
                                         <div class="dropdown-container">
                                             <button class="btn btn-dropdown" type="button">
@@ -802,7 +815,16 @@
                                                     @endif
                                             </div>
                                         </div>   
-                                    </td>                                 
+                                    </td> 
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                        <td width="10px">
+                                            <abbr title="CREAR BATERIA">
+                                                <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
+                                                    <i class="fas fa-charging-station"></i>
+                                                </a>
+                                            </abbr>
+                                        </td>
+                                    @endif                                
                                 </tr>
                             @endif
                         @endforeach

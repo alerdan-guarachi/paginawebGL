@@ -48,7 +48,9 @@ use App\Models\Tramitesubcliente;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use setasign\Fpdi\Fpdi;
+use setasign\Fpdi\PdfReader;
+use FPDF;
 use function Ramsey\Uuid\v1;
 
 class InformeFinalController extends Controller
@@ -1633,26 +1635,16 @@ public function guardarinformefinal(StoreInformefinalRequest $request, $id, Clie
         'informesfinales'
     ])->whereNotNull('clienteauditoriaid');
     
-    /* if ($request->has('buscarporproveedor') && $request->buscarporproveedor !== '') {
-        $query->where('proveedornombre', 'LIKE', '%' . $request->buscarporproveedor . '%');
-    } */
+
     if ($request->has('proveedor') && $request->proveedor !== '') {
         $query->where('proveedornombre', $request->proveedor);
     }
-
-    if ($request->has('proveedor') && $request->proveedor !== '') {
-        $query2->where('proveedornombre', $request->proveedor);
-    }
-
     $rolusuario = auth()->user()->getRoleNames()->first(); 
     $usuarioautenticado = auth()->user()->name;
 
-    // Ajustar la consulta en función del rol del usuario
     if ($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR') {
-        // No se necesita filtrar por proveedor
         $reservasmedicas = $query->orderby('fechaasignada', 'desc')->get();
     } elseif ($rolusuario === 'PROVEEDOR') {
-        // Filtrar por proveedor autenticado
         $reservasmedicas = $query->where('proveedornombre', $usuarioautenticado)
             ->orderby('fechaasignada', 'desc')
             ->get();
@@ -1660,18 +1652,20 @@ public function guardarinformefinal(StoreInformefinalRequest $request, $id, Clie
         $reservasmedicas = collect();
     }
 
-    // Ajustar la consulta en función del rol del usuario
+
+    if ($request->has('proveedor') && $request->proveedor !== '') {
+        $query2->where('proveedornombre', $request->proveedor);
+    }
     if ($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR') {
-        // No se necesita filtrar por proveedor
         $reservasmedicasauditorias = $query2->orderby('fechaasignada', 'desc')->get();
     } elseif ($rolusuario === 'PROVEEDOR') {
-        // Filtrar por proveedor autenticado
         $reservasmedicasauditorias = $query2->where('proveedornombre', $usuarioautenticado)
             ->orderby('fechaasignada', 'desc')
             ->get();
     } else {
         $reservasmedicasauditorias = collect();
     }
+
 
     $atencionpendienteCount = 0;
     $informependienteCount = 0;
@@ -1725,19 +1719,16 @@ public function guardarinformefinal(StoreInformefinalRequest $request, $id, Clie
         $reservasmedicaauditoria->informeDisponibleauditoria = Estadoprogramacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
             ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
             ->where('accionnombre', $reservasmedicaauditoria->accionnombre)
-            /* ->whereNotNull('clienteauditoriaid') */
             ->exists();
 
         $reservasmedicaauditoria->documentacionDisponibleauditoria = Documentacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
             ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
             ->where('accion', $reservasmedicaauditoria->accionnombre)
-            /* ->whereNotNull('clienteauditoriaid') */
             ->exists();
 
         $documentacionauditoria = Documentacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
             ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
             ->where('accion', $reservasmedicaauditoria->accionnombre)
-            /* ->whereNotNull('clienteauditoriaid') */
             ->first();
 
         $reservasmedicaauditoria->fichamedicaauditoria = Fichamedicasubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
@@ -1768,7 +1759,7 @@ public function guardarinformefinal(StoreInformefinalRequest $request, $id, Clie
 }
 
 
-public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
+/* public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
     {
         $archivo_name = null;
         if ($request->hasFile('archivo')) {
@@ -1780,7 +1771,17 @@ public function guardardocumentacionclienteita(StoreDocumentacionsubclienteReque
             $archivo_name = time() . '_' . $file->getClientOriginalName();
             $file->move($carpetaCliente, $archivo_name);
         }
-        
+        $archivo_name = null;
+        if ($request->hasFile('archivo2')) {
+            $file = $request->file('archivo2');
+            
+            $carpetaCliente = public_path("/documentacionclientesita/{$cliente->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);}
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+        }
+
         $image_name = null;
         if ($request->hasFile('picture')) {
             $file = $request->file('picture');
@@ -1814,9 +1815,57 @@ public function guardardocumentacionclienteita(StoreDocumentacionsubclienteReque
             ]
         );
         return redirect()->route('admin.informesfinales.guardardocumentacionclienteita', $request->cliente)->with('info', 'El documento se subió con éxito');
+    } */
+
+    public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
+{
+    $archivo_name = null;
+    if ($request->hasFile('archivo')) {
+        $file = $request->file('archivo');
+        
+        // Subir el archivo de imagen del cliente
+        $carpetaCliente = public_path("/documentacionclientesita/{$cliente->id}");
+        if (!file_exists($carpetaCliente)) {
+            mkdir($carpetaCliente, 0755, true);
+        }
+
+        // Obtener el nombre del archivo
+        $archivo_name = time() . '_' . $file->getClientOriginalName();
+        $file->move($carpetaCliente, $archivo_name);
+
+        // Convertir el archivo a PDF si es necesario
+        $this->agregarFirmaYSelloPDF($carpetaCliente, $archivo_name, $request);
     }
 
+    // Lo demás del código sigue igual...
+    return redirect()->route('admin.informesfinales.guardardocumentacionclienteita', $request->cliente)->with('info', 'El documento se subió con éxito');
+}
 
+private function agregarFirmaYSelloPDF($carpetaCliente, $archivo_name, $request)
+{
+    // Obtener el proveedor asociado con el usuario autenticado
+    $proveedor = Proveedor::where('proveedor', auth()->user()->name)->first();
+
+    if ($proveedor) {
+        // Cargar las imágenes de firma y sello
+        $firma_path = public_path("/proveedores/{$proveedor->id}/{$proveedor->firmadigital}");
+        $sello_path = public_path("/proveedores/{$proveedor->id}/{$proveedor->selldigital}");
+
+        // Usar FPDF para crear el PDF
+        $pdf = new FPDF();
+        $pdf->AddPage();
+        
+        // Definir las posiciones en la parte superior derecha de la página
+        $pdf->SetXY(160, 10); // Ajustar las coordenadas según se necesite
+        $pdf->Image($firma_path, 160, 10, 30); // Firma
+
+        $pdf->SetXY(160, 30); // Ajustar las coordenadas para el sello
+        $pdf->Image($sello_path, 160, 30, 30); // Sello
+        
+        // Guardar el PDF en la carpeta del cliente
+        $pdf->Output('F', $carpetaCliente . '/' . $archivo_name);
+    }
+}
 public function buscarprogramacionesclienteita(Cliente $cliente, Request $request)
     {
         return $this->index($cliente, $request);

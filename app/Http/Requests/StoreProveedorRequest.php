@@ -48,7 +48,8 @@ class StoreProveedorRequest extends FormRequest
             'celularreferencia' => '',
             'telefonoreferencia' => '',
             'linkubicacion' => '',
-            
+            'firmadigital' => '',
+            'sellodigital' => '',
         ]; 
         return $rules;
     }

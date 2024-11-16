@@ -29,7 +29,7 @@ class Documentacionsubcliente extends Model
         'fechabateria' => '',
         'image' => '',
         'image2' => '',
-
+        'documentfirmado' => '',
     ]; 
 
     protected $fillable = [
@@ -49,6 +49,7 @@ class Documentacionsubcliente extends Model
         'fechabateria',
         'image',
         'image2',
+        'documentfirmado',
     ];
     public function estadoprogramacionsubcliente()
     {

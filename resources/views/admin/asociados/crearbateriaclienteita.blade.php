@@ -7,6 +7,120 @@
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">BATERIA DEL CLIENTE</a>
 <h5>CREAR BATERIA DE:</h5> 
 <h3>{{$cliente->nombrecompleto}}</h3>
+
+
+@isset($fechaExpiracion)
+        <div id="cronometro-container" class="mt-3 p-2 bg-light border rounded">
+            <strong>Tiempo restante para crear la batería:</strong>
+            <span id="cronometro">Calculando...</span>
+        </div>
+    @endisset
+
+    <style>
+        /* Animación Fade-In para el cronómetro */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Animación Shake para el mensaje de tiempo agotado */
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* Aplicar la animación Fade-In al contenedor del cronómetro */
+        #cronometro-container {
+            position: relative;
+            z-index: 1000;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        /* Estilo del cronómetro */
+        #cronometro {
+            font-size: 1.2em;
+            color: #dc3545;
+            /* Color rojo para destacar */
+            font-weight: bold;
+        }
+
+        /* Clase para aplicar la animación Shake */
+        .shake {
+            animation: shake 0.5s;
+            animation-iteration-count: 2;
+        }
+
+        /* Responsividad para el cronómetro */
+        @media (max-width: 576px) {
+            #cronometro-container {
+                text-align: center;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(isset($fechaExpiracion))
+                // Convertir la fecha de expiración a formato de JavaScript
+                var fechaExpiracion = new Date("{{ $fechaExpiracion->toIso8601String() }}").getTime();
+
+                // Actualizar el cronómetro cada segundo
+                var x = setInterval(function() {
+                    var ahora = new Date().getTime();
+                    var distancia = fechaExpiracion - ahora;
+
+                    // Cálculos para minutos y segundos
+                    var totalMinutos = Math.floor(distancia / (1000 * 60));
+                    var segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+
+                    // Formatear con ceros iniciales si es necesario
+                    var minutosDisplay = totalMinutos < 10 ? "0" + totalMinutos : totalMinutos;
+                    var segundosDisplay = segundos < 10 ? "0" + segundos : segundos;
+
+                    // Mostrar el resultado en el elemento con id="cronometro"
+                    document.getElementById("cronometro").innerHTML = minutosDisplay + "m " + segundosDisplay + "s ";
+
+                    // Si la cuenta regresiva termina, ejecutar acciones
+                    if (distancia < 0) {
+                        clearInterval(x);
+                        var cronometro = document.getElementById("cronometro");
+                        cronometro.innerHTML = "¡Tiempo agotado!";
+
+                        // Aplicar la animación Shake al contenedor del cronómetro
+                        var cronometroContainer = document.getElementById("cronometro-container");
+                        cronometroContainer.classList.add('shake');
+
+                        // Recargar la página después de 2 segundos para mostrar el mensaje de error
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000); // 2000 milisegundos = 2 segundos
+                    }
+                }, 1000);
+            @endif
+        });
+        </script>
 @stop
 
 @section('content')
@@ -20,9 +134,34 @@
         }, 5000);
     </script>
 @endif 
+
+
+@if (session('success'))
+        <div id="alert-success" class="alert alert-success">
+            <strong>{{ session('success') }}</strong>
+        </div>
+        <script>
+            setTimeout(function() {
+                $('#alert-success').fadeOut('fast');
+            }, 5000);
+        </script>
+    @endif
+
+    @if ($errors->has('mensaje'))
+        <div id="alert-error" class="alert alert-danger">
+            <strong>{{ $errors->first('mensaje') }}</strong>
+        </div>
+        <script>
+            setTimeout(function() {
+                $('#alert-error').fadeOut('fast');
+            }, 5000);
+        </script>
+    @endif
+
+
 <div class="card">
     <div class="card-body">
-        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'VANESSA MAMANI HUANACO' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'VANESSA MAMANI HUANACO' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE'|| $permisoValido)
         {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST', 'id' => 'form-crear-bateria']) !!}
         <div class="row">
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
@@ -402,7 +541,7 @@
         @else
         {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST', 'id' => 'form-crear-bateria']) !!}
         <div class="row">
-                <div class="col-lg-4">
+                {{-- <div class="col-lg-4">
                     <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-xl" role="document">
                             <div class="modal-content">
@@ -611,9 +750,216 @@
                             </small>
                         @enderror
                     </div>
+                </div> --}}
+                <!-- Campo de entrada de código a la derecha (solo si el usuario NO es uno de los especificados) -->
+                <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-xl" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <strong>Fecha de Bateria:</strong>
+                                <select id="select-fechas" class="form-control">
+                                    <option value="" disabled selected>Selecciona una fecha</option>
+                                    @foreach($accionesPorFecha as $fecha => $acciones)
+                                        <option value="{{ $fecha }}">{{ $fecha }}</option>
+                                    @endforeach
+                                </select>
+                                <div id="acciones-container" class="mt-3">
+                                    <strong>Acciones requeridas:</strong>
+                                    <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Acción</th>
+                                                <th>Informe</th>
+                                                <th>Proveedor</th>
+                                                @if(!auth()->user()->hasRole('PROVEEDOR'))
+                                                    <th>Precio</th>
+                                                @endif
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <a id="ver-pdf-btn" href="#" target="_blank" class="btn btn-crear"
+                                    onclick=generatePDF()>Generar PDF</a>
+                                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                            </div>
+                            <script> 
+                                function generatePDF() {
+                                 // Obtener la fecha seleccionada
+                                 var fechaSeleccionada = document.getElementById('select-fechas').value;
+                             
+                                 if (!fechaSeleccionada) {
+                                     alert("Por favor, selecciona una fecha.");
+                                     return;
+                                 }
+                             
+                                 // Obtener el cliente ID desde Blade
+                                 var clienteId = @json($cliente->id);
+                             
+                                 // URL del controlador para generar el PDF
+                                 var url = '{{ route("admin.asociados.generarpdfcliente", ":clienteId") }}';
+                                 url = url.replace(':clienteId', clienteId);
+                             
+                                 // Realizar la solicitud AJAX para generar y descargar el PDF
+                                 fetch(url, {
+                                     method: 'POST',
+                                     headers: {
+                                         'Content-Type': 'application/json',
+                                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                     },
+                                     body: JSON.stringify({
+                                         fecha: fechaSeleccionada
+                                     })
+                                 })
+                                 .then(response => {
+                                     if (!response.ok) {
+                                         throw new Error('Error en la respuesta del servidor.');
+                                     }
+                                     return response.blob();  // Obtener el PDF como un blob
+                                 })
+                                 .then(blob => {
+                                     // Crear un enlace para descargar el archivo
+                                     var link = document.createElement('a');
+                                     link.href = window.URL.createObjectURL(blob);
+                                     link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
+                                     link.click();
+                                 })
+                                 .catch(error => console.error('Error:', error));
+                                }
+                             
+                                // Asociar el evento de clic al botón "Generar PDF"
+                                document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                
+                                    var fechaSeleccionada = document.getElementById('ver-pdf-btn').getAttribute('data-fecha');
+                                    var clienteId = @json($cliente->id); // Asegúrate de que tienes acceso a esta variable
+                                    var url = '{{ route('admin.asociados.generarpdfcliente', ':clienteId') }}';
+                                    url = url.replace(':clienteId', clienteId);
+                                
+                                    // Realizar la solicitud AJAX para obtener el enlace del PDF
+                                    fetch(url, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                        },
+                                        body: JSON.stringify({
+                                            fecha: fechaSeleccionada
+                                        })
+                                    })
+                                    .then(response => {
+                                        if (!response.ok) {
+                                            throw new Error('Error en la respuesta del servidor.');
+                                        }
+                                        return response.blob();  // Obtener el PDF como un blob
+                                    })
+                                    .then(blob => {
+                                        // Crear un enlace para descargar el archivo
+                                        var link = document.createElement('a');
+                                        link.href = window.URL.createObjectURL(blob);
+                                        link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
+                                        link.click();
+                                    })
+                                    .catch(error => console.error('Error:', error));
+                                });
+                            </script>
+                            
+                        </div>
+                    </div>
                 </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const selectFechas = document.getElementById('select-fechas');
+                        const accionesTable = document.getElementById('acciones-table');
+                        const tbody = accionesTable.querySelector('tbody');
+                    
+                        const accionesPorFecha = @json($accionesPorFecha);
+                        const rolusuario = @json($rolusuario); // Asegúrate de que el rol se pasa al script
+                    
+                        selectFechas.addEventListener('change', function () {
+                            const selectedDate = this.value;
+                    
+                            tbody.innerHTML = '';
+                    
+                            if (selectedDate && accionesPorFecha[selectedDate]) {
+                                const acciones = accionesPorFecha[selectedDate];
+                    
+                                acciones.forEach(item => {
+                                    const row = document.createElement('tr');
+                                    row.innerHTML = `
+                                        <td>${item.id}</td>
+                                        <td>${item.accion}</td>
+                                        <td>${item.informe}</td>
+                                        <td>${item.proveedor}</td>
+                                        <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
+                                    `;
+                                    tbody.appendChild(row);
+                                });
+                                accionesTable.style.display = 'table';
+                            } else {
+                                accionesTable.style.display = 'none';
+                            }
+                        });
+                    });
+                </script>
+
+                <style>
+                    .compact-table th, .compact-table td {
+                        padding: 4px 8px; /* Reduce el padding para compactar las celdas */
+                        line-height: 1.2; /* Ajusta el interlineado de las celdas */
+                    }
+
+                    .compact-table {
+                        font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
+                    }
+                </style>
+            <div class="col-lg-6">
+                <div class="form-group">
+                    @if (session('success'))
+                        <div id="alert-success" class="alert alert-success">
+                            <strong>{{ session('success') }}</strong>
+                        </div>
+                        <script>
+                            setTimeout(function() {
+                                $('#alert-success').fadeOut('fast');
+                            }, 5000);
+                        </script>
+                    @endif
+                    {!! Form::label('codigo', 'Código de Ingreso:') !!}
+                    {!! Form::text('codigo', null, [
+                        'class' => 'form-control',
+                        'placeholder' => 'Ingrese el código',
+                        'required',
+                        'maxlength' => '15',
+                        'size' => '15',
+                        'oninput' => 'this.value = this.value.toUpperCase()',
+                        'style' => 'text-transform: uppercase;',
+                    ]) !!}
+                    @error('codigo')
+                        <small class="text-danger fas fa-exclamation-circle">
+                            {{ $message }}
+                        </small>
+                    @enderror
+                </div>
+                <button type="submit" class="btn btn-crear">INGRESAR CÓDIGO</button>
             </div>
-            <button type="button" class="btn btn-crear" id="btn-crear-bateria" disabled>CREAR BATERIA</button> 
+            </div>
+
+            
+
+
+            {{-- <button type="button" class="btn btn-crear" id="btn-crear-bateria" disabled>CREAR BATERIA</button>  --}}
             {!! Form::close() !!}
         </div>
         @endif

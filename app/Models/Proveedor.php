@@ -32,6 +32,8 @@ class Proveedor extends Model
         'usuarioactualizacion' => '',
         'usuarioeliminacion' => '',
         'linkubicacion' => '',
+        'firmadigital' => '',
+        'sellodigital' => '',
     ]; 
 
     protected $fillable = [
@@ -55,6 +57,8 @@ class Proveedor extends Model
         'usuarioactualizacion',
         'usuarioeliminacion',
         'linkubicacion',
+        'firmadigital',
+        'sellodigital',
     ];
     public function departamento()
     {

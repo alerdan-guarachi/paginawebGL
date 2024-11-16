@@ -1,7 +1,9 @@
 @extends('adminlte::page')
  
 @section('content_header')
+@if($rolusuario !== 'PROVEEDOR')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
+@endif
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">BATERIA DEL CLIENTE</a>
 <h5>CREAR BATERIA DE:</h5> 
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>

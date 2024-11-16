@@ -113,15 +113,18 @@ class TramitesController extends Controller
             'clienteitaid' => 'required',
             'apoderadoasignado' => 'required',
             'fechabateria' => 'required|date', // Asegúrate de validar que sea una fecha válida
+            'tramite' => 'required', // Asegúrate de validar que sea una fecha válida
         ]);
 
         // Obtener los valores validados
         $clienteID = $validatedData['clienteitaid'];
         $apoderadoAsignado = $validatedData['apoderadoasignado'];
         $fechaBateria = $validatedData['fechabateria'];
+        $tramiteCliente = $validatedData['tramite'];
 
         // Encontrar el registro específico para actualizar
         $tramitesubcliente = Tramitesubcliente::where('clienteitaid', $clienteID)
+            ->where('tramite', $tramiteCliente)
             ->where('fechabateria', $fechaBateria)
             ->first();
 
@@ -163,7 +166,6 @@ class TramitesController extends Controller
                 $q->where('clienteitanombre', 'LIKE', '%' . $request->buscarporcliente . '%');
             });
         }
-
         // Obtener datos agrupados por cliente y fecha
         $programacionclientes = $query->get();
         $grouped = $programacionclientes->groupBy(function($item) {
@@ -212,10 +214,11 @@ class TramitesController extends Controller
                     ->first();
 
                 $iniciotramite = Tramite::where('clienteitaid', $clienteitaid)
-                    ->where('tramite', $tipo) // Asumiendo que hay un campo 'tipo_tramite'
-                    ->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')
+                    ->where('tramite', $tipo)
+                    ->whereIn('nivelprocedimiento', ['RECEPCIÓN DE TRÁMITE', 'INGRESO DE TRÁMITE'])
                     ->orderBy('created_at', 'asc')
                     ->first();
+                
 
                 $estadotramite = Tramitesubcliente::where('clienteitaid', $clienteitaid)
                     ->where('tramite', $tipo)
@@ -247,6 +250,7 @@ class TramitesController extends Controller
                 $apoderadoasignado = Tramitesubcliente::withTrashed()
                     ->where('clienteitaid', $clienteitaid)
                     ->where('fechabateria', $fechabateria)
+                    ->where('tramite', $tipo)
                     ->value('apoderadoasignado');
 
                 // Calcular el mensaje de días restantes
@@ -581,9 +585,23 @@ class TramitesController extends Controller
                                     ->where('nivelprocedimiento', '!=', 'SEGUIMIENTO')
                                     ->where('nivelprocedimiento', '!=', 'ADJUNTOS Y RESPUESTAS')
                                     ->where('nivelprocedimiento', '!=', 'CARTAS / RECLAMOS')
+                                    ->where('nivelprocedimiento', '!=', 'INICIO DE TRAMITE')
+                                    ->where('nivelprocedimiento', '!=', 'CONTINUIDAD DE TRAMITE')
                                     ->simplePaginate(10000);
             
-            return view('admin.tramites.procmasahereditaria', compact('procedimientotramites','id','cliente','nombrecompleto', 'personal'));
+            $inicioocontinuidad = Tramite::where('clienteitaid', $cliente->id)
+                                        ->whereIn('nivelprocedimiento', ['INICIO DE TRAMITE', 'CONTINUIDAD DE TRAMITE'])
+                                        ->exists();
+            $tramiteinicio = Tramite::where('clienteitaid', $cliente->id)
+                                        ->where('nivelprocedimiento', 'INICIO DE TRAMITE')
+                                        ->where('tramite', 'MASA HEREDITARIA')
+                                        ->exists();
+            $tramitecontinuidad = Tramite::where('clienteitaid', $cliente->id)
+                                        ->where('nivelprocedimiento', 'CONTINUIDAD DE TRAMITE')
+                                        ->where('tramite', 'MASA HEREDITARIA')
+                                        ->exists();
+
+            return view('admin.tramites.procmasahereditaria', compact('inicioocontinuidad','tramiteinicio','tramitecontinuidad','procedimientotramites','id','cliente','nombrecompleto', 'personal'));
         }
     public function procapelacion(Request $request, Cliente $cliente)
         {
@@ -657,15 +675,12 @@ class TramitesController extends Controller
         }
     public function guardariniciotramiteclienteita(Request $request, Cliente $cliente)
         {
-            // Validar los datos recibidos, asegurando que el nivel de procedimiento esté presente
             $request->validate([
                 'nivelprocedimiento' => 'required|in:INICIO DE TRÁMITE,CONTINUIDAD DE TRÁMITE',
                 'clienteitaid' => 'required|exists:clientes,id',
                 'usuarioid' => 'required|exists:users,id',
-                // Agrega validaciones adicionales según lo necesario
             ]);
-    
-            // Crear un nuevo trámite con los datos recibidos
+        
             $tramite = new Tramite();
             $tramite->clienteitaid = $request->clienteitaid;
             $tramite->usuarioid = $request->usuarioid;
@@ -673,16 +688,13 @@ class TramitesController extends Controller
             $tramite->clienteitanombre = $request->clienteitanombre;
             $tramite->apoderado = $request->apoderado;
             $tramite->tramite = $request->tramite;
-            $tramite->nivelprocedimiento = $request->nivelprocedimiento; // INICIO DE TRAMITE o CONTINUIDAD DE TRAMITE
-            $tramite->save();  // Guardar el trámite en la base de datos
-    
-             // Mensaje de éxito
-            $mensaje = "REGISTRO DE {$request->nivelprocedimiento} DE INVALIDEZ EXITOSO";
-            return redirect()->route('admin.tramites.procinvalidez', $cliente)->with('success', $mensaje);
-
-            // Redirigir a una página o retornar un mensaje de éxito
-            /* return redirect()->route('admin.tramites.procinvalidez', $cliente)->with('success', 'El trámite ha sido guardado correctamente.'); */
+            $tramite->nivelprocedimiento = $request->nivelprocedimiento;
+            $tramite->save();
+        
+            $mensaje = "REGISTRO DE {$request->nivelprocedimiento} DE {$request->tramite} EXITOSO";
+            return redirect(session()->previousUrl())->with('success', $mensaje);
         }
+        
     public function actualizarEstado($id, $clienteId)
         {
             $tramite = Tramite::find($id);
@@ -763,9 +775,23 @@ class TramitesController extends Controller
                                     ->where('nivelprocedimiento', '!=', 'SEGUIMIENTO')
                                     ->where('nivelprocedimiento', '!=', 'ADJUNTOS Y RESPUESTAS')
                                     ->where('nivelprocedimiento', '!=', 'CARTAS / RECLAMOS')
+                                    ->where('nivelprocedimiento', '!=', 'INICIO DE TRAMITE')
+                                    ->where('nivelprocedimiento', '!=', 'CONTINUIDAD DE TRAMITE')
                                     ->simplePaginate(10000);
 
-            return view('admin.tramites.procjubilacion', compact('procedimientotramites','id','cliente','nombrecompleto', 'personal'));
+            $inicioocontinuidad = Tramite::where('clienteitaid', $cliente->id)
+                                    ->whereIn('nivelprocedimiento', ['INICIO DE TRAMITE', 'CONTINUIDAD DE TRAMITE'])
+                                    ->exists();
+            $tramiteinicio = Tramite::where('clienteitaid', $cliente->id)
+                                    ->where('nivelprocedimiento', 'INICIO DE TRAMITE')
+                                    ->where('tramite', 'JUBILACIÓN')
+                                    ->exists();
+            $tramitecontinuidad = Tramite::where('clienteitaid', $cliente->id)
+                                    ->where('nivelprocedimiento', 'CONTINUIDAD DE TRAMITE')
+                                    ->where('tramite', 'JUBILACIÓN')
+                                    ->exists();
+
+            return view('admin.tramites.procjubilacion', compact('inicioocontinuidad','tramiteinicio','tramitecontinuidad','procedimientotramites','id','cliente','nombrecompleto', 'personal'));
         }
     public function procpensionpormuerte(Request $request, Cliente $cliente)
         {
