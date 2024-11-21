@@ -73,6 +73,9 @@ Route::resource('ordenes/ordenesventa', OrdenVentaController::class)/* ->middlew
 //CONTROL DE PROGRAMACIONES
     Route::resource('controlprogramacion', ControlProgController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.controlprogramacion');
     Route::get('/buscar-usuario', [ControlProgController::class, 'buscarPorUsuario'])->name('admin.controlprogramacion.buscarPorUsuario');
+
+    Route::post('/confirmar-pagos', [AdministrarProgramacionController::class, 'confirmarPagos'])->name('confirmar-pagos');
+
 //
 
 Route::get('asociados/{id}/download-pdf', [AsociadoController::class, 'downloadPDF'])->name('admin.asociados.downloadPDF');
@@ -158,7 +161,7 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
     Route::get('admprogramaciones/documentacionpendiente/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@documentacionpendiente')->name('admin.admprogramaciones.documentacionpendiente');
     Route::get('admprogramaciones/documentacionactiva/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@documentacionactiva')->name('admin.admprogramaciones.documentacionactiva');
     Route::get('admprogramaciones/clientescreadoshoy/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@clientescreadoshoy')->name('admin.admprogramaciones.clientescreadoshoy');
-    Route::get('admprogramaciones/programacionescreadoshoy/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@programacionescreadoshoy')->name('admin.admprogramaciones.programacionescreadoshoy');
+    Route::get('admprogramaciones/pagosprogramaciones/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@pagosprogramaciones')->name('admin.admprogramaciones.pagosprogramaciones');
     Route::get('admprogramaciones/bateriascreadoshoy/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@bateriascreadoshoy')->name('admin.admprogramaciones.bateriascreadoshoy');
     Route::get('/buscarclientesporfecha', 'App\Http\Controllers\Admin\AdministrarProgramacionController@buscarclientesporfecha')->name('buscarclientesporfecha');
     Route::get('/buscarbateriasporfecha', 'App\Http\Controllers\Admin\AdministrarProgramacionController@buscarbateriasporfecha')->name('buscarbateriasporfecha');

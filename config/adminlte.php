@@ -330,35 +330,36 @@ return [
                     'can'  => 'admin.admprogramaciones.index',
                 ],
                 [
-                    'text' => 'Clientes Creados Hoy',
+                    'text' => 'Gestión de Registros',
                     'route'  => 'admin.admprogramaciones.clientescreadoshoy',
-                    'icon' => 'fas fa-fw fas fa-users',
+                    'icon' => 'fas fa-fw fas fa-layer-group',
                     'can'  => 'admin.admprogramaciones.create',
                 ],
-                [
+                /* [
                     'text' => 'Baterias Creados Hoy',
                     'route'  => 'admin.admprogramaciones.bateriascreadoshoy',
                     'icon' => 'fas fa-fw fas fa-battery-half',
                     'can'  => 'admin.admprogramaciones.create',
+                ], */
+                
+                [
+                    'text' => 'Gestión de Informes',
+                    'route'  => 'admin.admprogramaciones.documentacionpendiente',
+                    'icon' => 'fas fa-fw fas fa-swatchbook',
+                    'can'  => 'admin.admprogramaciones.create',
                 ],
                 [
-                    'text' => 'Prog. Creados Hoy',
-                    'route'  => 'admin.admprogramaciones.programacionescreadoshoy',
+                    'text' => 'Pagos de programaciones',
+                    'route'  => 'admin.admprogramaciones.pagosprogramaciones',
                     'icon' => 'fas fa-fw fas fa-calendar-check',
                     'can'  => 'admin.admprogramaciones.create',
                 ],
-                [
-                    'text' => 'Doc. Pendientes',
-                    'route'  => 'admin.admprogramaciones.documentacionpendiente',
-                    'icon' => 'fas fa-fw fas fa-question-circle',
-                    'can'  => 'admin.admprogramaciones.create',
-                ],
-                [
+                /* [
                     'text' => 'Doc. Activa',
                     'route'  => 'admin.admprogramaciones.documentacionactiva',
                     'icon' => 'fas fa-fw fas fa-folder-open',
                     'can'  => 'admin.admprogramaciones.create',
-                ],
+                ], */
                 [
                     'text' => 'Reportes',
                     'route'  => 'admin.reportes.index',
@@ -366,10 +367,10 @@ return [
                     'can'  => 'admin.reportes.index',
                 ],
                 [
-                    'text' => 'Control de registros',
+                    'text' => 'Registros generales',
                     'route'  => 'admin.controlprogramacion.index',
                     'icon' => 'fas fa-fw fas fa-chart-bar',
-                    'can'  => 'admin.reportes.index',
+                    'can'  => 'admin.admprogramaciones.create',
                 ],
                 
             ],

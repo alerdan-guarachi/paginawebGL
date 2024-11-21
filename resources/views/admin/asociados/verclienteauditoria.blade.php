@@ -447,19 +447,39 @@
             {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
 
             @if($documentacion)
-            <div class="modal-body text-center">
+            {{-- <div class="modal-body text-center">
                 <!-- Visor PDF -->
                 <iframe class="pdf-preview" src="{{ route('ver.documentoauditoria', $documentacion->id) }}" type="application/pdf"></iframe>
 
                 <a href="{{ route('ver.documentoauditoria', $documentacion->id) }}" class="btn btn-verhistoriamedica" target="_blank">
                     <strong>VER HIST. MED.</strong>
                 </a>
+            </div> --}}
+
+            <div class="modal-body text-center">
+                <!-- Vista previa del documento -->
+                <div class="pdf-preview-container mb-3">
+                    <iframe 
+                        src="{{ asset('/historiamedicaauditoria/' . $clienteauditoria->id . '/extracted/' . $historiamedicaclienteauditoria) }}" 
+                        width="100%" 
+                        height="400px" 
+                        frameborder="0" 
+                        style="border: 1px solid #ccc;">
+                    </iframe>
+                </div><br>
+
+                <!-- Botón para ver el documento completo -->
+                <a href="{{ asset('/historiamedicaauditoria/' . $clienteauditoria->id . '/extracted/' . $historiamedicaclienteauditoria) }}" 
+                   class="btn btn-verhistoriamedica" 
+                   target="_blank">
+                    <i class="fas fa-book-medical"></i> Ver Documento Completo
+                </a>
             </div>
             @else
             <div class="modal-body" style="margin-top: 50px;">
                 <div class="mb-3">
                     {!! Form::label('file', 'Documento:', ['class' => 'form-label']) !!}
-                    <input type="file" name="archivo" id="archivo" class="dropify" />
+                    <input type="file" name="archivo" id="archivo" class="dropify" accept=".pdf"/>
                     @error('archivo')
                         <div class="text-danger">
                             <i class="fas fa-exclamation-circle"></i> {{$message}}

@@ -37,6 +37,7 @@ class Programacionsubcliente extends Model
         'horahasta' =>'',
         'usuarioactualizacion' =>'',
         'usuarioeliminacion' =>'',
+        'pagoatencion' =>'',
     ]; 
 
     protected $fillable = [
@@ -66,6 +67,7 @@ class Programacionsubcliente extends Model
         'horahasta',
         'usuarioactualizacion',
         'usuarioeliminacion',
+        'pagoatencion',
     ];
     public function clienteAuditoria()
     {

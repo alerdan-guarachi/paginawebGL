@@ -361,6 +361,12 @@ class AsociadoController extends Controller
         $IDCliente = $cliente->id;
         $sucursalCliente = $cliente->sucursal;
 
+        $historiamedica = Documentacionsubcliente::withTrashed()
+        ->where('clienteitaid', $cliente->id)
+        ->where('accion', 'HISTORIA MÉDICA')
+        ->first();
+        $historiamedicaclienteita = $historiamedica ? $historiamedica->document : null;
+
         $accionesCliente = BateriaSubCliente::where('clienteitaid', $IDCliente)->pluck('accionnombre')->toArray();
 
         $fechasbateriasSubCliente = BateriaSubCliente::where('clienteitaid', $IDCliente)
@@ -383,7 +389,7 @@ class AsociadoController extends Controller
             $accionesPorFecha[$fecha][] = $accion;
         }
 
-        return view('admin.asociados.verclienteita', compact('nombreusuario','tienerequisitosapelacion','tienerequisitossegundasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion'));
+        return view('admin.asociados.verclienteita', compact('historiamedicaclienteita','nombreusuario','tienerequisitosapelacion','tienerequisitossegundasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion'));
     }
     public function editarclienteita(Cliente $cliente)
     {
@@ -702,6 +708,7 @@ class AsociadoController extends Controller
             'DENISSE MAUREN LOPEZ FLORES',
             'VANESSA MAMANI HUANACO',
             'JHOSELINE EVA VELASQUEZ ESCOBAR',
+            'AGUIRRE VASQUEZ MARIA RENEE',
         ];
 
         $permisoValido = false;
@@ -997,6 +1004,7 @@ class AsociadoController extends Controller
                 'DENISSE MAUREN LOPEZ FLORES',
                 'VANESSA MAMANI HUANACO',
                 'JHOSELINE EVA VELASQUEZ ESCOBAR',
+                'AGUIRRE VASQUEZ MARIA RENEE',
             ];
 
             $permisoValido = false;
@@ -1711,9 +1719,11 @@ class AsociadoController extends Controller
             $total = number_format($total, 2, '.', '');
         }
 
-
         $id = Cliente::where('nombrecompleto', $cliente->nombrecompleto)->value('id');
-        return view('admin.asociados.reprogramacionclienteita', compact('reprogramaciones','programacionsubclientes', 'id', 'cliente', 'fechas', 'total', 'fechaSeleccionada'));
+
+        $proveedorprogramacion = Proveedor::orderBy('proveedor')->pluck('proveedor', 'proveedor');
+
+        return view('admin.asociados.reprogramacionclienteita', compact('proveedorprogramacion','reprogramaciones','programacionsubclientes', 'id', 'cliente', 'fechas', 'total', 'fechaSeleccionada'));
     }
     public function buscarprogramacionclienteita(Cliente $cliente, Request $request)
     {
@@ -1723,6 +1733,9 @@ class AsociadoController extends Controller
     {
         $request->validate([
             'motivoreprogramacion' => 'required|string|max:255',
+            'fechaasignada' => 'required|date',
+            'horadesde' => 'required|date_format:H:i',
+            'horahasta' => 'required|date_format:H:i',
             'usuarioactualizacion' => 'required|string',
         ]);
         $usuarioActualizacion = $request->input('usuarioactualizacion');
@@ -1731,6 +1744,14 @@ class AsociadoController extends Controller
         $programacionsubcliente->save();
 
         $programacionsubcliente->delete();
+
+
+        $nuevaReprogramacion = $programacionsubcliente->replicate();
+        $nuevaReprogramacion->motivoreprogramacion = null;
+        $nuevaReprogramacion->fechaasignada = $request->fechaasignada;
+        $nuevaReprogramacion->horadesde = $request->horadesde;
+        $nuevaReprogramacion->horahasta = $request->horahasta;
+        $nuevaReprogramacion->save();
 
         $cliente = Cliente::where('nombrecompleto', $programacionsubcliente->clienteitanombre)->first();
 
@@ -1972,6 +1993,7 @@ class AsociadoController extends Controller
 
         $accionesNoRegistradasPorFecha = Estadoprogramacionsubcliente::join('programacionsubclientes', function ($join) {
                 $join->on('estadoprogramacionsubclientes.accionnombre', '=', 'programacionsubclientes.accionnombre')
+                    ->on('estadoprogramacionsubclientes.clienteitaid', '=', 'programacionsubclientes.clienteitaid')
                     ->on('estadoprogramacionsubclientes.fechabateria', '=', 'programacionsubclientes.fechabateria');
             })
             ->where('estadoprogramacionsubclientes.clienteitaid', $IDcliente)
@@ -1986,10 +2008,6 @@ class AsociadoController extends Controller
                 return !isset($accionesRegistradasPorFecha[$fechabateria]) || !in_array($accionnombre, $accionesRegistradasPorFecha[$fechabateria]->pluck('accion')->toArray());
             })
             ->groupBy('fechabateria');
-
-
-
-
 
         $accionesRegistradas = Documentacionsubcliente::whereIn('accion', $accionesCliente)
             ->where('clienteitaid', $IDcliente)
@@ -2019,7 +2037,6 @@ class AsociadoController extends Controller
             }
         }
         
-
         $documentosRegistradosPorFecha = Documentacionsubcliente::where('clienteitaid', $IDcliente)
             ->get(['accion', 'fechabateria'])
             ->groupBy('fechabateria');
@@ -2281,7 +2298,7 @@ class AsociadoController extends Controller
 
         return view('admin.asociados.documentacionmultipleclienteita', compact('cliente', 'asociado', 'clientes'));
     }
-    public function guardarhistoriamedica(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
+    /* public function guardarhistoriamedica(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
     {
         $archivo_name = null;
         $archivo_comprimido_name = null;
@@ -2331,7 +2348,88 @@ class AsociadoController extends Controller
         );
 
         return redirect()->route('admin.asociados.verclienteita', $request->cliente)->with('info', 'El documento se subió con éxito');
+    } */
+    public function guardarhistoriamedica(StoreDocumentacionsubclienteRequest $request, Cliente $cliente) 
+    {
+        $archivo_name = null;
+        $archivo_comprimido_name = null;
+    
+        if ($request->hasFile('archivo')) {
+            $file = $request->file('archivo');
+            
+            $carpetaCliente = public_path("/historiamedica/{$cliente->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+            
+            // Nombre del archivo PDF
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+    
+            // Crear un archivo ZIP para comprimir el PDF
+            $zip = new \ZipArchive();
+            $archivo_comprimido_name = 'HISTORIA_MEDICA_' . $cliente->nombrecompleto . '.zip';
+            $zip_path = $carpetaCliente . '/' . $archivo_comprimido_name;
+    
+            if ($zip->open($zip_path, \ZipArchive::CREATE) === TRUE) {
+                $zip->addFile($carpetaCliente . '/' . $archivo_name, $archivo_name);
+                $zip->close();
+            } else {
+                return redirect()->back()->with('error', 'No se pudo crear el archivo comprimido');
+            }
+    
+            // Eliminar el archivo PDF original después de comprimirlo
+            unlink($carpetaCliente . '/' . $archivo_name);
+    
+            // Descomprimir el archivo en la carpeta `extracted`
+            $extractPath = $carpetaCliente . '/extracted';
+            if (!file_exists($extractPath)) {
+                mkdir($extractPath, 0755, true);
+            }
+    
+            $zip = new \ZipArchive();
+            if ($zip->open($zip_path) === TRUE) {
+                $zip->extractTo($extractPath);
+                $zip->close();
+    
+                // Obtener el nombre del archivo descomprimido
+                $archivosDescomprimidos = scandir($extractPath);
+                $archivoPDFDescomprimido = null;
+                foreach ($archivosDescomprimidos as $archivo) {
+                    if ($archivo !== '.' && $archivo !== '..' && pathinfo($archivo, PATHINFO_EXTENSION) === 'pdf') {
+                        $archivoPDFDescomprimido = $archivo;
+                        break;
+                    }
+                }
+    
+                if ($archivoPDFDescomprimido === null) {
+                    return redirect()->back()->with('error', 'No se encontró un archivo PDF en el ZIP');
+                }
+            } else {
+                return redirect()->back()->with('error', 'No se pudo descomprimir el archivo');
+            }
+        }
+    
+        $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
+        $accion = $request->input('accion');
+        $clienteitaid = $request->input('usuarioid');
+        $clienteitanombre = $request->input('usuarioregistro');
+    
+        $documentacioncliente = Documentacionsubcliente::create(
+            $request->except('accion') + [
+                'documentfirmado' => $archivo_comprimido_name,
+                'document' => $archivoPDFDescomprimido, // Guarda el nombre del archivo PDF descomprimido
+                'accion' => $accion,
+                'usuarioregistro' => $clienteitanombre,
+                'usuarioid' => $clienteitaid,
+                'clienteitaid' => $cliente->id,
+                'clienteitanombre' => $cliente->nombrecompleto
+            ]
+        );
+    
+        return redirect()->route('admin.asociados.verclienteita', $request->cliente)->with('info', 'El documento se subió con éxito');
     }
+    
     public function verDocumento($id)
     {
         $documentacion = Documentacionsubcliente::find($id);
@@ -5828,7 +5926,12 @@ class AsociadoController extends Controller
                     ->where('accion', 'HISTORIA MÉDICA')
                     ->first();
 
-        return view('admin.asociados.verclienteauditoria', compact('nombreusuario','tieneCotizacionaprobada','documentacion','tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
+        $historiamedica = Documentacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+            ->where('accion', 'HISTORIA MÉDICA')
+            ->first();
+        $historiamedicaclienteauditoria = $historiamedica ? $historiamedica->document : null;
+
+        return view('admin.asociados.verclienteauditoria', compact('historiamedicaclienteauditoria','nombreusuario','tieneCotizacionaprobada','documentacion','tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
         'tieneContactos','tieneTramites','clienteauditoria','tieneRequisitos','tieneProgramacion','tieneProgramacionatentido'));
     }
     public function editarclienteauditoria(ClienteAuditoria $clienteauditoria)
@@ -7153,11 +7256,11 @@ class AsociadoController extends Controller
 
         return view('admin.asociados.documentacionmultipleclienteauditoria', compact('clienteauditoria', 'asociado', 'clientesauditorias'));
     }
-    public function guardarhistoriamedicaauditoria(StoreDocumentacionsubclienteRequest $request, ClienteAuditoria $clienteauditoria)
+    public function guardarhistoriamedicaauditoria(StoreDocumentacionsubclienteRequest $request, ClienteAuditoria $clienteauditoria) 
     {
         $archivo_name = null;
         $archivo_comprimido_name = null;
-
+    
         if ($request->hasFile('archivo')) {
             $file = $request->file('archivo');
             
@@ -7169,39 +7272,68 @@ class AsociadoController extends Controller
             // Nombre del archivo PDF
             $archivo_name = time() . '_' . $file->getClientOriginalName();
             $file->move($carpetaCliente, $archivo_name);
-
+    
             // Crear un archivo ZIP para comprimir el PDF
             $zip = new \ZipArchive();
             $archivo_comprimido_name = 'HISTORIA_MEDICA_' . $clienteauditoria->nombrecompleto . '.zip';
             $zip_path = $carpetaCliente . '/' . $archivo_comprimido_name;
-
+    
             if ($zip->open($zip_path, \ZipArchive::CREATE) === TRUE) {
                 $zip->addFile($carpetaCliente . '/' . $archivo_name, $archivo_name);
                 $zip->close();
             } else {
                 return redirect()->back()->with('error', 'No se pudo crear el archivo comprimido');
             }
-
+    
             // Eliminar el archivo PDF original después de comprimirlo
             unlink($carpetaCliente . '/' . $archivo_name);
+    
+            // Descomprimir el archivo en la carpeta `extracted`
+            $extractPath = $carpetaCliente . '/extracted';
+            if (!file_exists($extractPath)) {
+                mkdir($extractPath, 0755, true);
+            }
+    
+            $zip = new \ZipArchive();
+            if ($zip->open($zip_path) === TRUE) {
+                $zip->extractTo($extractPath);
+                $zip->close();
+    
+                // Obtener el nombre del archivo descomprimido
+                $archivosDescomprimidos = scandir($extractPath);
+                $archivoPDFDescomprimido = null;
+                foreach ($archivosDescomprimidos as $archivo) {
+                    if ($archivo !== '.' && $archivo !== '..' && pathinfo($archivo, PATHINFO_EXTENSION) === 'pdf') {
+                        $archivoPDFDescomprimido = $archivo;
+                        break;
+                    }
+                }
+    
+                if ($archivoPDFDescomprimido === null) {
+                    return redirect()->back()->with('error', 'No se encontró un archivo PDF en el ZIP');
+                }
+            } else {
+                return redirect()->back()->with('error', 'No se pudo descomprimir el archivo');
+            }
         }
-
+    
         $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
         $accion = $request->input('accion');
-        $clienteauditoriaid = $request->input('usuarioid');
-        $clienteauditorianombre = $request->input('usuarioregistro');
-
+        $clienteitaid = $request->input('usuarioid');
+        $clienteitanombre = $request->input('usuarioregistro');
+    
         $documentacioncliente = Documentacionsubcliente::create(
             $request->except('accion') + [
-                'document' => $archivo_comprimido_name,
+                'documentfirmado' => $archivo_comprimido_name,
+                'document' => $archivoPDFDescomprimido, // Guarda el nombre del archivo PDF descomprimido
                 'accion' => $accion,
-                'usuarioregistro' => $clienteauditorianombre,
-                'usuarioid' => $clienteauditoriaid,
+                'usuarioregistro' => $clienteitanombre,
+                'usuarioid' => $clienteitaid,
                 'clienteauditoriaid' => $clienteauditoria->id,
                 'clienteauditorianombre' => $clienteauditoria->nombrecompleto
             ]
         );
-
+    
         return redirect()->route('admin.asociados.verclienteauditoria', $request->clienteauditoria)->with('info', 'El documento se subió con éxito');
     }
     public function verDocumentoauditoria($id)

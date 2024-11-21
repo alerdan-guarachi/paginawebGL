@@ -29,17 +29,7 @@ use App\Models\Bateriasubcliente;
 use App\Models\Estadoprogramacionsubcliente;
 use App\Models\Programacionsubcliente;
 use App\Models\Documentacionsubcliente;
-use App\Http\Requests\StoreAsociadoRequest;
-use App\Http\Requests\StoreBateriaproveedorRequest;
-use App\Http\Requests\StoreProgramacionsubclienteRequest;
-use App\Http\Requests\StoreEstadoprogramacionsubclienteRequest;
-use App\Http\Requests\StoreDocumentacionsubclienteRequest;
-use App\Http\Requests\StoreBateriasubclienteRequest;
-use App\Http\Requests\StoreBateriaclientecomunRequest;
-use App\Http\Requests\StoreClienteAuditoriaRequest;
-use App\Http\Requests\StoreClienteComunRequest;
-use App\Http\Requests\StoreClienteBancoRequest;
-use App\Http\Requests\StoreClienteRequest;
+use App\Http\Requests\UpdateProgramacionsubclienteRequest;
 use App\Services\WhatsAppService;
 
 class AdministrarProgramacionController extends Controller
@@ -184,7 +174,7 @@ class AdministrarProgramacionController extends Controller
 
     public function documentacionpendiente(Request $request, Asociado $asociado, Cliente $cliente)
     {
-        $proveedor = $request->get('buscarpor');
+        /* $proveedor = $request->get('buscarpor');
 
         $clientes = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$proveedor%")
             ->whereIn('accionnombre', function ($query) use ($proveedor) {
@@ -219,7 +209,46 @@ class AdministrarProgramacionController extends Controller
             ->orderBy('proveedornombre')
             ->simplePaginate(10000);
 
-        return view('admin.admprogramaciones.documentacionpendiente', compact('cliente', 'asociado', 'clientes', 'clientes2'));
+        return view('admin.admprogramaciones.documentacionpendiente', compact('cliente', 'asociado', 'clientes', 'clientes2')); */
+        $buscar = $request->get('buscarpor');
+
+        // Documentación Pendiente
+        $clientes = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$buscar%")
+            ->whereNotNull('clienteitaid')
+            ->simplePaginate(10000);
+
+        $clientes2 = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$buscar%")
+            ->whereNotNull('clientecomunid')
+            ->simplePaginate(10000);
+
+        $clientes3 = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$buscar%")
+            ->whereNotNull('clienteauditoriaid')
+            ->simplePaginate(10000);
+
+        // Documentación Activa
+        $documentacion = Documentacionsubcliente::with('estadoprogramacionsubcliente')
+            ->where('clienteitaid', 'LIKE', "%$buscar%")
+            ->orWhere('clienteitanombre', 'LIKE', "%$buscar%")
+            ->simplePaginate(10000);
+
+        // Documentación Activa
+        $documentacionauditoria = Documentacionsubcliente::with('estadoprogramacionsubcliente')
+            ->where('clienteauditoriaid', 'LIKE', "%$buscar%")
+            ->orWhere('clienteauditorianombre', 'LIKE', "%$buscar%")
+            ->simplePaginate(10000);
+
+        // Documentación Activa
+        $documentacioncomun = Documentacionsubcliente::with('estadoprogramacionsubcliente')
+            ->where('clientecomunid', 'LIKE', "%$buscar%")
+            ->orWhere('clientecomunnombre', 'LIKE', "%$buscar%")
+            ->simplePaginate(10000);
+
+        return view('admin.admprogramaciones.documentacionpendiente', compact(
+            'asociado',
+            'clientes',
+            'clientes2','clientes3',
+            'documentacion','documentacionauditoria','documentacioncomun'
+        ));
     }
     public function documentacionactiva(Request $request, Asociado $asociado, Cliente $cliente)
     {
@@ -239,7 +268,7 @@ class AdministrarProgramacionController extends Controller
         return view('admin.admprogramaciones.documentacionactiva', compact('cliente', 'asociado', 'clientes', 'clientes2'));
     }
 
-    public function clientescreadoshoy(Request $request)
+    /* public function clientescreadoshoy(Request $request)
     {
         $fechaActual = now()->toDateString();
 
@@ -248,68 +277,399 @@ class AdministrarProgramacionController extends Controller
         $clientes3 = ClienteComun::whereDate('created_at', $fechaActual)->get();
 
         return view('admin.admprogramaciones.clientescreadoshoy', compact('clientes', 'clientes2', 'clientes3', 'fechaActual'));
+    } */
+    public function clientescreadoshoy(Request $request)
+    {
+        $fechaActual = $request->input('buscarpor', now()->toDateString());
+
+        // Clientes creados hoy
+        $clientes = Cliente::whereDate('created_at', $fechaActual)->simplePaginate(10000);
+        $clientes2 = ClienteAuditoria::whereDate('created_at', $fechaActual)->simplePaginate(10000);
+        $clientes3 = ClienteComun::whereDate('created_at', $fechaActual)->simplePaginate(10000);
+
+        // Baterías creadas hoy
+        $bateriashoyita = Bateriasubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteitaid')
+            ->simplePaginate(10000);
+
+        $bateriashoycomun = Bateriasubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clientecomunid')
+            ->simplePaginate(10000);
+
+        $bateriashoyauditoria = Bateriasubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteauditoriaid')
+            ->simplePaginate(10000);
+
+        // Programaciones creadas hoy
+        $programacioneshoyita = Programacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteitaid')
+            ->simplePaginate(10000);
+
+        $programacioneshoycomun = Programacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clientecomunid')
+            ->simplePaginate(10000);
+
+        $programacioneshoyauditoria = Programacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteauditoriaid')
+            ->simplePaginate(10000);
+
+        $usuarioAutenticado = auth()->user()->name;
+        $esProveedor = $usuarioAutenticado->role ?? null;
+            
+        $todosClientes = $clientes->merge($clientes2)->merge($clientes3)->toArray();
+        $contadorclientes = array_reduce($todosClientes, function ($count, $item) {
+                return $count + 1;
+            }, 0);
+        
+        $todosbaterias = $bateriashoyita->merge($bateriashoycomun)->merge($bateriashoyauditoria)->toArray();
+        $contadorbaterias = array_reduce($todosbaterias, function ($count, $item) {
+                return $count + 1;
+            }, 0);
+
+        $todosprogramaciones = $programacioneshoyita->merge($programacioneshoycomun)->merge($programacioneshoyauditoria)->toArray();
+        $contadorprogramaciones = array_reduce($todosprogramaciones, function ($count, $item) {
+                return $count + 1;
+            }, 0);
+
+        return view('admin.admprogramaciones.clientescreadoshoy', compact(
+            'clientes',
+            'clientes2',
+            'clientes3',
+            'bateriashoyita',
+            'bateriashoycomun',
+            'bateriashoyauditoria',
+            'programacioneshoyita',
+            'programacioneshoycomun',
+            'programacioneshoyauditoria',
+            'fechaActual','contadorclientes','contadorbaterias','contadorprogramaciones'
+        ));
     }
+
 
     public function buscarclientesporfecha(Request $request)
     {
         $busqueda = $request->get('buscarpor');
+        $fechaActual = $busqueda ?: now()->toDateString();
 
-        if (!$busqueda) {
-            $fechaActual = now()->toDateString();
-        } else {
-            $fechaActual = $busqueda;
-        }
-        $clientes = Cliente::whereDate('created_at', $fechaActual)->simplePaginate(1000);
-        $clientes2 = ClienteAuditoria::whereDate('created_at', $fechaActual)->simplePaginate(1000);
-        $clientes3 = ClienteComun::whereDate('created_at', $fechaActual)->simplePaginate(1000);
+        // Clientes
+        $clientes = Cliente::whereDate('created_at', $fechaActual)->simplePaginate(10);
+        $clientes2 = ClienteAuditoria::whereDate('created_at', $fechaActual)->simplePaginate(10);
+        $clientes3 = ClienteComun::whereDate('created_at', $fechaActual)->simplePaginate(10);
 
-        return view('admin.admprogramaciones.clientescreadoshoy', compact('clientes', 'clientes2', 'clientes3', 'fechaActual'));
+        // Baterías
+        $bateriashoyita = Bateriasubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteitaid')
+            ->simplePaginate(100);
+
+        $bateriashoycomun = Bateriasubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clientecomunid')
+            ->simplePaginate(100);
+
+        $bateriashoyauditoria = Bateriasubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteauditoriaid')
+            ->simplePaginate(100);
+
+        // Programaciones
+        $programacioneshoyita = Programacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteitaid')
+            ->simplePaginate(100);
+
+        $programacioneshoycomun = Programacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clientecomunid')
+            ->simplePaginate(100);
+
+        $programacioneshoyauditoria = Programacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteauditoriaid')
+            ->simplePaginate(100);
+
+        $todosClientes = $clientes->merge($clientes2)->merge($clientes3)->toArray();
+        $contadorclientes = array_reduce($todosClientes, function ($count, $item) {
+                return $count + 1;
+            }, 0);
+        
+        $todosbaterias = $bateriashoyita->merge($bateriashoycomun)->merge($bateriashoyauditoria)->toArray();
+        $contadorbaterias = array_reduce($todosbaterias, function ($count, $item) {
+                return $count + 1;
+            }, 0);
+
+        $todosprogramaciones = $programacioneshoyita->merge($programacioneshoycomun)->merge($programacioneshoyauditoria)->toArray();
+        $contadorprogramaciones = array_reduce($todosprogramaciones, function ($count, $item) {
+                return $count + 1;
+            }, 0);
+
+        return view('admin.admprogramaciones.clientescreadoshoy', compact(
+            'clientes',
+            'clientes2',
+            'clientes3',
+            'bateriashoyita',
+            'bateriashoycomun',
+            'bateriashoyauditoria',
+            'programacioneshoyita',
+            'programacioneshoycomun',
+            'programacioneshoyauditoria',
+            'fechaActual', 'contadorclientes','contadorbaterias','contadorprogramaciones'
+        ));
     }
 
-    public function programacionescreadoshoy(Request $request)
+    public function pagosprogramaciones(Request $request)
     {
         $fechaActual = now()->toDateString();
 
-        $programacioneshoyita = Programacionsubcliente::whereDate('created_at', $fechaActual)
-        ->whereNotNull('clienteitaid')
-        ->get();
+        $pagosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where(function ($query) {
+                $query->whereNull('pagoatencion')
+                    ->orWhere('pagoatencion', '');
+            })
+            ->whereNotNull('clienteitaid')
+            ->where(function ($query) {
+                $query->whereNotNull('precio')
+                    ->where('precio', '!=', 0);
+            })
+            ->get();
 
-        $programacioneshoycomun = Programacionsubcliente::whereDate('created_at', $fechaActual)
-        ->whereNotNull('clientecomunid')
-        ->get();
 
-        $programacioneshoyauditoria = Programacionsubcliente::whereDate('created_at', $fechaActual)
-        ->whereNotNull('clienteauditoriaid')
-        ->get();
+        $pagosprogramacionescomun = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where(function ($query) {
+                $query->whereNull('pagoatencion')
+                    ->orWhere('pagoatencion', '');
+            })
+            ->whereNotNull('clientecomunid')
+            ->where(function ($query) {
+                $query->whereNotNull('precio')
+                    ->where('precio', '!=', 0);
+            })
+            ->get();
 
-        return view('admin.admprogramaciones.programacionescreadoshoy', compact('programacioneshoyita','programacioneshoycomun','programacioneshoyauditoria', 'fechaActual'));
+        $pagosprogramacionesauditoria = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where(function ($query) {
+                $query->whereNull('pagoatencion')
+                    ->orWhere('pagoatencion', '');
+            })
+            ->whereNotNull('clienteauditoriaid')
+            ->where(function ($query) {
+                $query->whereNotNull('precio')
+                    ->where('precio', '!=', 0);
+            })
+            ->get();
+
+        $pagadosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where('pagoatencion', 'PAGO PROCESADO')
+            ->whereNotNull('clienteitaid')
+            ->get();
+
+        $pagadosprogramacionescomun = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where('pagoatencion', 'PAGO PROCESADO')
+            ->whereNotNull('clientecomunid')
+            ->get();
+
+        $pagadosprogramacionesauditoria = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where('pagoatencion', 'PAGO PROCESADO')
+            ->whereNotNull('clienteauditoriaid')
+            ->get();
+
+
+        $pagosexternosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where(function ($query) {
+                $query->whereNull('pagoatencion')
+                    ->orWhere('pagoatencion', '');
+            })
+            ->whereNotNull('clienteitaid')
+            ->where(function ($query) {
+                $query->whereNotNull('precio')
+                    ->where('precio', '==', 0);
+            })
+            ->get();
+
+
+        $pagosexternosprogramacionescomun = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where(function ($query) {
+                $query->whereNull('pagoatencion')
+                    ->orWhere('pagoatencion', '');
+            })
+            ->whereNotNull('clientecomunid')
+            ->where(function ($query) {
+                $query->whereNotNull('precio')
+                    ->where('precio', '==', 0);
+            })
+            ->get();
+
+        $pagosexternosprogramacionesauditoria = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where(function ($query) {
+                $query->whereNull('pagoatencion')
+                    ->orWhere('pagoatencion', '');
+            })
+            ->whereNotNull('clienteauditoriaid')
+            ->where(function ($query) {
+                $query->whereNotNull('precio')
+                    ->where('precio', '==', 0);
+            })
+            ->get();
+        return view('admin.admprogramaciones.pagosprogramaciones', compact('pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita','pagadosprogramacionesita','pagadosprogramacionescomun','pagadosprogramacionesauditoria','pagosprogramacionesita','pagosprogramacionescomun','pagosprogramacionesauditoria', 'fechaActual'));
     }
+    public function confirmarPagos(Request $request)
+    {
+        $programacionesIds = $request->input('programaciones', []);
+
+        if (!empty($programacionesIds)) {
+            Programacionsubcliente::whereIn('id', $programacionesIds)
+                ->update(['pagoatencion' => 'PAGO PROCESADO']);
+        }
+
+        return redirect()->back()->with('info', 'Pagos confirmados correctamente.');
+    }
+
+    public function buscarprogramacionesporfecha(Request $request)
+{
+    $fechaActual = $request->get('fecha') ?: now()->toDateString(); 
+
+    $criterio = $request->get('criterio'); // ID, nombre o CI
+    $fecha = $request->get('fecha'); // Fecha seleccionada
+
+    // Función común para filtrar programaciones
+    $filtrarProgramaciones = function ($query) use ($criterio, $fecha) {
+        if ($criterio) {
+            $query->where(function ($subQuery) use ($criterio) {
+                $subQuery->where('clienteitaid', 'like', "%$criterio%")
+                         ->orWhere('clienteitanombre', 'like', "%$criterio%")
+                         ->orWhere('clienteauditoriaid', 'like', "%$criterio%")
+                         ->orWhere('clienteauditorianombre', 'like', "%$criterio%")
+                         ->orWhere('clientecomunid', 'like', "%$criterio%")
+                         ->orWhere('clientecomunnombre', 'like', "%$criterio%");
+            });
+        }
+
+        if ($fecha) {
+            $query->whereDate('fechaasignada', $fecha);
+        }
+
+        $query->where(function ($subQuery) {
+            $subQuery->whereNull('pagoatencion')
+                     ->orWhere('pagoatencion', '');
+        });
+        
+    };
+
+    // Consultas
+    $pagosprogramacionesita = Programacionsubcliente::where($filtrarProgramaciones)
+        ->whereNotNull('clienteitaid')
+        ->where(function ($query) {
+            $query->whereNotNull('precio')
+                ->where('precio', '!=', 0);
+        })
+        ->simplePaginate(1000);
+
+    $pagosprogramacionescomun = Programacionsubcliente::where($filtrarProgramaciones)
+        ->whereNotNull('clientecomunid')
+        ->where(function ($query) {
+            $query->whereNotNull('precio')
+                ->where('precio', '!=', 0);
+        })
+        ->simplePaginate(1000);
+
+    $pagosprogramacionesauditoria = Programacionsubcliente::where($filtrarProgramaciones)
+        ->whereNotNull('clienteauditoriaid')
+        ->where(function ($query) {
+            $query->whereNotNull('precio')
+                ->where('precio', '!=', 0);
+        })
+        ->simplePaginate(1000);
+
+    // Para programaciones pagadas
+    $filtrarPagados = function ($query) use ($criterio, $fecha) {
+        if ($criterio) {
+            $query->where(function ($subQuery) use ($criterio) {
+                $subQuery->where('clienteitaid', 'like', "%$criterio%")
+                         ->orWhere('clienteitanombre', 'like', "%$criterio%");
+            });
+        }
+
+        if ($fecha) {
+            $query->whereDate('fechaasignada', $fecha);
+        }
+
+        $query->where('pagoatencion', 'PAGO PROCESADO');
+    };
+
+    $pagadosprogramacionesita = Programacionsubcliente::where($filtrarPagados)
+        ->whereNotNull('clienteitaid')
+        ->simplePaginate(1000);
+
+    $pagadosprogramacionescomun = Programacionsubcliente::where($filtrarPagados)
+        ->whereNotNull('clientecomunid')
+        ->simplePaginate(1000);
+
+    $pagadosprogramacionesauditoria = Programacionsubcliente::where($filtrarPagados)
+        ->whereNotNull('clienteauditoriaid')
+        ->simplePaginate(1000);
+
+
+
+        // Función común para filtrar programaciones
+    $filtrarProgramacionesexternos = function ($query) use ($criterio, $fecha) {
+        if ($criterio) {
+            $query->where(function ($subQuery) use ($criterio) {
+                $subQuery->where('clienteitaid', 'like', "%$criterio%")
+                         ->orWhere('clienteitanombre', 'like', "%$criterio%")
+                         ->orWhere('clienteauditoriaid', 'like', "%$criterio%")
+                         ->orWhere('clienteauditorianombre', 'like', "%$criterio%")
+                         ->orWhere('clientecomunid', 'like', "%$criterio%")
+                         ->orWhere('clientecomunnombre', 'like', "%$criterio%");
+            });
+        }
+
+        if ($fecha) {
+            $query->whereDate('fechaasignada', $fecha);
+        }
+
+        $query->where(function ($subQuery) {
+            $subQuery->whereNull('pagoatencion')
+                     ->orWhere('pagoatencion', '');
+        });
+        
+    };
+
+    // Consultas
+    $pagosexternosprogramacionesita = Programacionsubcliente::where($filtrarProgramacionesexternos)
+        ->whereNotNull('clienteitaid')
+        ->where(function ($query) {
+            $query->whereNotNull('precio')
+                ->where('precio', 0);
+        })
+        ->simplePaginate(1000);
+
+    $pagosexternosprogramacionescomun = Programacionsubcliente::where($filtrarProgramacionesexternos)
+        ->whereNotNull('clientecomunid')
+        ->where(function ($query) {
+            $query->whereNotNull('precio')
+                ->where('precio', 0);
+        })
+        ->simplePaginate(1000);
+
+    $pagosexternosprogramacionesauditoria = Programacionsubcliente::where($filtrarProgramacionesexternos)
+        ->whereNotNull('clienteauditoriaid')
+        ->where(function ($query) {
+            $query->whereNotNull('precio')
+                ->where('precio',  0);
+        })
+        ->simplePaginate(1000);
+
+
+    return view('admin.admprogramaciones.pagosprogramaciones', compact('pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita',
+        'pagadosprogramacionesita',
+        'pagadosprogramacionescomun',
+        'pagadosprogramacionesauditoria',
+        'pagosprogramacionesita',
+        'pagosprogramacionescomun',
+        'pagosprogramacionesauditoria','fechaActual'
+    ));
+}
+
+
     public function controlregistros(Request $request)
     {
         return view('admin.admprogramaciones.controlregistros');
     }
-    public function buscarprogramacionesporfecha(Request $request)
-        {
-            $busqueda = $request->get('buscarpor');
-            if (!$busqueda) {
-                $fechaActual = now()->toDateString();
-            } else {
-                $fechaActual = $busqueda;
-            }
-            $programacioneshoyita = Programacionsubcliente::where(function ($query) use ($busqueda) {
-                        $query->where('created_at', 'like', "%$busqueda%")
-                        ->whereNotNull('clienteitaid');
-                            })->simplePaginate(1000);
-            $programacioneshoycomun = Programacionsubcliente::where(function ($query) use ($busqueda) {
-                        $query->where('created_at', 'like', "%$busqueda%")
-                        ->whereNotNull('clientecomunid');
-                            })->simplePaginate(1000);
-            $programacioneshoyauditoria = Programacionsubcliente::where(function ($query) use ($busqueda) {
-                        $query->where('created_at', 'like', "%$busqueda%")
-                        ->whereNotNull('clienteauditoriaid');
-                            })->simplePaginate(1000);
-            return view('admin.admprogramaciones.programacionescreadoshoy', compact('programacioneshoyita','programacioneshoycomun','programacioneshoyauditoria', 'fechaActual'));
-        }
+   
 
     public function bateriascreadoshoy(Request $request)
     {

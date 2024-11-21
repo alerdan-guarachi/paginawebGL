@@ -127,6 +127,46 @@
                                             <label for="motivoreprogramacion">Motivo de Reprogramación:</label>
                                             <input type="text" name="motivoreprogramacion" id="motivoreprogramacion" class="form-control" required>
                                         </div>
+
+                                        <div class="form-group">
+                                            {!! Form::label('proveedornombre', 'Proveedor:') !!}
+                                            {!! Form::select('proveedornombre', $proveedorprogramacion, null, ['class' => 'form-control', 'required' => true]) !!}
+                                            @error('proveedornombre')
+                                                <small
+                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Campo para la fecha de reprogramación -->
+                                        <div class="form-group">
+                                            {!! Form::label('fechaasignada', 'Fecha de Reprogramación:') !!}
+                                            {!! Form::date('fechaasignada', null, ['class' => 'form-control', 'required' => true]) !!}
+                                            @error('fechaasignada')
+                                                <small
+                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Campo para la hora desde -->
+                                        <div class="form-group">
+                                            {!! Form::label('horadesde', 'Hora Desde:') !!}
+                                            {!! Form::time('horadesde', null, ['class' => 'form-control', 'required' => true]) !!}
+                                            @error('horadesde')
+                                                <small
+                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Campo para la hora hasta -->
+                                        <div class="form-group">
+                                            {!! Form::label('horahasta', 'Hora Hasta:') !!}
+                                            {!! Form::time('horahasta', null, ['class' => 'form-control', 'required' => true]) !!}
+                                            @error('horahasta')
+                                                <small
+                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-cancelar" data-dismiss="modal">CANCELAR</button>

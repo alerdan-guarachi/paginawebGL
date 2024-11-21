@@ -495,7 +495,6 @@ class InformeFinalController extends Controller
             $motivoabandonobateria = Bateriasubcliente::where('clienteitaid', $items->first()->clienteitaid)
                 ->where('fechabateria', $fechabateria)
                 ->first();
-
             $usuarioRegistro = Cliente::where('id', $items->first()->clienteitaid)
             ->first();
 
@@ -681,6 +680,7 @@ class InformeFinalController extends Controller
                 'motivoabandono' => $motivoabandono,
                 'estadoGeneral' => $estadoGeneral,
                 'usuarioregistro' => $usuarioregistro,
+                'servicio' => $servicio,
             ];
         }
  

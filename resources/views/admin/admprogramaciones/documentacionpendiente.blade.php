@@ -1,8 +1,8 @@
 @extends('adminlte::page')
     
 @section('content_header')
-<h1>DOCUMENTACIÓN PENDIENTE</h1>
-@stop 
+<h1>GESTIÓN DE INFORMES</h1>
+@stop
 
 @section('content')
 @if (session('info'))
@@ -17,8 +17,8 @@
 @endif
 
 <div class="card">
-    <div class="card-body">
-        <nav class="navbar navbar-expand-lg float-right">
+    
+        {{-- <nav class="navbar navbar-expand-lg float-right">
             <div class="container-fluid">
                 <div class="d-flex flex-wrap align-items-center">
                     <form action="{{ route('admin.admprogramaciones.documentacionpendiente', $asociado) }}" method="get" class="form-inline">
@@ -29,8 +29,22 @@
                     </form>
                 </div>
             </div>
+        </nav> --}}
+        <nav class="navbar navbar-expand-lg float-right">
+            <div class="container-fluid">
+                <div class="d-flex flex-wrap align-items-center ml-auto">
+                    <form action="{{ route('admin.admprogramaciones.documentacionpendiente', $asociado) }}" method="get"
+                        class="form-inline">
+                        <div class="flex-grow-1">
+                            <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="Proveedor / Cliente"
+                                aria-label="Search">
+                        </div>
+                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit" disabled>Buscar</button>
+                    </form>
+                </div>
+            </div>
         </nav>
-        <table class="table table-striped">
+        {{-- <table class="table table-striped">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -50,13 +64,6 @@
                         <td>{{$cliente->accionnombre}}</td>
                         <td>{{$cliente->fechaasignada}}</td>
                         <td>{{$cliente->fechabateria}}</td>
-                       {{--  <td width="10px">
-                            <abbr title="Subir documentación">
-                                <a class="btn btn-sm btn-bateria" href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente->clienteitaid) }}">
-                                    <i class="fas fa-file-alt"></i>
-                                </a>
-                            </abbr>
-                        </td> --}}
                     </tr>
                 @endforeach
                 @foreach ($clientes2 as $cliente)
@@ -67,18 +74,202 @@
                         <td>{{$cliente->accionnombre}}</td>
                         <td>{{$cliente->fechaasignada}}</td>
                         <td>{{$cliente->fechabateria}}</td>
-                       {{--  <td width="10px">
-                            <abbr title="Subir documentación">
-                                <a class="btn btn-sm btn-bateria" href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente->clienteitaid) }}">
-                                    <i class="fas fa-file-alt"></i>
-                                </a>
-                            </abbr>
-                        </td> --}}
                     </tr>
                 @endforeach
             </tbody>
-        </table>
-    </div>
+        </table> --}}
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="myTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab"
+                        aria-controls="tab-content-1" aria-selected="true">
+                        INFORMES PENDIENTES
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab"
+                        aria-controls="tab-content-2" aria-selected="false">
+                        INFORMES COMPLETOS
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="myTabContent">
+
+                {{-- INFORMES PENDIENTES --}}
+                <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tipo Cliente</th>
+                                <th>ID Cliente</th>
+                                <th>Cliente</th>
+                                <th>Proveedor</th>
+                                <th>Acción</th>
+                                <th>Fecha de atención</th>
+                                <th>Fecha Batería</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($clientes as $cliente)
+                                <tr>
+                                    <td>CLIENTE ITA</td>
+                                    <td>{{ $cliente->clienteitaid }}</td>
+                                    <td>{{ $cliente->clienteitanombre }}</td>
+                                    <td>{{ $cliente->proveedornombre }}</td>
+                                    <td>{{ $cliente->accionnombre }}</td>
+                                    <td>{{ $cliente->fechaasignada }}</td>
+                                    <td>{{ $cliente->fechabateria }}</td>
+                                </tr>
+                            @endforeach
+                            @foreach ($clientes2 as $cliente)
+                                <tr>
+                                    <td>CLIENTE COMUN</td>
+                                    <td>{{ $cliente->clientecomunid }}</td>
+                                    <td>{{ $cliente->clientecomunnombre }}</td>
+                                    <td>{{ $cliente->proveedornombre }}</td>
+                                    <td>{{ $cliente->accionnombre }}</td>
+                                    <td>{{ $cliente->fechaasignada }}</td>
+                                    <td>{{ $cliente->fechabateria }}</td>
+                                </tr>
+                            @endforeach
+                            @foreach ($clientes3 as $cliente)
+                                <tr>
+                                    <td>CLIENTE AUDITORIA</td>
+                                    <td>{{ $cliente->clienteauditoriaid }}</td>
+                                    <td>{{ $cliente->clienteauditorianombre }}</td>
+                                    <td>{{ $cliente->proveedornombre }}</td>
+                                    <td>{{ $cliente->accionnombre }}</td>
+                                    <td>{{ $cliente->fechaasignada }}</td>
+                                    <td>{{ $cliente->fechabateria }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    {{-- {{ $clientes->appends(['buscarpor' => request('buscarpor')])->links() }} --}}
+                </div>
+
+                {{-- INFORMES COMPLETOS --}}
+                <div class="tab-pane fade" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Tipo Cliente</th>
+                                <th>ID Cliente</th>
+                                <th>Cliente</th>
+                                <th>Fecha de Batería</th>
+                                <th>Acción</th>
+                                <th>Fecha de atención</th>
+                                <th>Fecha y hora de subida</th>
+                                <th>Documento</th>
+                                <th>Imagen 1</th>
+                                <th>Imagen 2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($documentacion as $doc)
+                                <tr>
+                                    <td>CLIENTE ITA</td>
+                                    <td>{{ $doc->clienteitaid }}</td>
+                                    <td>{{ $doc->clienteitanombre }}</td>
+                                    <td>{{ $doc->fechabateria }}</td>
+                                    <td>{{ $doc->accion }}</td>
+                                    <td>{{ $doc->estadoprogramacionsubcliente->fechaatencionprogramacion ?? '-' }}</td>
+                                    <td>{{ date('Y-m-d', strtotime($doc->created_at)) }} -
+                                        {{ date('H:i:s', strtotime($doc->created_at)) }}</td>
+                                    <td>
+                                        @if ($doc->document)
+                                            <a href="{{ asset('/documentacionclientesita/' . $doc->clienteitaid . '/' . $doc->document) }}"
+                                                class="btn btn-verdocumentacion" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ asset('/documentacionclientesita/' . $doc->clienteitaid . '/' . $doc->document) }}"
+                                                class="btn btn-descargardocumentacion" download>
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($doc->image)
+                                            <a href="{{ asset('/documentacionclientesita/' . $doc->clienteitaid . '/' . $doc->image) }}"
+                                                class="btn btn-verimagen" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ asset('/documentacionclientesita/' . $doc->clienteitaid . '/' . $doc->image) }}"
+                                                class="btn btn-descargarimagen" download>
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($doc->image2)
+                                            <a href="{{ asset('/documentacionclientesita/' . $doc->clienteitaid . '/' . $doc->image2) }}"
+                                                class="btn btn-verimagen" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ asset('/documentacionclientesita/' . $doc->clienteitaid . '/' . $doc->image2) }}"
+                                                class="btn btn-descargarimagen" download>
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                            @foreach ($documentacionauditoria as $docaudi)
+                                <tr>
+                                    <td>CLIENTE AUDITORIA</td>
+                                    <td>{{ $docaudi->clienteauditoriaid }}</td>
+                                    <td>{{ $docaudi->clienteauditorianombre }}</td>
+                                    <td>{{ $docaudi->fechabateria }}</td>
+                                    <td>{{ $docaudi->accion }}</td>
+                                    <td>{{ $docaudi->estadoprogramacionsubcliente->fechaatencionprogramacion ?? '-' }}</td>
+                                    <td>{{ date('Y-m-d', strtotime($docaudi->created_at)) }} -
+                                        {{ date('H:i:s', strtotime($docaudi->created_at)) }}</td>
+                                    <td>
+                                        @if ($docaudi->document)
+                                            <a href="{{ asset('/documentacionclientesauditoria/' . $docaudi->clienteauditoriaid . '/' . $docaudi->document) }}"
+                                                class="btn btn-verdocumentacion" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ asset('/documentacionclientesauditoria/' . $docaudi->clienteauditoriaid . '/' . $docaudi->document) }}"
+                                                class="btn btn-descargardocumentacion" download>
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($docaudi->image)
+                                            <a href="{{ asset('/documentacionclientesauditoria/' . $docaudi->clienteauditoriaid . '/' . $docaudi->image) }}"
+                                                class="btn btn-verimagen" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ asset('/documentacionclientesauditoria/' . $docaudi->clienteauditoriaid . '/' . $docaudi->image) }}"
+                                                class="btn btn-descargarimagen" download>
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($docaudi->image2)
+                                            <a href="{{ asset('/documentacionclientesauditoria/' . $docaudi->clienteauditoriaid . '/' . $docaudi->image2) }}"
+                                                class="btn btn-verimagen" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ asset('/documentacionclientesauditoria/' . $docaudi->clienteauditoriaid . '/' . $docaudi->image2) }}"
+                                                class="btn btn-descargarimagen" download>
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    {{ $documentacion->appends(['buscarpor' => request('buscarpor')])->links() }}
+                </div>
+            </div>
+        </div>
 </div>
 
 @stop
@@ -86,6 +277,130 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .nav-tabs {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .nav-tabs .nav-item {
+            flex: 1;
+        }
+
+        .nav-tabs .nav-link {
+            display: block;
+            text-align: center;
+            width: 100%;
+            font-weight: bold;
+            font-size: 17px;
+            color: #faa625;
+            background-color: #fef4e7;
+        }
+
+        .nav-tabs .nav-link.active {
+            font-weight: bold;
+            font-size: 17px;
+            color: #94c93b;
+            background-color: #ffffff;
+        }
+
+        .circle {
+            display: inline-block;
+            width: 50px;
+            height: 20px;
+            line-height: 20px;
+            border-radius: 50%;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .nav-link.active .circle {
+            background-color: #94c93b;
+            color: #fff;
+        }
+
+        .nav-link .circle {
+            background-color: #faa625;
+            color: #fff;
+        }
+
+        .text-incompleto {
+            color: red;
+            font-size: 16px;
+            font-weight: 900;
+        }
+
+        .btn-verdocumentacion {
+            background-color: #ffffff;
+            color: #faa625;
+            border-color: #faa625;
+            border-radius: 5px;
+        }
+
+        .btn-verdocumentacion:hover {
+            background-color: #faa625;
+            color: #ffffff;
+        }
+
+        .btn-verimagen {
+            background-color: #ffffff;
+            color: #faa625;
+            border-color: #faa625;
+            border-radius: 5px;
+        }
+
+        .btn-verimagen:hover {
+            background-color: #faa625;
+            color: #ffffff;
+        }
+
+        .btn-descargarimagen {
+            background-color: #ffffff;
+            color: #94c93b;
+            border-color: #94c93b;
+            border-radius: 5px;
+        }
+
+        .btn-descargarimagen:hover {
+            background-color: #94c93b;
+            color: #ffffff;
+        }
+
+        .btn-descargardocumentacion {
+            background-color: #ffffff;
+            color: #94c93b;
+            border-color: #94c93b;
+            border-radius: 5px;
+        }
+
+        .btn-descargardocumentacion:hover {
+            background-color: #94c93b;
+            color: #ffffff;
+        }
+        .form-control.buscador {
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            padding: 10px 20px;
+        }
+
+        .form-control.buscador:hover {
+            background-color: #f0f0f0;
+        }
+
+
+        .btn-buscar:hover {
+            background-color: #e6e6e6;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
     .custom-select-wrapper {
         position: relative;
         display: inline-block;

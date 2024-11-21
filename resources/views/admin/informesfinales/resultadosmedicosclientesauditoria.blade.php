@@ -166,7 +166,7 @@
                                         @if ($item['historiamedica'])
                                         <p class="text-completo">VER
                                         <abbr title="VER HISTORIA MÉDICA">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
+                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/extracted/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
                                                 <i class="fas fa-book-medical"></i>
                                             </a>
                                         </abbr></p>
@@ -276,7 +276,7 @@
                                         @if ($item['historiamedica'])
                                         <p class="text-completo">VER
                                         <abbr title="VER HISTORIA MÉDICA">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
+                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/extracted/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
                                                 <i class="fas fa-book-medical"></i>
                                             </a>
                                         </abbr></p>
@@ -393,7 +393,7 @@
                                         @if ($item['historiamedica'])
                                         <p class="text-completo">VER
                                         <abbr title="VER HISTORIA MÉDICA">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
+                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/extracted/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
                                                 <i class="fas fa-book-medical"></i>
                                             </a>
                                         </abbr></p>
@@ -487,7 +487,7 @@
                                         @if ($item['historiamedica'])
                                         <p class="text-completo">VER
                                         <abbr title="VER HISTORIA MÉDICA">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
+                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/extracted/' . $item['historiamedica']) }}" class="btn btn-completo" target="_blank">
                                                 <i class="fas fa-book-medical"></i>
                                             </a>
                                         </abbr></p>
