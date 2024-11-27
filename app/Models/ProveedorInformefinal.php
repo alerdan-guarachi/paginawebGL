@@ -27,7 +27,9 @@ class ProveedorInformefinal extends Model
         'celularproveedor' => 'required|max:45',
         'usuarioid' => 'required',
         'usuarioregistro' => 'max:45',
-
+        'precio' => 'required',
+        'preciocompra' => 'required',
+        'servicio' => 'required',
     ]; 
 
     protected $fillable = [
@@ -44,7 +46,10 @@ class ProveedorInformefinal extends Model
         'proveedorasignado',
         'celularproveedor',
         'usuarioid',
-        'usuarioregistro'
+        'usuarioregistro',
+        'precio',
+        'preciocompra',
+        'servicio',
     ];
     /* public function programacionSubcliente()
     {

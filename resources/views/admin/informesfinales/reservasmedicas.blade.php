@@ -431,7 +431,13 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+                                    <td width="10px">
+                                        <abbr title="SUBIR DOCUMENTACION MULTIPLE">
+                                            <a class="btn btn-sm btn-subirinf" href="{{route('admin.asociados.creardocumentacionclienteita', $reservasmedica->clienteitaid)}}">
+                                                <i class="fas fa-archive"></i>
+                                            </a>
+                                        </abbr>
+                                    </td>
                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                     <script>
                                         $(document).ready(function() {
@@ -678,7 +684,13 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+                                    <td width="10px">
+                                        <abbr title="SUBIR DOCUMENTACION MULTIPLE">
+                                            <a class="btn btn-sm btn-subirinf" href="{{route('admin.asociados.creardocumentacionclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
+                                                <i class="fas fa-archive"></i>
+                                            </a>
+                                        </abbr>
+                                    </td>
                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                     <script>
                                         $(document).ready(function() {
@@ -834,22 +846,9 @@
         </div>
 
         {{-- PAGOS MENSUALES --}}
-        <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
+        {{-- <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
 
             @if ($rolusuario !== 'PROVEEDOR')
-            {{-- <nav class="navbar navbar-expand-lg">
-                <div class="container-fluid justify-content-end">
-                    <div class="d-flex flex-wrap align-items-center">
-                        <form id="search-form" action="{{ route('buscarporproveedor') }}" method="get" class="form-inline">
-                            <div class="flex-grow-1">
-                                <input type="text" name="buscarporproveedor" class="form-control mr-sm-2" placeholder="Nombre del Proveedor">
-                            </div>
-                            <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit">Buscar</button>
-                            <button id="btn-mostrar-todo" class="btn btn-mostrartodo my-2 my-sm-0 ml-2" type="button">Mostrar Todo</button>
-                        </form>
-                    </div>
-                </div>
-            </nav> --}}
             <nav class="navbar navbar-expand-lg">
                 <div class="container-fluid justify-content-end">
                     <div class="d-flex flex-wrap align-items-center">
@@ -1161,7 +1160,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 </div>
 @stop
@@ -1401,6 +1400,16 @@ h1, th {
 }
 .btn-crear:hover {
     background-color: #94c93b;
+    color: #ffffff;
+}
+.btn-subirinf {
+    background-color:  #ffffff;
+    color: #faa625;
+    border-color: #faa625;
+    border-radius: 5px;
+}
+.btn-subirinf:hover {
+    background-color: #faa625;
     color: #ffffff;
 }
 .btn-subirinforme {

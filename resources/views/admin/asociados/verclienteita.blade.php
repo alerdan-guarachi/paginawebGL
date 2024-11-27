@@ -713,9 +713,12 @@
                 <div class="row">
                     <div class="col-lg-4">
                         <strong style="color: #94c93b">ASIGNAR PROVEEDOR</strong>
-                        <div class="form-group" style="margin-top: 15px">
-                            <strong>Cod. de Batería:</strong>
-                            <select id="select-fechas" name="fechabateria" class="form-control">
+                        <div class="form-group" style="margin-top: 15px"> 
+                            <strong>Fecha Batería:</strong>
+                            <select id="select-fechas" name="fechabateria" class="form-control" 
+                                    data-tramites='@json($tramitesPorFecha)' 
+                                    data-cliente-con-invalidez="{{ $clienteConInvalidez ? 'true' : 'false' }}"
+                                    data-cliente-con-apelacion-segunda="{{ $clienteConApelacionOSegunda ? 'true' : 'false' }}">
                                 <option value=""></option>
                                 @foreach($accionesPorFecha as $fecha => $acciones)
                                     <option value="{{ $fecha }}">{{ $fecha }}</option>
@@ -724,8 +727,46 @@
                         </div>
                         
                         <div class="form-group">
+                            {!! Form::label('tramite', 'Trámite asignado:') !!}
+                            {!! Form::text('tramite', null, ['class' => 'form-control', 'placeholder' => '' , 'readonly' => 'readonly' ]) !!}
+                            @error('tramite')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{ $message }}
+                                </small>
+                            @enderror
+                        </div>
+                        
+                        <script>
+                           document.addEventListener('DOMContentLoaded', function () {
+                            const selectFechas = document.getElementById('select-fechas');
+                            const tramiteInput = document.querySelector('input[name="tramite"]');
+
+                            if (selectFechas) {
+                                // Obtén los datos de trámites desde el atributo data-tramites
+                                const tramitesPorFecha = JSON.parse(selectFechas.getAttribute('data-tramites'));
+
+                                // Escucha cambios en el select
+                                selectFechas.addEventListener('change', function () {
+                                    const fechaSeleccionada = this.value;
+
+                                    // Busca el trámite correspondiente a la fecha seleccionada
+                                    if (tramitesPorFecha[fechaSeleccionada]) {
+                                        tramiteInput.value = tramitesPorFecha[fechaSeleccionada];
+                                    } else {
+                                        tramiteInput.value = ''; // Limpia el campo si no hay trámite
+                                    }
+                                });
+                            }
+                        });
+
+                        </script>
+                        <div class="form-group">
                             {!! Form::label('proveedorasignado', 'Proveedor:') !!}
-                            {!! Form::select('proveedorasignado', $proveedores->pluck('proveedor', 'id'), null, ['class' => 'form-control proveedor-select', 'id' => 'proveedorasignado', 'placeholder' => '' ]) !!}
+                            {!! Form::select('proveedorasignado', $proveedores->pluck('proveedor', 'id'), null, [
+                                'class' => 'form-control', 
+                                'id' => 'proveedorasignado', 
+                                'placeholder' => ''
+                            ]) !!}
                             @error('proveedorasignado')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{ $message }}
@@ -741,6 +782,82 @@
                                 </small>
                             @enderror
                         </div>
+                        <div class="form-group">
+                            {!! Form::label('precio', 'Precio:') !!}
+                            {!! Form::text('precio', null, ['class' => 'form-control', 'id' => 'precio', 'placeholder' => '' , 'readonly' => 'readonly' ]) !!}
+                            @error('precio')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{ $message }}
+                                </small>
+                            @enderror
+                        </div>
+                        
+                        <div class="form-group" hidden>
+                            {!! Form::label('preciocompra', 'Precio Compra:') !!}
+                            {!! Form::text('preciocompra', null, ['class' => 'form-control', 'id' => 'preciocompra', 'placeholder' => '' ]) !!}
+                            @error('preciocompra')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{ $message }}
+                                </small>
+                            @enderror
+                        </div>
+                        <script>
+                           document.addEventListener('DOMContentLoaded', function () {
+    const selectFechas = document.getElementById('select-fechas');
+    const tramiteInput = document.querySelector('input[name="tramite"]');
+    const precioInput = document.getElementById('precio');
+    const proveedorSelect = document.getElementById('proveedorasignado');
+    const precioCompraInput = document.getElementById('preciocompra');
+
+    // Variables para verificar registros del cliente
+    const clienteConInvalidez = selectFechas.getAttribute('data-cliente-con-invalidez') === 'true';
+    const clienteConApelacionOSegunda = selectFechas.getAttribute('data-cliente-con-apelacion-segunda') === 'true';
+
+    // Escucha cambios en el select Fecha Batería
+    selectFechas.addEventListener('change', function () {
+        const fechaSeleccionada = this.value;
+
+        // Simulación de lógica para obtener el trámite basado en la fecha seleccionada
+        const tramitesPorFecha = JSON.parse(this.getAttribute('data-tramites'));
+        if (tramitesPorFecha[fechaSeleccionada]) {
+            const tramiteAutorellenado = tramitesPorFecha[fechaSeleccionada];
+            tramiteInput.value = tramiteAutorellenado;
+
+            // Autorellena el precio según el trámite
+            if (tramiteAutorellenado === 'AUDITORIA MEDICA' || tramiteAutorellenado === 'INVALIDEZ') {
+                precioInput.value = '2100.00'; // "AUDITORIA MEDICA" y "INVALIDEZ" siempre son 2100.00
+            } else if (tramiteAutorellenado === 'APELACION' || tramiteAutorellenado === 'SEGUNDA SOLICITUD') {
+                // Si el cliente tiene "INVALIDEZ"
+                if (clienteConInvalidez) {
+                    precioInput.value = '1100.00';
+                } else {
+                    precioInput.value = '2100.00'; // Si no tiene "INVALIDEZ"
+                }
+            } else {
+                precioInput.value = ''; // Limpia si no coincide
+            }
+        } else {
+            tramiteInput.value = '';
+            precioInput.value = ''; // Limpia si no hay trámite asociado
+        }
+    });
+
+    // Escucha cambios en el select Proveedor
+    proveedorSelect.addEventListener('change', function () {
+        const proveedorSeleccionado = proveedorSelect.options[proveedorSelect.selectedIndex].text;
+
+        if (proveedorSeleccionado === 'AGUIRRE VASQUEZ MARIA RENEE') {
+            precioCompraInput.value = '250.00';
+        } else if (proveedorSeleccionado === 'MARIA ANGELA LOZANO FLORES') {
+            precioCompraInput.value = '400.00';
+        } else {
+            precioCompraInput.value = ''; // Limpia si no coincide
+        }
+    });
+});
+
+
+                        </script>
                         
                         <script>
                             document.addEventListener('DOMContentLoaded', function() {

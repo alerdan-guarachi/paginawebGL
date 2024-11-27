@@ -319,6 +319,25 @@ return [
             'can'  => 'admin.mensajes.index',
         ],
         [
+            'text' => 'Caja Central',
+            'icon' => 'fas fa-cash-register',
+            'can'  => 'admin.caja.index',
+            'submenu' => [
+                [
+                    'text' => 'Ingresos',
+                    'route'  => 'admin.caja.index',
+                    'icon' => 'fas fa-arrow-circle-down',
+                    'can'  => 'admin.caja.index',
+                ],
+                /* [
+                    'text' => 'Egresos',
+                    'route'  => 'admin.caja.index',
+                    'icon' => 'fas fa-arrow-circle-up',
+                    'can'  => 'admin.caja.index',
+                ], */
+            ],
+        ],
+        [
             'text' => 'Control de Registros',
             'icon' => 'fas fa-fw fas fa-calendar-alt',
             'can'  => 'admin.admprogramaciones.index',

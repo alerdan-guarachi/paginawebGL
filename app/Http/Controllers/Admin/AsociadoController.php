@@ -321,7 +321,7 @@ class AsociadoController extends Controller
     {
         $nombreusuario = auth()->user()->name; 
         $requisitosubclientes = ProveedorInformefinal::where('clienteitaid', $cliente->id)->get();
-        $proveedores = Proveedor::where('id', 3)->get(['id', 'proveedor', 'celular']);
+        $proveedores = Proveedor::whereIn('id', [3, 54])->get(['id', 'proveedor', 'celular']);
         $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
         $tieneBateria = Bateriasubcliente::where('clienteitaid', $cliente->id)->exists();
         $tieneContactos = ContactoSubCliente::where('clienteitaid', $cliente->id)->exists();
@@ -388,8 +388,20 @@ class AsociadoController extends Controller
         foreach ($fechasBateriaPorAccion as $accion => $fecha) {
             $accionesPorFecha[$fecha][] = $accion;
         }
+        $tramitesPorFecha = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->fechabateria => $item->tramite];
+            });
+            $clienteConInvalidez = Tramitesubcliente::where('clienteitaid', $cliente->id)
+    ->where('tramite', 'INVALIDEZ')
+    ->exists();
 
-        return view('admin.asociados.verclienteita', compact('historiamedicaclienteita','nombreusuario','tienerequisitosapelacion','tienerequisitossegundasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion'));
+$clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente->id)
+    ->whereIn('tramite', ['APELACION', 'SEGUNDA SOLICITUD'])
+    ->exists();
+
+        return view('admin.asociados.verclienteita', compact('clienteConInvalidez','clienteConApelacionOSegunda','tramitesPorFecha','historiamedicaclienteita','nombreusuario','tienerequisitosapelacion','tienerequisitossegundasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion'));
     }
     public function editarclienteita(Cliente $cliente)
     {
@@ -1498,6 +1510,7 @@ class AsociadoController extends Controller
                     ->orWhere('accionnombre', 'MEDICINA LABORAL');
             })
             ->whereIn('accionnombre', $accionesCliente)
+            ->where('accionnombre', '!=', 'INFORME FINAL')
             ->select('accionnombre', 'fechabateria')
             ->get();
         
@@ -1967,7 +1980,7 @@ class AsociadoController extends Controller
     public function creardocumentacionclienteita(Cliente $cliente, Asociado $asociado)
     {
         $IDcliente = $cliente->id;
-
+        $rolusuario = auth()->user()->getRoleNames()->first();
         $accionesCliente = Programacionsubcliente::where('clienteitaid', $IDcliente)
             ->pluck('accionnombre')
             ->unique();
@@ -1997,6 +2010,8 @@ class AsociadoController extends Controller
                     ->on('estadoprogramacionsubclientes.fechabateria', '=', 'programacionsubclientes.fechabateria');
             })
             ->where('estadoprogramacionsubclientes.clienteitaid', $IDcliente)
+            ->whereNull('estadoprogramacionsubclientes.deleted_at')
+            ->whereNull('programacionsubclientes.deleted_at')
             ->when($usuario->hasRole('PROVEEDOR'), function ($query) use ($usuario) {
 
                 return $query->where('programacionsubclientes.proveedornombre', $usuario->name);
@@ -2096,7 +2111,7 @@ class AsociadoController extends Controller
             }
         }
 
-        return view('admin.asociados.creardocumentacionclienteita', compact('accionesConEstadoPorFecha','accionesRegistradasPorFecha','accionesNoRegistradasPorFecha','asociado', 'accionesEnEstado','id', 'cliente', 'accionesPorFecha', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente', 'documentosRegistrados'));
+        return view('admin.asociados.creardocumentacionclienteita', compact('rolusuario','accionesConEstadoPorFecha','accionesRegistradasPorFecha','accionesNoRegistradasPorFecha','asociado', 'accionesEnEstado','id', 'cliente', 'accionesPorFecha', 'accionesRegistradas', 'fechasBateriaPorAccion', 'accionesCliente', 'documentosRegistrados'));
     }
     /* public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
     {
@@ -4605,6 +4620,9 @@ class AsociadoController extends Controller
         $request->validate([
             'fechabateria' => 'required|date',
             'celularproveedor' => 'required|string',
+            'precio' => 'required',
+            'preciocompra' => 'required',
+            'tramite' => 'required',
         ]);
 
         $usuarioId = auth()->user()->id;
@@ -4620,6 +4638,9 @@ class AsociadoController extends Controller
             'clienteitanombre' => $cliente->nombrecompleto,
             'usuarioid' => $usuarioId,
             'usuarioregistro' => $usuarioRegistro,
+            'precio' => $request->precio,
+            'preciocompra' => $request->preciocompra,
+            'servicio' => $request->tramite,
         ]);
 
         // Crear el registro en BateriaSubCliente
@@ -4630,13 +4651,14 @@ class AsociadoController extends Controller
             'usuarioid' => $usuarioId,
             'usuarioregistro' => $usuarioRegistro,
             'tipoarea' => 'INFORME FINAL',
+            'informe' => 'NINGUNO',
             'areanombre' => 'INFORME FINAL',
             'accionnombre' => 'INFORME FINAL',
-            'precio' => '2100',
-            'preciocompra' => '250',
-            'proveedorasignado' => 'AGUIRRE VASQUEZ MARIA RENEE',
+            'precio' => $request->precio,
+            'preciocompra' => $request->preciocompra,
+            'proveedorasignado' => $proveedorAsignado,
             'servicio' => 'INTERNO',
-            'accionid' => '1081',
+            'accionid' => 'IF',
 
         ]);
 

@@ -50,7 +50,7 @@
                             name="fecha" 
                             class="form-control" 
                             type="date" 
-                            max="{{ now()->toDateString() }}" 
+                            {{-- max="{{ now()->toDateString() }}" --}} 
                             value="{{ old('fecha') }}" 
                             aria-label="Fecha">
                     </div>
@@ -89,12 +89,14 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
+                                <th>ID Prog</th>
                                 <th>Tipo de Cliente</th>
                                 <th>Cliente</th>
                                 <th>Proveedor</th>
                                 <th>Acción</th>
                                 <th>Fecha de batería</th>
                                 <th>Fecha programada</th>
+                                <th>Servicio</th>
                                 <th>Precio</th>
                                 <th>Selec.</th>
                             </tr>
@@ -102,12 +104,14 @@
                         <tbody>
                             @foreach ($pagosprogramacionesita as $programacion)
                                 <tr>
+                                    <td>{{ $programacion->id }}</td>
                                     <td>CLIENTE ITA</td>
                                     <td>{{ $programacion->clienteitanombre }}</td>
                                     <td>{{ $programacion->proveedornombre }}</td>
                                     <td>{{ $programacion->accionnombre }}</td>
                                     <td>{{ $programacion->fechabateria }}</td>
                                     <td>{{ $programacion->fechaasignada }}</td>
+                                    <td>{{ $programacion->servicio }}</td>
                                     <td>{{ $programacion->precio }}</td>
                                     <td>
                                         <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox">
@@ -116,12 +120,14 @@
                             @endforeach
                             @foreach ($pagosprogramacionescomun as $programacion)
                                 <tr>
+                                    <td>{{ $programacion->id }}</td>
                                     <td>CLIENTE COMÚN</td>
                                     <td>{{ $programacion->clientecomunnombre }}</td>
                                     <td>{{ $programacion->proveedornombre }}</td>
                                     <td>{{ $programacion->accionnombre }}</td>
                                     <td>{{ $programacion->fechabateria }}</td>
                                     <td>{{ $programacion->fechaasignada }}</td>
+                                    <td>{{ $programacion->servicio }}</td>
                                     <td>{{ $programacion->precio }}</td>
                                     <td>
                                         <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox">
@@ -130,12 +136,14 @@
                             @endforeach
                             @foreach ($pagosprogramacionesauditoria as $programacion)
                                 <tr>
+                                    <td>{{ $programacion->id }}</td>
                                     <td>CLIENTE AUDITORÍA</td>
                                     <td>{{ $programacion->clienteauditorianombre }}</td>
                                     <td>{{ $programacion->proveedornombre }}</td>
                                     <td>{{ $programacion->accionnombre }}</td>
                                     <td>{{ $programacion->fechabateria }}</td>
                                     <td>{{ $programacion->fechaasignada }}</td>
+                                    <td>{{ $programacion->servicio }}</td>
                                     <td>{{ $programacion->precio }}</td>
                                     <td>
                                         <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox">
@@ -172,12 +180,14 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
+                                <th>ID Prog</th>
                                 <th>Tipo de Cliente</th>
                                 <th>Cliente</th>
                                 <th>Proveedor</th>
                                 <th>Acción</th>
                                 <th>Fecha de batería</th>
                                 <th>Fecha programada</th>
+                                <th>Servicio</th>
                                 <th>Precio</th>
                                 <th>Selec.</th>
                             </tr>
@@ -185,12 +195,14 @@
                         <tbody>
                             @foreach ($pagosexternosprogramacionesita as $programacion)
                                 <tr>
+                                    <td>{{ $programacion->id }}</td>
                                     <td>CLIENTE ITA</td>
                                     <td>{{ $programacion->clienteitanombre }}</td>
                                     <td>{{ $programacion->proveedornombre }}</td>
                                     <td>{{ $programacion->accionnombre }}</td>
                                     <td>{{ $programacion->fechabateria }}</td>
                                     <td>{{ $programacion->fechaasignada }}</td>
+                                    <td>{{ $programacion->servicio }}</td>
                                     <td>{{ $programacion->precio }}</td>
                                     <td>
                                         <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox2">
@@ -199,12 +211,14 @@
                             @endforeach
                             @foreach ($pagosexternosprogramacionescomun as $programacion)
                                 <tr>
+                                    <td>{{ $programacion->id }}</td>
                                     <td>CLIENTE COMÚN</td>
                                     <td>{{ $programacion->clientecomunnombre }}</td>
                                     <td>{{ $programacion->proveedornombre }}</td>
                                     <td>{{ $programacion->accionnombre }}</td>
                                     <td>{{ $programacion->fechabateria }}</td>
                                     <td>{{ $programacion->fechaasignada }}</td>
+                                    <td>{{ $programacion->servicio }}</td>
                                     <td>{{ $programacion->precio }}</td>
                                     <td>
                                         <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox2">
@@ -213,12 +227,14 @@
                             @endforeach
                             @foreach ($pagosexternosprogramacionesauditoria as $programacion)
                                 <tr>
+                                    <td>{{ $programacion->id }}</td>
                                     <td>CLIENTE AUDITORÍA</td>
                                     <td>{{ $programacion->clienteauditorianombre }}</td>
                                     <td>{{ $programacion->proveedornombre }}</td>
                                     <td>{{ $programacion->accionnombre }}</td>
                                     <td>{{ $programacion->fechabateria }}</td>
                                     <td>{{ $programacion->fechaasignada }}</td>
+                                    <td>{{ $programacion->servicio }}</td>
                                     <td>{{ $programacion->precio }}</td>
                                     <td>
                                         <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox2">
@@ -253,47 +269,59 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th>ID Prog</th>
                             <th>Tipo de Cliente</th>
                             <th>Cliente</th>
                             <th>Proveedor</th>
                             <th>Acción</th>
                             <th>Fecha de bateria</th>
                             <th>Fecha programada</th>
+                            <th>Servicio</th>
                             <th>Precio</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($pagadosprogramacionesita as $programacion)
                             <tr>
+                                <td>{{ $programacion->id }}</td>
                                 <td>CLIENTE ITA</td>
                                 <td>{{$programacion->clienteitanombre}}</td>
                                 <td>{{$programacion->proveedornombre}}</td>
                                 <td>{{$programacion->accionnombre}}</td>
                                 <td>{{$programacion->fechabateria}}</td>
                                 <td>{{$programacion->fechaasignada}}</td>
+                                <td>{{$programacion->servicio}}</td>
                                 <td>{{$programacion->precio}}</td>
+                                
                             </tr>
                         @endforeach
                         @foreach ($pagadosprogramacionescomun as $programacion)
                             <tr>
+                                <td>{{ $programacion->id }}</td>
                                 <td>CLIENTE COMÚN</td>
                                 <td>{{$programacion->clientecomunnombre}}</td>
                                 <td>{{$programacion->proveedornombre}}</td>
                                 <td>{{$programacion->accionnombre}}</td>
                                 <td>{{$programacion->fechabateria}}</td>
                                 <td>{{$programacion->fechaasignada}}</td>
+                                <td>{{$programacion->servicio}}</td>
                                 <td>{{$programacion->precio}}</td>
+                                
                             </tr>
                         @endforeach
                         @foreach ($pagadosprogramacionesauditoria as $programacion)
                             <tr>
+                                <td>{{ $programacion->id }}</td>
                                 <td>CLIENTE AUDITORÍA</td>
                                 <td>{{$programacion->clienteauditorianombre}}</td>
                                 <td>{{$programacion->proveedornombre}}</td>
                                 <td>{{$programacion->accionnombre}}</td>
                                 <td>{{$programacion->fechabateria}}</td>
                                 <td>{{$programacion->fechaasignada}}</td>
+                                <td>{{$programacion->servicio}}</td>
                                 <td>{{$programacion->precio}}</td>
+                                
                             </tr>
                         @endforeach
                     </tbody>

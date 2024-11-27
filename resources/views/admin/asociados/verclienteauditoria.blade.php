@@ -278,7 +278,7 @@
                         <div style="text-align: center; padding: 1.5px;">
                             <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
                         </div> 
-                        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'VANESSA MAMANI HUANACO')
+                        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'VANESSA MAMANI HUANACO' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
                             <div class="row text-center">
                                 @can('admin.asociados.crearbateriaclienteauditoria')
                                     @if ($tieneRequisitos)

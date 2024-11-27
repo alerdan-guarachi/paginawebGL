@@ -61,7 +61,7 @@
                                         <div style="text-align: center;padding: 1.5px;">
                                             <strong style="color: #26a1c0; font-size:20px;">ETAPA 1</strong>
                                         </div>
-                                        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'VANESSA MAMANI HUANACO')
+                                        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'VANESSA MAMANI HUANACO' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
                                             <div class="row text-center">
                                                 @can('admin.asociados.crearbateriaclientecomun')
                                                 <div class="col-6 mb-3 d-flex justify-content-center align-items-center">

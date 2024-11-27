@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\MensajeController;
 use App\Http\Controllers\Admin\InstructivaPoderController;
 use App\Http\Controllers\Admin\PersonalController;
 use App\Http\Controllers\Admin\InformeFinalController;
+use App\Http\Controllers\Admin\CajaController;
 use App\Http\Controllers\Admin\TramitesController;
 use App\Http\Controllers\Admin\OrdenVentaController;
 use App\Http\Controllers\Admin\ServiciosrequisitosController;
@@ -61,6 +62,7 @@ Route::resource('instructivaspoder', InstructivaPoderController::class)/* ->midd
 Route::resource('personal', PersonalController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.personal');
 Route::resource('informesfinales', InformeFinalController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.informesfinales');
 Route::resource('tramites', TramitesController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.tramites');
+Route::resource('caja', CajaController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.caja');
 Route::resource('serviciosrequisitos', ServiciosrequisitosController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.serviciosrequisitos');
 Route::resource('ordenes/ordenesventa', OrdenVentaController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.ordenes.ordenesventa');
 

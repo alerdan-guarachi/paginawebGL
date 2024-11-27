@@ -504,6 +504,7 @@ class InformeFinalController extends Controller
             $clienteitaid = $items->first()->clienteitaid;
         
             $estado = 'COMPLETO';
+            $estadoGeneral = 'NO REGISTRADO';
             $accionesConEstado = [];
 
             $requisitos = Requisitosubcliente::where('clienteitaid', $items->first()->clienteitaid)->first();
