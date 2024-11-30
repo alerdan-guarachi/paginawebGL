@@ -773,7 +773,7 @@
                                 </small>
                             @enderror
                         </div>
-                        <div class="form-group">
+                        {{-- <div class="form-group">
                             {!! Form::label('celularproveedor', 'Celular del proveedor:') !!}
                             {!! Form::text('celularproveedor', null, ['class' => 'form-control', 'id' => 'celularproveedor', 'readonly' => true]) !!}
                             @error('celularproveedor')
@@ -781,8 +781,8 @@
                                     {{ $message }}
                                 </small>
                             @enderror
-                        </div>
-                        <div class="form-group">
+                        </div> --}}
+                        {{-- <div class="form-group">
                             {!! Form::label('precio', 'Precio:') !!}
                             {!! Form::text('precio', null, ['class' => 'form-control', 'id' => 'precio', 'placeholder' => '' , 'readonly' => 'readonly' ]) !!}
                             @error('precio')
@@ -790,7 +790,22 @@
                                     {{ $message }}
                                 </small>
                             @enderror
+                        </div> --}}
+                        <div class="form-group"> 
+                            {!! Form::label('precio', 'Precio:') !!}
+                            {!! Form::text('precio', null, [
+                                'class' => 'form-control', 
+                                'id' => 'precio', 
+                                'placeholder' => '',
+                                'readonly' => auth()->user()->name !== 'CARLOS ALEJANDRO GUARACHI SANDOVAL' && auth()->user()->name !== 'DENISSE MAUREN LOPEZ FLORES' && auth()->user()->name !== 'JHOSELINE EVA VELASQUEZ ESCOBAR' && auth()->user()->name !== 'VANESSA MAMANI HUANACO' ? 'readonly' : null
+                            ]) !!}
+                            @error('precio')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{ $message }}
+                                </small>
+                            @enderror
                         </div>
+                        
                         
                         <div class="form-group" hidden>
                             {!! Form::label('preciocompra', 'Precio Compra:') !!}
@@ -894,16 +909,18 @@
                             <thead>
                                 <tr>
                                     <th style="color: black">Bateria</th>
+                                    <th style="color: black">Servicio</th>
                                     <th style="color: black">Proveedor</th>
-                                    <th style="color: black">Celular</th>
+                                    {{-- <th style="color: black">Celular</th> --}}
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($requisitosubclientes as $requisitosubcliente)
                                     <tr>
                                         <td style="text-align: left">{{ $requisitosubcliente->fechabateria }}</td>
+                                        <td style="text-align: left">{{ $requisitosubcliente->servicio }}</td>
                                         <td style="text-align: left">{{ $requisitosubcliente->proveedorasignado }}</td>
-                                        <td style="text-align: left">{{ $requisitosubcliente->celularproveedor }}</td>
+                                        {{-- <td style="text-align: left">{{ $requisitosubcliente->celularproveedor }}</td> --}}
                                     </tr>
                                 @endforeach
                             </tbody>

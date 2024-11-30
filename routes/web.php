@@ -30,6 +30,7 @@ use App\Http\Controllers\Admin\AdministrarProgramacionController;
 use App\Http\Controllers\Admin\CodigoController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\ControlProgController;
+use App\Http\Controllers\Admin\QrController;
 
 Route::get('/', function () {return view('welcome');});
 Route::get('/welcome', [App\Http\Controllers\PaginawebController::class, 'welcome'])->name('welcome');
@@ -48,6 +49,7 @@ Route::post('/generar-documento', 'AsociadoController@generarDocumento');
 
 Route::resource("temporal",TemporalController::class);
 
+Route::middleware(['check.session'])->group(function(){
 Route::resource('roles', RoleController::class)->middleware('can:admin.roles.index')->names('admin.roles');
 Route::resource('users', UserController::class)->middleware('can:admin.users.index')->names('admin.users');
 Route::resource('empresas', EmpresaController::class)->middleware('can:admin.empresas.index')->names('admin.empresas');
@@ -61,6 +63,10 @@ Route::resource('mensajes', MensajeController::class)->middleware('can:admin.men
 Route::resource('instructivaspoder', InstructivaPoderController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.instructivaspoder');
 Route::resource('personal', PersonalController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.personal');
 Route::resource('informesfinales', InformeFinalController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.informesfinales');
+Route::resource('informesfinales', InformeFinalController::class)
+    ->middleware('auth') // Agregamos el middleware de autenticación
+    ->names('admin.informesfinales');
+
 Route::resource('tramites', TramitesController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.tramites');
 Route::resource('caja', CajaController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.caja');
 Route::resource('serviciosrequisitos', ServiciosrequisitosController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.serviciosrequisitos');
@@ -532,8 +538,8 @@ Route::get('/buscar-clientes', 'App\Http\Controllers\Admin\AsociadoController@bu
 Route::post('/get-area-acciones/{area}', 'App\Http\Controllers\Admin\ProveedorController@getAreaAcciones')->name('get.area.acciones');
 Route::get('/get-acciones/{areaId}', 'App\Http\Controllers\Admin\ProveedorController@getAcciones');
 
-use App\Http\Controllers\Admin\QrController;
-
 Route::post('/generar-qr', [FormularioController::class, 'generarQR'])->name('generar.qr');
 
 Route::post('asociados/asignar-fechaita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@asignarFecha_ITA')->name('admin.asociados.asignarFecha_ITA');
+
+});

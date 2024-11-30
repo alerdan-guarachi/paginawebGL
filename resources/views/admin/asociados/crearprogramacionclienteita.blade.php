@@ -589,7 +589,9 @@
                         accionesTable.querySelector('thead').innerHTML = tableHeader;
             
                         // Construir las filas de la tabla
-                        accionesBateria[fechaSeleccionada].forEach(function(accionNombre) {
+                        accionesBateria[fechaSeleccionada]
+                        .filter(accion => accion !== 'INFORME FINAL')
+                        .forEach(function(accionNombre) {
                             const detalles = accionesDetalles[fechaSeleccionada]?.[accionNombre];
                             const row = document.createElement('tr');
             
