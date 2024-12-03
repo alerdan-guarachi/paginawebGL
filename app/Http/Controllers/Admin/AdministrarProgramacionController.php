@@ -426,6 +426,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'INTERNO')
@@ -447,6 +448,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'INTERNO')
@@ -468,6 +470,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'INTERNO')
@@ -488,6 +491,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->select(
@@ -504,6 +508,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->select(
@@ -521,6 +526,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->select(
@@ -541,6 +547,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'EXTERNO')
@@ -562,6 +569,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'EXTERNO')
@@ -583,6 +591,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'EXTERNO')
@@ -646,6 +655,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'INTERNO')
@@ -663,6 +673,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'INTERNO')
@@ -680,6 +691,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'INTERNO')
@@ -713,6 +725,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->select(
@@ -728,6 +741,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->select(
@@ -743,6 +757,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->select(
@@ -784,6 +799,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'EXTERNO')
@@ -801,6 +817,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'EXTERNO')
@@ -818,6 +835,7 @@ class AdministrarProgramacionController extends Controller
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'EXTERNO')

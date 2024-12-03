@@ -1732,11 +1732,12 @@ $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente
             $total = number_format($total, 2, '.', '');
         }
 
-        $id = Cliente::where('nombrecompleto', $cliente->nombrecompleto)->value('id');
-
         $proveedorprogramacion = Proveedor::orderBy('proveedor')->pluck('proveedor', 'proveedor');
 
-        return view('admin.asociados.reprogramacionclienteita', compact('proveedorprogramacion','reprogramaciones','programacionsubclientes', 'id', 'cliente', 'fechas', 'total', 'fechaSeleccionada'));
+        $proveedorprogramacion->put('PROVEEDOR AJENO', 'PROVEEDOR AJENO');
+
+        $id = Cliente::where('nombrecompleto', $cliente->nombrecompleto)->value('id');
+        return view('admin.asociados.reprogramacionclienteita', compact('proveedorprogramacion', 'reprogramaciones', 'programacionsubclientes', 'id', 'cliente', 'fechas', 'total', 'fechaSeleccionada'));
     }
     public function buscarprogramacionclienteita(Cliente $cliente, Request $request)
     {
@@ -1749,8 +1750,19 @@ $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente
             'fechaasignada' => 'required|date',
             'horadesde' => 'required|date_format:H:i',
             'horahasta' => 'required|date_format:H:i',
+            'fechaasignada' => 'required|date',
+            'horadesde' => 'required|date_format:H:i',
+            'horahasta' => 'required|date_format:H:i',
             'usuarioactualizacion' => 'required|string',
+            'proveedornombre' => 'required|string',
+            'proveedorajeno' => 'nullable|string|max:255',
         ]);
+
+        // Validar si es "Proveedor Ajeno"
+        $proveedornombre = $request->proveedornombre === 'PROVEEDOR AJENO'
+            ? $request->proveedorajeno
+            : $request->proveedornombre;
+
         $usuarioActualizacion = $request->input('usuarioactualizacion');
         $programacionsubcliente->motivoreprogramacion = $request->motivoreprogramacion;
         $programacionsubcliente->usuarioactualizacion = $usuarioActualizacion;
@@ -1758,17 +1770,20 @@ $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente
 
         $programacionsubcliente->delete();
 
-
-        $nuevaReprogramacion = $programacionsubcliente->replicate();
+        $nuevaReprogramacion = $programacionsubcliente->replicate(['deleted_at']);
         $nuevaReprogramacion->motivoreprogramacion = null;
         $nuevaReprogramacion->fechaasignada = $request->fechaasignada;
         $nuevaReprogramacion->horadesde = $request->horadesde;
         $nuevaReprogramacion->horahasta = $request->horahasta;
+        $nuevaReprogramacion->proveedornombre = $proveedornombre;
+
         $nuevaReprogramacion->save();
 
         $cliente = Cliente::where('nombrecompleto', $programacionsubcliente->clienteitanombre)->first();
+        $fechaSeleccionada = $request->input('buscarpor');
 
-        return redirect()->route('admin.asociados.reprogramacionclienteita', $cliente)->with('eliminar', 'ok');
+        return redirect()->route('admin.asociados.reprogramacionclienteita', ['cliente' => $cliente, 'buscarpor' => $fechaSeleccionada])
+            ->with('eliminar', 'ok');
     }
     public function estadoprogramacionclienteita(Cliente $cliente, Request $request)
     {
