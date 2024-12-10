@@ -322,6 +322,31 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <div class="row">
+                                                        <div class="col-lg-6 text-center">
+                                                            <label for="firma">Firma Digital:</label>
+                                                            <div>
+                                                                @if ($usuario->firmadigital)
+                                                                    <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->firmadigital) }}" 
+                                                                         alt="Firma Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                                @else
+                                                                    <p>No se ha cargado ninguna firma.</p>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6 text-center">
+                                                            <label for="sello">Sello Digital:</label>
+                                                            <div>
+                                                                @if ($usuario->sellodigital)
+                                                                    <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->sellodigital) }}" 
+                                                                         alt="Sello Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                                @else
+                                                                    <p>No se ha cargado ningún sello.</p>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
                                                 </div>
                                                 
                                                 <style>
@@ -420,6 +445,53 @@
                                                     document.querySelectorAll('.file-input').forEach(input => {
                                                         input.addEventListener('change', handleFileSelect);
                                                     });
+
+
+
+                                                    function agregarFirmaYSelloPDF($rutaCarpeta, $archivoPDF, $request) {
+    $pdfPath = $rutaCarpeta . '/' . $archivoPDF;
+    $outputPath = $rutaCarpeta . '/firmado_' . $archivoPDF;
+
+    $fpdi = new Fpdi();
+
+    // Carga las imágenes de la firma y el sello
+    $firmaPath = public_path('/glfirmasello/' . auth()->user()->id . '/' . auth()->user()->firmadigital);
+    $selloPath = public_path('/glfirmasello/' . auth()->user()->id . '/' . auth()->user()->sellodigital);
+
+    if (!file_exists($firmaPath) || !file_exists($selloPath)) {
+        throw new \Exception('Firma o sello no encontrados.');
+    }
+
+    // Cargar el archivo PDF original
+    $pageCount = $fpdi->setSourceFile($pdfPath);
+
+    // Agregar firma y sello en cada página
+    for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+        $templateId = $fpdi->importPage($pageNo);
+        $size = $fpdi->getTemplateSize($templateId);
+
+        $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
+        $fpdi->useTemplate($templateId);
+
+        // Coordenadas para colocar la firma y el sello
+        $firmaX = $size['width'] - 50; // Margen derecho
+        $firmaY = $size['height'] - 30; // Margen inferior
+
+        $selloX = $size['width'] - 100; // A la izquierda de la firma
+        $selloY = $firmaY;
+
+        // Agregar firma
+        $fpdi->Image($firmaPath, $firmaX, $firmaY, 40); // 40 = Ancho de la imagen
+
+        // Agregar sello
+        $fpdi->Image($selloPath, $selloX, $selloY, 40);
+    }
+
+    // Guardar el nuevo archivo PDF
+    $fpdi->Output('F', $outputPath);
+
+    return $outputPath;
+}
                                                 </script>
     
                                                 <div class="modal-footer">

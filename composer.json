@@ -22,6 +22,8 @@
         "microsoft/microsoft-graph": "*",
         "nesbot/carbon": "^2.72",
         "phpoffice/phpspreadsheet": "^2.1",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.6",
         "simplesoftwareio/simple-qrcode": "^2.0",
         "spatie/laravel-permission": "^6.4",
         "twilio/sdk": "^8.0"

@@ -773,7 +773,7 @@
                                 </small>
                             @enderror
                         </div>
-                        {{-- <div class="form-group">
+                        <div class="form-group" hidden>
                             {!! Form::label('celularproveedor', 'Celular del proveedor:') !!}
                             {!! Form::text('celularproveedor', null, ['class' => 'form-control', 'id' => 'celularproveedor', 'readonly' => true]) !!}
                             @error('celularproveedor')
@@ -781,7 +781,7 @@
                                     {{ $message }}
                                 </small>
                             @enderror
-                        </div> --}}
+                        </div>
                         {{-- <div class="form-group">
                             {!! Form::label('precio', 'Precio:') !!}
                             {!! Form::text('precio', null, ['class' => 'form-control', 'id' => 'precio', 'placeholder' => '' , 'readonly' => 'readonly' ]) !!}

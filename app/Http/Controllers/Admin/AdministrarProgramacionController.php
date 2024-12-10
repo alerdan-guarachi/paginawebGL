@@ -30,6 +30,7 @@ use App\Models\Estadoprogramacionsubcliente;
 use App\Models\Programacionsubcliente;
 use App\Models\Documentacionsubcliente;
 use App\Http\Requests\UpdateProgramacionsubclienteRequest;
+use App\Models\ProveedorInformefinal;
 use App\Services\WhatsAppService;
 
 class AdministrarProgramacionController extends Controller
@@ -444,19 +445,19 @@ class AdministrarProgramacionController extends Controller
                     ->orWhere('pagoatencion', '');
             })
             ->whereNotNull('clientecomunid')
-            ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
+            ->join('clientescomunes', 'programacionsubclientes.clientecomunid', '=', 'clientescomunes.id')
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
                     ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
+                    ->on('clientescomunes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'INTERNO')
             ->select(
                 'programacionsubclientes.id as programacionsubcliente_id',
                 'programacionsubclientes.*', 
                 'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
+                'clientescomunes.sucursal as cliente_sucursal'
             )
         ->get();
 
@@ -466,75 +467,22 @@ class AdministrarProgramacionController extends Controller
                     ->orWhere('pagoatencion', '');
             })
             ->whereNotNull('clienteauditoriaid')
-            ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
+            ->join('clienteauditorias', 'programacionsubclientes.clienteauditoriaid', '=', 'clienteauditorias.id')
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
                     ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
+                    ->on('clienteauditorias.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'INTERNO')
             ->select(
                 'programacionsubclientes.id as programacionsubcliente_id',
                 'programacionsubclientes.*', 
                 'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
+                'clienteauditorias.sucursal as cliente_sucursal'
             )
         ->get();
 
-
-        /* PAGOS PROCESADOS */
-        $pagadosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
-            ->where('pagoatencion', 'PAGO PROCESADO')
-            ->whereNotNull('clienteitaid')
-            ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->select(
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-        ->get();
-        
-        $pagadosprogramacionescomun = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
-            ->where('pagoatencion', 'PAGO PROCESADO')
-            ->whereNotNull('clientecomunid')
-            ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->select(
-                'programacionsubclientes.id as programacionsubcliente_id',
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-        ->get();
-
-        $pagadosprogramacionesauditoria = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
-            ->where('pagoatencion', 'PAGO PROCESADO')
-            ->whereNotNull('clienteauditoriaid')
-            ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->select(
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-        ->get();
 
         /* PAGOS PENDIENTES EXTERNOS */
         $pagosexternosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
@@ -565,19 +513,19 @@ class AdministrarProgramacionController extends Controller
                     ->orWhere('pagoatencion', '');
             })
             ->whereNotNull('clientecomunid')
-            ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
+            ->join('clientescomunes', 'programacionsubclientes.clientecomunid', '=', 'clientescomunes.id')
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
                     ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
                     ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
+                    ->on('clientescomunes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
             ->where('bateriaproveedores.servicio', 'EXTERNO')
             ->select(
                 'programacionsubclientes.id as programacionsubcliente_id',
                 'programacionsubclientes.*', 
                 'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
+                'clientescomunes.sucursal as cliente_sucursal'
             )
         ->get();
 
@@ -587,6 +535,27 @@ class AdministrarProgramacionController extends Controller
                     ->orWhere('pagoatencion', '');
             })
             ->whereNotNull('clienteauditoriaid')
+            ->join('clienteauditorias', 'programacionsubclientes.clienteauditoriaid', '=', 'clienteauditorias.id')
+            ->join('bateriaproveedores', function ($join) {
+                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                    ->on('clienteauditorias.sucursal', '=', 'bateriaproveedores.sucursal');
+            })
+            ->where('bateriaproveedores.servicio', 'EXTERNO')
+            ->select(
+                'programacionsubclientes.id as programacionsubcliente_id',
+                'programacionsubclientes.*', 
+                'bateriaproveedores.servicio',
+                'clienteauditorias.sucursal as cliente_sucursal'
+            )
+        ->get();
+        
+
+        /* PAGOS PROCESADOS */
+        $pagadosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where('pagoatencion', 'PAGO PROCESADO')
+            ->whereNotNull('clienteitaid')
             ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
             ->join('bateriaproveedores', function ($join) {
                 $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
@@ -594,16 +563,98 @@ class AdministrarProgramacionController extends Controller
                     ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
                     ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
             })
-            ->where('bateriaproveedores.servicio', 'EXTERNO')
             ->select(
-                'programacionsubclientes.id as programacionsubcliente_id',
                 'programacionsubclientes.*', 
                 'bateriaproveedores.servicio',
                 'clientes.sucursal as cliente_sucursal'
             )
         ->get();
+        
+        $pagadosprogramacionescomun = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where('pagoatencion', 'PAGO PROCESADO')
+            ->whereNotNull('clientecomunid')
+            ->join('clientescomunes', 'programacionsubclientes.clientecomunid', '=', 'clientescomunes.id')
+            ->join('bateriaproveedores', function ($join) {
+                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                    ->on('clientescomunes.sucursal', '=', 'bateriaproveedores.sucursal');
+            })
+            ->select(
+                'programacionsubclientes.id as programacionsubcliente_id',
+                'programacionsubclientes.*', 
+                'bateriaproveedores.servicio',
+                'clientescomunes.sucursal as cliente_sucursal'
+            )
+        ->get();
 
-        return view('admin.admprogramaciones.pagosprogramaciones', compact('pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita','pagadosprogramacionesita','pagadosprogramacionescomun','pagadosprogramacionesauditoria','pagosprogramacionesita','pagosprogramacionescomun','pagosprogramacionesauditoria', 'fechaActual'));
+        $pagadosprogramacionesauditoria = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where('pagoatencion', 'PAGO PROCESADO')
+            ->whereNotNull('clienteauditoriaid')
+            ->join('clienteauditorias', 'programacionsubclientes.clienteauditoriaid', '=', 'clienteauditorias.id')
+            ->join('bateriaproveedores', function ($join) {
+                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                    ->on('clienteauditorias.sucursal', '=', 'bateriaproveedores.sucursal');
+            })
+            ->select(
+                'programacionsubclientes.*', 
+                'bateriaproveedores.servicio',
+                'clienteauditorias.sucursal as cliente_sucursal'
+            )
+        ->get();
+
+        /* PAGOS PENDIENTES INFORMES FINALES */
+        $pagosinformefinalita = ProveedorInformefinal::where(function ($query) {
+                $query->whereNull('pagoinforme')
+                    ->orWhere('pagoinforme', '');
+            })
+            ->whereNotNull('clienteitaid')
+            ->join('clientes', 'proveedorinformesfinales.clienteitaid', '=', 'clientes.id')
+            ->select(
+                'proveedorinformesfinales.id as programacionsubcliente_id',
+                'proveedorinformesfinales.*', 
+                'clientes.sucursal as cliente_sucursal'
+            )
+        ->get();
+
+        $pagosinformefinalauditoria = ProveedorInformefinal::where(function ($query) {
+                $query->whereNull('pagoinforme')
+                    ->orWhere('pagoinforme', '');
+            })
+            ->whereNotNull('clienteauditoriaid')
+            ->join('clienteauditorias', 'proveedorinformesfinales.clienteauditoriaid', '=', 'clienteauditorias.id')
+            ->select(
+                'proveedorinformesfinales.id as programacionsubcliente_id',
+                'proveedorinformesfinales.*', 
+                'clienteauditorias.sucursal as cliente_sucursal'
+            )
+        ->get();
+
+        /* PAGOS PROCESADOS INFORMES FINALES */
+        $pagosprocesadosinformefinalita = ProveedorInformefinal::where('pagoinforme', 'PAGO PROCESADO')
+            ->whereNotNull('clienteitaid')
+            ->join('clientes', 'proveedorinformesfinales.clienteitaid', '=', 'clientes.id')
+            ->select(
+                'proveedorinformesfinales.id as programacionsubcliente_id',
+                'proveedorinformesfinales.*', 
+                'clientes.sucursal as cliente_sucursal'
+            )
+        ->get();
+
+        $pagosprocesadosinformefinalauditoria = ProveedorInformefinal::where('pagoinforme', 'PAGO PROCESADO')
+            ->whereNotNull('clienteauditoriaid')
+            ->join('clienteauditorias', 'proveedorinformesfinales.clienteauditoriaid', '=', 'clienteauditorias.id')
+            ->select(
+                'proveedorinformesfinales.id as programacionsubcliente_id',
+                'proveedorinformesfinales.*', 
+                'clienteauditorias.sucursal as cliente_sucursal'
+            )
+        ->get();
+
+
+        return view('admin.admprogramaciones.pagosprogramaciones', compact('pagosprocesadosinformefinalauditoria','pagosprocesadosinformefinalita','pagosinformefinalauditoria','pagosinformefinalita','pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita','pagadosprogramacionesita','pagadosprogramacionescomun','pagadosprogramacionesauditoria','pagosprogramacionesita','pagosprogramacionescomun','pagosprogramacionesauditoria', 'fechaActual'));
     }
     public function confirmarPagos(Request $request)
     {
@@ -618,246 +669,332 @@ class AdministrarProgramacionController extends Controller
     }
 
     public function buscarprogramacionesporfecha(Request $request)
-{
-    $fechaActual = $request->get('fecha') ?: now()->toDateString(); 
+    {
+        $fechaActual = $request->get('fecha') ?: now()->toDateString(); 
 
-    $criterio = $request->get('criterio'); // ID, nombre o CI
-    $fecha = $request->get('fecha'); // Fecha seleccionada
-
-    // Función común para filtrar programaciones
-    $filtrarProgramaciones = function ($query) use ($criterio, $fecha) {
-        if ($criterio) {
-            $query->where(function ($subQuery) use ($criterio) {
-                $subQuery->where('clienteitaid', 'like', "%$criterio%")
-                         ->orWhere('clienteitanombre', 'like', "%$criterio%")
-                         ->orWhere('clienteauditoriaid', 'like', "%$criterio%")
-                         ->orWhere('clienteauditorianombre', 'like', "%$criterio%")
-                         ->orWhere('clientecomunid', 'like', "%$criterio%")
-                         ->orWhere('clientecomunnombre', 'like', "%$criterio%");
-            });
-        }
-
-        if ($fecha) {
-            $query->whereDate('fechaasignada', $fecha);
-        }
-
-        $query->where(function ($subQuery) {
-            $subQuery->whereNull('pagoatencion')
-                     ->orWhere('pagoatencion', '');
-        });
-        
-    };
-
-    // Consultas
-    $pagosprogramacionesita = Programacionsubcliente::where($filtrarProgramaciones)
-        ->whereNotNull('clienteitaid')
-        ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'INTERNO')
-            ->select(
-                'programacionsubclientes.id as programacionsubcliente_id',
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-    ->simplePaginate(1000);
-
-    $pagosprogramacionescomun = Programacionsubcliente::where($filtrarProgramaciones)
-        ->whereNotNull('clientecomunid')
-        ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'INTERNO')
-            ->select(
-                'programacionsubclientes.id as programacionsubcliente_id',
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-    ->simplePaginate(1000);
-
-    $pagosprogramacionesauditoria = Programacionsubcliente::where($filtrarProgramaciones)
-        ->whereNotNull('clienteauditoriaid')
-        ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'INTERNO')
-            ->select(
-                'programacionsubclientes.id as programacionsubcliente_id',
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-    ->simplePaginate(1000);
-
-    // Para programaciones pagadas
-    $filtrarPagados = function ($query) use ($criterio, $fecha) {
-        if ($criterio) {
-            $query->where(function ($subQuery) use ($criterio) {
-                $subQuery->where('clienteitaid', 'like', "%$criterio%")
-                         ->orWhere('clienteitanombre', 'like', "%$criterio%");
-            });
-        }
-
-        if ($fecha) {
-            $query->whereDate('fechaasignada', $fecha);
-        }
-
-        $query->where('pagoatencion', 'PAGO PROCESADO');
-    };
-
-    $pagadosprogramacionesita = Programacionsubcliente::where($filtrarPagados)
-        ->whereNotNull('clienteitaid')
-        ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->select(
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-    ->simplePaginate(1000);
-
-    $pagadosprogramacionescomun = Programacionsubcliente::where($filtrarPagados)
-        ->whereNotNull('clientecomunid')
-        ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->select(
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-    ->simplePaginate(1000);
-
-    $pagadosprogramacionesauditoria = Programacionsubcliente::where($filtrarPagados)
-        ->whereNotNull('clienteauditoriaid')
-        ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->select(
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-    ->simplePaginate(1000);
-
+        $criterio = $request->get('criterio'); // ID, nombre o CI
+        $fecha = $request->get('fecha'); // Fecha seleccionada
 
         // Función común para filtrar programaciones
-    $filtrarProgramacionesexternos = function ($query) use ($criterio, $fecha) {
-        if ($criterio) {
-            $query->where(function ($subQuery) use ($criterio) {
-                $subQuery->where('clienteitaid', 'like', "%$criterio%")
-                         ->orWhere('clienteitanombre', 'like', "%$criterio%")
-                         ->orWhere('clienteauditoriaid', 'like', "%$criterio%")
-                         ->orWhere('clienteauditorianombre', 'like', "%$criterio%")
-                         ->orWhere('clientecomunid', 'like', "%$criterio%")
-                         ->orWhere('clientecomunnombre', 'like', "%$criterio%");
+        $filtrarProgramaciones = function ($query) use ($criterio, $fecha) {
+            if ($criterio) {
+                $query->where(function ($subQuery) use ($criterio) {
+                    $subQuery->where('clienteitaid', 'like', "%$criterio%")
+                            ->orWhere('clienteitanombre', 'like', "%$criterio%")
+                            ->orWhere('clienteauditoriaid', 'like', "%$criterio%")
+                            ->orWhere('clienteauditorianombre', 'like', "%$criterio%")
+                            ->orWhere('clientecomunid', 'like', "%$criterio%")
+                            ->orWhere('clientecomunnombre', 'like', "%$criterio%");
+                });
+            }
+
+            if ($fecha) {
+                $query->whereDate('fechaasignada', $fecha);
+            }
+
+            $query->where(function ($subQuery) {
+                $subQuery->whereNull('pagoatencion')
+                        ->orWhere('pagoatencion', '');
             });
+            
+        };
+
+        /* PAGOS PENDIENTES INTERNOS */
+        $pagosprogramacionesita = Programacionsubcliente::where($filtrarProgramaciones)
+            ->whereNotNull('clienteitaid')
+            ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
+                ->join('bateriaproveedores', function ($join) {
+                    $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                        ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                        ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                        ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
+                })
+                ->where('bateriaproveedores.servicio', 'INTERNO')
+                ->select(
+                    'programacionsubclientes.id as programacionsubcliente_id',
+                    'programacionsubclientes.*', 
+                    'bateriaproveedores.servicio',
+                    'clientes.sucursal as cliente_sucursal'
+                )
+        ->simplePaginate(1000);
+
+        $pagosprogramacionescomun = Programacionsubcliente::where($filtrarProgramaciones)
+            ->whereNotNull('clientecomunid')
+            ->join('clientescomunes', 'programacionsubclientes.clientecomunid', '=', 'clientescomunes.id')
+                ->join('bateriaproveedores', function ($join) {
+                    $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                        ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                        ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                        ->on('clientescomunes.sucursal', '=', 'bateriaproveedores.sucursal');
+                })
+                ->where('bateriaproveedores.servicio', 'INTERNO')
+                ->select(
+                    'programacionsubclientes.id as programacionsubcliente_id',
+                    'programacionsubclientes.*', 
+                    'bateriaproveedores.servicio',
+                    'clientescomunes.sucursal as cliente_sucursal'
+                )
+        ->simplePaginate(1000);
+
+        $pagosprogramacionesauditoria = Programacionsubcliente::where($filtrarProgramaciones)
+            ->whereNotNull('clienteauditoriaid')
+            ->join('clienteauditorias', 'programacionsubclientes.clienteauditoriaid', '=', 'clienteauditorias.id')
+                ->join('bateriaproveedores', function ($join) {
+                    $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                        ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                        ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                        ->on('clienteauditorias.sucursal', '=', 'bateriaproveedores.sucursal');
+                })
+                ->where('bateriaproveedores.servicio', 'INTERNO')
+                ->select(
+                    'programacionsubclientes.id as programacionsubcliente_id',
+                    'programacionsubclientes.*', 
+                    'bateriaproveedores.servicio',
+                    'clienteauditorias.sucursal as cliente_sucursal'
+                )
+        ->simplePaginate(1000);
+
+
+        /* PAGOS PENDIENTES EXTERNOS */
+        $filtrarProgramacionesexternos = function ($query) use ($criterio, $fecha) {
+            if ($criterio) {
+                $query->where(function ($subQuery) use ($criterio) {
+                    $subQuery->where('clienteitaid', 'like', "%$criterio%")
+                            ->orWhere('clienteitanombre', 'like', "%$criterio%")
+                            ->orWhere('clienteauditoriaid', 'like', "%$criterio%")
+                            ->orWhere('clienteauditorianombre', 'like', "%$criterio%")
+                            ->orWhere('clientecomunid', 'like', "%$criterio%")
+                            ->orWhere('clientecomunnombre', 'like', "%$criterio%");
+                });
+            }
+
+            if ($fecha) {
+                $query->whereDate('fechaasignada', $fecha);
+            }
+
+            $query->where(function ($subQuery) {
+                $subQuery->whereNull('pagoatencion')
+                        ->orWhere('pagoatencion', '');
+            });
+            
+        };
+
+        $pagosexternosprogramacionesita = Programacionsubcliente::where($filtrarProgramacionesexternos)
+            ->whereNotNull('clienteitaid')
+            ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
+                ->join('bateriaproveedores', function ($join) {
+                    $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                        ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                        ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                        ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
+                })
+                ->where('bateriaproveedores.servicio', 'EXTERNO')
+                ->select(
+                    'programacionsubclientes.id as programacionsubcliente_id',
+                    'programacionsubclientes.*', 
+                    'bateriaproveedores.servicio',
+                    'clientes.sucursal as cliente_sucursal'
+                )
+        ->simplePaginate(1000);
+
+        $pagosexternosprogramacionescomun = Programacionsubcliente::where($filtrarProgramacionesexternos)
+            ->whereNotNull('clientecomunid')
+            ->join('clientescomunes', 'programacionsubclientes.clientecomunid', '=', 'clientescomunes.id')
+                ->join('bateriaproveedores', function ($join) {
+                    $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                        ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                        ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                        ->on('clientescomunes.sucursal', '=', 'bateriaproveedores.sucursal');
+                })
+                ->where('bateriaproveedores.servicio', 'EXTERNO')
+                ->select(
+                    'programacionsubclientes.id as programacionsubcliente_id',
+                    'programacionsubclientes.*', 
+                    'bateriaproveedores.servicio',
+                    'clientescomunes.sucursal as cliente_sucursal'
+                )
+        ->simplePaginate(1000);
+
+        $pagosexternosprogramacionesauditoria = Programacionsubcliente::where($filtrarProgramacionesexternos)
+            ->whereNotNull('clienteauditoriaid')
+            ->join('clienteauditorias', 'programacionsubclientes.clienteauditoriaid', '=', 'clienteauditorias.id')
+                ->join('bateriaproveedores', function ($join) {
+                    $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                        ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                        ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                        ->on('clienteauditorias.sucursal', '=', 'bateriaproveedores.sucursal');
+                })
+                ->where('bateriaproveedores.servicio', 'EXTERNO')
+                ->select(
+                    'programacionsubclientes.id as programacionsubcliente_id',
+                    'programacionsubclientes.*', 
+                    'bateriaproveedores.servicio',
+                    'clienteauditorias.sucursal as cliente_sucursal'
+                )
+        ->simplePaginate(1000);
+
+
+        // PAGOS PROCESADOS
+        $filtrarPagados = function ($query) use ($criterio, $fecha) {
+            if ($criterio) {
+                $query->where(function ($subQuery) use ($criterio) {
+                    $subQuery->where('clienteitaid', 'like', "%$criterio%")
+                            ->orWhere('clienteitanombre', 'like', "%$criterio%")
+                            ->orWhere('clienteauditoriaid', 'like', "%$criterio%")
+                            ->orWhere('clienteauditorianombre', 'like', "%$criterio%")
+                            ->orWhere('clientecomunid', 'like', "%$criterio%")
+                            ->orWhere('clientecomunnombre', 'like', "%$criterio%");
+                });
+            }
+
+            if ($fecha) {
+                $query->whereDate('fechaasignada', $fecha);
+            }
+
+            $query->where('pagoatencion', 'PAGO PROCESADO');
+        };
+
+        $pagadosprogramacionesita = Programacionsubcliente::where($filtrarPagados)
+            ->whereNotNull('clienteitaid')
+            ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
+                ->join('bateriaproveedores', function ($join) {
+                    $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                        ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                        ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                        ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
+                })
+                ->select(
+                    'programacionsubclientes.*', 
+                    'bateriaproveedores.servicio',
+                    'clientes.sucursal as cliente_sucursal'
+                )
+        ->simplePaginate(1000);
+
+        $pagadosprogramacionescomun = Programacionsubcliente::where($filtrarPagados)
+            ->whereNotNull('clientecomunid')
+            ->join('clientescomunes', 'programacionsubclientes.clientecomunid', '=', 'clientescomunes.id')
+                ->join('bateriaproveedores', function ($join) {
+                    $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                        ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                        ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                        ->on('clientescomunes.sucursal', '=', 'bateriaproveedores.sucursal');
+                })
+                ->select(
+                    'programacionsubclientes.*', 
+                    'bateriaproveedores.servicio',
+                    'clientescomunes.sucursal as cliente_sucursal'
+                )
+        ->simplePaginate(1000);
+
+        $pagadosprogramacionesauditoria = Programacionsubcliente::where($filtrarPagados)
+            ->whereNotNull('clienteauditoriaid')
+            ->join('clienteauditorias', 'programacionsubclientes.clienteauditoriaid', '=', 'clienteauditorias.id')
+                ->join('bateriaproveedores', function ($join) {
+                    $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
+                        ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
+                        ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
+                        ->on('clienteauditorias.sucursal', '=', 'bateriaproveedores.sucursal');
+                })
+                ->select(
+                    'programacionsubclientes.*', 
+                    'bateriaproveedores.servicio',
+                    'clienteauditorias.sucursal as cliente_sucursal'
+                )
+        ->simplePaginate(1000);
+
+
+        /* PAGOS PENDIENTES INFORMES FINALES */
+        $filtrarpagospendientesinformefinalita = function ($query) use ($criterio) {
+            if ($criterio) {
+                $query->where(function ($subQuery) use ($criterio) {
+                    $subQuery->where('clienteitaid', 'like', "%$criterio%")
+                            ->orWhere('clienteitanombre', 'like', "%$criterio%")
+                            ->orWhere('clienteauditoriaid', 'like', "%$criterio%")
+                            ->orWhere('clienteauditorianombre', 'like', "%$criterio%");
+                });
+            }
+
+            $query->where(function ($subQuery) {
+                $subQuery->whereNull('pagoinforme')
+                        ->orWhere('pagoinforme', '');
+            });
+            
+        };
+
+        $pagosinformefinalita = ProveedorInformefinal::where($filtrarpagospendientesinformefinalita)
+            ->whereNotNull('clienteitaid')
+            ->join('clientes', 'proveedorinformesfinales.clienteitaid', '=', 'clientes.id')
+            ->select(
+                'proveedorinformesfinales.id as programacionsubcliente_id',
+                'proveedorinformesfinales.*', 
+                'clientes.sucursal as cliente_sucursal'
+            )
+        ->simplePaginate(1000);
+
+        $pagosinformefinalauditoria = ProveedorInformefinal::where($filtrarpagospendientesinformefinalita)
+            ->whereNotNull('clienteauditoriaid')
+            ->join('clienteauditorias', 'proveedorinformesfinales.clienteauditoriaid', '=', 'clienteauditorias.id')
+            ->select(
+                'proveedorinformesfinales.id as programacionsubcliente_id',
+                'proveedorinformesfinales.*', 
+                'clienteauditorias.sucursal as cliente_sucursal'
+            )
+        ->simplePaginate(1000);
+
+        // PAGOS PROCESADOS INFORMES FINALES
+        $filtrarPagadosinformesfinales = function ($query) use ($criterio) {
+            if ($criterio) {
+                $query->where(function ($subQuery) use ($criterio) {
+                    $subQuery->where('clienteitaid', 'like', "%$criterio%")
+                            ->orWhere('clienteitanombre', 'like', "%$criterio%")
+                            ->orWhere('clienteauditoriaid', 'like', "%$criterio%")
+                            ->orWhere('clienteauditorianombre', 'like', "%$criterio%");
+                });
+            }
+
+            $query->where('pagoinforme', 'PAGO PROCESADO');
+        };
+        $pagosprocesadosinformefinalita = ProveedorInformefinal::where($filtrarPagadosinformesfinales)
+            ->whereNotNull('clienteitaid')
+            ->join('clientes', 'proveedorinformesfinales.clienteitaid', '=', 'clientes.id')
+            ->select(
+                'proveedorinformesfinales.id as programacionsubcliente_id',
+                'proveedorinformesfinales.*', 
+                'clientes.sucursal as cliente_sucursal'
+            )
+        ->simplePaginate(1000);
+
+        $pagosprocesadosinformefinalauditoria = ProveedorInformefinal::where($filtrarPagadosinformesfinales)
+            ->whereNotNull('clienteauditoriaid')
+            ->join('clienteauditorias', 'proveedorinformesfinales.clienteauditoriaid', '=', 'clienteauditorias.id')
+            ->select(
+                'proveedorinformesfinales.id as programacionsubcliente_id',
+                'proveedorinformesfinales.*', 
+                'clienteauditorias.sucursal as cliente_sucursal'
+            )
+        ->simplePaginate(1000);
+
+
+        return view('admin.admprogramaciones.pagosprogramaciones', compact('pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita',
+            'pagadosprogramacionesita',
+            'pagadosprogramacionescomun',
+            'pagadosprogramacionesauditoria',
+            'pagosprogramacionesita',
+            'pagosprogramacionescomun',
+            'pagosprogramacionesauditoria','fechaActual','pagosinformefinalita','pagosinformefinalauditoria','pagosprocesadosinformefinalita','pagosprocesadosinformefinalauditoria'
+        ));
+    }
+    public function confirmarPagosInformesfinales(Request $request)
+    {
+        $programacionesIds = $request->input('programaciones', []);
+
+        if (!empty($programacionesIds)) {
+            ProveedorInformefinal::whereIn('id', $programacionesIds)
+                ->update(['pagoinforme' => 'PAGO PROCESADO']);
         }
 
-        if ($fecha) {
-            $query->whereDate('fechaasignada', $fecha);
-        }
-
-        $query->where(function ($subQuery) {
-            $subQuery->whereNull('pagoatencion')
-                     ->orWhere('pagoatencion', '');
-        });
-        
-    };
-
-    // Consultas
-    $pagosexternosprogramacionesita = Programacionsubcliente::where($filtrarProgramacionesexternos)
-        ->whereNotNull('clienteitaid')
-        ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'EXTERNO')
-            ->select(
-                'programacionsubclientes.id as programacionsubcliente_id',
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-        ->simplePaginate(1000);
-
-    $pagosexternosprogramacionescomun = Programacionsubcliente::where($filtrarProgramacionesexternos)
-        ->whereNotNull('clientecomunid')
-        ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'EXTERNO')
-            ->select(
-                'programacionsubclientes.id as programacionsubcliente_id',
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-        ->simplePaginate(1000);
-
-    $pagosexternosprogramacionesauditoria = Programacionsubcliente::where($filtrarProgramacionesexternos)
-        ->whereNotNull('clienteauditoriaid')
-        ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'EXTERNO')
-            ->select(
-                'programacionsubclientes.id as programacionsubcliente_id',
-                'programacionsubclientes.*', 
-                'bateriaproveedores.servicio',
-                'clientes.sucursal as cliente_sucursal'
-            )
-        ->simplePaginate(1000);
-
-
-    return view('admin.admprogramaciones.pagosprogramaciones', compact('pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita',
-        'pagadosprogramacionesita',
-        'pagadosprogramacionescomun',
-        'pagadosprogramacionesauditoria',
-        'pagosprogramacionesita',
-        'pagosprogramacionescomun',
-        'pagosprogramacionesauditoria','fechaActual'
-    ));
-}
-
+        return redirect()->back()->with('info', 'Pagos confirmados correctamente.');
+    }
 
     public function controlregistros(Request $request)
     {

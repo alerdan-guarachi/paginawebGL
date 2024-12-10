@@ -34,6 +34,10 @@ class Proveedor extends Model
         'linkubicacion' => '',
         'firmadigital' => '',
         'sellodigital' => '',
+        'direccion2' => '',
+        'linkubicacion2' => '',
+        'direccion3' => '',
+        'linkubicacion3' => '',
     ]; 
 
     protected $fillable = [
@@ -59,6 +63,10 @@ class Proveedor extends Model
         'linkubicacion',
         'firmadigital',
         'sellodigital',
+        'direccion2',
+        'linkubicacion2',
+        'direccion3',
+        'linkubicacion3',
     ];
     public function departamento()
     {

@@ -57,22 +57,41 @@
                 </thead>
                 <tbody>
                     @foreach($accionesDisponibles as $accion)
-                    <?php
-                    // Mensaje principal
+                    <?php 
+                    // Mensaje principal sin las direcciones aún
                     $mensaje = "Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: " .
-                            $accion->proveedornombre . ", para realizarse: " .
-                            $accion->areanombre . ", para la fecha: " .
-                            $accion->fechaasignada . ", a la hora: " . 
-                            $accion->horadesde . " en: " . 
-                            $accion->direccion . ". Que tenga un excelente día.";
-                    
-                    // Mensaje de ubicación en un párrafo separado, si está disponible
-                    if (!empty($accion->linkubicacion)) {
-                        $mensaje .= "\n\nVer ubicación: " . $accion->linkubicacion;
+                                $accion->proveedornombre . ", para realizarse: " .
+                                $accion->areanombre . ", para la fecha: " .
+                                $accion->fechaasignada . ", a la hora: " . 
+                                $accion->horadesde . ". Que tenga un excelente día.";
+
+                    // Agregar direcciones y enlaces al final, si están disponibles
+                    $direcciones = "";
+                    if (!empty($accion->direccion)) {
+                        $direcciones .= "\n\nDirección: " . $accion->direccion;
+                        if (!empty($accion->linkubicacion)) {
+                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion . ")";
+                        }
                     }
-                    
+                    if (!empty($accion->direccion2)) {
+                        $direcciones .= "\n\nDirección 2: " . $accion->direccion2;
+                        if (!empty($accion->linkubicacion2)) {
+                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion2 . ")";
+                        }
+                    }
+                    if (!empty($accion->direccion3)) {
+                        $direcciones .= "\n\nDirección 3: " . $accion->direccion3;
+                        if (!empty($accion->linkubicacion3)) {
+                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion3 . ")";
+                        }
+                    }
+
+                    // Añadir las direcciones al mensaje principal
+                    $mensaje .= $direcciones;
+
                     $mensajeCodificado = urlencode($mensaje);
                     ?>
+
                     <tr>
                         <td class="align-middle">{{ $accion->id }}</td>
                         <td class="align-middle">{{ $accion->accionnombre }}</td>
@@ -104,6 +123,7 @@
                     </tr>
                 @endforeach
                 </tbody>
+                
             </table>
             @error('accion')
                 <small class="text-danger fas fa-exclamation-circle">
@@ -275,6 +295,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/js/dropify.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 {{-- <script>
                     $(document).ready(function(){
                         $('#fecha_bateria').on('change', function(){

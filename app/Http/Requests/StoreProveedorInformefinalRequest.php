@@ -31,19 +31,20 @@ class StoreProveedorInformefinalRequest extends FormRequest
 {
     $rules = [
         'id',
-        'clienteitaid' => 'max:45',
-        'clienteitanombre' => 'max:45',
-        'clientecomunid' => 'max:45',
-        'clientecomunnombre' => 'max:45',
-        'clientebancoid' => 'max:45',
-        'clientebanconombre' => 'max:45',
-        'clienteauditoriaid' => 'max:45',
-        'clienteauditorianombre' => 'max:45',
+        'clienteitaid' => '',
+        'clienteitanombre' => '',
+        'clientecomunid' => '',
+        'clientecomunnombre' => '',
+        'clientebancoid' => '',
+        'clientebanconombre' => '',
+        'clienteauditoriaid' => '',
+        'clienteauditorianombre' => '',
         'fechabateria' => '',
-        'proveedorasignado' => 'required|max:45',
-        'celularproveedor' => 'required|max:45',
+        'proveedorasignado' => 'required',
+        'celularproveedor' => 'required',
         'usuarioid' => 'required',
-        'usuarioregistro' => 'max:45',
+        'usuarioregistro' => '',
+        'pagoinforme' => '',
         
     ]; 
     return $rules;

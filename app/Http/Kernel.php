@@ -66,3 +66,4 @@ class Kernel extends HttpKernel
         'check.session' => \App\Http\Middleware\CheckUserSession::class,
     ];
 }
+

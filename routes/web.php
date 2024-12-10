@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\CajaController;
 use App\Http\Controllers\Admin\TramitesController;
 use App\Http\Controllers\Admin\OrdenVentaController;
 use App\Http\Controllers\Admin\ServiciosrequisitosController;
+use App\Http\Controllers\Admin\SoporteController;
 use App\Http\Controllers\TemporalController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\PaginawebController;
@@ -63,9 +64,7 @@ Route::resource('mensajes', MensajeController::class)->middleware('can:admin.men
 Route::resource('instructivaspoder', InstructivaPoderController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.instructivaspoder');
 Route::resource('personal', PersonalController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.personal');
 Route::resource('informesfinales', InformeFinalController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.informesfinales');
-Route::resource('informesfinales', InformeFinalController::class)
-    ->middleware('auth') // Agregamos el middleware de autenticación
-    ->names('admin.informesfinales');
+Route::resource('informesfinales', InformeFinalController::class)->middleware('auth')->names('admin.informesfinales');
 
 Route::resource('tramites', TramitesController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.tramites');
 Route::resource('caja', CajaController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.caja');
@@ -83,6 +82,7 @@ Route::resource('ordenes/ordenesventa', OrdenVentaController::class)/* ->middlew
     Route::get('/buscar-usuario', [ControlProgController::class, 'buscarPorUsuario'])->name('admin.controlprogramacion.buscarPorUsuario');
 
     Route::post('/confirmar-pagos', [AdministrarProgramacionController::class, 'confirmarPagos'])->name('confirmar-pagos');
+    Route::post('/confirmar-pagos-informefinal', [AdministrarProgramacionController::class, 'confirmarPagosInformesfinales'])->name('confirmar-pagos-informefinal');
 
 //
 
@@ -387,7 +387,8 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
         Route::post('/generar-pdf-guardardocumentoconsentimientoauditoria', [AsociadoController::class, 'generarPDFguardarconsentimientoauditoria'])->name('guardar.pdf.consentimientoauditoria');
         Route::post('/generar-pdf-conocinforauditoria', [AsociadoController::class, 'generarPDFconsentimientoinformadoauditoria'])->name('generar.pdf.consentimientoinformadoauditoria');
         Route::post('/aprobariniciarcrearbateriaauditoria', [AsociadoController::class, 'aprobariniciarcrearbateriaauditoria'])->name('aprobariniciarcrearbateriaauditoria');
-
+    //PROVEEDOR INFORME FINAL
+        Route::post('asociados/guardarproveedorinformefinalauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardarproveedorinformefinalauditoria')->name('admin.asociados.guardarproveedorinformefinalauditoria');
 //
 
 //CLIENTES BANCOS
@@ -503,6 +504,14 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
 //GENERAR CÓDIGOS
     Route::get('codigo/asignacion', [CodigoController::class, 'index'])->name('admin.codigo.index');
     Route::post('codigo', [CodigoController::class, 'store'])->name('admin.codigo.store');
+//
+
+//SOPORTE TÉCNICO
+Route::get('soporte/solicitud', [SoporteController::class, 'index'])->name('admin.soporte.index');
+Route::post('soporte', [SoporteController::class, 'store'])->name('admin.soporte.store');
+/* Route::get('soporte/historial', [SoporteController::class, 'historial'])->name('admin.soporte.historial'); */
+Route::get('soporte/revision', [SoporteController::class, 'review'])->name('admin.soporte.review');
+Route::post('soporte/atender/{id}', [SoporteController::class, 'atender'])->name('admin.soporte.atender');
 //
 
 Route::get('/print', [ClienteController::class, 'print'])->name('admin.clientes.print');

@@ -14,22 +14,23 @@ class ProveedorInformefinal extends Model
     protected $table = 'proveedorinformesfinales';
     static $rules = [
         'id',
-        'clienteitaid' => 'max:45',
-        'clienteitanombre' => 'max:45',
-        'clientecomunid' => 'max:45',
-        'clientecomunnombre' => 'max:45',
-        'clientebancoid' => 'max:45',
-        'clientebanconombre' => 'max:45',
-        'clienteauditoriaid' => 'max:45',
-        'clienteauditorianombre' => 'max:45',
+        'clienteitaid' => '',
+        'clienteitanombre' => '',
+        'clientecomunid' => '',
+        'clientecomunnombre' => '',
+        'clientebancoid' => '',
+        'clientebanconombre' => '',
+        'clienteauditoriaid' => '',
+        'clienteauditorianombre' => '',
         'fechabateria' => '',
-        'proveedorasignado' => 'required|max:45',
-        'celularproveedor' => 'required|max:45',
+        'proveedorasignado' => 'required',
+        'celularproveedor' => 'required',
         'usuarioid' => 'required',
-        'usuarioregistro' => 'max:45',
+        'usuarioregistro' => '',
         'precio' => 'required',
         'preciocompra' => 'required',
         'servicio' => 'required',
+        'pagoinforme' => '',
     ]; 
 
     protected $fillable = [
@@ -50,6 +51,7 @@ class ProveedorInformefinal extends Model
         'precio',
         'preciocompra',
         'servicio',
+        'pagoinforme',
     ];
     /* public function programacionSubcliente()
     {

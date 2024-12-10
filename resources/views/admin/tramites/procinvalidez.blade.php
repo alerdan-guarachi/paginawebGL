@@ -120,8 +120,9 @@
                 })
                 ->first();
 
-                $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE PODER')
+                $documento3 = $cliente->tramites()->where('subprocedimiento', 'FIRMA EAP')
                 ->where('tramite', 'INVALIDEZ')
+                ->where('estadocomunicado', 'COMUNICADO')
                 ->where(function ($query) {
                     $query->whereNotNull('capturacomunicacion')
                         ->where(function ($subQuery) {
@@ -151,11 +152,12 @@
 
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
-            {{-- 1.- INICIO DE TRÁMITE --}}
+            {{-- INICIO DE TRÁMITE / ESTRUCTURA DE VISTA--}}
             <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
                 @if($tramiteinicio)
                     <div class="row">
-                        <div class="col-12 col-md-6 mb-3">
+                        {{-- INGRESO DE TRAMITE --}}
+                        <div class="col-12 col-md-4 mb-3">
                             <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalIngresoTramite">
                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                     <i class="fas fa-folder-plus fa-5x mb-2"></i>
@@ -180,11 +182,41 @@
                             </div>
                         </div>
 
+                        {{-- NOTIFICACION DEL PODER --}}
+                        @php
+                            $documento1 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('subprocedimiento', 'RECEPCION DE TRÁMITE')->where('estadocomunicado', 'COMUNICADO')->first();
+                            $documento2 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('subprocedimiento', 'INCLUSION DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
+                        @endphp
+                        <div class="col-12 col-md-4 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalNotificacionPoder" @if (!$documento1 && !$documento2) disabled @endif>
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-envelope-open-text fa-5x mb-2"></i>
+                                    <span class="h6 mb-0">NOTIFICACIÓN DEL PODER</span>
+                                </div>
+                            </button>
+                            <br>
+                            @php
+                                $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
+                            @endphp
+                            <div class="text-center">
+                                @if (!$documento3)
+                                    <span class="mb-0 checkamarillo">
+                                        <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
+                                    </span>
+                                @else
+                                    <span class="mb-0 checkverde">
+                                        <i class="fas fa-check-circle"></i> COMPLETO
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- FIRMA EAP --}}
                         @php
                             $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
                         @endphp
-                        <div class="col-12 col-md-6 mb-3">
-                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalFirmaEAP" @if (!$documento1) disabled @endif>
+                        <div class="col-12 col-md-4 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalFirmaEAP" @if (!$documento3) disabled @endif>
                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                     <i class="fas fa-signature fa-5x mb-2"></i>
                                     <span class="h6 mb-0">FIRMA EAP</span>
@@ -224,6 +256,7 @@
 
                 @if($tramitecontinuidad)
                     <div class="row">
+                        {{-- INGRESO DE TRAMITE --}}
                         <div class="col-12 col-md-6 mb-3">
                             <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalIngresoTramite">
                                 <div class="d-flex flex-column align-items-center justify-content-center">
@@ -248,6 +281,37 @@
                                 @endif
                             </div>
                         </div>
+
+                        {{-- NOTIFICACION DEL PODER --}}
+                        @php
+                            $documento1 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('subprocedimiento', 'RECEPCION DE TRÁMITE')->where('estadocomunicado', 'COMUNICADO')->first();
+                            $documento2 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('subprocedimiento', 'INCLUSION DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
+                        @endphp
+                        <div class="col-12 col-md-4 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalNotificacionPoder" @if (!$documento1 || !$documento2) disabled @endif>
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fas fa-envelope-open-text fa-5x mb-2"></i>
+                                    <span class="h6 mb-0">NOTIFICACIÓN DEL PODER</span>
+                                </div>
+                            </button>
+                            <br>
+                            @php
+                                $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
+                            @endphp
+                            <div class="text-center">
+                                @if (!$documento3)
+                                    <span class="mb-0 checkamarillo">
+                                        <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
+                                    </span>
+                                @else
+                                    <span class="mb-0 checkverde">
+                                        <i class="fas fa-check-circle"></i> COMPLETO
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+
+                        {{-- FIRMA EAP --}}
                         <div class="col-12 col-md-6 mb-3">
                             <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalNotificacionPoder" @if (!$documento1 && !$documento2) disabled @endif>
                                 <div class="d-flex flex-column align-items-center justify-content-center">
@@ -274,7 +338,7 @@
                     </div>
                 @endif
             </div>
-                <!-- Modal Ingreso de Trámite -->
+                <!-- MODAL INGRESO DE TRÁMITE -->
                 <div class="modal fade" id="modalIngresoTramite" tabindex="-1" role="dialog" aria-labelledby="modalIngresoTramiteLabel" aria-hidden="true">
                     <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
@@ -305,6 +369,9 @@
                                                 <strong>DOCUMENTO</strong>
                                             </div>
                                         </div>
+                                        @php
+                                            $documento1 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('subprocedimiento', 'RECEPCION DE TRÁMITE')->where('estadocomunicado', 'COMUNICADO')->first();
+                                        @endphp
                                         @if($tramiteinicio)
                                             <div class="row mb-3 align-items-center {{ !$documento1 ? 'no-documento' : '' }}">
                                                 <div class="col-md-4 text-center">
@@ -364,7 +431,7 @@
                                         @endif
                                     </div>
                                     @if (!$documento1 && !$documento2)
-                                        <button type="submit" class="btn btn-subirarchivos d-block mx-auto mt-3" style="width: 200px;">SUBIR ARCHIVOS</button>
+                                        <button type="submit" class="btn btn-subirarchivos d-block mx-auto mt-3" style="width: 180px;">SUBIR ARCHIVOS</button>
                                     @endif
                                 </form>
                             </div>
@@ -402,66 +469,187 @@
                                             </div>
                                         </div>
 
-                                        @php
-                                        $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('tramite', 'INVALIDEZ')->first();
-                                        @endphp
-                                        <div class="row mb-3 align-items-center {{ !$documento3 ? 'no-documento' : '' }}">
-                                            <div class="col-md-4 text-center">
-                                                <p class="mb-0">VALIDACIÓN DE PODER</p>
-                                                <input type="text" class="form-control" id="tramite1" name="tramite[]" value="INVALIDEZ" hidden>
-                                                <input type="text" class="form-control" id="nivelprocedimiento1" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
-                                                <input type="text" class="form-control" id="subprocedimiento1" name="subprocedimiento[]" value="VALIDACIÓN DE PODER" hidden>
-                                            </div>
-                                            <div class="col-md-4 text-center">
-                                                @if ($documento3)
-                                                    <p class="mb-0">{{ $documento3->fechasubida }}</p>
-                                                @else
-                                                    <input type="date" class="form-control" id="fechasubida1" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
-                                                @endif
-                                            </div>
-                                            <div class="col-md-4 text-center">
-                                                @if ($documento3)
-                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento3->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
-                                                @else
-                                                    <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block" accept="application/pdf">
-                                                @endif
-                                            </div>
-                                        </div>
-
                                         <!-- RECHAZO DE PODER -->
                                         @php
-                                        $documento4 = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE PODER')->where('tramite', 'INVALIDEZ')->first();
+                                            $documento4 = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE PODER')->where('tramite', 'INVALIDEZ')->first();
+                                            $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('tramite', 'INVALIDEZ')->first();
+                                            $correccionpoder = $cliente->tramites()->where('subprocedimiento', 'CORRECCIÓN DE PODER')->where('tramite', 'INVALIDEZ')->first();
                                         @endphp
                                         @if (!$documento3 || $documento4 && (!$documento4 || $documento4))
                                         <div class="row mb-3 align-items-center {{ !$documento4 ? 'no-documento' : '' }}">
                                             <div class="col-md-4 text-center">
                                                 <p class="mb-0">RECHAZO DE PODER</p>
-                                                <input type="text" class="form-control" id="tramite2" name="tramite[]" value="INVALIDEZ" hidden>
-                                                <input type="text" class="form-control" id="nivelprocedimiento2" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
-                                                <input type="text" class="form-control" id="subprocedimiento2" name="subprocedimiento[]" value="RECHAZO DE PODER" hidden>
+                                                @if (!$documento4)
+                                                    <input type="text" class="form-control" id="tramite1" name="tramite[]" value="INVALIDEZ" hidden>
+                                                    <input type="text" class="form-control" id="nivelprocedimiento1" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
+                                                    <input type="text" class="form-control" id="subprocedimiento1" name="subprocedimiento[]" value="RECHAZO DE PODER" hidden>
+                                                @endif
                                             </div>
                                             <div class="col-md-4 text-center">
                                                 @if ($documento4)
                                                     <p class="mb-0">{{ $documento4->fechasubida }}</p>
                                                 @else
-                                                    <input type="date" class="form-control" id="fechasubida2" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                    <input type="date" class="form-control" id="fechasubida1" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
                                                 @endif
                                             </div>
                                             <div class="col-md-4 text-center">
                                                 @if ($documento4)
                                                     <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento4->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
                                                 @else
+                                                    <input type="file" name="archivo[]" id="archivo1" class="dropify mx-auto d-block" accept="application/pdf">
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @endif
+
+                                        <!-- CORRECCIÓN DE PODER -->
+                                        @if ($documento4)
+                                        <div class="row mb-3 align-items-center {{ !$correccionpoder ? 'no-documento' : '' }}">
+                                            <div class="col-md-4 text-center">
+                                                <p class="mb-0">CORRECCIÓN DE PODER</p>
+                                                @if (!$correccionpoder)
+                                                <input type="text" class="form-control" id="tramite2" name="tramite[]" value="INVALIDEZ" hidden>
+                                                <input type="text" class="form-control" id="nivelprocedimiento2" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
+                                                <input type="text" class="form-control" id="subprocedimiento2" name="subprocedimiento[]" value="CORRECCIÓN DE PODER" hidden>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($correccionpoder)
+                                                    <p class="mb-0">{{ $correccionpoder->fechasubida }}</p>
+                                                @else
+                                                    <input type="date" class="form-control" id="fechasubida2" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($correccionpoder)
+                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$correccionpoder->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                @else
                                                     <input type="file" name="archivo[]" id="archivo2" class="dropify mx-auto d-block" accept="application/pdf">
                                                 @endif
                                             </div>
                                         </div>
                                         @endif
+
+                                        {{-- VALIDACIÓN DE PODER --}}
+                                        @if (!$documento4 || $correccionpoder)
+                                        <div class="row mb-3 align-items-center {{ !$documento3 ? 'no-documento' : '' }}">
+                                            <div class="col-md-4 text-center">
+                                                <p class="mb-0">VALIDACIÓN DE PODER</p>
+                                                @if (!$documento3)
+                                                <input type="text" class="form-control" id="tramite3" name="tramite[]" value="INVALIDEZ" hidden>
+                                                <input type="text" class="form-control" id="nivelprocedimiento3" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
+                                                <input type="text" class="form-control" id="subprocedimiento3" name="subprocedimiento[]" value="VALIDACIÓN DE PODER" hidden>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($documento3)
+                                                    <p class="mb-0">{{ $documento3->fechasubida }}</p>
+                                                @else
+                                                    <input type="date" class="form-control" id="fechasubida3" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($documento3)
+                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$documento3->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                @else
+                                                    <input type="file" name="archivo[]" id="archivo3" class="dropify mx-auto d-block" accept="application/pdf">
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @endif
+
+
+
+                                        <!-- RECHAZO DE DOCUMENTOS EXTRANJEROS -->
+                                        @php
+                                            $rechazodocext = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE DOCUMENTOS EXTRANJEROS')->where('tramite', 'INVALIDEZ')->first();
+                                            $validaciondocext = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE DOCUMENTOS EXTRANJEROS')->where('tramite', 'INVALIDEZ')->first();
+                                            $correcciondocext = $cliente->tramites()->where('subprocedimiento', 'CORRECCIÓN DE DOCUMENTOS EXTRANJEROS')->where('tramite', 'INVALIDEZ')->first();
+                                        @endphp
+                                        @if (!$validaciondocext || $rechazodocext && (!$rechazodocext || $rechazodocext))
+                                        <div class="row mb-3 align-items-center {{ !$rechazodocext ? 'no-documento' : '' }}">
+                                            <div class="col-md-4 text-center">
+                                                <p class="mb-0">RECHAZO DE DOC. EXTRANJEROS</p>
+                                                @if (!$rechazodocext)
+                                                    <input type="text" class="form-control" id="tramite4" name="tramite[]" value="INVALIDEZ" hidden>
+                                                    <input type="text" class="form-control" id="nivelprocedimiento4" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
+                                                    <input type="text" class="form-control" id="subprocedimiento4" name="subprocedimiento[]" value="RECHAZO DE DOCUMENTOS EXTRANJEROS" hidden>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($rechazodocext)
+                                                    <p class="mb-0">{{ $rechazodocext->fechasubida }}</p>
+                                                @else
+                                                    <input type="date" class="form-control" id="fechasubida4" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($rechazodocext)
+                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$rechazodocext->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                @else
+                                                    <input type="file" name="archivo[]" id="archivo4" class="dropify mx-auto d-block" accept="application/pdf">
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @endif
+
+                                        <!-- CORRECCIÓN DE DOCUMENTOS EXTRANJEROS -->
+                                        @if ($rechazodocext)
+                                        <div class="row mb-3 align-items-center {{ !$correcciondocext ? 'no-documento' : '' }}">
+                                            <div class="col-md-4 text-center">
+                                                <p class="mb-0">CORRECCIÓN DE DOC. EXTRANJEROS</p>
+                                                @if (!$correcciondocext)
+                                                <input type="text" class="form-control" id="tramite5" name="tramite[]" value="INVALIDEZ" hidden>
+                                                <input type="text" class="form-control" id="nivelprocedimiento5" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
+                                                <input type="text" class="form-control" id="subprocedimiento5" name="subprocedimiento[]" value="CORRECCIÓN DE DOCUMENTOS EXTRANJEROS" hidden>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($correcciondocext)
+                                                    <p class="mb-0">{{ $correcciondocext->fechasubida }}</p>
+                                                @else
+                                                    <input type="date" class="form-control" id="fechasubida5" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($correcciondocext)
+                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$correcciondocext->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                @else
+                                                    <input type="file" name="archivo[]" id="archivo5" class="dropify mx-auto d-block" accept="application/pdf">
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @endif
+
+                                        {{-- VALIDACIÓN DE PODER --}}
+                                        @if (!$rechazodocext || $correcciondocext)
+                                        <div class="row mb-3 align-items-center {{ !$validaciondocext ? 'no-documento' : '' }}">
+                                            <div class="col-md-4 text-center">
+                                                <p class="mb-0">VALIDACIÓN DE DOC. EXTRANJEROS</p>
+                                                @if (!$validaciondocext)
+                                                <input type="text" class="form-control" id="tramite6" name="tramite[]" value="INVALIDEZ" hidden>
+                                                <input type="text" class="form-control" id="nivelprocedimiento6" name="nivelprocedimiento[]" value="NOTIFICACIÓN DE PODER" hidden>
+                                                <input type="text" class="form-control" id="subprocedimiento6" name="subprocedimiento[]" value="VALIDACIÓN DE DOCUMENTOS EXTRANJEROS" hidden>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($validaciondocext)
+                                                    <p class="mb-0">{{ $validaciondocext->fechasubida }}</p>
+                                                @else
+                                                    <input type="date" class="form-control" id="fechasubida6" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
+                                                @endif
+                                            </div>
+                                            <div class="col-md-4 text-center">
+                                                @if ($validaciondocext)
+                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$validaciondocext->document}") }}" class="btn btn-verdocumento" target="_blank" style="width: 150px;">Ver Doc.</a>
+                                                @else
+                                                    <input type="file" name="archivo[]" id="archivo6" class="dropify mx-auto d-block" accept="application/pdf">
+                                                @endif
+                                            </div>
+                                        </div>
+                                        @endif
                                     </div>
-                                    @php
-                                        $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACION DE PODER')->where('tramite', 'INVALIDEZ')->first();
-                                        $documento4 = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE PODER')->where('tramite', 'INVALIDEZ')->first();
-                                    @endphp
-                                    @if (!$documento3)
+                                    @if (!$documento3 || !$validaciondocext)
                                         <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">SUBIR ARCHIVOS</button>
                                     @endif
                                 </form>
@@ -471,7 +659,7 @@
                 </div>
                 <!-- Modal Firma EAP -->
                 <div class="modal fade" id="modalFirmaEAP" tabindex="-1" role="dialog" aria-labelledby="modalFirmaEAPLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl" role="document">
+                    <div class="modal-dialog modal-lg" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">FIRMA EAP</h5>

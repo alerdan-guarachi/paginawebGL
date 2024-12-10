@@ -329,12 +329,12 @@ return [
                     'icon' => 'fas fa-arrow-circle-down',
                     'can'  => 'admin.caja.index',
                 ],
-                /* [
+                [
                     'text' => 'Egresos',
                     'route'  => 'admin.caja.index',
                     'icon' => 'fas fa-arrow-circle-up',
                     'can'  => 'admin.caja.index',
-                ], */
+                ],
             ],
         ],
         [
@@ -346,7 +346,7 @@ return [
                     'text' => 'Programaciones',
                     'route'  => 'admin.admprogramaciones.index',
                     'icon' => 'fas fa-fw fas fa-calendar-check',
-                    'can'  => 'admin.admprogramaciones.index',
+                    'can'  => 'admin.admprogramaciones.programacionesdiarias',
                 ],
                 [
                     'text' => 'Gestión de Registros',
@@ -371,7 +371,7 @@ return [
                     'text' => 'Pagos de programaciones',
                     'route'  => 'admin.admprogramaciones.pagosprogramaciones',
                     'icon' => 'fas fa-fw fas fa-calendar-check',
-                    'can'  => 'admin.admprogramaciones.create',
+                    'can'  => 'admin.admprogramaciones.pagosprogramaciones',
                 ],
                 /* [
                     'text' => 'Doc. Activa',
@@ -389,7 +389,7 @@ return [
                     'text' => 'Registros generales',
                     'route'  => 'admin.controlprogramacion.index',
                     'icon' => 'fas fa-fw fas fa-chart-bar',
-                    'can'  => 'admin.admprogramaciones.create',
+                    'can'  => 'admin.admprogramaciones.graficosregistrosgenerales',
                 ],
                 
             ],
@@ -577,6 +577,25 @@ return [
                     'icon' => 'fas fa-fw fas fa-file',
                 ],
 
+            ],
+        ],
+        [
+            'text' => 'Soporte Técnico',
+            'icon' => 'fas fa-tools',
+            'can'  => 'admin.soporte.index',
+            'submenu' => [
+                [
+                    'text' => 'Registro Solicitudes',
+                    'route'  => 'admin.soporte.index',
+                    'icon' => 'fas fa-tasks',
+                    'can'  => 'admin.soporte.index',
+                ],
+                [
+                    'text' => 'Revisión Solicitudes',
+                    'route'  => 'admin.soporte.review',
+                    'icon' => 'fas fa-check-circle',
+                    'can'  => 'admin.soporte.review',
+                ],
             ],
         ],
         

@@ -106,7 +106,6 @@ class InformeFinalController extends Controller
     
         return view('admin.informesfinales.documentosprogramaciones', compact('programacionclientes'));
     }
-
     public function index(Cliente $cliente, Request $request)
     {
         $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
@@ -369,7 +368,6 @@ class InformeFinalController extends Controller
 
         return view('admin.informesfinales.index', compact('docobservadosCount','esProveedor','usuarioAutenticado','asignarCount','aprobarbateriaCount','subirinformeCount','subirinformeCount2','enrevisionCount','enrevisionCount2','solicitorevisionCount','solicitorevisionCount2','aprobadosCount','aprobadosCount2','proveedores','result', 'cliente', 'fechas', 'aprobaciones'));
     }
-
     public function updateObservacion(Request $request)
     {
         $validated = $request->validate([
@@ -388,7 +386,6 @@ class InformeFinalController extends Controller
         }
         return redirect()->back()->with('info', 'Observación actualizada con éxito.');
     }
-
     public function updateDocument(Request $request, $id)
     {
         // Encontrar el registro en la base de datos
@@ -430,7 +427,6 @@ class InformeFinalController extends Controller
 
         return redirect()->back()->with('info', 'Documento actualizado exitosamente.');
     } 
-
     public function estadodocumentacionprogramacion(Cliente $cliente, Request $request)
     {
         $sucursal = $cliente->sucursal;
@@ -722,7 +718,6 @@ class InformeFinalController extends Controller
         
         return view('admin.informesfinales.estadodocumentacionprogramacion', compact('documentosCount','resultadosCount','userRole','estadoGeneral','abandonaronCount','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'cliente', 'fechas', 'aprobaciones'));
     }
-
     public function resultadosmedicosclientesauditoria(ClienteAuditoria $clienteauditoria, Request $request)
     {
         $estadoGeneralauditoria = 'NO REGISTRADO';
@@ -934,12 +929,10 @@ class InformeFinalController extends Controller
 
         return view('admin.informesfinales.resultadosmedicosclientesauditoria', compact('requisitosClientepolizas','estadoGeneralauditoria', 'documentosCount','resultadosCount','userRole','abandonaronCount','esProveedor','usuarioAutenticado','completosCount','incompletosCount','proveedores','result', 'clienteauditoria', 'fechas', 'aprobaciones'));
     }
-
     public function buscarresultadosmedicosclientesauditoria(ClienteAuditoria $clienteauditoria, Request $request)
     {
         return $this->resultadosmedicosclientesauditoria($clienteauditoria, $request);
     }
-
     public function resultadosmedicosclientesbancos(ClienteBanco $clientebanco, Request $request)
     {
         $sucursal = $clientebanco->sucursal;
@@ -1385,7 +1378,6 @@ class InformeFinalController extends Controller
     
         return redirect()->route('admin.informesfinales.consiliacionesclientesbanco')->with('info', 'Documento subido exitosamente.');
     } 
-
     public function generarordenventaclientebanco(ClienteBanco $clientebanco, Request $request) 
     {
         $clientebanconombre = $clientebanco->nombrecompleto;
@@ -1411,139 +1403,135 @@ class InformeFinalController extends Controller
         // Retornar la vista en lugar de descargar
         return $pdf->stream($pdfName); // Usamos stream() para mostrar el PDF en lugar de descargarlo
     }
+    public function solrevisioninformefinal(Request $request, Informefinal $informefinal)
+    {
+        // Validar los datos del formulario
+        $request->validate([
+            'observaciones' => 'required|string|max:255',
+        ]);
 
-public function solrevisioninformefinal(Request $request, Informefinal $informefinal)
-{
-    // Validar los datos del formulario
-    $request->validate([
-        'observaciones' => 'required|string|max:255',
-    ]);
+        // Obtener el informe final por su ID
+        $informeFinal = Informefinal::findOrFail($request->idinformefinal);
 
-    // Obtener el informe final por su ID
-    $informeFinal = Informefinal::findOrFail($request->idinformefinal);
+        // Asignar las observaciones al informe final
+        $informeFinal->observaciones = $request->observaciones;
+        $informeFinal->estado = 'SOLICITÓ REVISIÓN';
+        // Guardar los cambios en el informe final
+        $informeFinal->save();
 
-    // Asignar las observaciones al informe final
-    $informeFinal->observaciones = $request->observaciones;
-    $informeFinal->estado = 'SOLICITÓ REVISIÓN';
-    // Guardar los cambios en el informe final
-    $informeFinal->save();
+        // Eliminar el informe final
+        $informeFinal->delete();
 
-    // Eliminar el informe final
-    $informeFinal->delete();
+        // No elimines el informe final aquí si planeas usarlo después
+        // $informefinal->delete();
 
-    // No elimines el informe final aquí si planeas usarlo después
-    // $informefinal->delete();
+        // Redirigir a la ruta adecuada, ajusta según sea necesario
+        // Suponiendo que $informefinal->clienteitaid es el ID del cliente
+        $cliente = Cliente::find($informefinal->clienteitaid);
 
-    // Redirigir a la ruta adecuada, ajusta según sea necesario
-    // Suponiendo que $informefinal->clienteitaid es el ID del cliente
-    $cliente = Cliente::find($informefinal->clienteitaid);
-
-    return redirect()->route('admin.informesfinales.index', $informefinal)->with('info', 'Solicitud enviada exitosamente.');
-}
-public function aprobarinformefinalfs(Request $request, Informefinal $informefinal)
-{
-    $informeFinal = Informefinal::findOrFail($request->idinformefinal);
-    $informeFinal->estado = 'APROBADO';
-    $informeFinal->save();
-
-    $cliente = Cliente::find($informefinal->clienteitaid);
-
-    return redirect()->route('admin.informesfinales.index', $informefinal)->with('info', 'Informe aprobado exitosamente.');
-}
-
-public function guardaraprobacioninformefinal(Request $request, $id)
-{
-    $request->validate([
-        'cliente' => 'required|string',
-        'fechabateria' => 'required|date',
-        'estado' => 'required|string',
-        'proveedornombre' => 'required|string',
-        'cliente' => 'required|string',
-    ]);
-    $usuarioId = auth()->user()->id;
-    $usuarioRegistro = auth()->user()->name;
-
-    AprobacionInformeFinal::create([
-        'cliente' => $request->cliente,
-        'fechabateria' => $request->fechabateria,
-        'estado' => $request->estado,
-        'proveedorasignado' => $request->proveedornombre,
-        'clienteitaid' => $id,
-        'clienteitanombre' => $request->cliente,
-        'usuarioid' => $usuarioId,
-        'usuarioregistro' => $usuarioRegistro,
-    ]);
-
-    return redirect()->route('admin.informesfinales.index')->with('info', 'Aprobación guardada exitosamente.');
-}
-public function guardarproveedorinformefinal(StoreProveedorInformefinalRequest $request, $id)
-{
-    $request->validate([
-        'cliente' => 'required|string',
-        'fechabateria' => 'required|date',
-        'celularproveedor' => 'required|string',
-    ]);
-
-    $usuarioId = auth()->user()->id;
-    $usuarioRegistro = auth()->user()->name;
-
-    // Buscar el nombre del proveedor basado en el ID seleccionado
-    $proveedorAsignado = Proveedor::findOrFail($request->proveedorasignado)->proveedor;
-
-    // Crear el registro en ProveedorInformefinal utilizando el nombre del proveedor
-    ProveedorInformefinal::create([
-        'cliente' => $request->cliente,
-        'fechabateria' => $request->fechabateria,
-        'proveedorasignado' => $proveedorAsignado, // Guardar el nombre del proveedor en lugar del ID
-        'celularproveedor' => $request->celularproveedor,
-        'clienteitaid' => $id,
-        'clienteitanombre' => $request->cliente,
-        'usuarioid' => $usuarioId,
-        'usuarioregistro' => $usuarioRegistro,
-    ]);
-
-    return redirect()->route('admin.informesfinales.index')->with('info', 'Proveedor asignado exitosamente.');
-}
-
-public function guardarinformefinal(StoreInformefinalRequest $request, $id, Cliente $cliente)
-{
-    $clienteitaid = $cliente->id;
-    
-    $archivo_name = null;
-    if ($request->hasFile('document')) {
-        $file = $request->file('document');
-        
-        // Ruta de la carpeta del cliente
-        $carpetaCliente = public_path("/informesfinalesclientesita/{$clienteitaid}");
-        
-        // Crear la carpeta si no existe
-        if (!file_exists($carpetaCliente)) {
-            mkdir($carpetaCliente, 0755, true);
-        }
-        
-        // Nombre único para el archivo
-        $archivo_name = time() . '_' . $file->getClientOriginalName();
-        
-        // Mover el archivo a la carpeta del cliente
-        $file->move($carpetaCliente, $archivo_name);
+        return redirect()->route('admin.informesfinales.index', $informefinal)->with('info', 'Solicitud enviada exitosamente.');
     }
-    $usuarioId = auth()->user()->id;
-    $usuarioRegistro = auth()->user()->name;
+    public function aprobarinformefinalfs(Request $request, Informefinal $informefinal)
+    {
+        $informeFinal = Informefinal::findOrFail($request->idinformefinal);
+        $informeFinal->estado = 'APROBADO';
+        $informeFinal->save();
 
-        InformeFinal::create([
+        $cliente = Cliente::find($informefinal->clienteitaid);
+
+        return redirect()->route('admin.informesfinales.index', $informefinal)->with('info', 'Informe aprobado exitosamente.');
+    }
+    public function guardaraprobacioninformefinal(Request $request, $id)
+    {
+        $request->validate([
+            'cliente' => 'required|string',
+            'fechabateria' => 'required|date',
+            'estado' => 'required|string',
+            'proveedornombre' => 'required|string',
+            'cliente' => 'required|string',
+        ]);
+        $usuarioId = auth()->user()->id;
+        $usuarioRegistro = auth()->user()->name;
+
+        AprobacionInformeFinal::create([
             'cliente' => $request->cliente,
             'fechabateria' => $request->fechabateria,
             'estado' => $request->estado,
+            'proveedorasignado' => $request->proveedornombre,
             'clienteitaid' => $id,
             'clienteitanombre' => $request->cliente,
-            'document' => $archivo_name,
             'usuarioid' => $usuarioId,
             'usuarioregistro' => $usuarioRegistro,
         ]);
 
-    return redirect()->route('admin.informesfinales.index')->with('info', 'Documento subido exitosamente.');
-} 
+        return redirect()->route('admin.informesfinales.index')->with('info', 'Aprobación guardada exitosamente.');
+    }
+    public function guardarproveedorinformefinal(StoreProveedorInformefinalRequest $request, $id)
+    {
+        $request->validate([
+            'cliente' => 'required|string',
+            'fechabateria' => 'required|date',
+            'celularproveedor' => 'required|string',
+        ]);
 
+        $usuarioId = auth()->user()->id;
+        $usuarioRegistro = auth()->user()->name;
+
+        // Buscar el nombre del proveedor basado en el ID seleccionado
+        $proveedorAsignado = Proveedor::findOrFail($request->proveedorasignado)->proveedor;
+
+        // Crear el registro en ProveedorInformefinal utilizando el nombre del proveedor
+        ProveedorInformefinal::create([
+            'cliente' => $request->cliente,
+            'fechabateria' => $request->fechabateria,
+            'proveedorasignado' => $proveedorAsignado, // Guardar el nombre del proveedor en lugar del ID
+            'celularproveedor' => $request->celularproveedor,
+            'clienteitaid' => $id,
+            'clienteitanombre' => $request->cliente,
+            'usuarioid' => $usuarioId,
+            'usuarioregistro' => $usuarioRegistro,
+        ]);
+
+        return redirect()->route('admin.informesfinales.index')->with('info', 'Proveedor asignado exitosamente.');
+    }
+    public function guardarinformefinal(StoreInformefinalRequest $request, $id, Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id;
+        
+        $archivo_name = null;
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            
+            // Ruta de la carpeta del cliente
+            $carpetaCliente = public_path("/informesfinalesclientesita/{$clienteitaid}");
+            
+            // Crear la carpeta si no existe
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+            
+            // Nombre único para el archivo
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            
+            // Mover el archivo a la carpeta del cliente
+            $file->move($carpetaCliente, $archivo_name);
+        }
+        $usuarioId = auth()->user()->id;
+        $usuarioRegistro = auth()->user()->name;
+
+            InformeFinal::create([
+                'cliente' => $request->cliente,
+                'fechabateria' => $request->fechabateria,
+                'estado' => $request->estado,
+                'clienteitaid' => $id,
+                'clienteitanombre' => $request->cliente,
+                'document' => $archivo_name,
+                'usuarioid' => $usuarioId,
+                'usuarioregistro' => $usuarioRegistro,
+            ]);
+
+        return redirect()->route('admin.informesfinales.index')->with('info', 'Documento subido exitosamente.');
+    } 
     /* public function reservasmedicas(Cliente $cliente, Request $request)
     {
 
@@ -1606,161 +1594,160 @@ public function guardarinformefinal(StoreInformefinalRequest $request, $id, Clie
 
         return view('admin.informesfinales.reservasmedicas', compact('rolusuario', 'reservasmedicas', 'cliente', 'atencionpendienteCount', 'informependienteCount', 'informecompletoCount'));
     } */
-
     public function reservasmedicas(Cliente $cliente, ClienteAuditoria $clienteauditoria, Request $request)
-{
+    {
+        $usuario = auth()->user();
+        $nombreusuario = auth()->user()->name;
+        $proveedores = Programacionsubcliente::select('proveedornombre')
+                        ->distinct()
+                        ->get();
 
-    $nombreusuario = auth()->user()->name;
-    $proveedores = Programacionsubcliente::select('proveedornombre')
-                    ->distinct()
-                    ->get();
+        $tienefichamedica = Fichamedicasubcliente::where('clienteid', $cliente->id)->exists();
+        $tienefichamedicaauditoria = Fichamedicasubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
 
-    $tienefichamedica = Fichamedicasubcliente::where('clienteid', $cliente->id)->exists();
-    $tienefichamedicaauditoria = Fichamedicasubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $query = Programacionsubcliente::with([
+            'requisitosubcliente', 
+            'bateriasubcliente', 
+            'estadoprogramacionsubcliente', 
+            'documentacionsubcliente', 
+            'proveedorinformesfinales', 
+            'informesfinales'
+        ])->whereNotNull('clienteitaid');
 
-    $query = Programacionsubcliente::with([
-        'requisitosubcliente', 
-        'bateriasubcliente', 
-        'estadoprogramacionsubcliente', 
-        'documentacionsubcliente', 
-        'proveedorinformesfinales', 
-        'informesfinales'
-    ])->whereNotNull('clienteitaid');
+        $query2 = Programacionsubcliente::with([
+            'requisitosubcliente', 
+            'bateriasubcliente', 
+            'estadoprogramacionsubcliente', 
+            'documentacionsubcliente', 
+            'proveedorinformesfinales', 
+            'informesfinales'
+        ])->whereNotNull('clienteauditoriaid');
+        
 
-    $query2 = Programacionsubcliente::with([
-        'requisitosubcliente', 
-        'bateriasubcliente', 
-        'estadoprogramacionsubcliente', 
-        'documentacionsubcliente', 
-        'proveedorinformesfinales', 
-        'informesfinales'
-    ])->whereNotNull('clienteauditoriaid');
-    
-
-    if ($request->has('proveedor') && $request->proveedor !== '') {
-        $query->where('proveedornombre', $request->proveedor);
-    }
-    $rolusuario = auth()->user()->getRoleNames()->first(); 
-    $usuarioautenticado = auth()->user()->name;
-
-    if ($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR') {
-        $reservasmedicas = $query->orderby('fechaasignada', 'desc')->get();
-    } elseif ($rolusuario === 'PROVEEDOR') {
-        $reservasmedicas = $query->where('proveedornombre', $usuarioautenticado)
-            ->orderby('fechaasignada', 'desc')
-            ->get();
-    } else {
-        $reservasmedicas = collect();
-    }
-
-
-    if ($request->has('proveedor') && $request->proveedor !== '') {
-        $query2->where('proveedornombre', $request->proveedor);
-    }
-    if ($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR') {
-        $reservasmedicasauditorias = $query2->orderby('fechaasignada', 'desc')->get();
-    } elseif ($rolusuario === 'PROVEEDOR') {
-        $reservasmedicasauditorias = $query2->where('proveedornombre', $usuarioautenticado)
-            ->orderby('fechaasignada', 'desc')
-            ->get();
-    } else {
-        $reservasmedicasauditorias = collect();
-    }
-
-
-    $atencionpendienteCount = 0;
-    $informependienteCount = 0;
-    $informecompletoCount = 0;
-
-    foreach ($reservasmedicas as $reservasmedica) {
-        $reservasmedica->informeDisponible = Estadoprogramacionsubcliente::where('clienteitaid', $reservasmedica->clienteitaid)
-            ->where('fechabateria', $reservasmedica->fechabateria)
-            ->where('accionnombre', $reservasmedica->accionnombre)
-            ->exists();
-
-        $reservasmedica->documentacionDisponible = Documentacionsubcliente::where('clienteitaid', $reservasmedica->clienteitaid)
-            ->where('fechabateria', $reservasmedica->fechabateria)
-            ->where('accion', $reservasmedica->accionnombre)
-            ->exists();
-
-        $documentacion = Documentacionsubcliente::where('clienteitaid', $reservasmedica->clienteitaid)
-            ->where('fechabateria', $reservasmedica->fechabateria)
-            ->where('accion', $reservasmedica->accionnombre)
-            ->first();
-
-        $reservasmedica->fichamedicaita = Fichamedicasubcliente::where('clienteid', $reservasmedica->clienteitaid)
-            ->where('detalle', 'FICHA MEDICA')
-            ->exists();
-        $fichaita = Fichamedicasubcliente::where('clienteid', $reservasmedica->clienteitaid)
-            ->where('detalle', 'FICHA MEDICA')
-            ->first();
-
-        $reservasmedica->documentacionDisponible = $documentacion ? $documentacion->document : null;
-        $reservasmedica->imagen1Disponible = $documentacion ? $documentacion->image : null;
-        $reservasmedica->imagen2Disponible = $documentacion ? $documentacion->image2 : null;
-        $reservasmedica->fechainforme = $documentacion ? $documentacion->created_at : null;
-        $reservasmedica->fichamedicaita = $fichaita ? $fichaita->document : null;
-
-        if (!$reservasmedica->documentacionDisponible && !$reservasmedica->informeDisponible) {
-            $atencionpendienteCount++;
+        if ($request->has('proveedor') && $request->proveedor !== '') {
+            $query->where('proveedornombre', $request->proveedor);
         }
-        if (!$reservasmedica->documentacionDisponible && $reservasmedica->informeDisponible) {
-            $informependienteCount++;
+        $rolusuario = auth()->user()->getRoleNames()->first(); 
+        $usuarioautenticado = auth()->user()->name;
+
+        if ($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR') {
+            $reservasmedicas = $query->orderby('fechaasignada', 'desc')->get();
+        } elseif ($rolusuario === 'PROVEEDOR') {
+            $reservasmedicas = $query->where('proveedornombre', $usuarioautenticado)
+                ->orderby('fechaasignada', 'desc')
+                ->get();
+        } else {
+            $reservasmedicas = collect();
         }
-        if ($reservasmedica->documentacionDisponible) {
-            $informecompletoCount++;
+
+
+        if ($request->has('proveedor') && $request->proveedor !== '') {
+            $query2->where('proveedornombre', $request->proveedor);
         }
+        if ($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR') {
+            $reservasmedicasauditorias = $query2->orderby('fechaasignada', 'desc')->get();
+        } elseif ($rolusuario === 'PROVEEDOR') {
+            $reservasmedicasauditorias = $query2->where('proveedornombre', $usuarioautenticado)
+                ->orderby('fechaasignada', 'desc')
+                ->get();
+        } else {
+            $reservasmedicasauditorias = collect();
+        }
+
+
+        $atencionpendienteCount = 0;
+        $informependienteCount = 0;
+        $informecompletoCount = 0;
+
+        foreach ($reservasmedicas as $reservasmedica) {
+            $reservasmedica->informeDisponible = Estadoprogramacionsubcliente::where('clienteitaid', $reservasmedica->clienteitaid)
+                ->where('fechabateria', $reservasmedica->fechabateria)
+                ->where('accionnombre', $reservasmedica->accionnombre)
+                ->exists();
+
+            $reservasmedica->documentacionDisponible = Documentacionsubcliente::where('clienteitaid', $reservasmedica->clienteitaid)
+                ->where('fechabateria', $reservasmedica->fechabateria)
+                ->where('accion', $reservasmedica->accionnombre)
+                ->exists();
+
+            $documentacion = Documentacionsubcliente::where('clienteitaid', $reservasmedica->clienteitaid)
+                ->where('fechabateria', $reservasmedica->fechabateria)
+                ->where('accion', $reservasmedica->accionnombre)
+                ->first();
+
+            $reservasmedica->fichamedicaita = Fichamedicasubcliente::where('clienteid', $reservasmedica->clienteitaid)
+                ->where('detalle', 'FICHA MEDICA')
+                ->exists();
+            $fichaita = Fichamedicasubcliente::where('clienteid', $reservasmedica->clienteitaid)
+                ->where('detalle', 'FICHA MEDICA')
+                ->first();
+
+            $reservasmedica->documentacionDisponible = $documentacion ? $documentacion->document : null;
+            $reservasmedica->imagen1Disponible = $documentacion ? $documentacion->image : null;
+            $reservasmedica->imagen2Disponible = $documentacion ? $documentacion->image2 : null;
+            $reservasmedica->fechainforme = $documentacion ? $documentacion->created_at : null;
+            $reservasmedica->fichamedicaita = $fichaita ? $fichaita->document : null;
+
+            if (!$reservasmedica->documentacionDisponible && !$reservasmedica->informeDisponible) {
+                $atencionpendienteCount++;
+            }
+            if (!$reservasmedica->documentacionDisponible && $reservasmedica->informeDisponible) {
+                $informependienteCount++;
+            }
+            if ($reservasmedica->documentacionDisponible) {
+                $informecompletoCount++;
+            }
+        }
+
+        $atencionpendienteauditoriaCount = 0;
+        $informependienteauditoriaCount = 0;
+        $informecompletoauditoriaCount = 0;
+
+        foreach ($reservasmedicasauditorias as $reservasmedicaauditoria) {
+            $reservasmedicaauditoria->informeDisponibleauditoria = Estadoprogramacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
+                ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
+                ->where('accionnombre', $reservasmedicaauditoria->accionnombre)
+                ->exists();
+
+            $reservasmedicaauditoria->documentacionDisponibleauditoria = Documentacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
+                ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
+                ->where('accion', $reservasmedicaauditoria->accionnombre)
+                ->exists();
+
+            $documentacionauditoria = Documentacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
+                ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
+                ->where('accion', $reservasmedicaauditoria->accionnombre)
+                ->first();
+
+            $reservasmedicaauditoria->fichamedicaauditoria = Fichamedicasubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
+                ->where('detalle', 'FICHA MEDICA')
+                ->exists();
+            $fichaauditoria = Fichamedicasubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
+                ->where('detalle', 'FICHA MEDICA')
+                ->first();
+
+            $reservasmedicaauditoria->documentacionDisponibleauditoria = $documentacionauditoria ? $documentacionauditoria->document : null;
+            $reservasmedicaauditoria->imagen1Disponibleauditoria = $documentacionauditoria ? $documentacionauditoria->image : null;
+            $reservasmedicaauditoria->imagen2Disponibleauditoria = $documentacionauditoria ? $documentacionauditoria->image2 : null;
+            $reservasmedicaauditoria->fechainformeauditoria = $documentacionauditoria ? $documentacionauditoria->created_at : null;
+            $reservasmedicaauditoria->fichamedicaauditoria = $fichaauditoria ? $fichaauditoria->document : null;
+
+            if (!$reservasmedicaauditoria->documentacionDisponibleauditoria && !$reservasmedicaauditoria->informeDisponibleauditoria) {
+                $atencionpendienteauditoriaCount++;
+            }
+            if (!$reservasmedicaauditoria->documentacionDisponibleauditoria && $reservasmedicaauditoria->informeDisponibleauditoria) {
+                $informependienteauditoriaCount++;
+            }
+            if ($reservasmedicaauditoria->documentacionDisponibleauditoria) {
+                $informecompletoauditoriaCount++;
+            }
+        }
+
+        return view('admin.informesfinales.reservasmedicas', compact('usuario','nombreusuario','tienefichamedicaauditoria','tienefichamedica','reservasmedicasauditorias','proveedores', 'rolusuario', 'reservasmedicas', 'cliente', 'atencionpendienteCount', 'informependienteCount', 'informecompletoCount', 'atencionpendienteauditoriaCount', 'informependienteauditoriaCount', 'informecompletoauditoriaCount'));
     }
 
-    $atencionpendienteauditoriaCount = 0;
-    $informependienteauditoriaCount = 0;
-    $informecompletoauditoriaCount = 0;
 
-    foreach ($reservasmedicasauditorias as $reservasmedicaauditoria) {
-        $reservasmedicaauditoria->informeDisponibleauditoria = Estadoprogramacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
-            ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
-            ->where('accionnombre', $reservasmedicaauditoria->accionnombre)
-            ->exists();
-
-        $reservasmedicaauditoria->documentacionDisponibleauditoria = Documentacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
-            ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
-            ->where('accion', $reservasmedicaauditoria->accionnombre)
-            ->exists();
-
-        $documentacionauditoria = Documentacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
-            ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
-            ->where('accion', $reservasmedicaauditoria->accionnombre)
-            ->first();
-
-        $reservasmedicaauditoria->fichamedicaauditoria = Fichamedicasubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
-            ->where('detalle', 'FICHA MEDICA')
-            ->exists();
-        $fichaauditoria = Fichamedicasubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
-            ->where('detalle', 'FICHA MEDICA')
-            ->first();
-
-        $reservasmedicaauditoria->documentacionDisponibleauditoria = $documentacionauditoria ? $documentacionauditoria->document : null;
-        $reservasmedicaauditoria->imagen1Disponibleauditoria = $documentacionauditoria ? $documentacionauditoria->image : null;
-        $reservasmedicaauditoria->imagen2Disponibleauditoria = $documentacionauditoria ? $documentacionauditoria->image2 : null;
-        $reservasmedicaauditoria->fechainformeauditoria = $documentacionauditoria ? $documentacionauditoria->created_at : null;
-        $reservasmedicaauditoria->fichamedicaauditoria = $fichaauditoria ? $fichaauditoria->document : null;
-
-        if (!$reservasmedicaauditoria->documentacionDisponibleauditoria && !$reservasmedicaauditoria->informeDisponibleauditoria) {
-            $atencionpendienteauditoriaCount++;
-        }
-        if (!$reservasmedicaauditoria->documentacionDisponibleauditoria && $reservasmedicaauditoria->informeDisponibleauditoria) {
-            $informependienteauditoriaCount++;
-        }
-        if ($reservasmedicaauditoria->documentacionDisponibleauditoria) {
-            $informecompletoauditoriaCount++;
-        }
-    }
-
-    return view('admin.informesfinales.reservasmedicas', compact('nombreusuario','tienefichamedicaauditoria','tienefichamedica','reservasmedicasauditorias','proveedores', 'rolusuario', 'reservasmedicas', 'cliente', 'atencionpendienteCount', 'informependienteCount', 'informecompletoCount', 'atencionpendienteauditoriaCount', 'informependienteauditoriaCount', 'informecompletoauditoriaCount'));
-}
-
-
-/* public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
+    /* public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
     {
         $archivo_name = null;
         if ($request->hasFile('archivo')) {
@@ -1818,63 +1805,89 @@ public function guardarinformefinal(StoreInformefinalRequest $request, $id, Clie
         return redirect()->route('admin.informesfinales.guardardocumentacionclienteita', $request->cliente)->with('info', 'El documento se subió con éxito');
     } */
 
-    public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
-{
-    $archivo_name = null;
-    if ($request->hasFile('archivo')) {
-        $file = $request->file('archivo');
-        
-        // Subir el archivo de imagen del cliente
-        $carpetaCliente = public_path("/documentacionclientesita/{$cliente->id}");
-        if (!file_exists($carpetaCliente)) {
-            mkdir($carpetaCliente, 0755, true);
+    /* public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
+    {
+        $archivo_name = null;
+        if ($request->hasFile('archivo')) {
+            $file = $request->file('archivo');
+            
+            // Subir el archivo de imagen del cliente
+            $carpetaCliente = public_path("/documentacionclientesita/{$cliente->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+
+            // Obtener el nombre del archivo
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+
+            // Convertir el archivo a PDF si es necesario
+            $this->agregarFirmaYSelloPDF($carpetaCliente, $archivo_name, $request);
         }
 
-        // Obtener el nombre del archivo
-        $archivo_name = time() . '_' . $file->getClientOriginalName();
-        $file->move($carpetaCliente, $archivo_name);
-
-        // Convertir el archivo a PDF si es necesario
-        $this->agregarFirmaYSelloPDF($carpetaCliente, $archivo_name, $request);
-    }
-
-    // Lo demás del código sigue igual...
-    return redirect()->route('admin.informesfinales.guardardocumentacionclienteita', $request->cliente)->with('info', 'El documento se subió con éxito');
-}
-
-private function agregarFirmaYSelloPDF($carpetaCliente, $archivo_name, $request)
-{
-    // Obtener el proveedor asociado con el usuario autenticado
-    $proveedor = Proveedor::where('proveedor', auth()->user()->name)->first();
-
-    if ($proveedor) {
-        // Cargar las imágenes de firma y sello
-        $firma_path = public_path("/proveedores/{$proveedor->id}/{$proveedor->firmadigital}");
-        $sello_path = public_path("/proveedores/{$proveedor->id}/{$proveedor->selldigital}");
-
-        // Usar FPDF para crear el PDF
-        $pdf = new FPDF();
-        $pdf->AddPage();
-        
-        // Definir las posiciones en la parte superior derecha de la página
-        $pdf->SetXY(160, 10); // Ajustar las coordenadas según se necesite
-        $pdf->Image($firma_path, 160, 10, 30); // Firma
-
-        $pdf->SetXY(160, 30); // Ajustar las coordenadas para el sello
-        $pdf->Image($sello_path, 160, 30, 30); // Sello
-        
-        // Guardar el PDF en la carpeta del cliente
-        $pdf->Output('F', $carpetaCliente . '/' . $archivo_name);
-    }
-}
-public function buscarprogramacionesclienteita(Cliente $cliente, Request $request)
+        // Lo demás del código sigue igual...
+        return redirect()->route('admin.informesfinales.guardardocumentacionclienteita', $request->cliente)->with('info', 'El documento se subió con éxito');
+    } */
+    public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
     {
-        return $this->index($cliente, $request);
+        $archivo_name = null;
+    
+        if ($request->hasFile('archivo')) {
+            $file = $request->file('archivo');
+            
+            // Crear carpeta del cliente si no existe
+            $carpetaCliente = public_path("/documentacionclientesita/{$cliente->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+    
+            // Subir archivo original
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+    
+            // Agregar firma y sello al PDF
+            $archivoFirmado = $this->agregarFirmaYSelloPDF($carpetaCliente, $archivo_name, $request);
+        }
+    
+        // Continuar con el resto de la lógica
+        return redirect()->route('admin.informesfinales.guardardocumentacionclienteita', $request->cliente)
+                         ->with('info', 'El documento se subió con éxito y se agregó la firma y el sello.');
     }
-public function buscarporproveedor(Cliente $cliente, Request $request)
+    
+
+    private function agregarFirmaYSelloPDF($carpetaCliente, $archivo_name, $request)
     {
-        return $this->reservasmedicas($cliente, $request);
+        // Obtener el proveedor asociado con el usuario autenticado
+        $proveedor = Proveedor::where('proveedor', auth()->user()->name)->first();
+
+        if ($proveedor) {
+            // Cargar las imágenes de firma y sello
+            $firma_path = public_path("/proveedores/{$proveedor->id}/{$proveedor->firmadigital}");
+            $sello_path = public_path("/proveedores/{$proveedor->id}/{$proveedor->selldigital}");
+
+            // Usar FPDF para crear el PDF
+            $pdf = new FPDF();
+            $pdf->AddPage();
+            
+            // Definir las posiciones en la parte superior derecha de la página
+            $pdf->SetXY(160, 10); // Ajustar las coordenadas según se necesite
+            $pdf->Image($firma_path, 160, 10, 30); // Firma
+
+            $pdf->SetXY(160, 30); // Ajustar las coordenadas para el sello
+            $pdf->Image($sello_path, 160, 30, 30); // Sello
+            
+            // Guardar el PDF en la carpeta del cliente
+            $pdf->Output('F', $carpetaCliente . '/' . $archivo_name);
+        }
     }
+    public function buscarprogramacionesclienteita(Cliente $cliente, Request $request)
+        {
+            return $this->index($cliente, $request);
+        }
+    public function buscarporproveedor(Cliente $cliente, Request $request)
+        {
+            return $this->reservasmedicas($cliente, $request);
+        }
 
     public function buscarprogramacionescomclienteita(Cliente $cliente, Request $request)
     {

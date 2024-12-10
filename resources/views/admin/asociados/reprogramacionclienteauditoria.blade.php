@@ -338,7 +338,7 @@ $('.dropify').dropify();
 $(document).ready(function(){
     $('.btn-eliminar').on('click', function(){
         var id = $(this).data('id');
-        var url = "{{ route('admin.asociados.guardarreprogramacionclienteita', ':id') }}";
+        var url = "{{ route('admin.asociados.guardarreprogramacionclienteauditoria', ':id') }}";
         url = url.replace(':id', id);
         $('#deleteForm').attr('action', url);
         $('#deleteModal').modal('show');

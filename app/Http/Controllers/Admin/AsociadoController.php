@@ -1853,13 +1853,22 @@ $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente
 
             if ($bateriaProveedor && $bateriaProveedor->servicio === 'EXTERNO' && $proveedor) {
                 $accion->direccion = $proveedor->direccion;
+                $accion->direccion2 = $proveedor->direccion2;
+                $accion->direccion3 = $proveedor->direccion3;
             } else {
                 $accion->direccion = 'GOOD LIFE SRL';
+                $accion->direccion2 = '';
+                $accion->direccion3 = '';
             }
             if ($bateriaProveedor && $bateriaProveedor->servicio === 'EXTERNO' && $proveedor) {
                 $accion->linkubicacion = $proveedor->linkubicacion;
+                $accion->linkubicacion2 = $proveedor->linkubicacion2;
+                $accion->linkubicacion3 = $proveedor->linkubicacion3;
             } else {
                 $accion->linkubicacion = '';
+                $accion->linkubicacion2 = '';
+                $accion->linkubicacion3 = '';
+
             }
             if ($bateriaProveedor && $bateriaProveedor->servicio === 'INTERNO' && $proveedor) {
                 if ($bateriaProveedor->sucursal === 'SANTA CRUZ') {
@@ -5945,6 +5954,8 @@ $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente
     {
         $nombreusuario = auth()->user()->name; 
         $tieneRequisitos = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $requisitosubclientes = ProveedorInformefinal::where('clienteauditoriaid', $clienteauditoria->id)->get();
+        $proveedores = Proveedor::whereIn('id', [3, 54])->get(['id', 'proveedor', 'celular']);
         $tieneContactos = ContactoSubCliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
         $tieneTramites = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
         $tieneBateria = Bateriasubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
@@ -5968,7 +5979,47 @@ $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente
             ->first();
         $historiamedicaclienteauditoria = $historiamedica ? $historiamedica->document : null;
 
-        return view('admin.asociados.verclienteauditoria', compact('historiamedicaclienteauditoria','nombreusuario','tieneCotizacionaprobada','documentacion','tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
+
+
+        $IDCliente = $clienteauditoria->id;
+        $sucursalCliente = $clienteauditoria->sucursal;
+
+        $accionesCliente = BateriaSubCliente::where('clienteauditoriaid', $IDCliente)->pluck('accionnombre')->toArray();
+
+        $fechasbateriasSubCliente = BateriaSubCliente::where('clienteauditoriaid', $IDCliente)
+            ->distinct()
+            ->pluck('fechabateria');
+
+        $fechasRegistradas = ProveedorInformefinal::where('clienteauditoriaid', $clienteauditoria->id)
+            ->pluck('fechabateria');
+
+        $fechasDisponibles = $fechasbateriasSubCliente->diff($fechasRegistradas);
+
+        $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionnombre', $accionesCliente)
+            ->where('clienteauditoriaid', $IDCliente)
+            ->whereIn('fechabateria', $fechasDisponibles)
+            ->distinct()
+            ->pluck('fechabateria', 'accionnombre');
+
+        $accionesPorFecha = [];
+        foreach ($fechasBateriaPorAccion as $accion => $fecha) {
+            $accionesPorFecha[$fecha][] = $accion;
+        }
+        $tramitesPorFecha = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->fechabateria => $item->tramite];
+            });
+        $clienteConInvalidez = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+            ->where('tramite', 'INVALIDEZ')
+            ->exists();
+
+        $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+            ->whereIn('tramite', ['APELACION', 'SEGUNDA SOLICITUD'])
+            ->exists();
+
+
+        return view('admin.asociados.verclienteauditoria', compact('requisitosubclientes','proveedores','accionesPorFecha','clienteConInvalidez','clienteConApelacionOSegunda','tramitesPorFecha','historiamedicaclienteauditoria','nombreusuario','tieneCotizacionaprobada','documentacion','tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
         'tieneContactos','tieneTramites','clienteauditoria','tieneRequisitos','tieneProgramacion','tieneProgramacionatentido'));
     }
     public function editarclienteauditoria(ClienteAuditoria $clienteauditoria)
@@ -8633,6 +8684,57 @@ $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente
                 // Retornar la vista con la ruta del QR
                 return view('admin.clientes.formulario', ['rutaQR' => asset('temp/' . $nombreQR)], compact('cliente'));
             }
+//
+//PROVEEDOR INFORME FINAL CLIENTE ITA
+    public function guardarproveedorinformefinalauditoria(StoreProveedorInformefinalRequest $request, ClienteAuditoria $clienteauditoria)
+    {
+        $request->validate([
+            'fechabateria' => 'required|date',
+            'celularproveedor' => 'required|string',
+            'precio' => 'required',
+            'preciocompra' => 'required',
+            'tramite' => 'required',
+        ]);
+
+        $usuarioId = auth()->user()->id;
+        $usuarioRegistro = auth()->user()->name;
+
+        $proveedorAsignado = Proveedor::findOrFail($request->proveedorasignado)->proveedor;
+
+        ProveedorInformefinal::create([
+            'fechabateria' => $request->fechabateria,
+            'proveedorasignado' => $proveedorAsignado,
+            'celularproveedor' => $request->celularproveedor,
+            'clienteauditoriaid' => $clienteauditoria->id,
+            'clienteauditorianombre' => $clienteauditoria->nombrecompleto,
+            'usuarioid' => $usuarioId,
+            'usuarioregistro' => $usuarioRegistro,
+            'precio' => $request->precio,
+            'preciocompra' => $request->preciocompra,
+            'servicio' => $request->tramite,
+        ]);
+
+        // Crear el registro en BateriaSubCliente
+        BateriaSubCliente::create([
+            'fechabateria' => $request->fechabateria,
+            'clienteauditoriaid' => $clienteauditoria->id,
+            'clienteauditorianombre' => $clienteauditoria->nombrecompleto,
+            'usuarioid' => $usuarioId,
+            'usuarioregistro' => $usuarioRegistro,
+            'tipoarea' => 'INFORME FINAL',
+            'informe' => 'NINGUNO',
+            'areanombre' => 'INFORME FINAL',
+            'accionnombre' => 'INFORME FINAL',
+            'precio' => $request->precio,
+            'preciocompra' => $request->preciocompra,
+            'proveedorasignado' => $proveedorAsignado,
+            'servicio' => 'INTERNO',
+            'accionid' => 'IF',
+
+        ]);
+
+        return redirect()->route('admin.asociados.verclienteauditoria', $clienteauditoria)->with('info', 'Proveedor asignado exitosamente.');
+    }
 //
 
 
