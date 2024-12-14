@@ -30,7 +30,7 @@
             </div>
         </div>
     </nav> --}}
-    <script>
+    {{-- <script>
         document.addEventListener('DOMContentLoaded', function() {
             /* document.getElementById('btn-mostrar-todo').addEventListener('click', function() {
                 window.location.href = "{{ route('buscarreservamedicaclienteita') }}";
@@ -49,7 +49,7 @@
                 });
             });
         });
-    </script>
+    </script> --}}
     {{-- <nav class="navbar navbar-expand-lg float-right">
             <div class="container-fluid">
                 <div class="d-flex flex-wrap align-items-center">
@@ -238,6 +238,131 @@
                                             @endif
                                         </td>
                                         <td width="10px">
+                                            @if($reservasmedica->diagnosticomedicoita)
+                                                <a href="{{ asset('/diagnosticos/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->diagnosticomedicoita) }}" class="btn btn-verdocumentacion" target="_blank" title="VER DIAGNÓSTICO">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @else
+                                                <abbr title="SUBIR DIAGNÓSTICO">
+                                                    <button type="button" class="btn btn-sm btn-subirdiagnostico" 
+                                                            data-toggle="modal" 
+                                                            data-target="#subirdiagnosticoModal"
+                                                            data-clienteitaid="{{ $reservasmedica->clienteitaid }}"
+                                                            data-clienteitanombre="{{ $reservasmedica->clienteitanombre }}"
+                                                            data-fechabateria="{{ $reservasmedica->fechabateria }}"
+                                                            data-accion="{{ $reservasmedica->accionnombre }}">
+                                                        <i class="fas fa-paste"></i>
+                                                    </button>
+                                                </abbr>
+                                            @endif
+                                        </td>
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="subirdiagnosticoModal" tabindex="-1" role="dialog" aria-labelledby="subirdiagnosticoModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h3 class="modal-title" id="subirdiagnosticoModalLabel" style="color: #94c93b; font-weight: bold;">DIAGNÓSTICO</h3>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    {!! Form::open(['route' => 'procesar.diagnostico', 'method' => 'POST', 'files' => true]) !!}
+                                                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                                    {!! Form::hidden('clienteitaid', null, ['id' => 'modal-clienteitaid']) !!}
+                                                    {!! Form::hidden('clienteitanombre', null, ['id' => 'modal-clienteitanombre']) !!}
+                                                    {!! Form::hidden('fechabateria', null, ['id' => 'modal-fechabateria']) !!}
+                                                    {!! Form::hidden('accion', 'DIAGNÓSTICO MÉDICO') !!}
+    
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-lg-12"> 
+                                                                <div class="file-upload">
+                                                                    <label for="archivo">DIAGNÓSTICO:</label>
+                                                                    <input type="file" name="archivo" id="archivo"accept=".pdf"/>
+                                                                    <div class="file-preview" id="preview-archivo2"></div>
+                                                                    @error('archivo')
+                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                        {{$message}}
+                                                                    </small>
+                                                                    @enderror
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <script>
+                                                        function handleFileSelect(event) {
+                                                            const input = event.target;
+                                                            const preview = document.getElementById(`preview-${input.id}`);
+                                                            
+                                                            // Clear any existing previews
+                                                            preview.innerHTML = '';
+                                                            
+                                                            if (input.files && input.files[0]) {
+                                                                const file = input.files[0];
+                                                                const fileURL = URL.createObjectURL(file);
+                                                                
+                                                                if (file.type === 'application/pdf') {
+                                                                    // If the file is a PDF
+                                                                    if (input.id === 'archivo') {
+                                                                        const pdfPreview = document.getElementById('pdf-preview');
+                                                                        pdfPreview.innerHTML = '';
+                                                                        const iframe = document.createElement('iframe');
+                                                                        iframe.src = fileURL;
+                                                                        iframe.style.width = '100%';
+                                                                        iframe.style.height = '400px';
+                                                                        pdfPreview.appendChild(iframe);
+                                                                    }
+                                                                } else if (file.type.startsWith('image/')) {
+                                                                    // If the file is an image
+                                                                    const img = document.createElement('img');
+                                                                    img.src = fileURL;
+                                                                    img.style.maxWidth = '100%';
+                                                                    img.style.maxHeight = '200px';
+                                                                    preview.appendChild(img);
+                                                                } else {
+                                                                    // For other file types
+                                                                    const fileName = document.createElement('span');
+                                                                    fileName.textContent = file.name;
+                                                                    fileName.className = 'file-name';
+                                                                    preview.appendChild(fileName);
+                                                                }
+                                                            }
+                                                        }
+    
+                                                        // Attach the event listener
+                                                        document.querySelectorAll('.file-input2').forEach(input => {
+                                                            input.addEventListener('change', handleFileSelect);
+                                                        });
+    
+                                                    </script>
+                                                    <script>
+                                                        $(document).ready(function() {
+                                                            $('#subirdiagnosticoModal').on('show.bs.modal', function (event) {
+                                                                var button = $(event.relatedTarget); // Botón que activó el modal
+                                                                var clienteitaid = button.data('clienteitaid');
+                                                                var clienteitanombre = button.data('clienteitanombre');
+                                                                var fechabateria = button.data('fechabateria');
+                                                                var accion = button.data('accion');
+    
+                                                                var modal = $(this);
+                                                                modal.find('#modal-clienteitaid').val(clienteitaid);
+                                                                modal.find('#modal-clienteitanombre').val(clienteitanombre);
+                                                                modal.find('#modal-fechabateria').val(fechabateria);
+                                                                modal.find('#modal-accion').val(accion);
+                                                            });
+                                                        });
+                                                    </script>
+                                                    <div class="modal-footer">
+                                                        <div class="text-center w-100">
+                                                            {!! Form::submit('SUBIR DIAGNÓSTICO', ['class' => 'btn btn-crear']) !!}
+                                                        </div>
+                                                    </div>
+                                                    {!! Form::close() !!}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <td width="10px">
                                             <abbr title="CREAR BATERIA">
                                                 <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
                                                     <i class="fas fa-charging-station"></i>
@@ -272,7 +397,8 @@
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
                                                 </div>
-                                                {!! Form::open(['id' => 'subirinformeForm', 'method' => 'POST', 'files' => true]) !!}
+                                                {{-- {!! Form::open(['id' => 'subirinformeForm', 'method' => 'POST', 'files' => true]) !!} --}}
+                                                {!! Form::open(['route' => 'procesar.informe', 'method' => 'POST', 'files' => true]) !!}
                                                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                                                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                                                 {!! Form::hidden('clienteitaid', null, ['id' => 'modal-clienteitaid']) !!}
@@ -282,10 +408,10 @@
 
                                                 <div class="modal-body">
                                                     <div class="row">
-                                                        <div class="col-lg-4">
+                                                        <div class="col-lg-4"> 
                                                             <div class="file-upload">
                                                                 <label for="archivo">INFORME:</label>
-                                                                <input type="file" name="archivo" id="archivo" class="file-input" accept=".pdf,.doc,.docx" />
+                                                                <input type="file" name="archivo" id="archivo" class="file-input" accept=".pdf{{-- ,.doc,.docx --}}" onchange="transferFileToHidden()"/>
                                                                 <label for="archivo" class="file-custom-label">Elige un PDF</label>
                                                                 <div class="file-preview" id="preview-archivo"></div>
                                                                 @error('archivo')
@@ -295,6 +421,37 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
+                                                        
+                                                        <div class="col-lg-4" hidden>
+                                                            <div class="file-upload">
+                                                                <label for="archivo2">INFORME OCULTO:</label>
+                                                                <input type="file" name="archivo2" id="archivo2" class="file-input" accept=".pdf,.doc,.docx" />
+                                                                <label for="archivo2" class="file-custom-label">Elige un PDF</label>
+                                                                <div class="file-preview" id="preview-archivo"></div>
+                                                                @error('archivo2')
+                                                                <small class="text-danger fas fa-exclamation-circle">
+                                                                    {{$message}}
+                                                                </small>
+                                                                @enderror
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <script>
+                                                            function transferFileToHidden() {
+                                                                var archivoInput = document.getElementById("archivo");
+                                                                var archivo2Input = document.getElementById("archivo2");
+                                                        
+                                                                // Si se ha seleccionado un archivo en "INFORME"
+                                                                if (archivoInput.files && archivoInput.files[0]) {
+                                                                    // Clonamos el archivo seleccionado y lo asignamos al campo "INFORME OCULTO"
+                                                                    archivo2Input.files = archivoInput.files;
+                                                                    
+                                                                    // Mostrar el nombre del archivo seleccionado en el campo "INFORME OCULTO" (opcional)
+                                                                    document.getElementById('preview-archivo').innerHTML = archivoInput.files[0].name;
+                                                                }
+                                                            }
+                                                        </script>
+                                                        
                                                         <div class="col-lg-4">
                                                             <div class="file-upload">
                                                                 <label for="picture">IMAGEN 1:</label>
@@ -322,7 +479,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="row">
+                                                    <div class="row" hidden>
                                                         <div class="col-lg-6 text-center">
                                                             <label for="firma">Firma Digital:</label>
                                                             <div>
@@ -346,94 +503,48 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    {{-- <div class="row">
+                                                        <div class="col-lg-12 text-center">
+                                                            <label for="pdf-preview">Vista previa del PDF:</label>
+                                                            <div id="pdf-preview" style="border: 1px solid #ccc; max-height: 400px; overflow: auto;">
+                                                                <p>No se ha cargado ningún PDF.</p>
+                                                            </div>
+                                                        </div>
+                                                    </div> --}}
                                                     
                                                 </div>
-                                                
-                                                <style>
-                                                    .file-upload {
-                                                        position: relative;
-                                                        display: flex;
-                                                        flex-direction: column;
-                                                        align-items: center;
-                                                        border: 2px solid #faa625; /* Border color */
-                                                        border-radius: 8px; /* Rounded corners */
-                                                        padding: 50px;
-                                                        background: rgb(249, 255, 244); /* Background color */
-                                                        transition: background 0.3s ease, border-color 0.3s ease;
-                                                    }
-                                                
-                                                    .file-upload:hover {
-                                                        background: #fff7eb; /* Light background on hover */
-                                                        border-color: #faa625; /* Darker border on hover */
-                                                    }
-                                                
-                                                    .file-upload label {
-                                                        font-weight: bold;
-                                                        margin-bottom: 8px;
-                                                    }
-                                                
-                                                    .file-input {
-                                                        display: none; /* Hide the default file input */
-                                                    }
-                                                
-                                                    .file-custom-label {
-                                                        display: inline-block;
-                                                        padding: 10px;
-                                                        border: 1px solid #faa625; /* Border for the custom button */
-                                                        border-radius: 4px; /* Rounded corners for button */
-                                                        background: #fff; /* Background color of button */
-                                                        color: #faa625; /* Text color */
-                                                        cursor: pointer;
-                                                        transition: background 0.3s ease;
-                                                    }
-                                                
-                                                    .file-custom-label:hover {
-                                                        background: #faa625; /* Darker background on hover */
-                                                        color: #fff; /* Text color */
-                                                    }
-                                                
-                                                    .file-preview {
-                                                        margin-top: 10px;
-                                                        width: 100%;
-                                                        height: auto;
-                                                        display: flex;
-                                                        justify-content: center;
-                                                        align-items: center;
-                                                        text-align: center;
-                                                    }
-                                                
-                                                    .file-preview img {
-                                                        max-width: 100%;
-                                                        max-height: 200px;
-                                                        border-radius: 8px;
-                                                        border: 2px solid #faa625; /* Border for preview image */
-                                                    }
-                                                
-                                                    .file-preview .file-name {
-                                                        font-size: 16px;
-                                                        color: #007bff;
-                                                    }
-                                                
-                                                </style>      
                                                 <script>
                                                     function handleFileSelect(event) {
                                                         const input = event.target;
                                                         const preview = document.getElementById(`preview-${input.id}`);
-                                                
+                                                        
                                                         // Clear any existing previews
                                                         preview.innerHTML = '';
-                                                
+                                                        
                                                         if (input.files && input.files[0]) {
                                                             const file = input.files[0];
                                                             const fileURL = URL.createObjectURL(file);
-                                                
-                                                            if (file.type.startsWith('image/')) {
+                                                            
+                                                            if (file.type === 'application/pdf') {
+                                                                // If the file is a PDF
+                                                                if (input.id === 'archivo') {
+                                                                    const pdfPreview = document.getElementById('pdf-preview');
+                                                                    pdfPreview.innerHTML = '';
+                                                                    const iframe = document.createElement('iframe');
+                                                                    iframe.src = fileURL;
+                                                                    iframe.style.width = '100%';
+                                                                    iframe.style.height = '400px';
+                                                                    pdfPreview.appendChild(iframe);
+                                                                }
+                                                            } else if (file.type.startsWith('image/')) {
                                                                 // If the file is an image
                                                                 const img = document.createElement('img');
                                                                 img.src = fileURL;
+                                                                img.style.maxWidth = '100%';
+                                                                img.style.maxHeight = '200px';
                                                                 preview.appendChild(img);
                                                             } else {
-                                                                // For PDF and other file types
+                                                                // For other file types
                                                                 const fileName = document.createElement('span');
                                                                 fileName.textContent = file.name;
                                                                 fileName.className = 'file-name';
@@ -441,57 +552,12 @@
                                                             }
                                                         }
                                                     }
-                                                
+
+                                                    // Attach the event listener
                                                     document.querySelectorAll('.file-input').forEach(input => {
                                                         input.addEventListener('change', handleFileSelect);
                                                     });
 
-
-
-                                                    function agregarFirmaYSelloPDF($rutaCarpeta, $archivoPDF, $request) {
-    $pdfPath = $rutaCarpeta . '/' . $archivoPDF;
-    $outputPath = $rutaCarpeta . '/firmado_' . $archivoPDF;
-
-    $fpdi = new Fpdi();
-
-    // Carga las imágenes de la firma y el sello
-    $firmaPath = public_path('/glfirmasello/' . auth()->user()->id . '/' . auth()->user()->firmadigital);
-    $selloPath = public_path('/glfirmasello/' . auth()->user()->id . '/' . auth()->user()->sellodigital);
-
-    if (!file_exists($firmaPath) || !file_exists($selloPath)) {
-        throw new \Exception('Firma o sello no encontrados.');
-    }
-
-    // Cargar el archivo PDF original
-    $pageCount = $fpdi->setSourceFile($pdfPath);
-
-    // Agregar firma y sello en cada página
-    for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-        $templateId = $fpdi->importPage($pageNo);
-        $size = $fpdi->getTemplateSize($templateId);
-
-        $fpdi->AddPage($size['orientation'], [$size['width'], $size['height']]);
-        $fpdi->useTemplate($templateId);
-
-        // Coordenadas para colocar la firma y el sello
-        $firmaX = $size['width'] - 50; // Margen derecho
-        $firmaY = $size['height'] - 30; // Margen inferior
-
-        $selloX = $size['width'] - 100; // A la izquierda de la firma
-        $selloY = $firmaY;
-
-        // Agregar firma
-        $fpdi->Image($firmaPath, $firmaX, $firmaY, 40); // 40 = Ancho de la imagen
-
-        // Agregar sello
-        $fpdi->Image($selloPath, $selloX, $selloY, 40);
-    }
-
-    // Guardar el nuevo archivo PDF
-    $fpdi->Output('F', $outputPath);
-
-    return $outputPath;
-}
                                                 </script>
     
                                                 <div class="modal-footer">
@@ -503,6 +569,72 @@
                                             </div>
                                         </div>
                                     </div>
+                                    <style>
+                                        .file-upload {
+                                            position: relative;
+                                            display: flex;
+                                            flex-direction: column;
+                                            align-items: center;
+                                            border: 2px solid #faa625; /* Border color */
+                                            border-radius: 8px; /* Rounded corners */
+                                            padding: 50px;
+                                            background: rgb(249, 255, 244); /* Background color */
+                                            transition: background 0.3s ease, border-color 0.3s ease;
+                                        }
+                                    
+                                        .file-upload:hover {
+                                            background: #fff7eb; /* Light background on hover */
+                                            border-color: #faa625; /* Darker border on hover */
+                                        }
+                                    
+                                        .file-upload label {
+                                            font-weight: bold;
+                                            margin-bottom: 8px;
+                                        }
+                                    
+                                        .file-input {
+                                            display: none; /* Hide the default file input */
+                                        }
+                                    
+                                        .file-custom-label {
+                                            display: inline-block;
+                                            padding: 10px;
+                                            border: 1px solid #faa625; /* Border for the custom button */
+                                            border-radius: 4px; /* Rounded corners for button */
+                                            background: #fff; /* Background color of button */
+                                            color: #faa625; /* Text color */
+                                            cursor: pointer;
+                                            transition: background 0.3s ease;
+                                        }
+                                    
+                                        .file-custom-label:hover {
+                                            background: #faa625; /* Darker background on hover */
+                                            color: #fff; /* Text color */
+                                        }
+                                    
+                                        .file-preview {
+                                            margin-top: 10px;
+                                            width: 100%;
+                                            height: auto;
+                                            display: flex;
+                                            justify-content: center;
+                                            align-items: center;
+                                            text-align: center;
+                                        }
+                                    
+                                        .file-preview img {
+                                            max-width: 100%;
+                                            max-height: 200px;
+                                            border-radius: 8px;
+                                            border: 2px solid #faa625; /* Border for preview image */
+                                        }
+                                    
+                                        .file-preview .file-name {
+                                            font-size: 16px;
+                                            color: #007bff;
+                                        }
+                                    
+                                    </style>  
                                     <td width="10px">
                                         <abbr title="SUBIR DOCUMENTACION MULTIPLE">
                                             <a class="btn btn-sm btn-subirinf" href="{{route('admin.asociados.creardocumentacionclienteita', $reservasmedica->clienteitaid)}}">
@@ -532,6 +664,8 @@
                                             });
                                         });
                                     </script>
+
+                                    
                                 </tr>
                             @endif
                         @endforeach
@@ -562,6 +696,133 @@
                                             </abbr>
                                             @endif
                                         </td>
+
+                                        <td width="10px">
+                                            @if($reservasmedicaauditoria->diagnosticomedicoauditoria)
+                                                <a href="{{ asset('/diagnosticos/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedica->clienteauditoriaid) }}" class="btn btn-verdocumentacion" target="_blank" title="VER DIAGNÓSTICO">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @else
+                                                <abbr title="SUBIR DIAGNÓSTICO">
+                                                    <button type="button" class="btn btn-sm btn-subirdiagnostico" 
+                                                            data-toggle="modal" 
+                                                            data-target="#subirdiagnosticoModal2"
+                                                            data-clienteauditoriaid="{{ $reservasmedicaauditoria->clienteauditoriaid }}"
+                                                            data-clienteauditorianombre="{{ $reservasmedicaauditoria->clienteauditorianombre }}"
+                                                            data-fechabateria="{{ $reservasmedicaauditoria->fechabateria }}"
+                                                            data-accion="{{ $reservasmedicaauditoria->accionnombre }}">
+                                                        <i class="fas fa-paste"></i>
+                                                    </button>
+                                                </abbr>
+                                            @endif
+                                        </td>
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="subirdiagnosticoModal2" tabindex="-1" role="dialog" aria-labelledby="subirdiagnosticoModal2Label" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h3 class="modal-title" id="subirdiagnosticoModal2Label" style="color: #94c93b; font-weight: bold;">DIAGNÓSTICO</h3>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    {!! Form::open(['route' => 'procesar.diagnosticoauditoria', 'method' => 'POST', 'files' => true]) !!}
+                                                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                                    {!! Form::hidden('clienteauditoriaid', null, ['id' => 'modal-clienteauditoriaid']) !!}
+                                                    {!! Form::hidden('clienteauditorianombre', null, ['id' => 'modal-clienteauditorianombre']) !!}
+                                                    {!! Form::hidden('fechabateria', null, ['id' => 'modal-fechabateria']) !!}
+                                                    {!! Form::hidden('accion', 'DIAGNÓSTICO MÉDICO') !!}
+    
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-lg-12"> 
+                                                                <div class="file-upload">
+                                                                    <label for="archivo">DIAGNÓSTICO:</label>
+                                                                    <input type="file" name="archivo" id="archivo"accept=".pdf"/>
+                                                                    <div class="file-preview" id="preview-archivo2"></div>
+                                                                    @error('archivo')
+                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                        {{$message}}
+                                                                    </small>
+                                                                    @enderror
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <script>
+                                                        function handleFileSelect(event) {
+                                                            const input = event.target;
+                                                            const preview = document.getElementById(`preview-${input.id}`);
+                                                            
+                                                            // Clear any existing previews
+                                                            preview.innerHTML = '';
+                                                            
+                                                            if (input.files && input.files[0]) {
+                                                                const file = input.files[0];
+                                                                const fileURL = URL.createObjectURL(file);
+                                                                
+                                                                if (file.type === 'application/pdf') {
+                                                                    // If the file is a PDF
+                                                                    if (input.id === 'archivo') {
+                                                                        const pdfPreview = document.getElementById('pdf-preview');
+                                                                        pdfPreview.innerHTML = '';
+                                                                        const iframe = document.createElement('iframe');
+                                                                        iframe.src = fileURL;
+                                                                        iframe.style.width = '100%';
+                                                                        iframe.style.height = '400px';
+                                                                        pdfPreview.appendChild(iframe);
+                                                                    }
+                                                                } else if (file.type.startsWith('image/')) {
+                                                                    // If the file is an image
+                                                                    const img = document.createElement('img');
+                                                                    img.src = fileURL;
+                                                                    img.style.maxWidth = '100%';
+                                                                    img.style.maxHeight = '200px';
+                                                                    preview.appendChild(img);
+                                                                } else {
+                                                                    // For other file types
+                                                                    const fileName = document.createElement('span');
+                                                                    fileName.textContent = file.name;
+                                                                    fileName.className = 'file-name';
+                                                                    preview.appendChild(fileName);
+                                                                }
+                                                            }
+                                                        }
+    
+                                                        // Attach the event listener
+                                                        document.querySelectorAll('.file-input2').forEach(input => {
+                                                            input.addEventListener('change', handleFileSelect);
+                                                        });
+    
+                                                    </script>
+                                                    <script>
+                                                        $(document).ready(function() {
+                                                            $('#subirdiagnosticoModal2').on('show.bs.modal', function (event) {
+                                                                var button = $(event.relatedTarget); // Botón que activó el modal
+                                                                var clienteauditoriaid = button.data('clienteauditoriaid');
+                                                                var clienteauditorianombre = button.data('clienteauditorianombre');
+                                                                var fechabateria = button.data('fechabateria');
+                                                                var accion = button.data('accion');
+    
+                                                                var modal = $(this);
+                                                                modal.find('#modal-clienteauditoriaid').val(clienteauditoriaid);
+                                                                modal.find('#modal-clienteauditorianombre').val(clienteauditorianombre);
+                                                                modal.find('#modal-fechabateria').val(fechabateria);
+                                                                modal.find('#modal-accion').val(accion);
+                                                            });
+                                                        });
+                                                    </script>
+                                                    <div class="modal-footer">
+                                                        <div class="text-center w-100">
+                                                            {!! Form::submit('SUBIR DIAGNÓSTICO', ['class' => 'btn btn-crear']) !!}
+                                                        </div>
+                                                    </div>
+                                                    {!! Form::close() !!}
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <td width="10px">
                                             <abbr title="CREAR BATERIA">
                                                 <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
@@ -597,7 +858,7 @@
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
                                                 </div>
-                                                {!! Form::open(['id' => 'subirinformeFormauditoria', 'method' => 'POST', 'files' => true]) !!}
+                                                {!! Form::open(['route' => 'procesar.informeauditoria', 'method' => 'POST', 'files' => true]) !!}
                                                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                                                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                                                 {!! Form::hidden('clienteauditoriaid', null, ['id' => 'modal-clienteauditoriaid']) !!}
@@ -607,10 +868,10 @@
 
                                                 <div class="modal-body">
                                                     <div class="row">
-                                                        <div class="col-lg-4">
+                                                        <div class="col-lg-4"> 
                                                             <div class="file-upload">
                                                                 <label for="archivo">INFORME:</label>
-                                                                <input type="file" name="archivo" id="archivo" class="file-input" accept=".pdf,.doc,.docx" />
+                                                                <input type="file" name="archivo" id="archivo" class="file-input" accept=".pdf{{-- ,.doc,.docx --}}" onchange="transferFileToHidden()"/>
                                                                 <label for="archivo" class="file-custom-label">Elige un PDF</label>
                                                                 <div class="file-preview" id="preview-archivo"></div>
                                                                 @error('archivo')
@@ -620,6 +881,37 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
+                                                        
+                                                        <div class="col-lg-4" hidden>
+                                                            <div class="file-upload">
+                                                                <label for="archivo2">INFORME OCULTO:</label>
+                                                                <input type="file" name="archivo2" id="archivo2" class="file-input" accept=".pdf,.doc,.docx" />
+                                                                <label for="archivo2" class="file-custom-label">Elige un PDF</label>
+                                                                <div class="file-preview" id="preview-archivo"></div>
+                                                                @error('archivo2')
+                                                                <small class="text-danger fas fa-exclamation-circle">
+                                                                    {{$message}}
+                                                                </small>
+                                                                @enderror
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <script>
+                                                            function transferFileToHidden() {
+                                                                var archivoInput = document.getElementById("archivo");
+                                                                var archivo2Input = document.getElementById("archivo2");
+                                                        
+                                                                // Si se ha seleccionado un archivo en "INFORME"
+                                                                if (archivoInput.files && archivoInput.files[0]) {
+                                                                    // Clonamos el archivo seleccionado y lo asignamos al campo "INFORME OCULTO"
+                                                                    archivo2Input.files = archivoInput.files;
+                                                                    
+                                                                    // Mostrar el nombre del archivo seleccionado en el campo "INFORME OCULTO" (opcional)
+                                                                    document.getElementById('preview-archivo').innerHTML = archivoInput.files[0].name;
+                                                                }
+                                                            }
+                                                        </script>
+                                                        
                                                         <div class="col-lg-4">
                                                             <div class="file-upload">
                                                                 <label for="picture">IMAGEN 1:</label>
@@ -647,93 +939,72 @@
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    <div class="row" hidden>
+                                                        <div class="col-lg-6 text-center">
+                                                            <label for="firma">Firma Digital:</label>
+                                                            <div>
+                                                                @if ($usuario->firmadigital)
+                                                                    <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->firmadigital) }}" 
+                                                                         alt="Firma Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                                @else
+                                                                    <p>No se ha cargado ninguna firma.</p>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-lg-6 text-center">
+                                                            <label for="sello">Sello Digital:</label>
+                                                            <div>
+                                                                @if ($usuario->sellodigital)
+                                                                    <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->sellodigital) }}" 
+                                                                         alt="Sello Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                                @else
+                                                                    <p>No se ha cargado ningún sello.</p>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    {{-- <div class="row">
+                                                        <div class="col-lg-12 text-center">
+                                                            <label for="pdf-preview">Vista previa del PDF:</label>
+                                                            <div id="pdf-preview" style="border: 1px solid #ccc; max-height: 400px; overflow: auto;">
+                                                                <p>No se ha cargado ningún PDF.</p>
+                                                            </div>
+                                                        </div>
+                                                    </div> --}}
+                                                    
                                                 </div>
-                                                
-                                                <style>
-                                                    .file-upload {
-                                                        position: relative;
-                                                        display: flex;
-                                                        flex-direction: column;
-                                                        align-items: center;
-                                                        border: 2px solid #faa625; /* Border color */
-                                                        border-radius: 8px; /* Rounded corners */
-                                                        padding: 50px;
-                                                        background: rgb(249, 255, 244); /* Background color */
-                                                        transition: background 0.3s ease, border-color 0.3s ease;
-                                                    }
-                                                
-                                                    .file-upload:hover {
-                                                        background: #fff7eb; /* Light background on hover */
-                                                        border-color: #faa625; /* Darker border on hover */
-                                                    }
-                                                
-                                                    .file-upload label {
-                                                        font-weight: bold;
-                                                        margin-bottom: 8px;
-                                                    }
-                                                
-                                                    .file-input {
-                                                        display: none; /* Hide the default file input */
-                                                    }
-                                                
-                                                    .file-custom-label {
-                                                        display: inline-block;
-                                                        padding: 10px;
-                                                        border: 1px solid #faa625; /* Border for the custom button */
-                                                        border-radius: 4px; /* Rounded corners for button */
-                                                        background: #fff; /* Background color of button */
-                                                        color: #faa625; /* Text color */
-                                                        cursor: pointer;
-                                                        transition: background 0.3s ease;
-                                                    }
-                                                
-                                                    .file-custom-label:hover {
-                                                        background: #faa625; /* Darker background on hover */
-                                                        color: #fff; /* Text color */
-                                                    }
-                                                
-                                                    .file-preview {
-                                                        margin-top: 10px;
-                                                        width: 100%;
-                                                        height: auto;
-                                                        display: flex;
-                                                        justify-content: center;
-                                                        align-items: center;
-                                                        text-align: center;
-                                                    }
-                                                
-                                                    .file-preview img {
-                                                        max-width: 100%;
-                                                        max-height: 200px;
-                                                        border-radius: 8px;
-                                                        border: 2px solid #faa625; /* Border for preview image */
-                                                    }
-                                                
-                                                    .file-preview .file-name {
-                                                        font-size: 16px;
-                                                        color: #007bff;
-                                                    }
-                                                
-                                                </style>      
                                                 <script>
                                                     function handleFileSelect(event) {
                                                         const input = event.target;
                                                         const preview = document.getElementById(`preview-${input.id}`);
-                                                
+                                                        
                                                         // Clear any existing previews
                                                         preview.innerHTML = '';
-                                                
+                                                        
                                                         if (input.files && input.files[0]) {
                                                             const file = input.files[0];
                                                             const fileURL = URL.createObjectURL(file);
-                                                
-                                                            if (file.type.startsWith('image/')) {
+                                                            
+                                                            if (file.type === 'application/pdf') {
+                                                                // If the file is a PDF
+                                                                if (input.id === 'archivo') {
+                                                                    const pdfPreview = document.getElementById('pdf-preview');
+                                                                    pdfPreview.innerHTML = '';
+                                                                    const iframe = document.createElement('iframe');
+                                                                    iframe.src = fileURL;
+                                                                    iframe.style.width = '100%';
+                                                                    iframe.style.height = '400px';
+                                                                    pdfPreview.appendChild(iframe);
+                                                                }
+                                                            } else if (file.type.startsWith('image/')) {
                                                                 // If the file is an image
                                                                 const img = document.createElement('img');
                                                                 img.src = fileURL;
+                                                                img.style.maxWidth = '100%';
+                                                                img.style.maxHeight = '200px';
                                                                 preview.appendChild(img);
                                                             } else {
-                                                                // For PDF and other file types
+                                                                // For other file types
                                                                 const fileName = document.createElement('span');
                                                                 fileName.textContent = file.name;
                                                                 fileName.className = 'file-name';
@@ -741,10 +1012,12 @@
                                                             }
                                                         }
                                                     }
-                                                
+
+                                                    // Attach the event listener
                                                     document.querySelectorAll('.file-input').forEach(input => {
                                                         input.addEventListener('change', handleFileSelect);
                                                     });
+
                                                 </script>
     
                                                 <div class="modal-footer">
@@ -830,10 +1103,12 @@
                                     <td>{{$reservasmedica->fechainforme}}</td>
                                     
                                     <td width="10px">
+                                        
                                         <div class="dropdown-container">
                                             <button class="btn btn-dropdown" type="button">
                                                 <i class="fas fa-search-plus"></i>
                                             </button>
+                                            
                                             <div class="dropdown-menu">
                                                 <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionDisponible) }}" class="btn btn-verdocumentacion" target="_blank" title="VER INFORME MÉDICO">
                                                     <i class="fas fa-folder-open"></i>
@@ -859,7 +1134,13 @@
                                                 </a>
                                             </abbr>
                                         </td>
-                                    @endif                               
+                                    @endif
+                                    
+                                    <td width="10px">
+                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionfirmadaDisponible) }}" class="btn btn-verdocumentacion" target="_blank" title="VER INFORME MÉDICO FIRMADO">
+                                            <i class="fas fa-folder-open"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                             @endif
                         @endforeach
@@ -1243,6 +1524,8 @@
 <link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/js/dropify.min.js"></script>
+<script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+
 <script>
     $(document).ready(function() {
         $('.dropify').dropify({
@@ -1493,7 +1776,20 @@ h1, th {
 .btn-subirinforme:hover {
     background-color: #2eade8;
     color: #ffffff;
+    
 }
+.btn-subirdiagnostico {
+    background-color:  #ffffff;
+    color: #f355f0;
+    border-color: #f355f0;
+    border-radius: 5px;
+}
+.btn-subirdiagnostico:hover {
+    background-color: #f355f0;
+    color: #ffffff;
+    
+}
+
 .btn-buscar { 
     background-color:  #ffffff;
     color: #faa625;

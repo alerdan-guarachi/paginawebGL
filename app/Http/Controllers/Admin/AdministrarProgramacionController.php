@@ -654,8 +654,33 @@ class AdministrarProgramacionController extends Controller
         ->get();
 
 
-        return view('admin.admprogramaciones.pagosprogramaciones', compact('pagosprocesadosinformefinalauditoria','pagosprocesadosinformefinalita','pagosinformefinalauditoria','pagosinformefinalita','pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita','pagadosprogramacionesita','pagadosprogramacionescomun','pagadosprogramacionesauditoria','pagosprogramacionesita','pagosprogramacionescomun','pagosprogramacionesauditoria', 'fechaActual'));
+
+        
+       // Usar el año y mes actuales si no se pasan
+    $year = $request->year ?? date('Y');
+    $month = $request->month ?? date('m');
+
+    // Obtener los registros del mes y año especificados
+    $records = DB::table('programacionsubclientes')
+        ->selectRaw("
+            fechaasignada, 
+            SUM(CASE WHEN pagoatencion = 'PAGO PROCESADO' THEN 1 ELSE 0 END) as procesados,
+            SUM(CASE WHEN pagoatencion IS NULL THEN 1 ELSE 0 END) as sin_pago
+        ")
+        ->whereYear('fechaasignada', $year)
+        ->whereMonth('fechaasignada', $month)
+        ->whereNull('deleted_at')
+        ->groupBy('fechaasignada')
+        ->get();
+
+    // Si es una solicitud AJAX, retornar los registros
+    if ($request->ajax()) {
+        return response()->json($records);
     }
+
+        return view('admin.admprogramaciones.pagosprogramaciones', compact('year', 'month', 'records','pagosprocesadosinformefinalauditoria','pagosprocesadosinformefinalita','pagosinformefinalauditoria','pagosinformefinalita','pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita','pagadosprogramacionesita','pagadosprogramacionescomun','pagadosprogramacionesauditoria','pagosprogramacionesita','pagosprogramacionescomun','pagosprogramacionesauditoria', 'fechaActual'));
+    }
+    
     public function confirmarPagos(Request $request)
     {
         $programacionesIds = $request->input('programaciones', []);
@@ -974,8 +999,29 @@ class AdministrarProgramacionController extends Controller
             )
         ->simplePaginate(1000);
 
+// Usar el año y mes actuales si no se pasan
+$year = $request->year ?? date('Y');
+$month = $request->month ?? date('m');
 
-        return view('admin.admprogramaciones.pagosprogramaciones', compact('pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita',
+// Obtener los registros del mes y año especificados
+$records = DB::table('programacionsubclientes')
+    ->selectRaw("
+        fechaasignada, 
+        SUM(CASE WHEN pagoatencion = 'PAGO PROCESADO' THEN 1 ELSE 0 END) as procesados,
+        SUM(CASE WHEN pagoatencion IS NULL THEN 1 ELSE 0 END) as sin_pago
+    ")
+    ->whereYear('fechaasignada', $year)
+    ->whereMonth('fechaasignada', $month)
+    ->whereNull('deleted_at')
+    ->groupBy('fechaasignada')
+    ->get();
+
+// Si es una solicitud AJAX, retornar los registros
+if ($request->ajax()) {
+    return response()->json($records);
+}
+
+        return view('admin.admprogramaciones.pagosprogramaciones', compact('year', 'month', 'records','pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita',
             'pagadosprogramacionesita',
             'pagadosprogramacionescomun',
             'pagadosprogramacionesauditoria',

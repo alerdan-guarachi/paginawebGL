@@ -196,7 +196,7 @@
                             </button>
                             <br>
                             @php
-                                $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
+                                $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
                             @endphp
                             <div class="text-center">
                                 @if (!$documento3)
@@ -257,7 +257,7 @@
                 @if($tramitecontinuidad)
                     <div class="row">
                         {{-- INGRESO DE TRAMITE --}}
-                        <div class="col-12 col-md-6 mb-3">
+                        <div class="col-12 col-md-4 mb-3">
                             <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalIngresoTramite">
                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                     <i class="fas fa-folder-plus fa-5x mb-2"></i>
@@ -288,7 +288,7 @@
                             $documento2 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('subprocedimiento', 'INCLUSION DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
                         @endphp
                         <div class="col-12 col-md-4 mb-3">
-                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalNotificacionPoder" @if (!$documento1 || !$documento2) disabled @endif>
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalNotificacionPoder" @if (!$documento1 && !$documento2) disabled @endif>
                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                     <i class="fas fa-envelope-open-text fa-5x mb-2"></i>
                                     <span class="h6 mb-0">NOTIFICACIÓN DEL PODER</span>
@@ -296,7 +296,7 @@
                             </button>
                             <br>
                             @php
-                                $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
+                                $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
                             @endphp
                             <div class="text-center">
                                 @if (!$documento3)
@@ -312,19 +312,35 @@
                         </div>
 
                         {{-- FIRMA EAP --}}
-                        <div class="col-12 col-md-6 mb-3">
-                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalNotificacionPoder" @if (!$documento1 && !$documento2) disabled @endif>
+                        @php
+                            $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('estadocomunicado', 'COMUNICADO')->first();
+                        @endphp
+                        <div class="col-12 col-md-4 mb-3">
+                            <button type="button" class="btn btn-custom btn-block text-center" data-toggle="modal" data-target="#modalFirmaEAP" @if (!$documento3) disabled @endif>
                                 <div class="d-flex flex-column align-items-center justify-content-center">
-                                    <i class="fas fa-envelope-open-text fa-5x mb-2"></i>
-                                    <span class="h6 mb-0">NOTIFICACIÓN DEL PODER</span>
+                                    <i class="fas fa-signature fa-5x mb-2"></i>
+                                    <span class="h6 mb-0">FIRMA EAP</span>
+                                    @php
+                                        $documento1 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
+                                    @endphp
+                                    @if (!$documento1)
+                                        @if ($documento3)
+                                            @php
+                                                $fechaSubidaEAP = \Carbon\Carbon::parse($documento3->fechasubida);
+                                                $diasRestantesEAP = max(0, 10 - $fechaSubidaEAP->diffInDays(\Carbon\Carbon::now()));
+                                                $mensajeDias = $diasRestantesEAP == 1 ? '1 DIA RESTANTE' : "$diasRestantesEAP DIAS RESTANTES";
+                                            @endphp
+                                            <span class="badge badge-orange mt-2">{{ $mensajeDias }}</span>
+                                        @endif
+                                    @endif
                                 </div>
                             </button>
                             <br>
                             @php
-                                $documento3 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'VALIDACIÓN DE PODER')->first();
+                                $documento5 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->where('capturacomunicacion', 'like', '%.jpg');});})->where('estadocomunicado', 'COMUNICADO')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
                             @endphp
                             <div class="text-center">
-                                @if (!$documento3)
+                                @if (!$documento1)
                                     <span class="mb-0 checkamarillo">
                                         <i class="fas fa-exclamation-triangle"></i> INCOMPLETO
                                     </span>
@@ -687,7 +703,7 @@
                                             <div class="col-md-4 text-center">
                                                 <strong>DOCUMENTO</strong>
                                             </div>
-                                        </div><br>
+                                        </div>
                                         @php
                                             $documento5 = $cliente->tramites()->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->where('tramite', 'INVALIDEZ')->first();
                                         @endphp

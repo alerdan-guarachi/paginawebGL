@@ -52,6 +52,7 @@ use setasign\Fpdi\Fpdi;
 use setasign\Fpdi\PdfReader;
 use FPDF;
 use function Ramsey\Uuid\v1;
+use Illuminate\Support\Facades\Storage;
 
 class InformeFinalController extends Controller
 {
@@ -1670,6 +1671,11 @@ class InformeFinalController extends Controller
                 ->where('accion', $reservasmedica->accionnombre)
                 ->exists();
 
+            $reservasmedica->documentacionfirmadaDisponible = Documentacionsubcliente::where('clienteitaid', $reservasmedica->clienteitaid)
+                ->where('fechabateria', $reservasmedica->fechabateria)
+                ->where('accion', $reservasmedica->accionnombre)
+                ->exists();
+
             $documentacion = Documentacionsubcliente::where('clienteitaid', $reservasmedica->clienteitaid)
                 ->where('fechabateria', $reservasmedica->fechabateria)
                 ->where('accion', $reservasmedica->accionnombre)
@@ -1682,11 +1688,20 @@ class InformeFinalController extends Controller
                 ->where('detalle', 'FICHA MEDICA')
                 ->first();
 
+            $reservasmedica->diagnosticomedicoita = Documentacionsubcliente::where('clienteitaid', $reservasmedica->clienteitaid)
+                ->where('accion', 'DIAGNÓSTICO MÉDICO')
+                ->exists();
+            $diagnosticoita = Documentacionsubcliente::where('clienteitaid', $reservasmedica->clienteitaid)
+                ->where('accion', 'DIAGNÓSTICO MÉDICO')
+                ->first();
+
             $reservasmedica->documentacionDisponible = $documentacion ? $documentacion->document : null;
+            $reservasmedica->documentacionfirmadaDisponible = $documentacion ? $documentacion->documentfirmado : null;
             $reservasmedica->imagen1Disponible = $documentacion ? $documentacion->image : null;
             $reservasmedica->imagen2Disponible = $documentacion ? $documentacion->image2 : null;
             $reservasmedica->fechainforme = $documentacion ? $documentacion->created_at : null;
             $reservasmedica->fichamedicaita = $fichaita ? $fichaita->document : null;
+            $reservasmedica->diagnosticomedicoita = $diagnosticoita ? $diagnosticoita->document : null;
 
             if (!$reservasmedica->documentacionDisponible && !$reservasmedica->informeDisponible) {
                 $atencionpendienteCount++;
@@ -1698,7 +1713,7 @@ class InformeFinalController extends Controller
                 $informecompletoCount++;
             }
         }
-
+        
         $atencionpendienteauditoriaCount = 0;
         $informependienteauditoriaCount = 0;
         $informecompletoauditoriaCount = 0;
@@ -1725,12 +1740,20 @@ class InformeFinalController extends Controller
             $fichaauditoria = Fichamedicasubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
                 ->where('detalle', 'FICHA MEDICA')
                 ->first();
+            
+            $reservasmedicaauditoria->diagnosticomedicoauditoria = Documentacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
+                ->where('accion', 'DIAGNÓSTICO MÉDICO')
+                ->exists();
+            $diagnosticoauditoria = Documentacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
+                ->where('accion', 'DIAGNÓSTICO MÉDICO')
+                ->first();
 
             $reservasmedicaauditoria->documentacionDisponibleauditoria = $documentacionauditoria ? $documentacionauditoria->document : null;
             $reservasmedicaauditoria->imagen1Disponibleauditoria = $documentacionauditoria ? $documentacionauditoria->image : null;
             $reservasmedicaauditoria->imagen2Disponibleauditoria = $documentacionauditoria ? $documentacionauditoria->image2 : null;
             $reservasmedicaauditoria->fechainformeauditoria = $documentacionauditoria ? $documentacionauditoria->created_at : null;
             $reservasmedicaauditoria->fichamedicaauditoria = $fichaauditoria ? $fichaauditoria->document : null;
+            $reservasmedicaauditoria->diagnosticomedicoauditoria = $diagnosticoauditoria ? $diagnosticoauditoria->document : null;
 
             if (!$reservasmedicaauditoria->documentacionDisponibleauditoria && !$reservasmedicaauditoria->informeDisponibleauditoria) {
                 $atencionpendienteauditoriaCount++;
@@ -1853,32 +1876,753 @@ class InformeFinalController extends Controller
         return redirect()->route('admin.informesfinales.guardardocumentacionclienteita', $request->cliente)
                          ->with('info', 'El documento se subió con éxito y se agregó la firma y el sello.');
     }
-    
-
-    private function agregarFirmaYSelloPDF($carpetaCliente, $archivo_name, $request)
+    /* public function procesarInforme(Request $request, Cliente $cliente)
     {
-        // Obtener el proveedor asociado con el usuario autenticado
-        $proveedor = Proveedor::where('proveedor', auth()->user()->name)->first();
-
-        if ($proveedor) {
-            // Cargar las imágenes de firma y sello
-            $firma_path = public_path("/proveedores/{$proveedor->id}/{$proveedor->firmadigital}");
-            $sello_path = public_path("/proveedores/{$proveedor->id}/{$proveedor->selldigital}");
-
-            // Usar FPDF para crear el PDF
-            $pdf = new FPDF();
-            $pdf->AddPage();
-            
-            // Definir las posiciones en la parte superior derecha de la página
-            $pdf->SetXY(160, 10); // Ajustar las coordenadas según se necesite
-            $pdf->Image($firma_path, 160, 10, 30); // Firma
-
-            $pdf->SetXY(160, 30); // Ajustar las coordenadas para el sello
-            $pdf->Image($sello_path, 160, 30, 30); // Sello
-            
-            // Guardar el PDF en la carpeta del cliente
-            $pdf->Output('F', $carpetaCliente . '/' . $archivo_name);
+        // Validar archivo PDF
+        $request->validate([
+            'archivo' => 'required|mimes:pdf|max:15120',
+        ]);
+    
+        $id = $request->input('clienteitaid');
+        // Crear carpeta para el cliente si no existe
+        $carpetaCliente = public_path("documentacionclientesita/{$id}");
+        if (!file_exists($carpetaCliente)) {
+            mkdir($carpetaCliente, 0755, true);  // Crear carpeta si no existe
         }
+    
+        // Obtener rutas de firma y sello
+        $firmaPath = public_path('/glfirmasello/' . auth()->id() . '/' . auth()->user()->firmadigital);
+        $selloPath = public_path('/glfirmasello/' . auth()->id() . '/' . auth()->user()->sellodigital);
+    
+        // Verificar si existen los archivos de firma y sello
+        if (!file_exists($firmaPath) || !file_exists($selloPath)) {
+            return back()->withErrors(['error' => 'Firma o sello no encontrados.']);
+        }
+    
+        // Obtener el archivo PDF cargado
+        $uploadedPdfPath = $request->file('archivo')->getPathname();
+        $nombreDocumento = $request->input('nombre_documento', uniqid());  // Obtener nombre del documento desde el formulario
+        $outputFileName = "{$nombreDocumento}.pdf";
+        $outputPath = $carpetaCliente . "/$outputFileName";  // Guardar en la carpeta del cliente
+    
+        // Crear una instancia de FPDI y procesar el PDF
+        $pdf = new FPDI();
+        $pageCount = $pdf->setSourceFile($uploadedPdfPath);
+    
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $pdf->AddPage();
+            $pdf->useTemplate($templateId, 0, 0);
+    
+            // Coordenadas y tamaños de firma y sello
+            $firmaX = 10; $firmaY = 240; $firmaWidth = 50; $firmaHeight = 30;
+            $selloX = 160; $selloY = 230; $selloWidth = 40; $selloHeight = 40;
+    
+            try {
+                // Insertar firma y sello si existen
+                if (file_exists($firmaPath)) {
+                    $pdf->Image($firmaPath, $firmaX, $firmaY, $firmaWidth, $firmaHeight);
+                }
+                if (file_exists($selloPath)) {
+                    $pdf->Image($selloPath, $selloX, $selloY, $selloWidth, $selloHeight);
+                }
+            } catch (Exception $e) {
+                return back()->withErrors(['error' => 'Error al insertar imágenes: ' . $e->getMessage()]);
+            }
+        }
+    
+        // Guardar el PDF firmado
+        try {
+            $pdf->Output($outputPath, 'F');
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => 'Error al guardar el archivo PDF firmado: ' . $e->getMessage()]);
+        }
+    
+        // Verificar si el archivo se guardó correctamente
+        if (!file_exists($outputPath)) {
+            return back()->withErrors(['error' => 'No se pudo guardar el archivo PDF firmado.']);
+        }
+    
+        // Guardar imágenes si se han cargado
+        $image_name = null;
+        if ($request->hasFile('picture')) {
+            $file = $request->file('picture');
+            $image_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $image_name);  // Guardar en la carpeta del cliente
+        }
+    
+        $image_name2 = null;
+        if ($request->hasFile('picture2')) {
+            $file = $request->file('picture2');
+            $image_name2 = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $image_name2);  // Guardar en la carpeta del cliente
+        }
+    
+        // Crear la documentación del subcliente en la base de datos
+        $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
+        $accion = $request->input('accion');
+        $nombrecliente = $request->input('clienteitanombre');
+        
+        // Guardar el nombre del archivo PDF en la base de datos tal como se guarda en el sistema de archivos
+        $documentacioncliente = Documentacionsubcliente::create(
+            $request->except('accion') + [
+                'document' => $outputFileName,  // Ruta del archivo en el sistema de archivos
+                'accion' => $accion,
+                'clienteitanombre' => $nombrecliente,
+                'image' => $image_name,
+                'image2' => $image_name2
+            ]
+        );
+    
+        // Retornar mensaje de éxito
+        return back()->with('info', 'El archivo PDF firmado y sellado ha sido guardado correctamente.');
+    } */
+
+    public function procesarInforme(Request $request, Cliente $cliente) 
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:pdf|max:15120',
+        ]);
+
+        $id = $request->input('clienteitaid');
+        $carpetaCliente = public_path("documentacionclientesita/{$id}/firmados");
+        if (!file_exists($carpetaCliente)) {
+            mkdir($carpetaCliente, 0755, true);
+        }
+
+        $usuario = auth()->user()->name;
+        $sucursal = auth()->user()->sucursal; // Asegúrate de que el usuario autenticado tenga el atributo `sucursal`.
+        $fechaActual = Carbon::now()->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
+
+        // Procesar y almacenar el archivo original
+        $archivo_name = null;
+            if ($request->hasFile('archivo2')) {
+                $file = $request->file('archivo2');
+                
+                $carpetaCliente = public_path("/documentacionclientesita/{$id}");
+                if (!file_exists($carpetaCliente)) {
+                    mkdir($carpetaCliente, 0755, true);}
+                $archivo_name = time() . '_' . $file->getClientOriginalName();
+                $file->move($carpetaCliente, $archivo_name);
+            }
+
+        // VARIABLES PARA FIRMAS Y SELLOS
+        $firmaAnteriorPath = '';
+        $selloAnteriorPath = '';
+        $firmaUltimaPath = '';
+        $selloUltimaPath = '';
+        $firmaAnteriorCoords = [];
+        $selloAnteriorCoords = [];
+        $firmaUltimaCoords = [];
+        $selloUltimaCoords = [];
+        $texto1 = $texto2 = $texto3 = "";
+        switch ($usuario) {
+            case 'AGUIRRE VASQUEZ MARIA RENEE':
+                $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE VERTICAL.png');
+                $firmaAnteriorCoords = ['x' => 180, 'y' => 200, 'width' => 30, 'height' => 45];
+                $selloAnteriorCoords = ['x' => 173, 'y' => 200, 'width' => 40, 'height' => 50];
+
+                $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE.png');
+                $firmaUltimaCoords = ['x' => 90, 'y' => 190, 'width' => 40, 'height' => 55];
+                $selloUltimaCoords = ['x' => 80, 'y' => 200, 'width' => 60, 'height' => 50];
+                $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
+                $texto2 = "MÉDICO CIRUJANO";
+                $texto3 = "M.P.A - 7676725";
+                break;
+
+            case 'MARICELA COLQUE SANDOVAL':
+                $firmaAnteriorPath = public_path('/glfirmasello/MARICELA COLQUE SANDOVAL/FIRMA ORIGINAL MARICELA COLQUE VERTICAL.png');
+                $selloAnteriorPath = public_path('/glfirmasello/MARICELA COLQUE SANDOVAL/SELLO ORIGINAL MARICELA COLQUE VERTICAL.png');
+                $firmaAnteriorCoords = ['x' => 185, 'y' => 205, 'width' => 20, 'height' => 25];
+                $selloAnteriorCoords = ['x' => 185, 'y' => 200, 'width' => 30, 'height' => 40];
+
+                $firmaUltimaPath = public_path('/glfirmasello/MARICELA COLQUE SANDOVAL/FIRMA ORIGINAL MARICELA COLQUE.png');
+                $selloUltimaPath = public_path('/glfirmasello/MARICELA COLQUE SANDOVAL/SELLO ORIGINAL MARICELA COLQUE.png');
+                $firmaUltimaCoords = ['x' => 90, 'y' => 190, 'width' => 30, 'height' => 35];
+                $selloUltimaCoords = ['x' => 82, 'y' => 200, 'width' => 45, 'height' => 40];
+                $texto1 = "LIC. MARICELA COLQUE SANDOVAL";
+                $texto2 = "TRABAJADORA SOCIAL";
+                $texto3 = "MAT. PROF. N° 0496";
+                break;
+
+            case 'MONICA MACOÑO FLORES':
+                $firmaAnteriorPath = public_path('/glfirmasello/MONICA MACOÑO FLORES/FIRMA ORIGINAL MONICA MACOÑO VERTICAL.png');
+                $selloAnteriorPath = public_path('/glfirmasello/MONICA MACOÑO FLORES/SELLO ORIGINAL MONICA MAÑOCO VERTICAL.png');
+                $firmaAnteriorCoords = ['x' => 185, 'y' => 205, 'width' => 20, 'height' => 25];
+                $selloAnteriorCoords = ['x' => 185, 'y' => 200, 'width' => 30, 'height' => 40];
+
+                $firmaUltimaPath = public_path('/glfirmasello/MONICA MACOÑO FLORES/FIRMA ORIGINAL MONICA MACOÑO.png');
+                $selloUltimaPath = public_path('/glfirmasello/MONICA MACOÑO FLORES/SELLO ORIGINAL MONICA MAÑOCO.png');
+                $firmaUltimaCoords = ['x' => 90, 'y' => 192, 'width' => 30, 'height' => 35];
+                $selloUltimaCoords = ['x' => 82, 'y' => 200, 'width' => 45, 'height' => 40];
+                $texto1 = "LIC. MONICA MACOÑO FLORES";
+                $texto2 = "FISIOTERAPEUTA KINESIÓLOGA";
+                $texto3 = "MAT.: 8237722";
+                break;
+
+            default:
+                $firmaAnteriorPath = public_path('/glfirmasello/default/firma_anterior.png');
+                $selloAnteriorPath = public_path('/glfirmasello/default/sello_anterior.png');
+                $firmaAnteriorCoords = ['x' => 160, 'y' => 230, 'width' => 50, 'height' => 30];
+                $selloAnteriorCoords = ['x' => 170, 'y' => 230, 'width' => 40, 'height' => 40];
+
+                $firmaUltimaPath = public_path('/glfirmasello/default/firma_ultima.png');
+                $selloUltimaPath = public_path('/glfirmasello/default/sello_ultima.png');
+                $firmaUltimaCoords = ['x' => 85, 'y' => 215, 'width' => 60, 'height' => 40];
+                $selloUltimaCoords = ['x' => 85, 'y' => 220, 'width' => 50, 'height' => 50];
+                break;
+        }
+
+        // Agregar el texto de la sucursal y la fecha
+        $textoFecha = "{$sucursal}, {$fechaActual}";
+
+        // Verificar si los archivos de firma y sello existen
+        if (!file_exists($firmaAnteriorPath) || !file_exists($selloAnteriorPath) ||
+            !file_exists($firmaUltimaPath) || !file_exists($selloUltimaPath)) {
+            return back()->withErrors(['error' => 'Alguna firma o sello no fue encontrada para el usuario autenticado.']);
+        }
+
+        $uploadedPdfPath = $request->file('archivo')->getPathname();
+        $nombreDocumento = $request->input('nombre_documento', uniqid());
+        $outputFileName = "{$nombreDocumento}.pdf";
+        $outputPath = $carpetaCliente . "/$outputFileName";
+
+        // Crear instancia de FPDI y procesar el PDF
+        $pdf = new FPDI();
+        $pageCount = $pdf->setSourceFile($uploadedPdfPath);
+
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $pdf->AddPage();
+            $pdf->useTemplate($templateId, 0, 0);
+
+            try {
+                if ($pageNo == $pageCount) {
+                    // Última página: firma y sello diferentes
+                    $pdf->Image($firmaUltimaPath, $firmaUltimaCoords['x'], $firmaUltimaCoords['y'], $firmaUltimaCoords['width'], $firmaUltimaCoords['height']);
+                    $pdf->Image($selloUltimaPath, $selloUltimaCoords['x'], $selloUltimaCoords['y'], $selloUltimaCoords['width'], $selloUltimaCoords['height']);
+                
+                    
+                    // Coordenadas del sello 
+                    $xSello = $selloUltimaCoords['x'];
+                    $ySello = $selloUltimaCoords['y'];
+                    $anchoSello = $selloUltimaCoords['width'];
+                    $altoSello = $selloUltimaCoords['height'];
+
+                    // Reducir interlineado
+                    $lineHeight = 5;
+
+                    // Textos a centrar
+                    $textos = [$texto1, $texto2, $texto3, $textoFecha];
+                    $pdf->SetFont('Helvetica', '', 10);
+                    $pdf->SetTextColor(0, 0, 0);
+
+                    // Ajustar la distancia entre el grupo de textos y el sello
+                    $ySelloAjustado = $ySello - 15; // Ajusta este valor para acercar o alejar todo el grupo de textos
+
+                    // Calcular el centro horizontal tomando en cuenta el sello
+                    foreach ($textos as $index => $lineaTexto) {
+                        $anchoTexto = $pdf->GetStringWidth($lineaTexto); // Calcular el ancho del texto
+                        $xTextoCentrado = $xSello + ($anchoSello / 2) - ($anchoTexto / 2); // Centrar el texto debajo del sello
+
+                        // Ajustar la posición vertical debajo del sello
+                        $yTexto = $ySelloAjustado + $altoSello + ($lineHeight * $index) + 2; // Mueve todo el grupo más cerca del sello
+
+                        $pdf->SetXY($xTextoCentrado, $yTexto);
+
+                        // Aplicar negrita y subrayado, excepto para el texto de la fecha
+                        if ($lineaTexto !== $textoFecha) {
+                            $pdf->SetFont('Helvetica', 'BU', 10); // Negrita y subrayado
+                        } else {
+                            $pdf->SetFont('Helvetica', '', 10); // Solo normal para la fecha
+                        }
+
+                        $pdf->Cell($anchoTexto, $lineHeight, utf8_decode($lineaTexto), 0, 1, 'C');
+                    }
+                } else {
+                    // Páginas anteriores
+                    $pdf->Image($firmaAnteriorPath, $firmaAnteriorCoords['x'], $firmaAnteriorCoords['y'], $firmaAnteriorCoords['width'], $firmaAnteriorCoords['height']);
+                    $pdf->Image($selloAnteriorPath, $selloAnteriorCoords['x'], $selloAnteriorCoords['y'], $selloAnteriorCoords['width'], $selloAnteriorCoords['height']);
+                }
+            } catch (Exception $e) {
+                return back()->withErrors(['error' => 'Error al insertar imágenes: ' . $e->getMessage()]);
+            }
+        }
+
+        // Guardar el PDF firmado
+        try {
+            $pdf->Output($outputPath, 'F');
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => 'Error al guardar el archivo PDF firmado: ' . $e->getMessage()]);
+        }
+
+        if (!file_exists($outputPath)) {
+            return back()->withErrors(['error' => 'No se pudo guardar el archivo PDF firmado.']);
+        }
+
+        // Crear instancia de FPDI y procesar todas las páginas
+        $pdf = new FPDI();
+        $pageCount = $pdf->setSourceFile($uploadedPdfPath);
+
+        // Validar que haya al menos una página en el archivo
+        if ($pageCount < 1) {
+            return back()->withErrors(['error' => 'El archivo PDF no contiene páginas.']);
+        }
+
+        // Procesar cada página
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $pdf->AddPage();
+            $pdf->useTemplate($templateId, 0, 0);
+
+            // Si es la última página, añadir solo los textos
+            if ($pageNo == $pageCount) {
+                $xSello = $selloUltimaCoords['x'];
+                $ySello = $selloUltimaCoords['y'];
+                $anchoSello = $selloUltimaCoords['width'];
+                $altoSello = $selloUltimaCoords['height'];
+
+                $lineHeight = 5;
+                $textos = [$texto1, $texto2, $texto3, $textoFecha];
+                $pdf->SetFont('Helvetica', '', 10);
+                $pdf->SetTextColor(0, 0, 0);
+
+                // Ajustar distancia entre textos y sello
+                $ySelloAjustado = $ySello - 15;
+
+                foreach ($textos as $index => $lineaTexto) {
+                    $anchoTexto = $pdf->GetStringWidth($lineaTexto);
+                    $xTextoCentrado = $xSello + ($anchoSello / 2) - ($anchoTexto / 2);
+                    $yTexto = $ySelloAjustado + $altoSello + ($lineHeight * $index) + 2;
+
+                    $pdf->SetXY($xTextoCentrado, $yTexto);
+
+                    if ($lineaTexto !== $textoFecha) {
+                        $pdf->SetFont('Helvetica', 'BU', 10); // Negrita y subrayado
+                    } else {
+                        $pdf->SetFont('Helvetica', '', 10); // Texto normal
+                    }
+
+                    $pdf->Cell($anchoTexto, $lineHeight, utf8_decode($lineaTexto), 0, 1, 'C');
+                }
+            }
+        }
+
+        // Guardar el PDF procesado
+        $outputFileName2 = "{$nombreDocumento}_procesado.pdf";
+        $outputPath = $carpetaCliente . "/$outputFileName2";
+
+        try {
+            $pdf->Output($outputPath, 'F');
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => 'Error al guardar el archivo PDF procesado: ' . $e->getMessage()]);
+        }
+
+        // Actualizar la variable $archivo_name para referirse al nuevo archivo
+        $archivo_name = $outputFileName2;
+
+        if (!file_exists($outputPath)) {
+            return back()->withErrors(['error' => 'No se pudo guardar el archivo PDF procesado.']);
+        }
+
+
+        $image_name = null;
+        if ($request->hasFile('picture')) {
+            $file = $request->file('picture');
+            $image_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $image_name);
+        }
+        $image_name2 = null;
+        if ($request->hasFile('picture2')) {
+            $file = $request->file('picture2');
+            $image_name2 = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $image_name2);
+        }
+        $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
+        $accion = $request->input('accion');
+        $nombrecliente = $request->input('clienteitanombre');
+        $idcliente = $request->input('clienteitaid');
+        
+        $documentacioncliente = Documentacionsubcliente::create(
+            $request->except('accion') + [
+                'documentfirmado' => $outputFileName,
+                'document' => $outputFileName2,
+                'accion' => $accion,
+                'clienteitanombre' => $nombrecliente,
+                'clienteitaid' => $idcliente,
+                'image' => $image_name,
+                'image2' => $image_name2
+            ]
+        );
+
+        return back()->with('info', 'El archivo PDF firmado y sellado ha sido guardado correctamente.');
+    }
+
+    public function procesardiagnostico(StoreDocumentacionsubclienteRequest $request, Cliente $cliente) 
+    {
+        $archivo_name = null;
+        $clienteitaid = $request->input('clienteitaid');
+        if ($request->hasFile('archivo')) {
+            $file = $request->file('archivo');
+            
+            $carpetaCliente = public_path("/diagnosticos/{$clienteitaid}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+            
+            // Nombre del archivo PDF
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+    
+        }
+    
+        $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
+        $accion = $request->input('accion');
+        $usuarioid = $request->input('usuarioid');
+        $usuarioregistro = $request->input('usuarioregistro');
+        $clienteitaid = $request->input('clienteitaid');
+        $clienteitanombre = $request->input('clienteitanombre');
+        $usuarioregistro = $request->input('usuarioregistro');
+        $fechabateria = $request->input('fechabateria');
+    
+        $documentacioncliente = Documentacionsubcliente::create(
+            $request->except('accion') + [
+                'document' => $archivo_name,
+                'accion' => $accion,
+                'usuarioregistro' => $usuarioregistro,
+                'usuarioid' => $usuarioid,
+                'clienteitaid' => $clienteitaid,
+                'clienteitanombre' => $clienteitanombre,
+                'fechabateria' => $fechabateria,
+            ]
+        );
+    
+        return redirect()->route('admin.informesfinales.reservasmedicas')->with('info', 'El documento se subió con éxito');
+    }
+
+    public function procesarInformeauditoria(Request $request, ClienteAuditoria $clienteauditoria) 
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:pdf|max:15120',
+        ]);
+
+        $id = $request->input('clienteauditoriaid');
+        $carpetaCliente = public_path("documentacionclientesauditoria/{$id}/firmados");
+        if (!file_exists($carpetaCliente)) {
+            mkdir($carpetaCliente, 0755, true);
+        }
+
+        $usuario = auth()->user()->name;
+        $sucursal = auth()->user()->sucursal; // Asegúrate de que el usuario autenticado tenga el atributo `sucursal`.
+        $fechaActual = Carbon::now()->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
+
+        // Procesar y almacenar el archivo original
+        $archivo_name = null;
+            if ($request->hasFile('archivo2')) {
+                $file = $request->file('archivo2');
+                
+                $carpetaCliente = public_path("/documentacionclientesauditoria/{$id}");
+                if (!file_exists($carpetaCliente)) {
+                    mkdir($carpetaCliente, 0755, true);}
+                $archivo_name = time() . '_' . $file->getClientOriginalName();
+                $file->move($carpetaCliente, $archivo_name);
+            }
+
+        // VARIABLES PARA FIRMAS Y SELLOS
+        $firmaAnteriorPath = '';
+        $selloAnteriorPath = '';
+        $firmaUltimaPath = '';
+        $selloUltimaPath = '';
+        $firmaAnteriorCoords = [];
+        $selloAnteriorCoords = [];
+        $firmaUltimaCoords = [];
+        $selloUltimaCoords = [];
+        $texto1 = $texto2 = $texto3 = "";
+        switch ($usuario) {
+            case 'AGUIRRE VASQUEZ MARIA RENEE':
+                $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE VERTICAL.png');
+                $firmaAnteriorCoords = ['x' => 180, 'y' => 200, 'width' => 30, 'height' => 45];
+                $selloAnteriorCoords = ['x' => 173, 'y' => 200, 'width' => 40, 'height' => 50];
+
+                $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE.png');
+                $firmaUltimaCoords = ['x' => 90, 'y' => 190, 'width' => 40, 'height' => 55];
+                $selloUltimaCoords = ['x' => 80, 'y' => 200, 'width' => 60, 'height' => 50];
+                $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
+                $texto2 = "MÉDICO CIRUJANO";
+                $texto3 = "M.P.A - 7676725";
+                break;
+
+            case 'MARICELA COLQUE SANDOVAL':
+                $firmaAnteriorPath = public_path('/glfirmasello/MARICELA COLQUE SANDOVAL/FIRMA ORIGINAL MARICELA COLQUE VERTICAL.png');
+                $selloAnteriorPath = public_path('/glfirmasello/MARICELA COLQUE SANDOVAL/SELLO ORIGINAL MARICELA COLQUE VERTICAL.png');
+                $firmaAnteriorCoords = ['x' => 185, 'y' => 205, 'width' => 20, 'height' => 25];
+                $selloAnteriorCoords = ['x' => 185, 'y' => 200, 'width' => 30, 'height' => 40];
+
+                $firmaUltimaPath = public_path('/glfirmasello/MARICELA COLQUE SANDOVAL/FIRMA ORIGINAL MARICELA COLQUE.png');
+                $selloUltimaPath = public_path('/glfirmasello/MARICELA COLQUE SANDOVAL/SELLO ORIGINAL MARICELA COLQUE.png');
+                $firmaUltimaCoords = ['x' => 90, 'y' => 190, 'width' => 30, 'height' => 35];
+                $selloUltimaCoords = ['x' => 82, 'y' => 200, 'width' => 45, 'height' => 40];
+                $texto1 = "LIC. MARICELA COLQUE SANDOVAL";
+                $texto2 = "TRABAJADORA SOCIAL";
+                $texto3 = "MAT. PROF. N° 0496";
+                break;
+
+            case 'CARLOS ALEJANDRO GUARACHI SANDOVAL':
+                $firmaAnteriorPath = public_path('/glfirmasello/MONICA MACOÑO FLORES/FIRMA ORIGINAL MONICA MACOÑO VERTICAL.png');
+                $selloAnteriorPath = public_path('/glfirmasello/MONICA MACOÑO FLORES/SELLO ORIGINAL MONICA MAÑOCO VERTICAL.png');
+                $firmaAnteriorCoords = ['x' => 185, 'y' => 205, 'width' => 20, 'height' => 25];
+                $selloAnteriorCoords = ['x' => 185, 'y' => 200, 'width' => 30, 'height' => 40];
+
+                $firmaUltimaPath = public_path('/glfirmasello/MONICA MACOÑO FLORES/FIRMA ORIGINAL MONICA MACOÑO.png');
+                $selloUltimaPath = public_path('/glfirmasello/MONICA MACOÑO FLORES/SELLO ORIGINAL MONICA MAÑOCO.png');
+                $firmaUltimaCoords = ['x' => 90, 'y' => 192, 'width' => 30, 'height' => 35];
+                $selloUltimaCoords = ['x' => 82, 'y' => 200, 'width' => 45, 'height' => 40];
+                $texto1 = "LIC. MONICA MACOÑO FLORES";
+                $texto2 = "FISIOTERAPEUTA KINESIÓLOGA";
+                $texto3 = "MAT.: 8237722";
+                break;
+
+            default:
+                $firmaAnteriorPath = public_path('/glfirmasello/default/firma_anterior.png');
+                $selloAnteriorPath = public_path('/glfirmasello/default/sello_anterior.png');
+                $firmaAnteriorCoords = ['x' => 160, 'y' => 230, 'width' => 50, 'height' => 30];
+                $selloAnteriorCoords = ['x' => 170, 'y' => 230, 'width' => 40, 'height' => 40];
+
+                $firmaUltimaPath = public_path('/glfirmasello/default/firma_ultima.png');
+                $selloUltimaPath = public_path('/glfirmasello/default/sello_ultima.png');
+                $firmaUltimaCoords = ['x' => 85, 'y' => 215, 'width' => 60, 'height' => 40];
+                $selloUltimaCoords = ['x' => 85, 'y' => 220, 'width' => 50, 'height' => 50];
+                break;
+        }
+
+        // Agregar el texto de la sucursal y la fecha
+        $textoFecha = "{$sucursal}, {$fechaActual}";
+
+        // Verificar si los archivos de firma y sello existen
+        if (!file_exists($firmaAnteriorPath) || !file_exists($selloAnteriorPath) ||
+            !file_exists($firmaUltimaPath) || !file_exists($selloUltimaPath)) {
+            return back()->withErrors(['error' => 'Alguna firma o sello no fue encontrada para el usuario autenticado.']);
+        }
+
+        $uploadedPdfPath = $request->file('archivo')->getPathname();
+        $nombreDocumento = $request->input('nombre_documento', uniqid());
+        $outputFileName = "{$nombreDocumento}.pdf";
+        $outputPath = $carpetaCliente . "/$outputFileName";
+
+        // Crear instancia de FPDI y procesar el PDF
+        $pdf = new FPDI();
+        $pageCount = $pdf->setSourceFile($uploadedPdfPath);
+
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $pdf->AddPage();
+            $pdf->useTemplate($templateId, 0, 0);
+
+            try {
+                if ($pageNo == $pageCount) {
+                    // Última página: firma y sello diferentes
+                    $pdf->Image($firmaUltimaPath, $firmaUltimaCoords['x'], $firmaUltimaCoords['y'], $firmaUltimaCoords['width'], $firmaUltimaCoords['height']);
+                    $pdf->Image($selloUltimaPath, $selloUltimaCoords['x'], $selloUltimaCoords['y'], $selloUltimaCoords['width'], $selloUltimaCoords['height']);
+                
+                    
+                    // Coordenadas del sello 
+                    $xSello = $selloUltimaCoords['x'];
+                    $ySello = $selloUltimaCoords['y'];
+                    $anchoSello = $selloUltimaCoords['width'];
+                    $altoSello = $selloUltimaCoords['height'];
+
+                    // Reducir interlineado
+                    $lineHeight = 5;
+
+                    // Textos a centrar
+                    $textos = [$texto1, $texto2, $texto3, $textoFecha];
+                    $pdf->SetFont('Helvetica', '', 10);
+                    $pdf->SetTextColor(0, 0, 0);
+
+                    // Ajustar la distancia entre el grupo de textos y el sello
+                    $ySelloAjustado = $ySello - 15; // Ajusta este valor para acercar o alejar todo el grupo de textos
+
+                    // Calcular el centro horizontal tomando en cuenta el sello
+                    foreach ($textos as $index => $lineaTexto) {
+                        $anchoTexto = $pdf->GetStringWidth($lineaTexto); // Calcular el ancho del texto
+                        $xTextoCentrado = $xSello + ($anchoSello / 2) - ($anchoTexto / 2); // Centrar el texto debajo del sello
+
+                        // Ajustar la posición vertical debajo del sello
+                        $yTexto = $ySelloAjustado + $altoSello + ($lineHeight * $index) + 2; // Mueve todo el grupo más cerca del sello
+
+                        $pdf->SetXY($xTextoCentrado, $yTexto);
+
+                        // Aplicar negrita y subrayado, excepto para el texto de la fecha
+                        if ($lineaTexto !== $textoFecha) {
+                            $pdf->SetFont('Helvetica', 'BU', 10); // Negrita y subrayado
+                        } else {
+                            $pdf->SetFont('Helvetica', '', 10); // Solo normal para la fecha
+                        }
+
+                        $pdf->Cell($anchoTexto, $lineHeight, utf8_decode($lineaTexto), 0, 1, 'C');
+                    }
+                } else {
+                    // Páginas anteriores
+                    $pdf->Image($firmaAnteriorPath, $firmaAnteriorCoords['x'], $firmaAnteriorCoords['y'], $firmaAnteriorCoords['width'], $firmaAnteriorCoords['height']);
+                    $pdf->Image($selloAnteriorPath, $selloAnteriorCoords['x'], $selloAnteriorCoords['y'], $selloAnteriorCoords['width'], $selloAnteriorCoords['height']);
+                }
+            } catch (Exception $e) {
+                return back()->withErrors(['error' => 'Error al insertar imágenes: ' . $e->getMessage()]);
+            }
+        }
+
+        // Guardar el PDF firmado
+        try {
+            $pdf->Output($outputPath, 'F');
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => 'Error al guardar el archivo PDF firmado: ' . $e->getMessage()]);
+        }
+
+        if (!file_exists($outputPath)) {
+            return back()->withErrors(['error' => 'No se pudo guardar el archivo PDF firmado.']);
+        }
+
+        // Crear instancia de FPDI y procesar todas las páginas
+        $pdf = new FPDI();
+        $pageCount = $pdf->setSourceFile($uploadedPdfPath);
+
+        // Validar que haya al menos una página en el archivo
+        if ($pageCount < 1) {
+            return back()->withErrors(['error' => 'El archivo PDF no contiene páginas.']);
+        }
+
+        // Procesar cada página
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $pdf->AddPage();
+            $pdf->useTemplate($templateId, 0, 0);
+
+            // Si es la última página, añadir solo los textos
+            if ($pageNo == $pageCount) {
+                $xSello = $selloUltimaCoords['x'];
+                $ySello = $selloUltimaCoords['y'];
+                $anchoSello = $selloUltimaCoords['width'];
+                $altoSello = $selloUltimaCoords['height'];
+
+                $lineHeight = 5;
+                $textos = [$texto1, $texto2, $texto3, $textoFecha];
+                $pdf->SetFont('Helvetica', '', 10);
+                $pdf->SetTextColor(0, 0, 0);
+
+                // Ajustar distancia entre textos y sello
+                $ySelloAjustado = $ySello - 15;
+
+                foreach ($textos as $index => $lineaTexto) {
+                    $anchoTexto = $pdf->GetStringWidth($lineaTexto);
+                    $xTextoCentrado = $xSello + ($anchoSello / 2) - ($anchoTexto / 2);
+                    $yTexto = $ySelloAjustado + $altoSello + ($lineHeight * $index) + 2;
+
+                    $pdf->SetXY($xTextoCentrado, $yTexto);
+
+                    if ($lineaTexto !== $textoFecha) {
+                        $pdf->SetFont('Helvetica', 'BU', 10); // Negrita y subrayado
+                    } else {
+                        $pdf->SetFont('Helvetica', '', 10); // Texto normal
+                    }
+
+                    $pdf->Cell($anchoTexto, $lineHeight, utf8_decode($lineaTexto), 0, 1, 'C');
+                }
+            }
+        }
+
+        // Guardar el PDF procesado
+        $outputFileName2 = "{$nombreDocumento}_procesado.pdf";
+        $outputPath = $carpetaCliente . "/$outputFileName2";
+
+        try {
+            $pdf->Output($outputPath, 'F');
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => 'Error al guardar el archivo PDF procesado: ' . $e->getMessage()]);
+        }
+
+        // Actualizar la variable $archivo_name para referirse al nuevo archivo
+        $archivo_name = $outputFileName2;
+
+        if (!file_exists($outputPath)) {
+            return back()->withErrors(['error' => 'No se pudo guardar el archivo PDF procesado.']);
+        }
+
+
+        $image_name = null;
+        if ($request->hasFile('picture')) {
+            $file = $request->file('picture');
+            $image_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $image_name);
+        }
+        $image_name2 = null;
+        if ($request->hasFile('picture2')) {
+            $file = $request->file('picture2');
+            $image_name2 = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $image_name2);
+        }
+        $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
+        $accion = $request->input('accion');
+        $nombrecliente = $request->input('clienteauditorianombre');
+        $idcliente = $request->input('clienteauditoriaid');
+        
+        $documentacioncliente = Documentacionsubcliente::create(
+            $request->except('accion') + [
+                'documentfirmado' => $outputFileName,
+                'document' => $outputFileName2,
+                'accion' => $accion,
+                'clienteauditorianombre' => $nombrecliente,
+                'clienteauditoriaid' => $idcliente,
+                'image' => $image_name,
+                'image2' => $image_name2
+            ]
+        );
+
+        return back()->with('info', 'El archivo PDF firmado y sellado ha sido guardado correctamente.');
+    }
+    public function procesardiagnosticoauditoria(StoreDocumentacionsubclienteRequest $request, ClienteAuditoria $clienteauditoria) 
+    {
+        $archivo_name = null;
+        $clienteauditoriaid = $request->input('clienteauditoriaid');
+        if ($request->hasFile('archivo')) {
+            $file = $request->file('archivo');
+            
+            $carpetaCliente = public_path("/diagnosticosauditoria/{$clienteauditoriaid}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+            
+            // Nombre del archivo PDF
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+    
+        }
+    
+        $accionNombre = Programacionsubcliente::where('id', $request->accion)->value('accionnombre');
+        $accion = $request->input('accion');
+        $usuarioid = $request->input('usuarioid');
+        $usuarioregistro = $request->input('usuarioregistro');
+        $clienteauditoriaid = $request->input('clienteauditoriaid');
+        $clienteauditorianombre = $request->input('clienteauditorianombre');
+        $usuarioregistro = $request->input('usuarioregistro');
+        $fechabateria = $request->input('fechabateria');
+    
+        $documentacioncliente = Documentacionsubcliente::create(
+            $request->except('accion') + [
+                'document' => $archivo_name,
+                'accion' => $accion,
+                'usuarioregistro' => $usuarioregistro,
+                'usuarioid' => $usuarioid,
+                'clienteauditoriaid' => $clienteauditoriaid,
+                'clienteauditorianombre' => $clienteauditorianombre,
+                'fechabateria' => $fechabateria,
+            ]
+        );
+    
+        return redirect()->route('admin.informesfinales.reservasmedicas')->with('info', 'El documento se subió con éxito');
     }
     public function buscarprogramacionesclienteita(Cliente $cliente, Request $request)
         {

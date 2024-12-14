@@ -148,9 +148,9 @@
                                             {{ $item['estadoGeneral'] }}
                                             @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
                                                 <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
+                                                    <a class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
                                                         <i class="fas fa-address-book"></i>
-                                                    </button>
+                                                    </a>
                                                 </abbr>
                                             @endif
                                         </p>
@@ -231,7 +231,7 @@
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn btn-veracciones {{ $item['estado'] === 'INCOMPLETO' ? 'btn-danger' : '' }}" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></button>
+                                            <a class="btn btn-veracciones {{ $item['estado'] === 'INCOMPLETO' ? 'btn-danger' : '' }}" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
                                         </abbr>
                                     </td>
                                     <style>
@@ -255,9 +255,9 @@
                                             {{ $item['estadoGeneral'] }}
                                             @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
                                                 <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
+                                                    <a class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
                                                         <i class="fas fa-address-book"></i>
-                                                    </button>
+                                                    </a>
                                                 </abbr>
                                             @endif
                                         </p>
@@ -334,9 +334,9 @@
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn btn-veracciones {{ $item['estado'] === 'INCOMPLETO' ? 'btn-danger' : '' }}" data-toggle="modal" data-target="#modal{{ $loop->index }}">
+                                            <a class="btn btn-veracciones {{ $item['estado'] === 'INCOMPLETO' ? 'btn-danger' : '' }}" data-toggle="modal" data-target="#modal{{ $loop->index }}">
                                                 <i class="fas fa-file-medical-alt"></i>
-                                            </button>
+                                            </a>
                                         </abbr>
                                     </td>
                                     <style>
@@ -359,9 +359,9 @@
                                             {{ $item['estadoGeneral'] }}
                                             @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
                                                 <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
+                                                    <a class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
                                                         <i class="fas fa-address-book"></i>
-                                                    </button>
+                                                    </a>
                                                 </abbr>
                                             @endif
                                         </p>
@@ -440,7 +440,7 @@
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER RESULTADOS MÉDICOS">
-                                            <button class="btn btn-veracciones2" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></button>
+                                            <a class="btn btn-veracciones2" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
                                         </abbr>
                                     </td>
 
@@ -450,9 +450,9 @@
                                             {{ $item['estadoGeneral'] }}
                                             @if ($item['estadoGeneral'] !== 'NO REGISTRADO')
                                                 <abbr title="VER DOCUMENTACIÓN">
-                                                    <button class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
+                                                    <a class="btn btn-requisitosdocumentos {{ $item['estadoGeneral'] === 'COMPLETO' ? 'btn-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'btn-incompleto' : 'btn-noregistrado') }}" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
                                                         <i class="fas fa-address-book"></i>
-                                                    </button>
+                                                    </a>
                                                 </abbr>
                                             @endif
                                         </p>
@@ -521,16 +521,16 @@
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER DOCUMENTACIÓN">
-                                            <button class="btn btn-veracciones2" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></button>
+                                            <a class="btn btn-veracciones2" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
                                         </abbr>
                                     </td>
 
                                     {{-- HISTORIAS MEDICAS Y DOCUMENTACION --}}
                                     <td>
                                         <abbr title="VER DOCUMENTACIÓN">
-                                            <button class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
+                                            <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
                                                 <i class="fas fa-address-book"></i>
-                                            </button>
+                                            </a>
                                         </abbr>
 
                                         @if ($item['historiamedica'])
@@ -575,9 +575,9 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" id="modalLabel{{ $loop->index }}"><strong>{{ $item['clienteitanombre'] }}</strong> - Fecha Bateria: {{ \Carbon\Carbon::parse($item['fechabateria'])->format('Y-m-d') }}</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <a type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
-                    </button>
+                    </a>
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive d-block d-md-none">
@@ -612,9 +612,9 @@
                                                 
                                                 <!-- Contenedor para el botón y los documentos -->
                                                 <div class="dropdown-container">
-                                                    <button class="btn btn-dropdown" type="button">
+                                                    <a class="btn btn-dropdown" type="a">
                                                         <i class="fas fa-sign-out-alt"></i>
-                                                    </button>
+                                                    </a>
                                                     <div class="dropdown-menu">
                                                         @if (isset($accion['document']))
                                                             <a href="{{ asset('/documentacionclientesita/' . $item['clienteitaid'] . '/' . $accion['document']->document) }}" class="btn btn-verdocumentacion" target="_blank" title="VER RESULTADO MÉDICO">
@@ -677,9 +677,9 @@
                                                 
                                                 <!-- Contenedor para el botón y los documentos -->
                                                 <div class="dropdown-container">
-                                                    <button class="btn btn-dropdown" type="button">
+                                                    <a class="btn btn-dropdown" type="button">
                                                         <i class="fas fa-sign-out-alt"></i>
-                                                    </button>
+                                                    </a>
                                                     <div class="dropdown-menu">
                                                         @if (isset($accion['document']))
                                                             <a href="{{ asset('/documentacionclientesita/' . $item['clienteitaid'] . '/' . $accion['document']->document) }}" class="btn btn-verdocumentacion" target="_blank" title="VER RESULTADO MÉDICO">
@@ -712,7 +712,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                    <a type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</a>
                 </div>
             </div>
         </div>
@@ -726,9 +726,9 @@
                     <h4 class="modal-title" id="modalLabelDocumentacion{{ $loop->index }}">
                         <strong>DOCUMENTACION</strong>
                     </h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <a type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
-                    </button>
+                    </a>
                 </div>
                 <div class="modal-body">
                     <table class="table table-striped">
@@ -962,9 +962,9 @@
                                                     <i class="fas fa-eye"></i>
                                                 </a> 
                                             @else
-                                                <button class="btn btn-verdocumentacion" disabled>
+                                                <a class="btn btn-verdocumentacion" disabled>
                                                     <i class="fas fa-eye"></i>
-                                                </button>
+                                                </a>
                                             @endif
                                         @endif
                                     </td>
@@ -1196,7 +1196,7 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                    <a type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</a>
                 </div>
             </div>
         </div>

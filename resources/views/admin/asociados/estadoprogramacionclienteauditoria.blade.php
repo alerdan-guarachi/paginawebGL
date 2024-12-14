@@ -58,11 +58,36 @@
                 <tbody>
                     @foreach($accionesDisponibles as $accion)
                     <?php
+                    // Mensaje principal sin las direcciones aún
                     $mensaje = "Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: " .
-                            $accion->proveedornombre . ", para realizarse: " .
-                            $accion->accionnombre . ", para la fecha: " .
-                            $accion->fechaasignada . ", a la hora: " . 
-                            $accion->horadesde . ". Que tenga un excelente dia.";
+                                $accion->proveedornombre . ", para realizarse: " .
+                                $accion->areanombre . ", para la fecha: " .
+                                $accion->fechaasignada . ", a la hora: " . 
+                                $accion->horadesde . ". Que tenga un excelente día.";
+
+                    // Agregar direcciones y enlaces al final, si están disponibles
+                    $direcciones = "";
+                    if (!empty($accion->direccion)) {
+                        $direcciones .= "\n\nDirección: " . $accion->direccion;
+                        if (!empty($accion->linkubicacion)) {
+                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion . ")";
+                        }
+                    }
+                    if (!empty($accion->direccion2)) {
+                        $direcciones .= "\n\nDirección 2: " . $accion->direccion2;
+                        if (!empty($accion->linkubicacion2)) {
+                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion2 . ")";
+                        }
+                    }
+                    if (!empty($accion->direccion3)) {
+                        $direcciones .= "\n\nDirección 3: " . $accion->direccion3;
+                        if (!empty($accion->linkubicacion3)) {
+                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion3 . ")";
+                        }
+                    }
+
+                    // Añadir las direcciones al mensaje principal
+                    $mensaje .= $direcciones;
 
                     $mensajeCodificado = urlencode($mensaje);
                     ?>

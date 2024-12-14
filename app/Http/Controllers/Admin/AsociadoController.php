@@ -394,12 +394,12 @@ class AsociadoController extends Controller
                 return [$item->fechabateria => $item->tramite];
             });
             $clienteConInvalidez = Tramitesubcliente::where('clienteitaid', $cliente->id)
-    ->where('tramite', 'INVALIDEZ')
-    ->exists();
+            ->where('tramite', 'INVALIDEZ')
+            ->exists();
 
-$clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente->id)
-    ->whereIn('tramite', ['APELACION', 'SEGUNDA SOLICITUD'])
-    ->exists();
+        $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->whereIn('tramite', ['APELACION', 'SEGUNDA SOLICITUD'])
+            ->exists();
 
         return view('admin.asociados.verclienteita', compact('clienteConInvalidez','clienteConApelacionOSegunda','tramitesPorFecha','historiamedicaclienteita','nombreusuario','tienerequisitosapelacion','tienerequisitossegundasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion'));
     }
@@ -1856,7 +1856,7 @@ $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente
                 $accion->direccion2 = $proveedor->direccion2;
                 $accion->direccion3 = $proveedor->direccion3;
             } else {
-                $accion->direccion = 'GOOD LIFE SRL';
+                $accion->direccion = 'Avenida Rene Moreno #484 (GOOD LIFE SRL)';
                 $accion->direccion2 = '';
                 $accion->direccion3 = '';
             }
@@ -1876,10 +1876,10 @@ $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente
                 } elseif ($bateriaProveedor->sucursal === 'COCHABAMBA') {
                     $accion->linkubicacion = 'https://maps.app.goo.gl/aXPo8s2T3QB6NoH47';
                 } else {
-                    $accion->linkubicacion = '';
+                    /* $accion->linkubicacion = ''; */
                 }
             } else {
-                $accion->linkubicacion = '';
+                /* $accion->linkubicacion = ''; */
             }
             
         }
@@ -7035,6 +7035,44 @@ $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente
         $accionesPorFecha[$fecha][] = $accion;
         }
         
+
+        foreach ($accionesDisponibles as $accion) {
+            $bateriaProveedor = BateriaProveedor::where('proveedor', $accion->proveedornombre)->first();
+            $proveedor = Proveedor::where('proveedor', $accion->proveedornombre)->first();
+
+            if ($bateriaProveedor && $bateriaProveedor->servicio === 'EXTERNO' && $proveedor) {
+                $accion->direccion = $proveedor->direccion;
+                $accion->direccion2 = $proveedor->direccion2;
+                $accion->direccion3 = $proveedor->direccion3;
+            } else {
+                $accion->direccion = 'Avenida Rene Moreno #484 (GOOD LIFE SRL)';
+                $accion->direccion2 = '';
+                $accion->direccion3 = '';
+            }
+            if ($bateriaProveedor && $bateriaProveedor->servicio === 'EXTERNO' && $proveedor) {
+                $accion->linkubicacion = $proveedor->linkubicacion;
+                $accion->linkubicacion2 = $proveedor->linkubicacion2;
+                $accion->linkubicacion3 = $proveedor->linkubicacion3;
+            } else {
+                $accion->linkubicacion = '';
+                $accion->linkubicacion2 = '';
+                $accion->linkubicacion3 = '';
+
+            }
+            if ($bateriaProveedor && $bateriaProveedor->servicio === 'INTERNO' && $proveedor) {
+                if ($bateriaProveedor->sucursal === 'SANTA CRUZ') {
+                    $accion->linkubicacion = 'https://maps.app.goo.gl/8Ye9G5fUDrLGjueNA';
+                } elseif ($bateriaProveedor->sucursal === 'COCHABAMBA') {
+                    $accion->linkubicacion = 'https://maps.app.goo.gl/aXPo8s2T3QB6NoH47';
+                } else {
+                    /* $accion->linkubicacion = ''; */
+                }
+            } else {
+                /* $accion->linkubicacion = ''; */
+            }
+            
+        }
+
         $id = ClienteAuditoria::where('nombrecompleto', $clienteauditoria->nombrecompleto)->value('id');
 
         return view('admin.asociados.estadoprogramacionclienteauditoria', compact('accionesNoRegistradas','estadoMapeado','fechaSeleccionada', 'id','fechas','nombreclienteita','accionesDisponibles', 'clienteauditoria', 'id', 'accionesCliente', 'estadoRegistrados', 'fechasBateriaPorAccion', 'accionesPorFecha', 'accionesRegistradas'));

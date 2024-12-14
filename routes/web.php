@@ -88,6 +88,12 @@ Route::resource('ordenes/ordenesventa', OrdenVentaController::class)/* ->middlew
 
 Route::get('asociados/{id}/download-pdf', [AsociadoController::class, 'downloadPDF'])->name('admin.asociados.downloadPDF');
 
+Route::post('/procesar-informe', [InformeFinalController::class, 'procesarInforme'])->name('procesar.informe');
+Route::post('/procesar-informeauditoria', [InformeFinalController::class, 'procesarInformeauditoria'])->name('procesar.informeauditoria');
+
+Route::post('/procesar-diagnostico', [InformeFinalController::class, 'procesardiagnostico'])->name('procesar.diagnostico');
+Route::post('/procesar-diagnosticoauditoria', [InformeFinalController::class, 'procesardiagnosticoauditoria'])->name('procesar.diagnosticoauditoria');
+
 //INFORMES FINALES
     Route::get('informesfinales/documentosprogramaciones/7', 'App\Http\Controllers\Admin\InformeFinalController@documentosprogramaciones')->name('admin.informesfinales.documentosprogramaciones');
     Route::get('/buscarprogramacionesclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarporproveedor')->name('buscarporproveedor');

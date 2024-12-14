@@ -1,6 +1,237 @@
 @extends('adminlte::page')
     
 @section('content_header')
+<a type="button" class="btn btn-sm btn-crear float-right" data-toggle="modal" data-target="#calendarModal">CONTROL DE PAGOS
+</a>
+
+<div class="container">
+    <div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="calendarModalLabel">
+                        Pagos de {{ \Carbon\Carbon::createFromDate($year, $month, 1)->format('F Y') }}
+                    </h4>
+                    <button type="button" class="btn-close text-white" data-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="customCalendar" class="my-3"></div>
+                    <div class="d-flex justify-content-between">
+                        <button id="prevMonth" class="btn btn-crear">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </button>
+                        <button id="nextMonth" class="btn btn-crear">
+                            Siguiente <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    #customCalendar table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#customCalendar th {
+    background-color: #f8f9fa;
+    padding: 10px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+#customCalendar td {
+    height: 80px;
+    vertical-align: top;
+    padding: 5px;
+    border: 1px solid #dee2e6;
+    position: relative;
+}
+
+#customCalendar td strong {
+    font-size: 1rem;
+    color: #495057;
+}
+
+#customCalendar .badge {
+    font-size: 0.75rem;
+    padding: 4px 6px;
+    margin-top: 4px;
+    display: block;
+}
+
+#customCalendar td div {
+    font-size: 0.85rem;
+    margin-top: 5px;
+    text-align: center;
+}
+
+#customCalendar td.sin-programar {
+    background-color: #f8f8f8; /* Fondo gris claro */
+    color: #6c757d; /* Texto gris oscuro */
+}
+
+#customCalendar td.sin-programar strong {
+    color: #495057; /* Color para el número del día */
+}
+#calendarModalLabel {
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.current-day {
+    background-color: #fff8e0; /* Fondo amarillo bajito */
+    font-weight: bold;
+}
+
+
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const calendarContainer = document.getElementById('customCalendar');
+    let year = {{ $year }};
+    let month = {{ $month }};
+    const modalTitle = document.getElementById('calendarModalLabel');
+
+    function fetchRecords(year, month) {
+        return fetch(`{{ route('admin.admprogramaciones.pagosprogramaciones') }}?year=${year}&month=${month}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .catch(error => {
+            console.error("Error al cargar los registros:", error);
+            return [];
+        });
+    }
+
+    function loadCalendar(year, month) {
+        const daysInMonth = new Date(year, month, 0).getDate(); // Días en el mes
+        const firstDay = new Date(year, month - 1, 1).getDay(); // Día de la semana en el que empieza el mes
+
+        // Actualizar el título del modal con el mes y año actual
+        modalTitle.innerHTML = `Pagos de ${new Date(year, month - 1).toLocaleString('default', { month: 'long' })} ${year}`;
+
+        // Obtener datos del servidor
+        fetchRecords(year, month).then(records => {
+            const recordsByDate = {};
+            records.forEach(record => {
+                recordsByDate[record.fechaasignada] = {
+                    procesados: record.procesados,
+                    sin_pago: record.sin_pago,
+                };
+            });
+
+            // Renderizar el calendario con los datos obtenidos
+            renderCalendar(year, month, daysInMonth, firstDay, recordsByDate);
+        });
+    }
+
+    function renderCalendar(year, month, daysInMonth, firstDay, recordsByDate) {
+    const table = document.createElement('table');
+    table.classList.add('table', 'table-bordered', 'text-center');
+
+    const header = document.createElement('thead');
+    header.innerHTML = `
+        <tr>
+            <th>Lunes</th>
+            <th>Martes</th>
+            <th>Miércoles</th>
+            <th>Jueves</th>
+            <th>Viernes</th>
+            <th>Sábado</th>
+            <th>Domingo</th>
+        </tr>`;
+    table.appendChild(header);
+
+    const body = document.createElement('tbody');
+    let row = document.createElement('tr');
+
+    // Ajuste para que el primer día se muestre correctamente
+    let startDay = firstDay === 0 ? 6 : firstDay - 1;
+
+    // Agregar celdas vacías al inicio
+    for (let i = 0; i < startDay; i++) {
+        const cell = document.createElement('td');
+        row.appendChild(cell);
+    }
+
+    const currentDate = new Date();
+    const currentDay = currentDate.getDate();
+    const currentMonth = currentDate.getMonth() + 1; // Mes actual (1 basado)
+
+    // Agregar días del mes
+    for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement('td');
+        const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        // Verificar si el día actual es el mismo
+        if (day === currentDay && month === currentMonth && year === currentDate.getFullYear()) {
+            cell.classList.add('current-day');  // Añadir clase para el fondo amarillo
+        }
+
+        if (recordsByDate[date]) {
+            const { procesados, sin_pago } = recordsByDate[date];
+
+            let content = `<strong>${day}</strong>`;
+            content += `<div><span class="badge badge-success">Procesados: ${procesados}</span></div>`;
+            if (sin_pago > 0) {
+                content += `<div><span class="badge badge-danger">Sin Procesar: ${sin_pago}</span></div>`;
+            }
+
+            cell.innerHTML = content;
+        } else {
+            cell.innerHTML = `<strong>${day}</strong><div>Sin prog.</div>`;
+        }
+
+        row.appendChild(cell);
+
+        if ((startDay + day) % 7 === 0) {
+            body.appendChild(row);
+            row = document.createElement('tr');
+        }
+    }
+
+    while (row.children.length < 7) {
+        const cell = document.createElement('td');
+        row.appendChild(cell);
+    }
+
+    body.appendChild(row);
+    table.appendChild(body);
+    calendarContainer.innerHTML = '';
+    calendarContainer.appendChild(table);
+}
+
+
+    // Inicializar el calendario con el mes actual
+    loadCalendar(year, month);
+
+    // Navegar entre los meses
+    document.getElementById('prevMonth').addEventListener('click', function() {
+        month--;
+        if (month < 1) {
+            month = 12;
+            year--;
+        }
+        loadCalendar(year, month);
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', function() {
+        month++;
+        if (month > 12) {
+            month = 1;
+            year++;
+        }
+        loadCalendar(year, month);
+    });
+});
+
+</script>
+
 <h1>PAGOS DE PROGRAMACIONES ({{ $fechaActual }})</h1>
 @stop 
 
