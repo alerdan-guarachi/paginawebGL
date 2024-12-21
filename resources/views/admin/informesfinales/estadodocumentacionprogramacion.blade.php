@@ -4,6 +4,10 @@
 <h1>RESULTADOS MÉDICOS CLIENTES ITA</h1>
 @stop
 
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
+@stop
+
 @section('content')
 @if (session('info'))
     <div id="alert-info" class="alert alert-success">
@@ -97,11 +101,12 @@
                         <thead>
                             <tr>
                                 <th style="width: 5%;">ID</th>
-                                <th style="width: 20%;">Cliente</th>
+                                <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 25%;">Fecha Batería - Servicio</th>
+                                <th style="width: 20%;">Fecha Batería - Servicio</th>
                                 <th style="width: 15%;">Result. médicos</th>
                                 <th style="width: 15%;">Documentación</th>
+                                <th style="width: 10%;">Diagnóstico</th>
                                 <th style="width: 10%;">Hist. médica</th>
                             </tr>
                         </thead>
@@ -128,9 +133,9 @@
                                     {{-- FECHA DE BATERIA --}}
                                     <td>
                                         @if (is_array($item['tramite']) && count($item['tramite']) > 0)
-                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }} {{-- Muestra la fecha seguida de los trámites --}}
+                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }}
                                         @else
-                                            {{ $item['fechabateria'] }} - SIN SERVICIO {{-- Muestra la fecha con un mensaje si no hay trámites --}}
+                                            {{ $item['fechabateria'] }} - SIN SERVICIO
                                         @endif
                                     </td>
 
@@ -142,6 +147,7 @@
                                         </abbr>
                                     </td>
 
+                                    {{-- DOCUMENTACION REQUISITOS --}}
                                     <td>
                                         @if ($item['tramite'])
                                         <p class="{{ $item['estadoGeneral'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
@@ -156,6 +162,57 @@
                                         </p>
                                         @else
                                             <p class="text-noregistrado">NO REGISTRADO</p>
+                                        @endif
+                                    </td>
+
+                                    {{-- DIAGNOSTICO --}}
+                                    <td width="10px"> 
+                                        @if($item['diagnostico'])
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <p class="text-completo mb-0">COMPLETO </p>
+                                                <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
+                                                    <i class="fas fa-paste"></i>
+                                                </a>
+                                            </div>
+                                        @else
+                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="text-incompleto mb-0">PENDIENTE </p>
+                                                    <a type="button" class="btn btn-sm btn-incompleto" 
+                                                    data-toggle="modal" 
+                                                    data-target="#subirdiagnosticoModal"
+                                                    data-clienteitaid="{{ $item['clienteitaid'] }}"
+                                                    data-clienteitanombre="{{ $item['clienteitanombre'] }}"
+                                                    data-fechabateria="{{ $item['fechabateria'] }}"
+                                                    data-accion="DIAGNÓSTICO MÉDICO">
+                                                        <i class="fas fa-paste"></i>
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
+                                                    <a type="button" class="btn btn-sm btn-incompleto disabled" 
+                                                    data-toggle="modal" 
+                                                    data-target="#subirdiagnosticoModal"
+                                                    data-clienteitaid="{{ $item['clienteitaid'] }}"
+                                                    data-clienteitanombre="{{ $item['clienteitanombre'] }}"
+                                                    data-fechabateria="{{ $item['fechabateria'] }}"
+                                                    data-accion="DIAGNÓSTICO MÉDICO">
+                                                        <i class="fas fa-paste"></i>
+                                                    </a>
+                                                </div>
+                                                <style>
+                                                    .btn.disabled {
+                                                        pointer-events: none;
+                                                        background-color: #d6d6d6;
+                                                        color: #a5a5a5;
+                                                        border-color: #d6d6d6;
+                                                    }
+                                                    .btn.disabled i {
+                                                        color: #a5a5a5;
+                                                    }
+                                                </style>
+                                            @endif
                                         @endif
                                     </td>
 
@@ -175,7 +232,6 @@
                                 </tr>
                                 @endif
                             @endforeach
-
                         </tbody> 
                     </table>
                 </div>
@@ -188,18 +244,18 @@
                         <thead>
                             <tr> 
                                 <th style="width: 5%;">ID</th>
-                                <th style="width: 20%;">Cliente</th>
+                                <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 25%;">Fecha Batería - Servicio</th>
+                                <th style="width: 20%;">Fecha Batería - Servicio</th>
                                 <th style="width: 15%;">Result. médicos</th>
                                 <th style="width: 15%;">Documentación</th>
+                                <th style="width: 10%;">Diagnóstico</th>
                                 <th style="width: 10%;">Hist. médica</th>
                             </tr>                            
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
                             @if ($item['estado'] === 'COMPLETO' && $item['estadoGeneral'] === 'PENDIENTE')
-
                             <tr>
                                     {{-- ID DEL CLIENTE --}}
                                     <td>{{ $item['clienteitaid'] }}</td>
@@ -226,7 +282,6 @@
                                         @endif
                                     </td>
 
-
                                     {{-- RESULTADOS MEDICOS --}}
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
@@ -242,7 +297,7 @@
                                                 border-radius: 5px;
                                                 padding: 2px 10px;
                                                 }
-                                            .btn-danger:hover {
+                                        .btn-danger:hover {
                                                 background-color: red;
                                                 color: #ffffff;
                                                 }
@@ -266,6 +321,57 @@
                                         @endif
                                     </td>
                                     
+                                    {{-- DIAGNOSTICO --}}
+                                    <td width="10px"> 
+                                        @if($item['diagnostico'])
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <p class="text-completo mb-0">COMPLETO </p>
+                                                <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
+                                                    <i class="fas fa-paste"></i>
+                                                </a>
+                                            </div>
+                                        @else
+                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="text-incompleto mb-0">PENDIENTE </p>
+                                                    <a type="button" class="btn btn-sm btn-incompleto" 
+                                                    data-toggle="modal" 
+                                                    data-target="#subirdiagnosticoModal"
+                                                    data-clienteitaid="{{ $item['clienteitaid'] }}"
+                                                    data-clienteitanombre="{{ $item['clienteitanombre'] }}"
+                                                    data-fechabateria="{{ $item['fechabateria'] }}"
+                                                    data-accion="DIAGNÓSTICO MÉDICO">
+                                                        <i class="fas fa-paste"></i>
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
+                                                    <a type="button" class="btn btn-sm btn-incompleto disabled" 
+                                                    data-toggle="modal" 
+                                                    data-target="#subirdiagnosticoModal"
+                                                    data-clienteitaid="{{ $item['clienteitaid'] }}"
+                                                    data-clienteitanombre="{{ $item['clienteitanombre'] }}"
+                                                    data-fechabateria="{{ $item['fechabateria'] }}"
+                                                    data-accion="DIAGNÓSTICO MÉDICO">
+                                                        <i class="fas fa-paste"></i>
+                                                    </a>
+                                                </div>
+                                                <style>
+                                                    .btn.disabled {
+                                                        pointer-events: none;
+                                                        background-color: #d6d6d6;
+                                                        color: #a5a5a5;
+                                                        border-color: #d6d6d6;
+                                                    }
+                                                    .btn.disabled i {
+                                                        color: #a5a5a5;
+                                                    }
+                                                </style>
+                                            @endif
+                                        @endif
+                                    </td>
+
                                     {{-- HISTORIA MEDICA --}}
                                     <td>
                                         @if ($item['historiamedica'])
@@ -294,11 +400,12 @@
                         <thead>
                             <tr>
                                 <th style="width: 5%;">ID</th>
-                                <th style="width: 20%;">Cliente</th>
+                                <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 25%;">Fecha Batería - Servicio</th>
+                                <th style="width: 20%;">Fecha Batería - Servicio</th>
                                 <th style="width: 15%;">Result. médicos</th>
                                 <th style="width: 15%;">Documentación</th>
+                                <th style="width: 10%;">Diagnóstico</th>
                                 <th style="width: 10%;">Hist. médica</th>
                             </tr>
                         </thead>
@@ -325,12 +432,13 @@
                                     {{-- FECHA DE BATERIA --}}
                                     <td>
                                         @if (is_array($item['tramite']) && count($item['tramite']) > 0)
-                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }} {{-- Muestra la fecha seguida de los trámites --}}
+                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }}
                                         @else
-                                            {{ $item['fechabateria'] }} - SIN SERVICIO {{-- Muestra la fecha con un mensaje si no hay trámites --}}
+                                            {{ $item['fechabateria'] }} - SIN SERVICIO
                                         @endif
                                     </td>
 
+                                    {{-- RESULTADOS MEDICOS --}}
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER RESULTADOS MÉDICOS">
@@ -339,20 +447,8 @@
                                             </a>
                                         </abbr>
                                     </td>
-                                    <style>
-                                        .btn-danger {
-                                                background-color:  #ffffff;
-                                                color: red;
-                                                border-color: red;
-                                                border-radius: 5px;
-                                                padding: 2px 10px;
-                                                }
-                                            .btn-danger:hover {
-                                                background-color: red;
-                                                color: #ffffff;
-                                                }
-                                    </style>
-                                
+
+                                    {{-- DOCUMENTACION REQUISITOS --}}
                                     <td>
                                         @if ($item['tramite'])
                                         <p class="{{ $item['estadoGeneral'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneral'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
@@ -369,7 +465,57 @@
                                             <p class="text-noregistrado">NO REGISTRADO</p>
                                         @endif
                                     </td>
-                                    
+
+                                    {{-- DIAGNOSTICO --}}
+                                    <td width="10px"> 
+                                        @if($item['diagnostico'])
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <p class="text-completo mb-0">COMPLETO </p>
+                                                <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
+                                                    <i class="fas fa-paste"></i>
+                                                </a>
+                                            </div>
+                                        @else
+                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="text-incompleto mb-0">PENDIENTE </p>
+                                                    <a type="button" class="btn btn-sm btn-incompleto" 
+                                                    data-toggle="modal" 
+                                                    data-target="#subirdiagnosticoModal"
+                                                    data-clienteitaid="{{ $item['clienteitaid'] }}"
+                                                    data-clienteitanombre="{{ $item['clienteitanombre'] }}"
+                                                    data-fechabateria="{{ $item['fechabateria'] }}"
+                                                    data-accion="DIAGNÓSTICO MÉDICO">
+                                                        <i class="fas fa-paste"></i>
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
+                                                    <a type="button" class="btn btn-sm btn-incompleto disabled" 
+                                                    data-toggle="modal" 
+                                                    data-target="#subirdiagnosticoModal"
+                                                    data-clienteitaid="{{ $item['clienteitaid'] }}"
+                                                    data-clienteitanombre="{{ $item['clienteitanombre'] }}"
+                                                    data-fechabateria="{{ $item['fechabateria'] }}"
+                                                    data-accion="DIAGNÓSTICO MÉDICO">
+                                                        <i class="fas fa-paste"></i>
+                                                    </a>
+                                                </div>
+                                                <style>
+                                                    .btn.disabled {
+                                                        pointer-events: none;
+                                                        background-color: #d6d6d6;
+                                                        color: #a5a5a5;
+                                                        border-color: #d6d6d6;
+                                                    }
+                                                    .btn.disabled i {
+                                                        color: #a5a5a5;
+                                                    }
+                                                </style>
+                                            @endif
+                                        @endif
+                                    </td>
 
                                     {{-- HISTORIA MEDICA --}}
                                     <td>
@@ -383,7 +529,7 @@
                                         @else
                                         <p class="text-notiene">NO TIENE</p>
                                         @endif
-                                    </td>
+                                    </td>                                    
                                 </tr>
                                 @endif
                             @endforeach
@@ -399,11 +545,12 @@
                         <thead>
                             <tr>
                                 <th style="width: 5%;">ID</th>
-                                <th style="width: 20%;">Cliente</th>
+                                <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 25%;">Fecha Batería - Servicio</th>
+                                <th style="width: 20%;">Fecha Batería - Servicio</th>
                                 <th style="width: 15%;">Result. médicos</th>
                                 <th style="width: 15%;">Documentación</th>
+                                <th style="width: 10%;">Diagnóstico</th>
                                 <th style="width: 10%;">Hist. médica</th>
                             </tr>
                         </thead>
@@ -430,9 +577,9 @@
                                     {{-- FECHA DE BATERIA --}}
                                     <td>
                                         @if (is_array($item['tramite']) && count($item['tramite']) > 0)
-                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }} {{-- Muestra la fecha seguida de los trámites --}}
+                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }}
                                         @else
-                                            {{ $item['fechabateria'] }} - SIN SERVICIO {{-- Muestra la fecha con un mensaje si no hay trámites --}}
+                                            {{ $item['fechabateria'] }} - SIN SERVICIO
                                         @endif
                                     </td>
                                     
@@ -461,6 +608,57 @@
                                         @endif
                                     </td>
 
+                                    {{-- DIAGNOSTICO --}}
+                                    <td width="10px"> 
+                                        @if($item['diagnostico'])
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <p class="text-completo mb-0">COMPLETO </p>
+                                                <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
+                                                    <i class="fas fa-paste"></i>
+                                                </a>
+                                            </div>
+                                        @else
+                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="text-incompleto mb-0">PENDIENTE </p>
+                                                    <a type="button" class="btn btn-sm btn-incompleto" 
+                                                    data-toggle="modal" 
+                                                    data-target="#subirdiagnosticoModal"
+                                                    data-clienteitaid="{{ $item['clienteitaid'] }}"
+                                                    data-clienteitanombre="{{ $item['clienteitanombre'] }}"
+                                                    data-fechabateria="{{ $item['fechabateria'] }}"
+                                                    data-accion="DIAGNÓSTICO MÉDICO">
+                                                        <i class="fas fa-paste"></i>
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
+                                                    <a type="button" class="btn btn-sm btn-incompleto disabled" 
+                                                    data-toggle="modal" 
+                                                    data-target="#subirdiagnosticoModal"
+                                                    data-clienteitaid="{{ $item['clienteitaid'] }}"
+                                                    data-clienteitanombre="{{ $item['clienteitanombre'] }}"
+                                                    data-fechabateria="{{ $item['fechabateria'] }}"
+                                                    data-accion="DIAGNÓSTICO MÉDICO">
+                                                        <i class="fas fa-paste"></i>
+                                                    </a>
+                                                </div>
+                                                <style>
+                                                    .btn.disabled {
+                                                        pointer-events: none;
+                                                        background-color: #d6d6d6;
+                                                        color: #a5a5a5;
+                                                        border-color: #d6d6d6;
+                                                    }
+                                                    .btn.disabled i {
+                                                        color: #a5a5a5;
+                                                    }
+                                                </style>
+                                            @endif
+                                        @endif
+                                    </td>
+                                    
                                     {{-- HISTORIA MEDICA --}}
                                     <td>
                                         @if ($item['historiamedica'])
@@ -478,7 +676,6 @@
                                 @endif
                             @endforeach
                         </tbody>
-                        
                     </table>
                 </div>
             </div>
@@ -543,11 +740,9 @@
                                     </td>
                                     <td>{{ $item['motivoabandono'] }}</td>
                                 </tr>
-                                
                                 @endif
                             @endforeach
                         </tbody>
-                        
                     </table>
                 </div>
             </div>
@@ -568,6 +763,75 @@
     });
 </script>
 @foreach ($result as $item)
+
+    <!-- MODAL DIAGNÓSTICO -->
+    <div class="modal fade" id="subirdiagnosticoModal" tabindex="-1" role="dialog" aria-labelledby="subirdiagnosticoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="subirdiagnosticoModalLabel" style="color: #94c93b; font-weight: bold;">DIAGNÓSTICO</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                {!! Form::open(['route' => 'procesar.diagnostico', 'method' => 'POST', 'files' => true]) !!}
+                {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                {!! Form::hidden('clienteitaid', null, ['id' => 'modal-clienteitaid']) !!}
+                {!! Form::hidden('clienteitanombre', null, ['id' => 'modal-clienteitanombre']) !!}
+                {!! Form::hidden('fechabateria', null, ['id' => 'modal-fechabateria']) !!}
+                {!! Form::hidden('accion', 'DIAGNÓSTICO MÉDICO') !!}
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="file-upload">
+                                <label for="archivo">ELIJE UN PDF:</label>
+                                <input type="file" name="archivo" class="file-input" id="archivo" accept=".pdf, .docx"/>
+                                <label for="archivo" class="file-custom-label" id="file-name">SELECCIONAR ARCHIVO</label>
+                                <div class="file-preview" id="preview-archivo"></div>
+                                @error('archivo')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                    document.getElementById('archivo').addEventListener('change', function(event) {
+                        var fileName = event.target.files[0] ? event.target.files[0].name : 'SELECCIONAR ARCHIVO';
+                        document.getElementById('file-name').textContent = fileName;
+                    });
+                </script>
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+                <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+                <script>
+                    $('#subirdiagnosticoModal').on('show.bs.modal', function (event) {
+                        var button = $(event.relatedTarget);
+                        var clienteitaid = button.data('clienteitaid');
+                        var clienteitanombre = button.data('clienteitanombre');
+                        var fechabateria = button.data('fechabateria');
+                        var accion = button.data('accion');
+
+                        var modal = $(this);
+                        modal.find('#modal-clienteitaid').val(clienteitaid);
+                        modal.find('#modal-clienteitanombre').val(clienteitanombre);
+                        modal.find('#modal-fechabateria').val(fechabateria);
+                        modal.find('#modal-accion').val(accion);
+                    });
+                </script>
+                <div class="modal-footer">
+                    <div class="text-center w-100">
+                        {!! Form::submit('SUBIR DIAGNÓSTICO', ['class' => 'btn btn-crear']) !!}
+                    </div>
+                </div>
+                {!! Form::close() !!}
+            </div>
+        </div>
+    </div>
 
     {{-- RESULTADOS MEDICOS --}}
     <div class="modal fade" id="modal{{ $loop->index }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ $loop->index }}" aria-hidden="true">
@@ -635,7 +899,6 @@
                                                         @endif
                                                     </div>
                                                 </div>
-                                                
                                             @else
                                                 <div class="pendiente">PENDIENTE</div>
                                             @endif
@@ -700,7 +963,6 @@
                                                         @endif
                                                     </div>
                                                 </div>
-                                                
                                             @else
                                                 <div class="pendiente">PENDIENTE</div>
                                             @endif
@@ -1202,435 +1464,8 @@
         </div>
     </div>
 
-    
-
 @endforeach
 
-@stop
-
-@section('css')
-<link rel="styleheet" href="/css/admin_custom.css">
-<style>
-    /* Estilo para el contenedor del botón y menú desplegable */
-.dropdown-container {
-    position: relative;
-    display: inline-block;
-}
-
-/* Estilo para el botón que abre el menú */
-.btn-dropdown {
-margin-top: -10px;
-    color: #94c93b;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-}
-
-
-/* Estilo para el menú desplegable */
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    border-radius: 5px;
-    z-index: 1;
-    top: 100%;
-    left: 100%;
-    margin-left: 5px; /* Espacio entre el botón y el menú */
-    padding: 5px;
-    opacity: 0;
-    background: #f7ffea;
-    display: flex;
-    flex-direction: row; /* Alineación horizontal de los botones */
-    white-space: nowrap; /* Evita que los botones se envuelvan */
-    min-width: 50px; /* Ancho mínimo del menú */
-    width: auto; /* Ancho automático según el contenido */
-    max-width: 300px; /* Opcional: Ajusta el máximo ancho según sea necesario */
-    transition: opacity 0.3s ease; /* Transición suave */
-    margin-top: -38px;
-}
-
-/* Mostrar el menú desplegable al pasar el cursor sobre el contenedor */
-.dropdown-container:hover .dropdown-menu {
-    display: flex;
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Estilo para los enlaces dentro del menú desplegable */
-.dropdown-menu a {
-    padding: 10px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 10px; /* Espaciado entre los botones */
-    margin-left: 10px;
-}
-
-
-</style>
-<style>
-    .btn-verhistoriamedica {
-        background-color:  #ffffff;
-        color: #c9c971;
-        border-color: #c9c971;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-verhistoriamedica:hover {
-        background-color: #c9c971;
-        color: #ffffff;
-        }
-    .btn-completo {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-completo:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-    .btn-incompleto {
-        background-color:  #ffffff;
-        color: red;
-        border-color: red;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-incompleto:hover {
-        background-color: red;
-        color: #ffffff;
-        }
-    .btn-noregistrado {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-noregistrado:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .text-completo {
-        color: #94c93b;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .text-incompleto {
-        color: red;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .text-noregistrado {
-        color: red;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .text-notiene {
-        color: #faa625;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .btn-buscar { 
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        }
-    .btn-buscar:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-mostrartodo { 
-        background-color:  #ffffff;
-        color: #2f97e7;
-        border-color: #2f97e7;
-        border-radius: 5px;
-        }
-    .btn-mostrartodo:hover {
-        background-color: #2f97e7;
-        color: #ffffff;
-        }
-    .btn-container {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-    }
-    .btn-container .btn,
-    .btn-container .btn-enviarobservacion {
-        justify-content: center;
-    }
-    .nav-tabs {
-        display: flex;
-        justify-content: space-between;
-    }
-    .nav-tabs .nav-item {
-        flex: 1;
-    }
-    .nav-tabs .nav-link {
-        display: block;
-        text-align: center;
-        width: 100%;
-        font-weight: bold;
-        font-size: 17px;
-        color: #faa625;
-        background-color: #fef4e7;
-    }
-    .nav-tabs .nav-link.active {
-        font-weight: bold;
-        font-size: 17px;
-        color: #94c93b;
-        background-color: #ffffff;
-    }
-    .circle {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        line-height: 20px;
-        border-radius: 50%;
-        text-align: center;
-        font-size: 14px;
-        font-weight: bold;
-        margin-left: 8px;
-    }
-    .nav-link.active .circle {
-        background-color: #94c93b;
-        color: #fff;
-    }
-    .nav-link .circle {
-        background-color: #faa625;
-        color: #fff;
-    }
-    .btn-upload {
-        background-color: #28a745;
-        color: white;
-    }
-    .btn-disabled {
-        background-color: #d3d3d3;
-        color: #6c757d;
-        cursor: not-allowed;
-    }
-    .btn-upload:hover {
-        background-color: #218838;
-    }
-    .btn-disabled:hover {
-        background-color: #d3d3d3;
-    }
-    .modal-content {
-        border-radius: 10px;
-        }
-    .modal-header {
-        border-bottom: none;
-        }
-    .modal-footer {
-        border-top: none;
-        }
-    h4 {
-        font-weight: bold;
-        color: #94c93b;
-        }
-    h1 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-    }
-    .btn-no, .btn-si {
-        background-color: #ffffff;
-        border-radius: 5px;
-        padding: 5px 5px;
-        min-width: 50px;
-        border: 1px solid;
-        }
-    .btn-no {
-        color: #fd1d1d;
-        border-color: #fd1d1d;
-        width: 100px;
-        }
-    .btn-no:hover {
-        background-color: #fd1d1d;
-        color: #ffffff;
-        }
-    .btn-si {
-        color: #8bc02f;
-        border-color: #8bc02f;
-        width: 100px;
-        }
-    .btn-si:hover {
-        background-color: #8bc02f;
-        color: #ffffff;
-        }
-    .checkverde {
-        color:#94c93b; 
-        }
-    
-    .text-aprobado {
-        color: #94c93b;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .text-enrevision {
-        color: #41b5eb;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .text-solicitorevision {
-        color: #faa625;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .btn-verdocumentacion {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-verdocumentacion:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-    .pendiente {color:#fb2525; 
-        font-weight: 900;
-        font-size: 15px;
-        }
-    .btn-veracciones {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-veracciones:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-    .btn-veracciones2 {
-        background-color:  #ffffff;
-        color: red;
-        border-color: red;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-veracciones2:hover {
-        background-color: red;
-        color: #ffffff;
-        }
-    .btn-enviarobservacion {
-        background-color:  #ffffff;
-        color: #41b5eb;
-        border-color: #41b5eb;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-enviarobservacion:hover {
-        background-color: #41b5eb;
-        color: #ffffff;
-        }
-    .btn-observaciones {
-        background-color:  #ffffff;
-        color: #876f4a;
-        border-color: #876f4a;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-observaciones:hover {
-        background-color: #876f4a;
-        color: #ffffff;
-        }
-    .btn-solicitarrevision {
-        background-color:  #ffffff;
-        color: #41b5eb;
-        border-color: #41b5eb;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-solicitarrevision:hover {
-        background-color: #41b5eb;
-        color: #ffffff;
-        }
-    .btn-aprobarinforme {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-aprobarinforme:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-subirinforme {
-        background-color:  #ffffff;
-        color: #cf44b8;
-        border-color: #cf44b8;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-subirinforme:hover {
-        background-color: #cf44b8;
-        color: #ffffff;
-        }
-    .btn-subirinformeinicio {
-        background-color:  #ffffff;
-        color: #cf44b8;
-        border-color: #cf44b8;
-        border-radius: 5px;
-        padding: 2px 40px;
-        }
-    .btn-subirinformeinicio:hover {
-        background-color: #cf44b8;
-        color: #ffffff;
-        }
-    .btn-asignarproveedor {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 40px;
-        }
-    .btn-asignarproveedor:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-aprobar {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 40px;
-        }
-    .btn-aprobar:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-disabled {
-        background-color:  #ffffff;
-        color: #737373;
-        border-color: #737373;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-disabled:hover {
-        background-color: #737373;
-        color: #ffffff;
-        }
-    .btn-cerrar {
-        background-color: #ffffff;
-        color: #fb2525;
-        border-color: #fb2525;
-        border-radius: 5px;
-        padding: 2px 5px;
-        }
-    .btn-cerrar:hover {
-        background-color: #fb2525;
-        color: #ffffff;
-        }
-</style>
 @stop
 
 @section('js')

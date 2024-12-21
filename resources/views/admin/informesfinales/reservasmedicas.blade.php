@@ -1,8 +1,28 @@
 @extends('adminlte::page')
 
 @section('content_header')
-
 <h1>RESERVAS MÉDICAS</h1>
+@stop
+
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/proveedoresinformes.css') }}">
+<style>
+.nav-link .circle {
+
+    width: 30px; /* Tamaño del círculo */
+
+}
+.btn-crearproveedor {
+background-color:  #ffffff;
+color: #94c93b;
+border-color: #94c93b;
+border-radius: 5px;
+}
+.btn-crearproveedor:hover {
+background-color: #94c93b;
+color: #ffffff;
+}
+</style>
 @stop
 
 @section('content')
@@ -30,7 +50,7 @@
             </div>
         </div>
     </nav> --}}
-    {{-- <script>
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             /* document.getElementById('btn-mostrar-todo').addEventListener('click', function() {
                 window.location.href = "{{ route('buscarreservamedicaclienteita') }}";
@@ -49,7 +69,7 @@
                 });
             });
         });
-    </script> --}}
+    </script>
     {{-- <nav class="navbar navbar-expand-lg float-right">
             <div class="container-fluid">
                 <div class="d-flex flex-wrap align-items-center">
@@ -190,7 +210,7 @@
             </div>
         </div>
 
-        {{-- INFORME PENDIENTE --}}
+        {{-- INFORME PENDIENTES --}}
         <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
             <div class="table-responsive">
                 <table class="table table-striped">
@@ -223,11 +243,13 @@
                                     <td>{{$reservasmedica->accionnombre}}</td>
                                     <td>{{$reservasmedica->fechaasignada}}</td>
                                     <td>{{$reservasmedica->horadesde}} - {{$reservasmedica->horahasta}}</td>
+                                    
+                                    {{-- FICHA MEDICA --}}
                                     @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                        <td width="10px">
+                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
                                             @if($reservasmedica->fichamedicaita)
-                                                <a href="{{ asset('/fichamedicaclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->fichamedicaita) }}" class="btn btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
-                                                    <i class="fas fa-eye"></i>
+                                                <a href="{{ asset('/fichamedicaclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->fichamedicaita) }}" class="btn btn-sm btn-subirinf" target="_blank" title="VER FICHA MEDICA">
+                                                    <i class="fas fa-file-signature"></i>
                                                 </a>
                                             @else
                                             <abbr title="CREAR FICHA MÉDICA">
@@ -237,13 +259,32 @@
                                             </abbr>
                                             @endif
                                         </td>
+                                    @endif
+
+                                    {{-- DIAGNOSTICO MEDICO --}}
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'MARICELA COLQUE SANDOVAL' || $nombreusuario === 'MONICA MACOÑO FLORES')
                                         <td width="10px">
                                             @if($reservasmedica->diagnosticomedicoita)
-                                                <a href="{{ asset('/diagnosticos/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->diagnosticomedicoita) }}" class="btn btn-verdocumentacion" target="_blank" title="VER DIAGNÓSTICO">
-                                                    <i class="fas fa-eye"></i>
+                                                <a href="{{ asset('/diagnosticos/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->diagnosticomedicoita) }}" class="btn btn-sm btn-subirdiagnostico" target="_blank" title="VER DIAGNÓSTICO">
+                                                    <i class="fas fa-laptop-medical"></i>
                                                 </a>
                                             @else
-                                                <abbr title="SUBIR DIAGNÓSTICO">
+                                            <a href="{{ asset('/diagnosticos/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->diagnosticomedicoita) }}" 
+                                                class="btn btn-sm btn-subirdiagnostico disabled" target="_blank" title="VER DIAGNÓSTICO">
+                                                 <i class="fas fa-laptop-medical"></i>
+                                             </a>
+                                            <style>
+                                                .btn.disabled {
+                                                    pointer-events: none;
+                                                    background-color: #d6d6d6;
+                                                    color: #a5a5a5;
+                                                    border-color: #d6d6d6;
+                                                }
+                                                .btn.disabled i {
+                                                    color: #a5a5a5;
+                                                }
+                                            </style>                                             
+                                                {{-- <abbr title="SUBIR DIAGNÓSTICO">
                                                     <button type="button" class="btn btn-sm btn-subirdiagnostico" 
                                                             data-toggle="modal" 
                                                             data-target="#subirdiagnosticoModal"
@@ -253,10 +294,10 @@
                                                             data-accion="{{ $reservasmedica->accionnombre }}">
                                                         <i class="fas fa-paste"></i>
                                                     </button>
-                                                </abbr>
+                                                </abbr> --}}
                                             @endif
                                         </td>
-                                        <!-- Modal -->
+                                        <!-- MODAL DIAGNOSTICO -->
                                         <div class="modal fade" id="subirdiagnosticoModal" tabindex="-1" role="dialog" aria-labelledby="subirdiagnosticoModalLabel" aria-hidden="true">
                                             <div class="modal-dialog modal-lg" role="document">
                                                 <div class="modal-content">
@@ -278,8 +319,8 @@
                                                         <div class="row">
                                                             <div class="col-lg-12"> 
                                                                 <div class="file-upload">
-                                                                    <label for="archivo">DIAGNÓSTICO:</label>
-                                                                    <input type="file" name="archivo" id="archivo"accept=".pdf"/>
+                                                                    <label for="archivodiagnostico">DIAGNÓSTICO:</label>
+                                                                    <input type="file" name="archivo" id="archivodiagnostico" accept=".pdf"/>
                                                                     <div class="file-preview" id="preview-archivo2"></div>
                                                                     @error('archivo')
                                                                     <small class="text-danger fas fa-exclamation-circle">
@@ -290,52 +331,6 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <script>
-                                                        function handleFileSelect(event) {
-                                                            const input = event.target;
-                                                            const preview = document.getElementById(`preview-${input.id}`);
-                                                            
-                                                            // Clear any existing previews
-                                                            preview.innerHTML = '';
-                                                            
-                                                            if (input.files && input.files[0]) {
-                                                                const file = input.files[0];
-                                                                const fileURL = URL.createObjectURL(file);
-                                                                
-                                                                if (file.type === 'application/pdf') {
-                                                                    // If the file is a PDF
-                                                                    if (input.id === 'archivo') {
-                                                                        const pdfPreview = document.getElementById('pdf-preview');
-                                                                        pdfPreview.innerHTML = '';
-                                                                        const iframe = document.createElement('iframe');
-                                                                        iframe.src = fileURL;
-                                                                        iframe.style.width = '100%';
-                                                                        iframe.style.height = '400px';
-                                                                        pdfPreview.appendChild(iframe);
-                                                                    }
-                                                                } else if (file.type.startsWith('image/')) {
-                                                                    // If the file is an image
-                                                                    const img = document.createElement('img');
-                                                                    img.src = fileURL;
-                                                                    img.style.maxWidth = '100%';
-                                                                    img.style.maxHeight = '200px';
-                                                                    preview.appendChild(img);
-                                                                } else {
-                                                                    // For other file types
-                                                                    const fileName = document.createElement('span');
-                                                                    fileName.textContent = file.name;
-                                                                    fileName.className = 'file-name';
-                                                                    preview.appendChild(fileName);
-                                                                }
-                                                            }
-                                                        }
-    
-                                                        // Attach the event listener
-                                                        document.querySelectorAll('.file-input2').forEach(input => {
-                                                            input.addEventListener('change', handleFileSelect);
-                                                        });
-    
-                                                    </script>
                                                     <script>
                                                         $(document).ready(function() {
                                                             $('#subirdiagnosticoModal').on('show.bs.modal', function (event) {
@@ -362,9 +357,11 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <td width="10px">
+
+                                        {{-- CREAR BATERIA --}}
+                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
                                             <abbr title="CREAR BATERIA">
-                                                <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
+                                                <a class="btn btn-sm btn-crearproveedor" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
                                                     <i class="fas fa-charging-station"></i>
                                                 </a>
                                             </abbr>
@@ -373,9 +370,9 @@
                                     <td width="10px">
                                         @if($reservasmedica->informeDisponible)
                                             <abbr title="SUBIR INFORME">
-                                                <button type="button" class="btn btn-sm btn-subirinforme" 
+                                                <button type="button" class="btn btn-sm btn-subirinformeproveedor" 
                                                         data-toggle="modal" 
-                                                        data-target="#subirinformeModal"
+                                                        data-target="#subirinformeitaModal"
                                                         data-clienteitaid="{{ $reservasmedica->clienteitaid }}"
                                                         data-clienteitanombre="{{ $reservasmedica->clienteitanombre }}"
                                                         data-fechabateria="{{ $reservasmedica->fechabateria }}"
@@ -388,16 +385,15 @@
                                         @endif
                                     </td>
                                     <!-- Modal -->
-                                    <div class="modal fade" id="subirinformeModal" tabindex="-1" role="dialog" aria-labelledby="subirinformeModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal fade" id="subirinformeitaModal" tabindex="-1" role="dialog" aria-labelledby="subirinformeitaModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog modal-xl" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h3 class="modal-title" id="subirinformeModalLabel" style="color: #94c93b; font-weight: bold;">SUBIR INFORME</h3>
+                                                    <h3 class="modal-title" id="subirinformeitaModalLabel" style="color: #94c93b; font-weight: bold;">SUBIR INFORME</h3>
                                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
                                                 </div>
-                                                {{-- {!! Form::open(['id' => 'subirinformeForm', 'method' => 'POST', 'files' => true]) !!} --}}
                                                 {!! Form::open(['route' => 'procesar.informe', 'method' => 'POST', 'files' => true]) !!}
                                                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                                                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
@@ -407,13 +403,14 @@
                                                 {!! Form::hidden('accion', null, ['id' => 'modal-accion']) !!}
 
                                                 <div class="modal-body">
-                                                    <div class="row">
-                                                        <div class="col-lg-4"> 
+                                                    <div class="row"> 
+                                                        <!-- PDF -->
+                                                        <div class="col-lg-4">
                                                             <div class="file-upload">
-                                                                <label for="archivo">INFORME:</label>
-                                                                <input type="file" name="archivo" id="archivo" class="file-input" accept=".pdf{{-- ,.doc,.docx --}}" onchange="transferFileToHidden()"/>
-                                                                <label for="archivo" class="file-custom-label">Elige un PDF</label>
-                                                                <div class="file-preview" id="preview-archivo"></div>
+                                                                <label for="archivoita">INFORME:</label>
+                                                                <input type="file" name="archivo" id="archivoita" class="file-input" accept=".pdf" onchange="handleFileSelectita(this, 'preview-archivoita')" />
+                                                                <label for="archivoita" class="file-custom-label">Elige un PDF</label>
+                                                                <div class="file-preview" id="preview-archivoita"></div>
                                                                 @error('archivo')
                                                                 <small class="text-danger fas fa-exclamation-circle">
                                                                     {{$message}}
@@ -421,64 +418,71 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                        
-                                                        <div class="col-lg-4" hidden>
+                                                    
+                                                        <!-- Imagen 1 -->
+                                                        <div class="col-lg-4">
                                                             <div class="file-upload">
-                                                                <label for="archivo2">INFORME OCULTO:</label>
-                                                                <input type="file" name="archivo2" id="archivo2" class="file-input" accept=".pdf,.doc,.docx" />
-                                                                <label for="archivo2" class="file-custom-label">Elige un PDF</label>
-                                                                <div class="file-preview" id="preview-archivo"></div>
-                                                                @error('archivo2')
+                                                                <label for="picture">IMAGEN 1:</label>
+                                                                <input type="file" name="picture" id="picture" accept="image/*" onchange="handleFileSelectita(this, 'preview-picture')" />
+                                                                <div class="file-preview" id="preview-picture"></div>
+                                                                @error('picture')
                                                                 <small class="text-danger fas fa-exclamation-circle">
                                                                     {{$message}}
                                                                 </small>
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                        
-                                                        <script>
-                                                            function transferFileToHidden() {
-                                                                var archivoInput = document.getElementById("archivo");
-                                                                var archivo2Input = document.getElementById("archivo2");
-                                                        
-                                                                // Si se ha seleccionado un archivo en "INFORME"
-                                                                if (archivoInput.files && archivoInput.files[0]) {
-                                                                    // Clonamos el archivo seleccionado y lo asignamos al campo "INFORME OCULTO"
-                                                                    archivo2Input.files = archivoInput.files;
-                                                                    
-                                                                    // Mostrar el nombre del archivo seleccionado en el campo "INFORME OCULTO" (opcional)
-                                                                    document.getElementById('preview-archivo').innerHTML = archivoInput.files[0].name;
-                                                                }
-                                                            }
-                                                        </script>
-                                                        
-                                                        <div class="col-lg-4">
-                                                            <div class="file-upload">
-                                                                <label for="picture">IMAGEN 1:</label>
-                                                                <input type="file" name="picture" id="picture" class="file-input" accept="image/*" />
-                                                                <label for="picture" class="file-custom-label">Elige una imagen</label>
-                                                                <div class="file-preview" id="preview-picture"></div>
-                                                                @error('picture')
-                                                                    <small class="text-danger fas fa-exclamation-circle">
-                                                                        {{$message}}
-                                                                    </small>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
+                                                    
+                                                        <!-- Imagen 2 -->
                                                         <div class="col-lg-4">
                                                             <div class="file-upload">
                                                                 <label for="picture2">IMAGEN 2:</label>
-                                                                <input type="file" name="picture2" id="picture2" class="file-input" accept="image/*" />
-                                                                <label for="picture2" class="file-custom-label">Elige una imagen</label>
+                                                                <input type="file" name="picture2" id="picture2" accept="image/*" onchange="handleFileSelectita(this, 'preview-picture2')" />
                                                                 <div class="file-preview" id="preview-picture2"></div>
                                                                 @error('picture2')
-                                                                    <small class="text-danger fas fa-exclamation-circle">
-                                                                        {{$message}}
-                                                                    </small>
+                                                                <small class="text-danger fas fa-exclamation-circle">
+                                                                    {{$message}}
+                                                                </small>
                                                                 @enderror
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    
+                                                    <script>
+                                                        function handleFileSelectita(input, previewId) {
+                                                            const preview = document.getElementById(previewId);
+                                                            preview.innerHTML = '';
+                                                    
+                                                            if (input.files && input.files[0]) {
+                                                                const file = input.files[0];
+                                                    
+                                                                if (file.type === 'application/pdf') {
+                                                                    // Muestra solo el nombre del archivo PDF
+                                                                    const fileName = document.createElement('span');
+                                                                    fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                    fileName.className = 'file-name';
+                                                                    preview.appendChild(fileName);
+                                                                } else if (file.type.startsWith('image/')) {
+                                                                    // Muestra la vista previa de la imagen
+                                                                    const fileURL = URL.createObjectURL(file);
+                                                                    const img = document.createElement('img');
+                                                                    img.src = fileURL;
+                                                                    img.style.maxWidth = '100%';
+                                                                    img.style.maxHeight = '300px';
+                                                                    img.alt = 'Vista previa de la imagen';
+                                                                    preview.appendChild(img);
+                                                                } else {
+                                                                    const fileName = document.createElement('span');
+                                                                    fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                    fileName.className = 'file-name';
+                                                                    preview.appendChild(fileName);
+                                                                }
+                                                            } else {
+                                                                preview.textContent = 'No se ha seleccionado ningún archivo';
+                                                            }
+                                                        }
+                                                    </script>
+                                                    
                                                     <div class="row" hidden>
                                                         <div class="col-lg-6 text-center">
                                                             <label for="firma">Firma Digital:</label>
@@ -503,63 +507,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    {{-- <div class="row">
-                                                        <div class="col-lg-12 text-center">
-                                                            <label for="pdf-preview">Vista previa del PDF:</label>
-                                                            <div id="pdf-preview" style="border: 1px solid #ccc; max-height: 400px; overflow: auto;">
-                                                                <p>No se ha cargado ningún PDF.</p>
-                                                            </div>
-                                                        </div>
-                                                    </div> --}}
-                                                    
                                                 </div>
-                                                <script>
-                                                    function handleFileSelect(event) {
-                                                        const input = event.target;
-                                                        const preview = document.getElementById(`preview-${input.id}`);
-                                                        
-                                                        // Clear any existing previews
-                                                        preview.innerHTML = '';
-                                                        
-                                                        if (input.files && input.files[0]) {
-                                                            const file = input.files[0];
-                                                            const fileURL = URL.createObjectURL(file);
-                                                            
-                                                            if (file.type === 'application/pdf') {
-                                                                // If the file is a PDF
-                                                                if (input.id === 'archivo') {
-                                                                    const pdfPreview = document.getElementById('pdf-preview');
-                                                                    pdfPreview.innerHTML = '';
-                                                                    const iframe = document.createElement('iframe');
-                                                                    iframe.src = fileURL;
-                                                                    iframe.style.width = '100%';
-                                                                    iframe.style.height = '400px';
-                                                                    pdfPreview.appendChild(iframe);
-                                                                }
-                                                            } else if (file.type.startsWith('image/')) {
-                                                                // If the file is an image
-                                                                const img = document.createElement('img');
-                                                                img.src = fileURL;
-                                                                img.style.maxWidth = '100%';
-                                                                img.style.maxHeight = '200px';
-                                                                preview.appendChild(img);
-                                                            } else {
-                                                                // For other file types
-                                                                const fileName = document.createElement('span');
-                                                                fileName.textContent = file.name;
-                                                                fileName.className = 'file-name';
-                                                                preview.appendChild(fileName);
-                                                            }
-                                                        }
-                                                    }
-
-                                                    // Attach the event listener
-                                                    document.querySelectorAll('.file-input').forEach(input => {
-                                                        input.addEventListener('change', handleFileSelect);
-                                                    });
-
-                                                </script>
-    
                                                 <div class="modal-footer">
                                                     <div class="text-center w-100">
                                                         {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
@@ -569,84 +517,20 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <style>
-                                        .file-upload {
-                                            position: relative;
-                                            display: flex;
-                                            flex-direction: column;
-                                            align-items: center;
-                                            border: 2px solid #faa625; /* Border color */
-                                            border-radius: 8px; /* Rounded corners */
-                                            padding: 50px;
-                                            background: rgb(249, 255, 244); /* Background color */
-                                            transition: background 0.3s ease, border-color 0.3s ease;
-                                        }
-                                    
-                                        .file-upload:hover {
-                                            background: #fff7eb; /* Light background on hover */
-                                            border-color: #faa625; /* Darker border on hover */
-                                        }
-                                    
-                                        .file-upload label {
-                                            font-weight: bold;
-                                            margin-bottom: 8px;
-                                        }
-                                    
-                                        .file-input {
-                                            display: none; /* Hide the default file input */
-                                        }
-                                    
-                                        .file-custom-label {
-                                            display: inline-block;
-                                            padding: 10px;
-                                            border: 1px solid #faa625; /* Border for the custom button */
-                                            border-radius: 4px; /* Rounded corners for button */
-                                            background: #fff; /* Background color of button */
-                                            color: #faa625; /* Text color */
-                                            cursor: pointer;
-                                            transition: background 0.3s ease;
-                                        }
-                                    
-                                        .file-custom-label:hover {
-                                            background: #faa625; /* Darker background on hover */
-                                            color: #fff; /* Text color */
-                                        }
-                                    
-                                        .file-preview {
-                                            margin-top: 10px;
-                                            width: 100%;
-                                            height: auto;
-                                            display: flex;
-                                            justify-content: center;
-                                            align-items: center;
-                                            text-align: center;
-                                        }
-                                    
-                                        .file-preview img {
-                                            max-width: 100%;
-                                            max-height: 200px;
-                                            border-radius: 8px;
-                                            border: 2px solid #faa625; /* Border for preview image */
-                                        }
-                                    
-                                        .file-preview .file-name {
-                                            font-size: 16px;
-                                            color: #007bff;
-                                        }
-                                    
-                                    </style>  
-                                    <td width="10px">
+
+                                    <td width="10px" style="padding-left: 1px; justify-content: center;">
                                         <abbr title="SUBIR DOCUMENTACION MULTIPLE">
                                             <a class="btn btn-sm btn-subirinf" href="{{route('admin.asociados.creardocumentacionclienteita', $reservasmedica->clienteitaid)}}">
                                                 <i class="fas fa-archive"></i>
                                             </a>
                                         </abbr>
                                     </td>
+
                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                     <script>
                                         $(document).ready(function() {
-                                            $('#subirinformeModal').on('show.bs.modal', function (event) {
-                                                var button = $(event.relatedTarget); // Botón que activó el modal
+                                            $('#subirinformeitaModal').on('show.bs.modal', function (event) {
+                                                var button = $(event.relatedTarget);
                                                 var clienteitaid = button.data('clienteitaid');
                                                 var clienteitanombre = button.data('clienteitanombre');
                                                 var fechabateria = button.data('fechabateria');
@@ -657,15 +541,12 @@
                                                 modal.find('#modal-clienteitanombre').val(clienteitanombre);
                                                 modal.find('#modal-fechabateria').val(fechabateria);
                                                 modal.find('#modal-accion').val(accion);
-                                                // Actualiza la ruta del formulario para incluir el clienteitaid
                                                 var formAction = '{{ route("admin.asociados.guardardocumentacionclienteitadeproveedor", ":cliente") }}';
                                                 formAction = formAction.replace(':cliente', clienteitaid);
-                                                $('#subirinformeForm').attr('action', formAction);
+                                                $('#subirinformeFormita').attr('action', formAction);
                                             });
                                         });
                                     </script>
-
-                                    
                                 </tr>
                             @endif
                         @endforeach
@@ -683,27 +564,42 @@
                                     <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
                                     <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
                                     @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                        <td width="10px">
-                                            @if($reservasmedicaauditoria->$tienefichamedicaauditoria)
-                                                <a href="{{ asset('/fichamedicaclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->fichamedicaauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                            @else
-                                            <abbr title="CREAR FICHA MÉDICA">
-                                                <a class="btn btn-sm btn-fichamedica" href="{{route('admin.asociados.crearformularioclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
+                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
+                                            @if($reservasmedicaauditoria->fichamedicaauditoria)
+                                                <a href="{{ asset('/fichamedicaclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->fichamedicaauditoria) }}" class="btn btn-sm btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
                                                     <i class="fas fa-file-signature"></i>
                                                 </a>
-                                            </abbr>
+                                            @else
+                                                <abbr title="CREAR FICHA MÉDICA">
+                                                    <a class="btn btn-sm btn-fichamedica" href="{{ route('admin.asociados.crearformularioclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid) }}">
+                                                        <i class="fas fa-file-signature"></i>
+                                                    </a>
+                                                </abbr>
                                             @endif
                                         </td>
-
+                                    
                                         <td width="10px">
                                             @if($reservasmedicaauditoria->diagnosticomedicoauditoria)
-                                                <a href="{{ asset('/diagnosticos/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedica->clienteauditoriaid) }}" class="btn btn-verdocumentacion" target="_blank" title="VER DIAGNÓSTICO">
-                                                    <i class="fas fa-eye"></i>
+                                                <a href="{{ asset('/diagnosticosauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->diagnosticomedicoauditoria) }}" class="btn btn-sm btn-subirdiagnostico" target="_blank" title="VER DIAGNÓSTICO">
+                                                    <i class="fas fa-laptop-medical"></i>
                                                 </a>
                                             @else
-                                                <abbr title="SUBIR DIAGNÓSTICO">
+                                            <a href="{{ asset('/diagnosticosauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->diagnosticomedicoauditoria) }}" 
+                                                class="btn btn-sm btn-subirdiagnostico disabled" target="_blank" title="VER DIAGNÓSTICO">
+                                                 <i class="fas fa-laptop-medical"></i>
+                                             </a>
+                                            <style>
+                                            .btn.disabled {
+                                                pointer-events: none;
+                                                background-color: #d6d6d6;
+                                                color: #a5a5a5;
+                                                border-color: #d6d6d6;
+                                            }
+                                            .btn.disabled i {
+                                                color: #a5a5a5;
+                                            }
+                                            </style>
+                                                {{-- <abbr title="SUBIR DIAGNÓSTICO">
                                                     <button type="button" class="btn btn-sm btn-subirdiagnostico" 
                                                             data-toggle="modal" 
                                                             data-target="#subirdiagnosticoModal2"
@@ -713,10 +609,10 @@
                                                             data-accion="{{ $reservasmedicaauditoria->accionnombre }}">
                                                         <i class="fas fa-paste"></i>
                                                     </button>
-                                                </abbr>
+                                                </abbr> --}}
                                             @endif
                                         </td>
-                                        <!-- Modal -->
+                                        <!-- DIAGNOSTICO -->
                                         <div class="modal fade" id="subirdiagnosticoModal2" tabindex="-1" role="dialog" aria-labelledby="subirdiagnosticoModal2Label" aria-hidden="true">
                                             <div class="modal-dialog modal-lg" role="document">
                                                 <div class="modal-content">
@@ -739,7 +635,7 @@
                                                             <div class="col-lg-12"> 
                                                                 <div class="file-upload">
                                                                     <label for="archivo">DIAGNÓSTICO:</label>
-                                                                    <input type="file" name="archivo" id="archivo"accept=".pdf"/>
+                                                                    <input type="file" name="archivo" id="archivo" accept=".pdf"/>
                                                                     <div class="file-preview" id="preview-archivo2"></div>
                                                                     @error('archivo')
                                                                     <small class="text-danger fas fa-exclamation-circle">
@@ -751,55 +647,9 @@
                                                         </div>
                                                     </div>
                                                     <script>
-                                                        function handleFileSelect(event) {
-                                                            const input = event.target;
-                                                            const preview = document.getElementById(`preview-${input.id}`);
-                                                            
-                                                            // Clear any existing previews
-                                                            preview.innerHTML = '';
-                                                            
-                                                            if (input.files && input.files[0]) {
-                                                                const file = input.files[0];
-                                                                const fileURL = URL.createObjectURL(file);
-                                                                
-                                                                if (file.type === 'application/pdf') {
-                                                                    // If the file is a PDF
-                                                                    if (input.id === 'archivo') {
-                                                                        const pdfPreview = document.getElementById('pdf-preview');
-                                                                        pdfPreview.innerHTML = '';
-                                                                        const iframe = document.createElement('iframe');
-                                                                        iframe.src = fileURL;
-                                                                        iframe.style.width = '100%';
-                                                                        iframe.style.height = '400px';
-                                                                        pdfPreview.appendChild(iframe);
-                                                                    }
-                                                                } else if (file.type.startsWith('image/')) {
-                                                                    // If the file is an image
-                                                                    const img = document.createElement('img');
-                                                                    img.src = fileURL;
-                                                                    img.style.maxWidth = '100%';
-                                                                    img.style.maxHeight = '200px';
-                                                                    preview.appendChild(img);
-                                                                } else {
-                                                                    // For other file types
-                                                                    const fileName = document.createElement('span');
-                                                                    fileName.textContent = file.name;
-                                                                    fileName.className = 'file-name';
-                                                                    preview.appendChild(fileName);
-                                                                }
-                                                            }
-                                                        }
-    
-                                                        // Attach the event listener
-                                                        document.querySelectorAll('.file-input2').forEach(input => {
-                                                            input.addEventListener('change', handleFileSelect);
-                                                        });
-    
-                                                    </script>
-                                                    <script>
                                                         $(document).ready(function() {
                                                             $('#subirdiagnosticoModal2').on('show.bs.modal', function (event) {
-                                                                var button = $(event.relatedTarget); // Botón que activó el modal
+                                                                var button = $(event.relatedTarget);
                                                                 var clienteauditoriaid = button.data('clienteauditoriaid');
                                                                 var clienteauditorianombre = button.data('clienteauditorianombre');
                                                                 var fechabateria = button.data('fechabateria');
@@ -823,9 +673,9 @@
                                             </div>
                                         </div>
 
-                                        <td width="10px">
+                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
                                             <abbr title="CREAR BATERIA">
-                                                <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
+                                                <a class="btn btn-sm btn-crearproveedor" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
                                                     <i class="fas fa-charging-station"></i>
                                                 </a>
                                             </abbr>
@@ -834,9 +684,9 @@
                                     <td width="10px">
                                         @if($reservasmedicaauditoria->informeDisponibleauditoria)
                                             <abbr title="SUBIR INFORME">
-                                                <button type="button" class="btn btn-sm btn-subirinforme" 
+                                                <button type="button" class="btn btn-sm btn-subirinformeproveedor" 
                                                         data-toggle="modal" 
-                                                        data-target="#subirinformeModal"
+                                                        data-target="#subirinformeModal5"
                                                         data-clienteauditoriaid="{{ $reservasmedicaauditoria->clienteauditoriaid }}"
                                                         data-clienteauditorianombre="{{ $reservasmedicaauditoria->clienteauditorianombre }}"
                                                         data-fechabateria="{{ $reservasmedicaauditoria->fechabateria }}"
@@ -849,11 +699,11 @@
                                         @endif
                                     </td>
                                     <!-- Modal -->
-                                    <div class="modal fade" id="subirinformeModal" tabindex="-1" role="dialog" aria-labelledby="subirinformeModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-lg" role="document">
+                                    <div class="modal fade" id="subirinformeModal5" tabindex="-1" role="dialog" aria-labelledby="subirinformeModal5Label" aria-hidden="true">
+                                        <div class="modal-dialog modal-xl" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h3 class="modal-title" id="subirinformeModalLabel" style="color: #94c93b; font-weight: bold;">SUBIR INFORME</h3>
+                                                    <h3 class="modal-title" id="subirinformeModal5Label" style="color: #94c93b; font-weight: bold;">SUBIR INFORME</h3>
                                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
@@ -867,13 +717,14 @@
                                                 {!! Form::hidden('accion', null, ['id' => 'modal-accion']) !!}
 
                                                 <div class="modal-body">
-                                                    <div class="row">
-                                                        <div class="col-lg-4"> 
+                                                    <div class="row"> 
+                                                        <!-- PDF -->
+                                                        <div class="col-lg-4">
                                                             <div class="file-upload">
-                                                                <label for="archivo">INFORME:</label>
-                                                                <input type="file" name="archivo" id="archivo" class="file-input" accept=".pdf{{-- ,.doc,.docx --}}" onchange="transferFileToHidden()"/>
-                                                                <label for="archivo" class="file-custom-label">Elige un PDF</label>
-                                                                <div class="file-preview" id="preview-archivo"></div>
+                                                                <label for="archivoauditoria">INFORME:</label>
+                                                                <input type="file" name="archivo" id="archivoauditoria" class="file-input" accept=".pdf" onchange="handleFileSelect(this, 'preview-archivoauditoria')" />
+                                                                <label for="archivoauditoria" class="file-custom-label">Elige un PDF</label>
+                                                                <div class="file-preview" id="preview-archivoauditoria"></div>
                                                                 @error('archivo')
                                                                 <small class="text-danger fas fa-exclamation-circle">
                                                                     {{$message}}
@@ -881,64 +732,68 @@
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                        
-                                                        <div class="col-lg-4" hidden>
+                                                    
+                                                        <!-- Imagen 1 -->
+                                                        <div class="col-lg-4">
                                                             <div class="file-upload">
-                                                                <label for="archivo2">INFORME OCULTO:</label>
-                                                                <input type="file" name="archivo2" id="archivo2" class="file-input" accept=".pdf,.doc,.docx" />
-                                                                <label for="archivo2" class="file-custom-label">Elige un PDF</label>
-                                                                <div class="file-preview" id="preview-archivo"></div>
-                                                                @error('archivo2')
+                                                                <label for="picture">IMAGEN 1:</label>
+                                                                <input type="file" name="picture" id="picture" accept="image/*" onchange="handleFileSelect(this, 'preview-pictureauditoria1')" />
+                                                                <div class="file-preview" id="preview-pictureauditoria1"></div>
+                                                                @error('picture')
                                                                 <small class="text-danger fas fa-exclamation-circle">
                                                                     {{$message}}
                                                                 </small>
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                        
-                                                        <script>
-                                                            function transferFileToHidden() {
-                                                                var archivoInput = document.getElementById("archivo");
-                                                                var archivo2Input = document.getElementById("archivo2");
-                                                        
-                                                                // Si se ha seleccionado un archivo en "INFORME"
-                                                                if (archivoInput.files && archivoInput.files[0]) {
-                                                                    // Clonamos el archivo seleccionado y lo asignamos al campo "INFORME OCULTO"
-                                                                    archivo2Input.files = archivoInput.files;
-                                                                    
-                                                                    // Mostrar el nombre del archivo seleccionado en el campo "INFORME OCULTO" (opcional)
-                                                                    document.getElementById('preview-archivo').innerHTML = archivoInput.files[0].name;
-                                                                }
-                                                            }
-                                                        </script>
-                                                        
-                                                        <div class="col-lg-4">
-                                                            <div class="file-upload">
-                                                                <label for="picture">IMAGEN 1:</label>
-                                                                <input type="file" name="picture" id="picture" class="file-input" accept="image/*" />
-                                                                <label for="picture" class="file-custom-label">Elige una imagen</label>
-                                                                <div class="file-preview" id="preview-picture"></div>
-                                                                @error('picture')
-                                                                    <small class="text-danger fas fa-exclamation-circle">
-                                                                        {{$message}}
-                                                                    </small>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
+                                                    
+                                                        <!-- Imagen 2 -->
                                                         <div class="col-lg-4">
                                                             <div class="file-upload">
                                                                 <label for="picture2">IMAGEN 2:</label>
-                                                                <input type="file" name="picture2" id="picture2" class="file-input" accept="image/*" />
-                                                                <label for="picture2" class="file-custom-label">Elige una imagen</label>
-                                                                <div class="file-preview" id="preview-picture2"></div>
+                                                                <input type="file" name="picture2" id="picture2" accept="image/*" onchange="handleFileSelect(this, 'preview-pictureauditoria2')" />
+                                                                <div class="file-preview" id="preview-pictureauditoria2"></div>
                                                                 @error('picture2')
-                                                                    <small class="text-danger fas fa-exclamation-circle">
-                                                                        {{$message}}
-                                                                    </small>
+                                                                <small class="text-danger fas fa-exclamation-circle">
+                                                                    {{$message}}
+                                                                </small>
                                                                 @enderror
                                                             </div>
                                                         </div>
                                                     </div>
+                                                    
+                                                    <script>
+                                                        function handleFileSelect(input, previewId) {
+                                                            const preview = document.getElementById(previewId);
+                                                            preview.innerHTML = '';
+                                                    
+                                                            if (input.files && input.files[0]) {
+                                                                const file = input.files[0];
+                                                    
+                                                                if (file.type === 'application/pdf') {
+                                                                    const fileName = document.createElement('span');
+                                                                    fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                    fileName.className = 'file-name';
+                                                                    preview.appendChild(fileName);
+                                                                } else if (file.type.startsWith('image/')) {
+                                                                    const fileURL = URL.createObjectURL(file);
+                                                                    const img = document.createElement('img');
+                                                                    img.src = fileURL;
+                                                                    img.style.maxWidth = '100%';
+                                                                    img.style.maxHeight = '300px';
+                                                                    img.alt = 'Vista previa de la imagen';
+                                                                    preview.appendChild(img);
+                                                                } else {
+                                                                    const fileName = document.createElement('span');
+                                                                    fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                    fileName.className = 'file-name';
+                                                                    preview.appendChild(fileName);
+                                                                }
+                                                            } else {
+                                                                preview.textContent = 'No se ha seleccionado ningún archivo';
+                                                            }
+                                                        }
+                                                    </script>
                                                     <div class="row" hidden>
                                                         <div class="col-lg-6 text-center">
                                                             <label for="firma">Firma Digital:</label>
@@ -963,63 +818,7 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    {{-- <div class="row">
-                                                        <div class="col-lg-12 text-center">
-                                                            <label for="pdf-preview">Vista previa del PDF:</label>
-                                                            <div id="pdf-preview" style="border: 1px solid #ccc; max-height: 400px; overflow: auto;">
-                                                                <p>No se ha cargado ningún PDF.</p>
-                                                            </div>
-                                                        </div>
-                                                    </div> --}}
-                                                    
                                                 </div>
-                                                <script>
-                                                    function handleFileSelect(event) {
-                                                        const input = event.target;
-                                                        const preview = document.getElementById(`preview-${input.id}`);
-                                                        
-                                                        // Clear any existing previews
-                                                        preview.innerHTML = '';
-                                                        
-                                                        if (input.files && input.files[0]) {
-                                                            const file = input.files[0];
-                                                            const fileURL = URL.createObjectURL(file);
-                                                            
-                                                            if (file.type === 'application/pdf') {
-                                                                // If the file is a PDF
-                                                                if (input.id === 'archivo') {
-                                                                    const pdfPreview = document.getElementById('pdf-preview');
-                                                                    pdfPreview.innerHTML = '';
-                                                                    const iframe = document.createElement('iframe');
-                                                                    iframe.src = fileURL;
-                                                                    iframe.style.width = '100%';
-                                                                    iframe.style.height = '400px';
-                                                                    pdfPreview.appendChild(iframe);
-                                                                }
-                                                            } else if (file.type.startsWith('image/')) {
-                                                                // If the file is an image
-                                                                const img = document.createElement('img');
-                                                                img.src = fileURL;
-                                                                img.style.maxWidth = '100%';
-                                                                img.style.maxHeight = '200px';
-                                                                preview.appendChild(img);
-                                                            } else {
-                                                                // For other file types
-                                                                const fileName = document.createElement('span');
-                                                                fileName.textContent = file.name;
-                                                                fileName.className = 'file-name';
-                                                                preview.appendChild(fileName);
-                                                            }
-                                                        }
-                                                    }
-
-                                                    // Attach the event listener
-                                                    document.querySelectorAll('.file-input').forEach(input => {
-                                                        input.addEventListener('change', handleFileSelect);
-                                                    });
-
-                                                </script>
-    
                                                 <div class="modal-footer">
                                                     <div class="text-center w-100">
                                                         {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
@@ -1029,7 +828,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <td width="10px">
+                                    <td width="10px" style="padding-left: 1px; justify-content: center;">
                                         <abbr title="SUBIR DOCUMENTACION MULTIPLE">
                                             <a class="btn btn-sm btn-subirinf" href="{{route('admin.asociados.creardocumentacionclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
                                                 <i class="fas fa-archive"></i>
@@ -1039,21 +838,20 @@
                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                     <script>
                                         $(document).ready(function() {
-                                            $('#subirinformeModal').on('show.bs.modal', function (event) {
-                                                var button = $(event.relatedTarget); // Botón que activó el modal
-                                                var clienteitaid = button.data('clienteauditoriaid');
-                                                var clienteitanombre = button.data('clienteauditorianombre');
+                                            $('#subirinformeModal5').on('show.bs.modal', function (event) {
+                                                var button = $(event.relatedTarget);
+                                                var clienteauditoriaid = button.data('clienteauditoriaid');
+                                                var clienteauditorianombre = button.data('clienteauditorianombre');
                                                 var fechabateria = button.data('fechabateria');
                                                 var accion = button.data('accion');
 
                                                 var modal = $(this);
-                                                modal.find('#modal-clienteauditoriaid').val(clienteitaid);
-                                                modal.find('#modal-clienteauditorianombre').val(clienteitanombre);
+                                                modal.find('#modal-clienteauditoriaid').val(clienteauditoriaid);
+                                                modal.find('#modal-clienteauditorianombre').val(clienteauditorianombre);
                                                 modal.find('#modal-fechabateria').val(fechabateria);
                                                 modal.find('#modal-accion').val(accion);
-                                                // Actualiza la ruta del formulario para incluir el clienteitaid
                                                 var formAction = '{{ route("admin.asociados.guardardocumentacionclienteauditoriadeproveedor", ":clienteauditoria") }}';
-                                                formAction = formAction.replace(':cliente', clienteitaid);
+                                                formAction = formAction.replace(':cliente', clienteauditoriaid);
                                                 $('#subirinformeFormauditoria').attr('action', formAction);
                                             });
                                         });
@@ -1104,22 +902,22 @@
                                     
                                     <td width="10px">
                                         
-                                        <div class="dropdown-container">
-                                            <button class="btn btn-dropdown" type="button">
+                                        <div class="dropdown-container2">
+                                            <button class="btn btn-dropdown2" type="button">
                                                 <i class="fas fa-search-plus"></i>
                                             </button>
                                             
-                                            <div class="dropdown-menu">
-                                                <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionDisponible) }}" class="btn btn-verdocumentacion" target="_blank" title="VER INFORME MÉDICO">
+                                            <div class="dropdown-menu2">
+                                                <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionDisponible) }}" class="btn btn-sm btn-verdocumentacion2" target="_blank" title="VER INFORME MÉDICO">
                                                     <i class="fas fa-folder-open"></i>
                                                 </a>
                                                     @if($reservasmedica->imagen1Disponible)
-                                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->imagen1Disponible) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 1">
+                                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->imagen1Disponible) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 1">
                                                             <i class="fas fa-images"></i>
                                                         </a>
                                                     @endif
                                                     @if($reservasmedica->imagen2Disponible)
-                                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->imagen2Disponible) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
+                                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->imagen2Disponible) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 2">
                                                             <i class="far fa-images"></i>
                                                         </a>
                                                     @endif
@@ -1127,9 +925,9 @@
                                         </div>   
                                     </td>  
                                     @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                        <td width="10px">
+                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
                                             <abbr title="CREAR BATERIA">
-                                                <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
+                                                <a class="btn btn-sm btn-crear2" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
                                                     <i class="fas fa-charging-station"></i>
                                                 </a>
                                             </abbr>
@@ -1137,8 +935,8 @@
                                     @endif
                                     
                                     <td width="10px">
-                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionfirmadaDisponible) }}" class="btn btn-verdocumentacion" target="_blank" title="VER INFORME MÉDICO FIRMADO">
-                                            <i class="fas fa-folder-open"></i>
+                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionfirmadaDisponible) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME MÉDICO FIRMADO">
+                                            <i class="fas fa-edit"></i>
                                         </a>
                                     </td>
                                 </tr>
@@ -1160,21 +958,21 @@
                                     <td>{{$reservasmedicaauditoria->fechainformeauditoria}}</td>
                                     
                                     <td width="10px">
-                                        <div class="dropdown-container">
-                                            <button class="btn btn-dropdown" type="button">
+                                        <div class="dropdown-container2">
+                                            <button class="btn btn-dropdown2" type="button">
                                                 <i class="fas fa-search-plus"></i>
                                             </button>
-                                            <div class="dropdown-menu">
-                                                <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionDisponibleauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER INFORME MÉDICO">
+                                            <div class="dropdown-menu2">
+                                                <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionDisponibleauditoria) }}" class="btn btn-sm btn-verdocumentacion2" target="_blank" title="VER INFORME MÉDICO">
                                                     <i class="fas fa-folder-open"></i>
                                                 </a>
                                                     @if($reservasmedicaauditoria->imagen1Disponibleauditoria)
-                                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen1Disponibleauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 1">
+                                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen1Disponibleauditoria) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 1">
                                                             <i class="fas fa-images"></i>
                                                         </a>
                                                     @endif
                                                     @if($reservasmedicaauditoria->imagen2Disponibleauditoria)
-                                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen2Disponibleauditoria) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
+                                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen2Disponibleauditoria) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 2">
                                                             <i class="far fa-images"></i>
                                                         </a>
                                                     @endif
@@ -1182,14 +980,20 @@
                                         </div>   
                                     </td> 
                                     @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                        <td width="10px">
+                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
                                             <abbr title="CREAR BATERIA">
-                                                <a class="btn btn-sm btn-crear" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
+                                                <a class="btn btn-sm btn-crear2" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
                                                     <i class="fas fa-charging-station"></i>
                                                 </a>
                                             </abbr>
                                         </td>
-                                    @endif                                
+                                    @endif  
+                                    
+                                    <td width="10px">
+                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionfirmadaauditoriaDisponible) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME MÉDICO FIRMADO">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                             @endif
                         @endforeach
@@ -1577,234 +1381,7 @@
         });
     });
 </script>
-@endsection
-@section('css')
-<link rel="styleheet" href="/css/admin_custom.css">
-<!-- Bootstrap CSS -->
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 
-<!-- Bootstrap Bundle with Popper -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<style>
-    /* Estilo para el contenedor del botón y menú desplegable */
-.dropdown-container {
-    position: relative;
-    display: inline-block;
-}
-
-/* Estilo para el botón que abre el menú */
-.btn-dropdown {
-    margin-top: 0px;
-    color: #faa625;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 25px;
-    display: flex;
-}
-
-/* Estilo para el menú desplegable */
-.dropdown-menu {
-    display: none;
-    position: absolute;
-    border-radius: 5px;
-    z-index: 1;
-    top: 100%;
-    left: auto;
-    right: 100%; /* Ajusta para que el menú se posicione a la izquierda del botón */
-    margin-right: 5px; /* Espacio entre el botón y el menú */
-    padding: 5px;
-    opacity: 0;
-    background: #f7ffea;
-    display: flex;
-    flex-direction: row; /* Alineación horizontal de los botones */
-    white-space: nowrap; /* Evita que los botones se envuelvan */
-    min-width: 50px; /* Ancho mínimo del menú */
-    width: auto; /* Ancho automático según el contenido */
-    max-width: 300px; /* Opcional: Ajusta el máximo ancho según sea necesario */
-    transition: opacity 0.3s ease; /* Transición suave */
-    margin-top: -40px;
-}
-
-/* Mostrar el menú desplegable al pasar el cursor sobre el contenedor */
-.dropdown-container:hover .dropdown-menu {
-    display: flex;
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Estilo para los enlaces dentro del menú desplegable */
-.dropdown-menu a {
-    padding: 10px;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 5px; /* Espaciado entre los botones */
-    margin-left: 10px;
-}
-
-</style>
-<style>
-    .btn-mostrartodo { 
-        background-color:  #ffffff;
-        color: #2f97e7;
-        border-color: #2f97e7;
-        border-radius: 5px;
-        }
-    .btn-mostrartodo:hover {
-        background-color: #2f97e7;
-        color: #ffffff;
-        }
-    .dropify-wrapper {
-        height: 100px !important;
-    }
-    .dropify-message p {
-        font-size: 14px;
-    }
-    .btn-verdocumentacion {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-verdocumentacion:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .nav-tabs {
-        display: flex;
-        justify-content: space-between;
-    }
-    .nav-tabs .nav-item {
-        flex: 1;
-    }
-    .nav-tabs .nav-link {
-        display: block;
-        text-align: center;
-        width: 100%;
-        font-weight: bold;
-        font-size: 17px;
-        color: #faa625;
-        background-color: #fef4e7;
-    }
-    .nav-tabs .nav-link.active {
-        font-weight: bold;
-        font-size: 17px;
-        color: #94c93b;
-        background-color: #ffffff;
-    }
-    .circle {
-        display: inline-block;
-        width: 50px;
-        height: 20px;
-        line-height: 20px;
-        border-radius: 50%;
-        text-align: center;
-        font-size: 14px;
-        font-weight: bold;
-        margin-left: 8px;
-    }
-    .nav-link.active .circle {
-        background-color: #94c93b;
-        color: #fff;
-    }
-    .nav-link .circle {
-        background-color: #faa625;
-        color: #fff;
-    }
-    .text-incompleto {
-        color: red;
-        font-size: 16px;
-        font-weight: 900;
-        }
-
-</style>
-<style>
-h1, th {
-    color:#94c93b; 
-    font-family: "Segoe UI";
-    font-weight: 900;
-}
-.btn-fichamedica {
-    background-color:  #ffffff;
-    color: #0400ff;
-    border-color: #0400ff;
-    border-radius: 5px;
-}
-.btn-fichamedica:hover {
-    background-color: #0400ff;
-    color: #ffffff;
-}
-.btn-eliminar {
-    background-color:  #ffffff;
-    color: #ff0000;
-    border-color: #ff0000;
-    border-radius: 5px;
-}
-.btn-eliminar:hover {
-    background-color: #ff0000;
-    color: #ffffff;
-}
-.btn-crear {
-    background-color:  #ffffff;
-    color: #94c93b;
-    border-color: #94c93b;
-    border-radius: 5px;
-}
-.btn-crear:hover {
-    background-color: #94c93b;
-    color: #ffffff;
-}
-.btn-subirinf {
-    background-color:  #ffffff;
-    color: #faa625;
-    border-color: #faa625;
-    border-radius: 5px;
-}
-.btn-subirinf:hover {
-    background-color: #faa625;
-    color: #ffffff;
-}
-.btn-subirinforme {
-    background-color:  #ffffff;
-    color: #2eade8;
-    border-color: #2eade8;
-    border-radius: 5px;
-}
-.btn-subirinforme:hover {
-    background-color: #2eade8;
-    color: #ffffff;
-    
-}
-.btn-subirdiagnostico {
-    background-color:  #ffffff;
-    color: #f355f0;
-    border-color: #f355f0;
-    border-radius: 5px;
-}
-.btn-subirdiagnostico:hover {
-    background-color: #f355f0;
-    color: #ffffff;
-    
-}
-
-.btn-buscar { 
-    background-color:  #ffffff;
-    color: #faa625;
-    border-color: #faa625;
-    border-radius: 5px;
-}
-.btn-buscar:hover {
-    background-color: #faa625;
-    color: #ffffff;
-}
-
-</style>
-@stop
-
-@section('js')
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     @if (session('eliminar')=='ok')

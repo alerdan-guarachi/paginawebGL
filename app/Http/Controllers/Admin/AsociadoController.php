@@ -1726,9 +1726,15 @@ class AsociadoController extends Controller
             $programacionsubclientes = ProgramacionSubCliente::where('clienteitaid', $cliente->id)
                                                     ->where('fechabateria', $fechaSeleccionada)
                                                     ->simplePaginate(1000);
-            $total = $programacionsubclientes->sum(function ($programacionsubcliente) {
+            /* $total = $programacionsubclientes->sum(function ($programacionsubcliente) {
                 return str_replace(',', '.', $programacionsubcliente->precio);
+            }); */
+            $total = $programacionsubclientes->sum(function ($programacionsubcliente) {
+                // Asegurarse de que el valor sea un número antes de hacer la operación
+                $precio = is_numeric($programacionsubcliente->precio) ? $programacionsubcliente->precio : 0;
+                return $precio;
             });
+            
             $total = number_format($total, 2, '.', '');
         }
 
@@ -5944,11 +5950,11 @@ class AsociadoController extends Controller
     public function buscarclientesauditoria(Request $request)
     {
         $busqueda = $request->get('buscarpor');
-        $clienteauditorias = ClienteAuditoria::where(function ($query) use ($busqueda) {
+        $clientes = ClienteAuditoria::where(function ($query) use ($busqueda) {
             $query->where('nombrecompleto', 'like', "%$busqueda%")
                 ->orWhere('ci', 'like', "%$busqueda%");
         })->simplePaginate(1000);
-        return view('admin.asociados.listadoclienteauditoria', compact('clienteauditorias'));
+        return view('admin.asociados.listadoclienteauditoria', compact('clientes'));
     }
     public function verclienteauditoria(ClienteAuditoria $clienteauditoria)
     {

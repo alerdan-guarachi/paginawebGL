@@ -107,6 +107,8 @@ class InformeFinalController extends Controller
     
         return view('admin.informesfinales.documentosprogramaciones', compact('programacionclientes'));
     }
+
+//INFORMES FINALES ITA
     public function index(Cliente $cliente, Request $request)
     {
         $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
@@ -117,7 +119,7 @@ class InformeFinalController extends Controller
 
         $usuarioAutenticado = auth()->user()->name;
         $esProveedor = $usuarioAutenticado->role ?? null;
-        
+        $userRole = auth()->user()->getRoleNames()->first(); 
         $query = Programacionsubcliente::with(['tramitesubcliente',  'requisitosubcliente', 'estadoprogramacionsubcliente', 'documentacionsubcliente', 'proveedorinformesfinales', 'informesfinales'])
             ->whereNotNull('clienteitaid');
 
@@ -183,7 +185,7 @@ class InformeFinalController extends Controller
             $aprobacioninformefinales = $aprobacioninforme ? $aprobacioninforme->estado : null;
             $ultimaObservacion2 = $ultimoobservacionInforme2 ? $ultimoobservacionInforme2->observaciones : null;
             $historiamedicaclienteita = $historiamedica ? $historiamedica->document : null;
-            $tramite = $tramitebateria ? $tramitebateria->id : null;
+            $tramite = $tramitebateria ? $tramitebateria->tramite : null;
 
             $clienteitaid = $items->first()->clienteitaid;
         
@@ -208,43 +210,69 @@ class InformeFinalController extends Controller
 
                 $poder = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->poder);})->first()->poder ?? null;
-
                 $numeropoder = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->numeropoder);})->first()->numeropoder ?? null;
-
                 $avcci = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->avcci);})->first()->avcci ?? null;
-
                 $cnacasegurado = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->cnacasegurado);})->first()->cnacasegurado ?? null;
-
                 $ciasegurado = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->ciasegurado);})->first()->ciasegurado ?? null;
-
                 $cimatrimonio = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->cimatrimonio);})->first()->cimatrimonio ?? null;
-
                 $cnacconyuge = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->cnacconyuge);})->first()->cnacconyuge ?? null;
-
                 $ciconyuge = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->ciconyuge);})->first()->ciconyuge ?? null;
-
-                $cnachijos = $item->requisitosubcliente->filter(function ($requisito) {
+                $cnacjihos = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->cnachijos);})->first()->cnachijos ?? null;
-
                 $cihijos = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->cihijos);})->first()->cihijos ?? null;
-
                 $denfaccidente = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->denfaccidente);})->first()->denfaccidente ?? null;
-
                 $crodomicilio = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->crodomicilio);})->first()->crodomicilio ?? null;
-
                 $contrato = $item->requisitosubcliente->filter(function ($requisito) {
                     return !empty($requisito->contrato);})->first()->contrato ?? null;
 
+                    $cmatrimonio = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->cmatrimonio);})->first()->cmatrimonio ?? null;
+                    $egestora = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->egestora);})->first()->egestora ?? null;
+                    $dictamencalentenc = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->dictamencalentenc);})->first()->dictamencalentenc ?? null;
+                    $infomedicasalud = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->infomedicasalud);})->first()->infomedicasalud ?? null;
+                    $ctrabajo = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->ctrabajo);})->first()->ctrabajo ?? null;
+                    $boletapago = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->boletapago);})->first()->boletapago ?? null;
+                    $actdatos = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->actdatos);})->first()->actdatos ?? null;
+                    $resolinvhijos = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->resolinvhijos);})->first()->resolinvhijos ?? null;
+                    $cunionlibre = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->cunionlibre);})->first()->cunionlibre ?? null;
+                    $cnacimientounionlibre = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->cnacimientounionlibre);})->first()->cnacimientounionlibre ?? null;
+                    $ciunionlibre = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->ciunionlibre);})->first()->ciunionlibre ?? null;
+                    $cdivorcio = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->cdivorcio);})->first()->cdivorcio ?? null;
+                    $cdefuncion = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->cdefuncion);})->first()->cdefuncion ?? null;
+                    $polizasgen = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->polizasgen);})->first()->polizasgen ?? null;
+                    $declasalud = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->declasalud);})->first()->declasalud ?? null;
+                    $polizaseguro = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->polizaseguro);})->first()->polizaseguro ?? null;
+                    $anteriordictamen = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->anteriordictamen);})->first()->anteriordictamen ?? null;
+                    $poderciapoderado = $item->requisitosubcliente->filter(function ($requisito) {
+                        return !empty($requisito->poderciapoderado);})->first()->poderciapoderado ?? null;
+                    $servicio = $item->requisitosubcliente->filter(function ($requisito) {
+                            return !empty($requisito->servicio);})->first()->servicio ?? null;
                 if ($accionEstado === 'PENDIENTE') {
                     $estado = 'INCOMPLETO';
                 }
@@ -262,7 +290,7 @@ class InformeFinalController extends Controller
                     'cimatrimonio' => $cimatrimonio,
                     'cnacconyuge' => $cnacconyuge,
                     'ciconyuge' => $ciconyuge,
-                    'cnachijos' => $cnachijos,
+                    'cnacjihos' => $cnacjihos,
                     'cihijos' => $cihijos,
                     'denfaccidente' => $denfaccidente,
                     'crodomicilio' => $crodomicilio,
@@ -271,6 +299,26 @@ class InformeFinalController extends Controller
                     'clienteitanombre' => $clienteNombre,
                     'clienteitaid' => $clienteitaid,
                     'fechabateria' => $fechabateria,
+                    
+                    'cmatrimonio' => $cmatrimonio,
+                    'egestora' => $egestora,
+                    'dictamencalentenc' => $dictamencalentenc,
+                    'infomedicasalud' => $infomedicasalud,
+                    'ctrabajo' => $ctrabajo,
+                    'boletapago' => $boletapago,
+                    'actdatos' => $actdatos,
+                    'resolinvhijos' => $resolinvhijos,
+                    'cunionlibre' => $cunionlibre,
+                    'cnacimientounionlibre' => $cnacimientounionlibre,
+                    'ciunionlibre' => $ciunionlibre,
+                    'cdivorcio' => $cdivorcio,
+                    'cdefuncion' => $cdefuncion,
+                    'polizasgen' => $polizasgen,
+                    'declasalud' => $declasalud,
+                    'polizaseguro' => $polizaseguro,
+                    'anteriordictamen' => $anteriordictamen,
+                    'poderciapoderado' => $poderciapoderado,
+                    'servicio' => $servicio,
                 ];
             }
             $result[] = [
@@ -282,6 +330,7 @@ class InformeFinalController extends Controller
                 'proveedornombre' => $proveedorAsignado ? $proveedorAsignado->proveedorasignado : null,
                 'celularproveedor' => $proveedorAsignado ? $proveedorAsignado->celularproveedor : null,
                 'document' => $documentosubido ? $documentosubido->document : null,
+                'documentfirmado' => $documentosubido ? $documentosubido->documentfirmado : null,
                 'idinformefinal' => $documentosubido ? $documentosubido->id : null,
                 'ultima_observacion' => $ultimaObservacion,
                 'ultima_observacion2' => $ultimaObservacion2,
@@ -302,7 +351,7 @@ class InformeFinalController extends Controller
             return $count;
         }, 0);
         $aprobarbateriaCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
-            if ($item['proveedornombre'] && $item['estadoinforme'] !== 'APROBADO') {
+            if ($item['proveedornombre'] && $item['estadoinforme'] !== 'APROBADO' && $item['estado'] === 'COMPLETO') {
                 $count++;
             }
             return $count;
@@ -367,8 +416,261 @@ class InformeFinalController extends Controller
             $this->updateObservacion($request);
         }
 
-        return view('admin.informesfinales.index', compact('docobservadosCount','esProveedor','usuarioAutenticado','asignarCount','aprobarbateriaCount','subirinformeCount','subirinformeCount2','enrevisionCount','enrevisionCount2','solicitorevisionCount','solicitorevisionCount2','aprobadosCount','aprobadosCount2','proveedores','result', 'cliente', 'fechas', 'aprobaciones'));
+        return view('admin.informesfinales.index', compact('userRole','docobservadosCount','esProveedor','usuarioAutenticado','asignarCount','aprobarbateriaCount','subirinformeCount','subirinformeCount2','enrevisionCount','enrevisionCount2','solicitorevisionCount','solicitorevisionCount2','aprobadosCount','aprobadosCount2','proveedores','result', 'cliente', 'fechas', 'aprobaciones'));
     }
+    public function guardarinformefinal(StoreInformefinalRequest $request, $id, Cliente $cliente)
+    {
+        $request->validate([
+            'document' => 'required|mimes:pdf|max:15120',
+        ]);
+
+        $id = $request->input('clienteitaid');
+        $carpetaCliente = public_path("informesfinalesclientesita/{$id}");
+        if (!file_exists($carpetaCliente)) {
+            mkdir($carpetaCliente, 0755, true);
+        }
+
+        $usuario = auth()->user()->name;
+        $sucursal = auth()->user()->sucursal; // Asegúrate de que el usuario autenticado tenga el atributo `sucursal`.
+        $fechaActual = Carbon::now()->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
+
+        // Procesar y almacenar el archivo original
+        $archivo_name = null;
+            if ($request->hasFile('archivo2')) {
+                $file = $request->file('archivo2');
+                
+                $carpetaCliente = public_path("/informesfinalesclientesita/{$id}");
+                if (!file_exists($carpetaCliente)) {
+                    mkdir($carpetaCliente, 0755, true);}
+                $archivo_name = time() . '_' . $file->getClientOriginalName();
+                $file->move($carpetaCliente, $archivo_name);
+            }
+
+        // VARIABLES PARA FIRMAS Y SELLOS
+        $firmaAnteriorPath = '';
+        $selloAnteriorPath = '';
+        $firmaUltimaPath = '';
+        $selloUltimaPath = '';
+        $firmaAnteriorCoords = [];
+        $selloAnteriorCoords = [];
+        $firmaUltimaCoords = [];
+        $selloUltimaCoords = [];
+        $texto1 = $texto2 = $texto3 = "";
+        switch ($usuario) {
+            case 'AGUIRRE VASQUEZ MARIA RENEE':
+                $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE VERTICAL.png');
+                $firmaAnteriorCoords = ['x' => 184, 'y' => 205, 'width' => 20, 'height' => 37];
+                $selloAnteriorCoords = ['x' => 175, 'y' => 200, 'width' => 35, 'height' => 45];
+
+                $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL ULTIMA MARIA RENEE.png');
+                $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE.png');
+                $firmaUltimaCoords = ['x' => 95, 'y' => 190, 'width' => 35, 'height' => 40];
+                $selloUltimaCoords = ['x' => 85, 'y' => 199, 'width' => 50, 'height' => 45];
+                $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
+                $texto2 = "MÉDICO CIRUJANO";
+                $texto3 = "M.P.A - 7676725";
+                break;
+            case 'CARLOS ALEJANDRO GUARACHI SANDOVAL':
+                    $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 180, 'y' => 200, 'width' => 30, 'height' => 45];
+                    $selloAnteriorCoords = ['x' => 173, 'y' => 200, 'width' => 40, 'height' => 50];
+    
+                    $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE.png');
+                    $firmaUltimaCoords = ['x' => 90, 'y' => 190, 'width' => 40, 'height' => 55];
+                    $selloUltimaCoords = ['x' => 80, 'y' => 200, 'width' => 60, 'height' => 50];
+                    $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
+                    $texto2 = "MÉDICO CIRUJANO";
+                    $texto3 = "M.P.A - 7676725";
+                    break;
+            
+
+            default:
+                $firmaAnteriorPath = public_path('/glfirmasello/default/firma_anterior.png');
+                $selloAnteriorPath = public_path('/glfirmasello/default/sello_anterior.png');
+                $firmaAnteriorCoords = ['x' => 160, 'y' => 230, 'width' => 50, 'height' => 30];
+                $selloAnteriorCoords = ['x' => 170, 'y' => 230, 'width' => 40, 'height' => 40];
+
+                $firmaUltimaPath = public_path('/glfirmasello/default/firma_ultima.png');
+                $selloUltimaPath = public_path('/glfirmasello/default/sello_ultima.png');
+                $firmaUltimaCoords = ['x' => 85, 'y' => 215, 'width' => 60, 'height' => 40];
+                $selloUltimaCoords = ['x' => 85, 'y' => 220, 'width' => 50, 'height' => 50];
+                break;
+        }
+
+        // Agregar el texto de la sucursal y la fecha
+        $textoFecha = "{$sucursal}, {$fechaActual}";
+
+        // Verificar si los archivos de firma y sello existen
+        if (!file_exists($firmaAnteriorPath) || !file_exists($selloAnteriorPath) ||
+            !file_exists($firmaUltimaPath) || !file_exists($selloUltimaPath)) {
+            return back()->withErrors(['error' => 'Alguna firma o sello no fue encontrada para el usuario autenticado.']);
+        }
+
+        $uploadedPdfPath = $request->file('document')->getPathname();
+        $nombreDocumento = $request->input('nombre_documento', uniqid());
+        $outputFileName = "{$nombreDocumento}.pdf";
+        $outputPath = $carpetaCliente . "/$outputFileName";
+
+        // Crear instancia de FPDI y procesar el PDF
+        $pdf = new FPDI();
+        $pageCount = $pdf->setSourceFile($uploadedPdfPath);
+
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $pdf->AddPage();
+            $pdf->useTemplate($templateId, 0, 0);
+
+            try {
+                if ($pageNo == $pageCount) {
+                    // Última página: firma y sello diferentes
+                    $pdf->Image($firmaUltimaPath, $firmaUltimaCoords['x'], $firmaUltimaCoords['y'], $firmaUltimaCoords['width'], $firmaUltimaCoords['height']);
+                    $pdf->Image($selloUltimaPath, $selloUltimaCoords['x'], $selloUltimaCoords['y'], $selloUltimaCoords['width'], $selloUltimaCoords['height']);
+                
+                    
+                    // Coordenadas del sello 
+                    $xSello = $selloUltimaCoords['x'];
+                    $ySello = $selloUltimaCoords['y'];
+                    $anchoSello = $selloUltimaCoords['width'];
+                    $altoSello = $selloUltimaCoords['height'];
+
+                    // Reducir interlineado
+                    $lineHeight = 5;
+
+                    // Textos a centrar
+                    $textos = [$texto1, $texto2, $texto3, $textoFecha];
+                    $pdf->SetFont('Helvetica', '', 10);
+                    $pdf->SetTextColor(0, 0, 0);
+
+                    // Ajustar la distancia entre el grupo de textos y el sello
+                    $ySelloAjustado = $ySello - 15; // Ajusta este valor para acercar o alejar todo el grupo de textos
+
+                    // Calcular el centro horizontal tomando en cuenta el sello
+                    foreach ($textos as $index => $lineaTexto) {
+                        $anchoTexto = $pdf->GetStringWidth($lineaTexto); // Calcular el ancho del texto
+                        $xTextoCentrado = $xSello + ($anchoSello / 2) - ($anchoTexto / 2); // Centrar el texto debajo del sello
+
+                        // Ajustar la posición vertical debajo del sello
+                        $yTexto = $ySelloAjustado + $altoSello + ($lineHeight * $index) + 2; // Mueve todo el grupo más cerca del sello
+
+                        $pdf->SetXY($xTextoCentrado, $yTexto);
+
+                        // Aplicar negrita y subrayado, excepto para el texto de la fecha
+                        if ($lineaTexto !== $textoFecha) {
+                            $pdf->SetFont('Helvetica', 'BU', 10); // Negrita y subrayado
+                        } else {
+                            $pdf->SetFont('Helvetica', '', 10); // Solo normal para la fecha
+                        }
+
+                        $pdf->Cell($anchoTexto, $lineHeight, utf8_decode($lineaTexto), 0, 1, 'C');
+                    }
+                } else {
+                    // Páginas anteriores
+                    $pdf->Image($firmaAnteriorPath, $firmaAnteriorCoords['x'], $firmaAnteriorCoords['y'], $firmaAnteriorCoords['width'], $firmaAnteriorCoords['height']);
+                    $pdf->Image($selloAnteriorPath, $selloAnteriorCoords['x'], $selloAnteriorCoords['y'], $selloAnteriorCoords['width'], $selloAnteriorCoords['height']);
+                }
+            } catch (Exception $e) {
+                return back()->withErrors(['error' => 'Error al insertar imágenes: ' . $e->getMessage()]);
+            }
+        }
+
+        // Guardar el PDF firmado
+        try {
+            $pdf->Output($outputPath, 'F');
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => 'Error al guardar el archivo PDF firmado: ' . $e->getMessage()]);
+        }
+
+        if (!file_exists($outputPath)) {
+            return back()->withErrors(['error' => 'No se pudo guardar el archivo PDF firmado.']);
+        }
+
+        // Crear instancia de FPDI y procesar todas las páginas
+        $pdf = new FPDI();
+        $pageCount = $pdf->setSourceFile($uploadedPdfPath);
+
+        // Validar que haya al menos una página en el archivo
+        if ($pageCount < 1) {
+            return back()->withErrors(['error' => 'El archivo PDF no contiene páginas.']);
+        }
+
+        // Procesar cada página
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $pdf->AddPage();
+            $pdf->useTemplate($templateId, 0, 0);
+
+            // Si es la última página, añadir solo los textos
+            if ($pageNo == $pageCount) {
+                $xSello = $selloUltimaCoords['x'];
+                $ySello = $selloUltimaCoords['y'];
+                $anchoSello = $selloUltimaCoords['width'];
+                $altoSello = $selloUltimaCoords['height'];
+
+                $lineHeight = 5;
+                $textos = [$texto1, $texto2, $texto3, $textoFecha];
+                $pdf->SetFont('Helvetica', '', 10);
+                $pdf->SetTextColor(0, 0, 0);
+
+                // Ajustar distancia entre textos y sello
+                $ySelloAjustado = $ySello - 15;
+
+                foreach ($textos as $index => $lineaTexto) {
+                    $anchoTexto = $pdf->GetStringWidth($lineaTexto);
+                    $xTextoCentrado = $xSello + ($anchoSello / 2) - ($anchoTexto / 2);
+                    $yTexto = $ySelloAjustado + $altoSello + ($lineHeight * $index) + 2;
+
+                    $pdf->SetXY($xTextoCentrado, $yTexto);
+
+                    if ($lineaTexto !== $textoFecha) {
+                        $pdf->SetFont('Helvetica', 'BU', 10); // Negrita y subrayado
+                    } else {
+                        $pdf->SetFont('Helvetica', '', 10); // Texto normal
+                    }
+
+                    $pdf->Cell($anchoTexto, $lineHeight, utf8_decode($lineaTexto), 0, 1, 'C');
+                }
+            }
+        }
+
+        // Guardar el PDF procesado
+        $outputFileName2 = "{$nombreDocumento}_procesado.pdf";
+        $outputPath = $carpetaCliente . "/$outputFileName2";
+
+        try {
+            $pdf->Output($outputPath, 'F');
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => 'Error al guardar el archivo PDF procesado: ' . $e->getMessage()]);
+        }
+
+        // Actualizar la variable $archivo_name para referirse al nuevo archivo
+        $archivo_name = $outputFileName2;
+
+        if (!file_exists($outputPath)) {
+            return back()->withErrors(['error' => 'No se pudo guardar el archivo PDF procesado.']);
+        }
+
+        $usuarioId = auth()->user()->id;
+        $usuarioRegistro = auth()->user()->name;
+
+            InformeFinal::create([
+                'cliente' => $request->cliente,
+                'fechabateria' => $request->fechabateria,
+                'estado' => $request->estado,
+                'clienteitaid' => $id,
+                'clienteitanombre' => $request->cliente,
+                'documentfirmado' => $outputFileName,
+                'document' => $outputFileName,
+                'usuarioid' => $usuarioId,
+                'usuarioregistro' => $usuarioRegistro,
+                'estado' => 'APROBADO', //SUBIDA DIRECTA APROBADO POR PROVEEDOR
+            ]);
+
+
+        return back()->with('info', 'El archivo PDF firmado y sellado ha sido guardado correctamente.');
+    } 
     public function updateObservacion(Request $request)
     {
         $validated = $request->validate([
@@ -428,6 +730,724 @@ class InformeFinalController extends Controller
 
         return redirect()->back()->with('info', 'Documento actualizado exitosamente.');
     } 
+    public function solrevisioninformefinal(Request $request, Informefinal $informefinal)
+    {
+        // Validar los datos del formulario
+        $request->validate([
+            'observaciones' => 'required|string|max:255',
+        ]);
+
+        // Obtener el informe final por su ID
+        $informeFinal = Informefinal::findOrFail($request->idinformefinal);
+
+        // Asignar las observaciones al informe final
+        $informeFinal->observaciones = $request->observaciones;
+        $informeFinal->estado = 'SOLICITÓ REVISIÓN';
+        // Guardar los cambios en el informe final
+        $informeFinal->save();
+
+        // Eliminar el informe final
+        $informeFinal->delete();
+
+        // No elimines el informe final aquí si planeas usarlo después
+        // $informefinal->delete();
+
+        // Redirigir a la ruta adecuada, ajusta según sea necesario
+        // Suponiendo que $informefinal->clienteitaid es el ID del cliente
+        $cliente = Cliente::find($informefinal->clienteitaid);
+
+        return redirect()->route('admin.informesfinales.index', $informefinal)->with('info', 'Solicitud enviada exitosamente.');
+    }
+    public function aprobarinformefinalfs(Request $request, Informefinal $informefinal)
+    {
+        $informeFinal = Informefinal::findOrFail($request->idinformefinal);
+        $informeFinal->estado = 'APROBADO';
+        $informeFinal->save();
+
+        $cliente = Cliente::find($informefinal->clienteitaid);
+
+        return redirect()->route('admin.informesfinales.index', $informefinal)->with('info', 'Informe aprobado exitosamente.');
+    }
+    public function guardaraprobacioninformefinal(Request $request, $id)
+    {
+        $request->validate([
+            'cliente' => 'required|string',
+            'fechabateria' => 'required|date',
+            'estado' => 'required|string',
+            'proveedornombre' => 'required|string',
+            'cliente' => 'required|string',
+        ]);
+        $usuarioId = auth()->user()->id;
+        $usuarioRegistro = auth()->user()->name;
+
+        AprobacionInformeFinal::create([
+            'cliente' => $request->cliente,
+            'fechabateria' => $request->fechabateria,
+            'estado' => $request->estado,
+            'proveedorasignado' => $request->proveedornombre,
+            'clienteitaid' => $id,
+            'clienteitanombre' => $request->cliente,
+            'usuarioid' => $usuarioId,
+            'usuarioregistro' => $usuarioRegistro,
+        ]);
+
+        return redirect()->route('admin.informesfinales.index')->with('info', 'Aprobación guardada exitosamente.');
+    }
+    public function buscarprogramacionesclienteita(Cliente $cliente, Request $request)
+        {
+            return $this->index($cliente, $request);
+        }
+    public function buscarporproveedor(Cliente $cliente, Request $request)
+        {
+            return $this->reservasmedicas($cliente, $request);
+        }
+//
+//INFORMES FINALES AUDITORIA
+    public function informesfinalesauditoria(ClienteAuditoria $clienteauditoria, Request $request)
+    {
+        $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
+
+        $aprobaciones = AprobacionInformeFinal::all();
+
+        $fechas = Programacionsubcliente::pluck('fechabateria')->unique()->sort()->toArray();
+
+        $usuarioAutenticado = auth()->user()->name;
+        $esProveedor = $usuarioAutenticado->role ?? null;
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $query = Programacionsubcliente::with(['tramitesubclienteauditoria', 'requisitosclienteauditoriamedica', 'estadoprogramacionsubclienteauditoria', 'documentacionsubclienteauditoria', 'proveedorinformesfinalesauditoria', 'informesfinalesauditoria'])
+            ->whereNotNull('clienteauditoriaid');
+
+        if ($request->has('buscarporfecha') && $request->buscarporfecha !== '') {
+            $query->where('fechabateria', $request->buscarporfecha);
+        }
+
+        if ($request->has('buscarporcliente') && $request->buscarporcliente !== '') {
+            $query->whereHas('clienteauditoria', function ($q) use ($request) {
+                $q->where('clienteauditorianombre', 'LIKE', '%' . $request->buscarporcliente . '%');
+            });
+        }
+
+        $programacionclientes = $query->get();
+        $grouped = $programacionclientes->groupBy(function($item) {
+            return $item->clienteauditorianombre . '|' . $item->fechabateria;
+        });
+
+        $result = [];
+        foreach ($grouped as $key => $items) {
+            $clienteNombre = explode('|', $key)[0];
+            $fechabateria = explode('|', $key)[1];
+
+            $clienteauditoriaid = $items->first()->clienteauditoriaid;
+            $tramites = TramiteSubCliente::where('clienteauditoriaid', $clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->get();
+            $tramiteNombre = $tramites->isEmpty() ? ['SIN SERVICIO'] : $tramites->pluck('tramite')->toArray();
+
+            $usuarioAutenticado = auth()->user()->name;
+            $esProveedor = $usuarioAutenticado->role ?? null;
+
+            $proveedorAsignado = ProveedorInformeFinal::where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->first();
+            $documentosubido = Informefinal::where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->first();
+            $historiamedica = Documentacionsubcliente::withTrashed()
+                ->where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('accion', 'HISTORIA MÉDICA')
+                ->first();
+            $motivoabandonobateria = Bateriasubcliente::where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->first();
+
+            $usuarioRegistro = ClienteAuditoria::where('id', $items->first()->clienteauditoriaid)
+                ->first();
+
+            $aprobacioninforme = Aprobacioninformefinal::withTrashed()
+                ->where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            $aprobacioninformefinales = $aprobacioninforme ? $aprobacioninforme->estado : null;
+
+            $ultimoInforme = InformeFinal::withTrashed()
+                ->where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            $ultimoEstado = $ultimoInforme ? $ultimoInforme->estado : null;
+
+            $tramitebateria = Tramitesubcliente::where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->first();
+            $tramite = $tramitebateria ? $tramitebateria->tramite : null;
+
+            $ultimoobservacionInforme = InformeFinal::withTrashed()
+                ->where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            $ultimoobservacionInforme2 = InformeFinal::withTrashed()
+                ->where('clienteauditoriaid', $items->first()->clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->orderBy('deleted_at', 'desc')
+                ->first();
+            $ultimaObservacion = $ultimoobservacionInforme ? $ultimoobservacionInforme->observaciones : null;
+            $ultimaObservacion2 = $ultimoobservacionInforme2 ? $ultimoobservacionInforme2->observaciones : null;
+
+            $historiamedicaclienteita = $historiamedica ? $historiamedica->document : null;
+            $usuarioregistro = $usuarioRegistro ? $usuarioRegistro->sucursal : null;
+            $motivoabandono = $motivoabandonobateria ? $motivoabandonobateria->motivoabandono : null;
+            $clienteauditoriaid = $items->first()->clienteauditoriaid;
+        
+            $estado = 'COMPLETO';
+            $accionesConEstado = [];
+
+            $requisitosauditoriamedica = Requisitosclientesauditoria::where('clienteauditoriaid', $items->first()->clienteauditoriaid)->get();
+
+            if ($requisitosauditoriamedica->isEmpty()) { 
+                $estadoGeneralauditoria = 'NO REGISTRADO';
+            } else {
+                $estadoGeneralauditoria = 'COMPLETO';
+                $aucampos = ['cnacasegurado', 'ciasegurado', 'banco', 'nropolizageneral', 'polizageneral', 'declasalud', 'nropolizadesgravamen', 'polizasegurodesgravamen'];
+                
+                foreach ($requisitosauditoriamedica as $requisito) {
+                    foreach ($aucampos as $aucampo) {
+                        if (!is_null($requisito->$aucampo) && stripos($requisito->$aucampo, 'PENDIENTE') !== false) {
+                            $estadoGeneralauditoria = 'PENDIENTE';
+                            break 2;
+                        }
+                    }
+                }
+            }
+
+            foreach ($items as $item) {
+                $documentacion = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
+                $image = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
+                $image2 = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
+                $accionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
+                $documentacionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
+
+                $observacion = $documentacion ? $documentacion->observacion : null;
+
+                $estadoProgramacion = $item->estadoprogramacionsubclienteauditoria
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accionnombre', $item->accionnombre)
+                    ->first();
+                $motivoabandono = Bateriasubcliente::where('clienteauditoriaid', $item->clienteauditoriaid)
+                    ->where('fechabateria', $item->fechabateria)
+                    ->value('motivoabandono');
+
+                    $diagnosticomedicoauditoria = Documentacionsubcliente::withTrashed()
+                ->where('clienteitaid', $items->first()->clienteitaid)
+                ->where('fechabateria', $fechabateria)
+                ->where('accion', 'DIAGNÓSTICO MÉDICO')
+                ->first();
+
+            $diagnosticomedicoaudi = $diagnosticomedicoauditoria ? $diagnosticomedicoauditoria->document : null;
+
+                $fechaAtencion = $estadoProgramacion ? $estadoProgramacion->fechaatencionprogramacion : null;
+                $createdatbateria = $item->bateriasubcliente->where('accionnombre', $item->accionnombre)->first();
+
+                if ($createdatbateria) {
+                    $createdfechabateria = $createdatbateria->created_at;
+                    $formattedDate = $createdfechabateria->format('Y-m-d H:i:s');
+                } else {
+                    $formattedDate = 'Fecha no disponible';
+                }
+
+            //REQUISITOS AUDITRIA MEDICA
+                $cnacaseguradoau = $item->requisitosclienteauditoriamedica->filter(function ($requisitoau) {
+                    return !empty($requisitoau->cnacasegurado);})->first()->cnacasegurado ?? null;
+                $ciaseguradoau = $item->requisitosclienteauditoriamedica->filter(function ($requisitoau) {
+                    return !empty($requisitoau->ciasegurado);})->first()->ciasegurado ?? null;
+                $polizasgenau = $item->requisitosclienteauditoriamedica->filter(function ($requisitoau) {
+                    return !empty($requisitoau->polizasgen);})->first()->polizasgen ?? null;
+                $declasaludau = $item->requisitosclienteauditoriamedica->filter(function ($requisitoau) {
+                    return !empty($requisitoau->declasalud);})->first()->declasalud ?? null;
+                $polizaseguroau = $item->requisitosclienteauditoriamedica->filter(function ($requisitoau) {
+                    return !empty($requisitoau->polizaseguro);})->first()->polizaseguro ?? null;
+            //
+
+                if ($accionEstado === 'PENDIENTE') {
+                    $estado = 'INCOMPLETO';
+                }
+                $accionesConEstado[] = [
+                    'accion' => $item->accionnombre,
+                    'estado' => $accionEstado,
+                    'document' => $documentacion,
+                    'image' => $image,
+                    'image2' => $image2,
+                    'proveedornombre' => $item->proveedornombre,
+                    'fechaasignada' => $item->fechaasignada,
+                    'created_at' => $item->created_at,
+                    'fechaatencionprogramacion' => $fechaAtencion,
+                    'fechadocumento' => $documentacion ? $documentacion->created_at : null,
+                    'creacionbateria' => $createdatbateria,
+                    'estadoGeneralauditoria' => $estadoGeneralauditoria,
+                    'cnacaseguradoau' => $cnacaseguradoau,
+                    'ciaseguradoau' => $ciaseguradoau,
+                    'polizasgenau' => $polizasgenau,
+                    'declasaludau' => $declasaludau,
+                    'polizaseguroau' => $polizaseguroau,
+                ];
+            }
+            $result[] = [
+                'clienteauditorianombre' => $clienteNombre,
+                'fechabateria' => $fechabateria,
+                'tramite' => $tramiteNombre,
+                'estado' => $estado,
+                'acciones' => $accionesConEstado,
+                'clienteauditoriaid' => $clienteauditoriaid,
+                'proveedornombre' => $proveedorAsignado ? $proveedorAsignado->proveedorasignado : null,
+                'celularproveedor' => $proveedorAsignado ? $proveedorAsignado->celularproveedor : null,
+                'document' => $documentosubido ? $documentosubido->document : null,
+                'idinformefinal' => $documentosubido ? $documentosubido->id : null,
+                'proveedorrol' => $esProveedor,
+                'historiamedica' => $historiamedicaclienteita,
+                'motivoabandono' => $motivoabandono,
+                'usuarioregistro' => $usuarioregistro,
+                'estadoGeneralauditoria' => $estadoGeneralauditoria,
+                'diagnosticoauditoria' => $diagnosticomedicoaudi,
+
+                'estadoinforme' => $aprobacioninformefinales,
+                'estado_informefinal' => $ultimoEstado,
+                'tramite' => $tramite,
+
+                'documentfirmado' => $documentosubido ? $documentosubido->documentfirmado : null,
+                'ultima_observacion' => $ultimaObservacion,
+                'ultima_observacion2' => $ultimaObservacion2,
+                'observacion' => $observacion,
+            ];
+        }
+ 
+        $asignarCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if (!$item['proveedornombre'] && $item['estado'] === 'COMPLETO') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+        $aprobarbateriaCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['proveedornombre'] && $item['estadoinforme'] !== 'APROBADO' && $item['estado'] === 'COMPLETO') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+        $subirinformeCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['proveedornombre'] && $item['estadoinforme'] === 'APROBADO' && !$item['estado_informefinal']) {
+                $count++;
+            }
+            return $count;
+        }, 0);
+        $subirinformeCount2 = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['proveedornombre'] && $item['estadoinforme'] === 'APROBADO' && !$item['estado_informefinal'] && $item['proveedornombre'] === $usuarioAutenticado) {
+                $count++;
+            }
+            return $count;
+        }, 0);
+        $enrevisionCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado_informefinal'] === 'EN REVISIÓN') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+        $enrevisionCount2 = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado_informefinal'] === 'EN REVISIÓN' && $item['proveedornombre'] === $usuarioAutenticado) {
+                $count++;
+            }
+            return $count;
+        }, 0);
+        $solicitorevisionCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado_informefinal'] === 'SOLICITÓ REVISIÓN') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+        $solicitorevisionCount2 = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado_informefinal'] === 'SOLICITÓ REVISIÓN' && $item['proveedornombre'] === $usuarioAutenticado) {
+                $count++;
+            }
+            return $count;
+        }, 0);
+        $aprobadosCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado_informefinal'] === 'APROBADO') {
+                $count++;
+            }
+            return $count;
+        }, 0);
+        $aprobadosCount2 = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
+            if ($item['estado_informefinal'] === 'APROBADO' && $item['proveedornombre'] === $usuarioAutenticado) {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        $docobservadosCount = array_reduce($result, function ($count, $accion){
+            if (isset($accion['observacion']) && !empty($accion['observacion'])) {
+                $count++;
+            }
+            return $count;
+        }, 0);
+
+        if ($request->isMethod('post') && $request->routeIs('updateObservacion')) {
+            $this->updateObservacion($request);
+        }
+
+        if (isset($clienteauditoriaid)) {
+            $requisitosClientepolizas = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoriaid)->wherenotNull('banco')->get();
+        } else {
+            $requisitosClientepolizas = collect(); // Colección vacía si no hay clienteauditoriaid
+            }
+
+        return view('admin.informesfinales.informesfinalesauditoria', compact('requisitosClientepolizas','userRole','docobservadosCount','esProveedor','usuarioAutenticado','asignarCount','aprobarbateriaCount','subirinformeCount','subirinformeCount2','enrevisionCount','enrevisionCount2','solicitorevisionCount','solicitorevisionCount2','aprobadosCount','aprobadosCount2','proveedores','result', 'clienteauditoria', 'fechas', 'aprobaciones'));
+    }
+    public function guardaraprobacioninformefinalauditoria(Request $request, $id)
+    {
+        $request->validate([
+            'clienteauditorianombre' => 'required|string',
+            'fechabateria' => 'required|date',
+            'estado' => 'required|string',
+            'proveedornombre' => 'required|string',
+            'clienteauditoriaid' => 'required|string',
+        ]);
+        $usuarioId = auth()->user()->id;
+        $usuarioRegistro = auth()->user()->name;
+
+        AprobacionInformeFinal::create([
+            'fechabateria' => $request->fechabateria,
+            'estado' => $request->estado,
+            'proveedorasignado' => $request->proveedornombre,
+            'clienteauditoriaid' => $id,
+            'clienteauditorianombre' => $request->clienteauditorianombre,
+            'usuarioid' => $usuarioId,
+            'usuarioregistro' => $usuarioRegistro,
+        ]);
+
+        return redirect()->route('admin.informesfinales.informesfinalesauditoria')->with('info', 'Aprobación guardada exitosamente.');
+    }
+    public function guardarinformefinalauditoria(StoreInformefinalRequest $request, $id, ClienteAuditoria $clienteauditoria)
+    {
+        $request->validate([
+            'document' => 'required|mimes:pdf|max:15120',
+        ]);
+
+        $id = $request->input('clienteauditoriaid');
+        $clienteauditorianombre = $request->input('clienteauditorianombre');
+        $carpetaCliente = public_path("informesfinalesclientesauditoria/{$id}");
+        if (!file_exists($carpetaCliente)) {
+            mkdir($carpetaCliente, 0755, true);
+        }
+
+        $usuario = auth()->user()->name;
+        $sucursal = auth()->user()->sucursal; // Asegúrate de que el usuario autenticado tenga el atributo `sucursal`.
+        $fechaActual = Carbon::now()->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
+
+        // Procesar y almacenar el archivo original
+        $archivo_name = null;
+            if ($request->hasFile('archivo2')) {
+                $file = $request->file('archivo2');
+                
+                $carpetaCliente = public_path("/informesfinalesclientesauditoria/{$id}");
+                if (!file_exists($carpetaCliente)) {
+                    mkdir($carpetaCliente, 0755, true);}
+                $archivo_name = time() . '_' . $file->getClientOriginalName();
+                $file->move($carpetaCliente, $archivo_name);
+            }
+
+        // VARIABLES PARA FIRMAS Y SELLOS
+        $firmaAnteriorPath = '';
+        $selloAnteriorPath = '';
+        $firmaUltimaPath = '';
+        $selloUltimaPath = '';
+        $firmaAnteriorCoords = [];
+        $selloAnteriorCoords = [];
+        $firmaUltimaCoords = [];
+        $selloUltimaCoords = [];
+        $texto1 = $texto2 = $texto3 = "";
+        switch ($usuario) {
+            case 'AGUIRRE VASQUEZ MARIA RENEE':
+                $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE VERTICAL.png');
+                $firmaAnteriorCoords = ['x' => 184, 'y' => 205, 'width' => 20, 'height' => 37];
+                $selloAnteriorCoords = ['x' => 175, 'y' => 200, 'width' => 35, 'height' => 45];
+
+                $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL ULTIMA MARIA RENEE.png');
+                $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE.png');
+                $firmaUltimaCoords = ['x' => 95, 'y' => 190, 'width' => 35, 'height' => 40];
+                $selloUltimaCoords = ['x' => 85, 'y' => 199, 'width' => 50, 'height' => 45];
+                $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
+                $texto2 = "MÉDICO CIRUJANO";
+                $texto3 = "M.P.A - 7676725";
+                break;
+            case 'CARLOS ALEJANDRO GUARACHI SANDOVAL':
+                    $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 180, 'y' => 200, 'width' => 30, 'height' => 45];
+                    $selloAnteriorCoords = ['x' => 173, 'y' => 200, 'width' => 40, 'height' => 50];
+    
+                    $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE.png');
+                    $firmaUltimaCoords = ['x' => 90, 'y' => 190, 'width' => 40, 'height' => 55];
+                    $selloUltimaCoords = ['x' => 80, 'y' => 200, 'width' => 60, 'height' => 50];
+                    $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
+                    $texto2 = "MÉDICO CIRUJANO";
+                    $texto3 = "M.P.A - 7676725";
+                    break;
+            default:
+                $firmaAnteriorPath = public_path('/glfirmasello/default/firma_anterior.png');
+                $selloAnteriorPath = public_path('/glfirmasello/default/sello_anterior.png');
+                $firmaAnteriorCoords = ['x' => 160, 'y' => 230, 'width' => 50, 'height' => 30];
+                $selloAnteriorCoords = ['x' => 170, 'y' => 230, 'width' => 40, 'height' => 40];
+
+                $firmaUltimaPath = public_path('/glfirmasello/default/firma_ultima.png');
+                $selloUltimaPath = public_path('/glfirmasello/default/sello_ultima.png');
+                $firmaUltimaCoords = ['x' => 85, 'y' => 215, 'width' => 60, 'height' => 40];
+                $selloUltimaCoords = ['x' => 85, 'y' => 220, 'width' => 50, 'height' => 50];
+                break;
+        }
+
+        // Agregar el texto de la sucursal y la fecha
+        $textoFecha = "{$sucursal}, {$fechaActual}";
+
+        // Verificar si los archivos de firma y sello existen
+        if (!file_exists($firmaAnteriorPath) || !file_exists($selloAnteriorPath) ||
+            !file_exists($firmaUltimaPath) || !file_exists($selloUltimaPath)) {
+            return back()->withErrors(['error' => 'Alguna firma o sello no fue encontrada para el usuario autenticado.']);
+        }
+
+        $uploadedPdfPath = $request->file('document')->getPathname();
+        $nombreDocumento = $request->input('nombre_documento', uniqid());
+        $outputFileName = "{$nombreDocumento}.pdf";
+        $outputPath = $carpetaCliente . "/$outputFileName";
+
+        // Crear instancia de FPDI y procesar el PDF
+        $pdf = new FPDI();
+        $pageCount = $pdf->setSourceFile($uploadedPdfPath);
+
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $pdf->AddPage();
+            $pdf->useTemplate($templateId, 0, 0);
+
+            try {
+                if ($pageNo == $pageCount) {
+                    // Última página: firma y sello diferentes
+                    $pdf->Image($firmaUltimaPath, $firmaUltimaCoords['x'], $firmaUltimaCoords['y'], $firmaUltimaCoords['width'], $firmaUltimaCoords['height']);
+                    $pdf->Image($selloUltimaPath, $selloUltimaCoords['x'], $selloUltimaCoords['y'], $selloUltimaCoords['width'], $selloUltimaCoords['height']);
+                
+                    
+                    // Coordenadas del sello 
+                    $xSello = $selloUltimaCoords['x'];
+                    $ySello = $selloUltimaCoords['y'];
+                    $anchoSello = $selloUltimaCoords['width'];
+                    $altoSello = $selloUltimaCoords['height'];
+
+                    // Reducir interlineado
+                    $lineHeight = 5;
+
+                    // Textos a centrar
+                    $textos = [$texto1, $texto2, $texto3, $textoFecha];
+                    $pdf->SetFont('Helvetica', '', 10);
+                    $pdf->SetTextColor(0, 0, 0);
+
+                    // Ajustar la distancia entre el grupo de textos y el sello
+                    $ySelloAjustado = $ySello - 15; // Ajusta este valor para acercar o alejar todo el grupo de textos
+
+                    // Calcular el centro horizontal tomando en cuenta el sello
+                    foreach ($textos as $index => $lineaTexto) {
+                        $anchoTexto = $pdf->GetStringWidth($lineaTexto); // Calcular el ancho del texto
+                        $xTextoCentrado = $xSello + ($anchoSello / 2) - ($anchoTexto / 2); // Centrar el texto debajo del sello
+
+                        // Ajustar la posición vertical debajo del sello
+                        $yTexto = $ySelloAjustado + $altoSello + ($lineHeight * $index) + 2; // Mueve todo el grupo más cerca del sello
+
+                        $pdf->SetXY($xTextoCentrado, $yTexto);
+
+                        // Aplicar negrita y subrayado, excepto para el texto de la fecha
+                        if ($lineaTexto !== $textoFecha) {
+                            $pdf->SetFont('Helvetica', 'BU', 10); // Negrita y subrayado
+                        } else {
+                            $pdf->SetFont('Helvetica', '', 10); // Solo normal para la fecha
+                        }
+
+                        $pdf->Cell($anchoTexto, $lineHeight, utf8_decode($lineaTexto), 0, 1, 'C');
+                    }
+                } else {
+                    // Páginas anteriores
+                    $pdf->Image($firmaAnteriorPath, $firmaAnteriorCoords['x'], $firmaAnteriorCoords['y'], $firmaAnteriorCoords['width'], $firmaAnteriorCoords['height']);
+                    $pdf->Image($selloAnteriorPath, $selloAnteriorCoords['x'], $selloAnteriorCoords['y'], $selloAnteriorCoords['width'], $selloAnteriorCoords['height']);
+                }
+            } catch (Exception $e) {
+                return back()->withErrors(['error' => 'Error al insertar imágenes: ' . $e->getMessage()]);
+            }
+        }
+
+        // Guardar el PDF firmado
+        try {
+            $pdf->Output($outputPath, 'F');
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => 'Error al guardar el archivo PDF firmado: ' . $e->getMessage()]);
+        }
+
+        if (!file_exists($outputPath)) {
+            return back()->withErrors(['error' => 'No se pudo guardar el archivo PDF firmado.']);
+        }
+
+        // Crear instancia de FPDI y procesar todas las páginas
+        $pdf = new FPDI();
+        $pageCount = $pdf->setSourceFile($uploadedPdfPath);
+
+        // Validar que haya al menos una página en el archivo
+        if ($pageCount < 1) {
+            return back()->withErrors(['error' => 'El archivo PDF no contiene páginas.']);
+        }
+
+        // Procesar cada página
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $templateId = $pdf->importPage($pageNo);
+            $pdf->AddPage();
+            $pdf->useTemplate($templateId, 0, 0);
+
+            // Si es la última página, añadir solo los textos
+            if ($pageNo == $pageCount) {
+                $xSello = $selloUltimaCoords['x'];
+                $ySello = $selloUltimaCoords['y'];
+                $anchoSello = $selloUltimaCoords['width'];
+                $altoSello = $selloUltimaCoords['height'];
+
+                $lineHeight = 5;
+                $textos = [$texto1, $texto2, $texto3, $textoFecha];
+                $pdf->SetFont('Helvetica', '', 10);
+                $pdf->SetTextColor(0, 0, 0);
+
+                // Ajustar distancia entre textos y sello
+                $ySelloAjustado = $ySello - 15;
+
+                foreach ($textos as $index => $lineaTexto) {
+                    $anchoTexto = $pdf->GetStringWidth($lineaTexto);
+                    $xTextoCentrado = $xSello + ($anchoSello / 2) - ($anchoTexto / 2);
+                    $yTexto = $ySelloAjustado + $altoSello + ($lineHeight * $index) + 2;
+
+                    $pdf->SetXY($xTextoCentrado, $yTexto);
+
+                    if ($lineaTexto !== $textoFecha) {
+                        $pdf->SetFont('Helvetica', 'BU', 10); // Negrita y subrayado
+                    } else {
+                        $pdf->SetFont('Helvetica', '', 10); // Texto normal
+                    }
+
+                    $pdf->Cell($anchoTexto, $lineHeight, utf8_decode($lineaTexto), 0, 1, 'C');
+                }
+            }
+        }
+
+        // Guardar el PDF procesado
+        $outputFileName2 = "{$nombreDocumento}_procesado.pdf";
+        $outputPath = $carpetaCliente . "/$outputFileName2";
+
+        try {
+            $pdf->Output($outputPath, 'F');
+        } catch (Exception $e) {
+            return back()->withErrors(['error' => 'Error al guardar el archivo PDF procesado: ' . $e->getMessage()]);
+        }
+
+        // Actualizar la variable $archivo_name para referirse al nuevo archivo
+        $archivo_name = $outputFileName2;
+
+        if (!file_exists($outputPath)) {
+            return back()->withErrors(['error' => 'No se pudo guardar el archivo PDF procesado.']);
+        }
+
+        $usuarioId = auth()->user()->id;
+        $usuarioRegistro = auth()->user()->name;
+
+            InformeFinal::create([
+                'cliente' => $request->clienteauditoria,
+                'fechabateria' => $request->fechabateria,
+                'estado' => $request->estado,
+                'clienteauditoriaid' => $id,
+                'clienteauditorianombre' => $clienteauditorianombre,
+                'documentfirmado' => $outputFileName,
+                'document' => $outputFileName,
+                'usuarioid' => $usuarioId,
+                'usuarioregistro' => $usuarioRegistro,
+                'estado' => 'APROBADO', //SUBIDA DIRECTA APROBADO POR PROVEEDOR
+            ]);
+
+
+        return back()->with('info', 'El archivo PDF firmado y sellado ha sido guardado correctamente.');
+    } 
+    public function solrevisioninformefinalauditoria(Request $request, Informefinal $informefinal)
+    {
+        // Validar los datos del formulario
+        $request->validate([
+            'observaciones' => 'required|string|max:255',
+        ]);
+
+        // Obtener el informe final por su ID
+        $informeFinal = Informefinal::findOrFail($request->idinformefinal);
+
+        // Asignar las observaciones al informe final
+        $informeFinal->observaciones = $request->observaciones;
+        $informeFinal->estado = 'SOLICITÓ REVISIÓN';
+        // Guardar los cambios en el informe final
+        $informeFinal->save();
+
+        // Eliminar el informe final
+        $informeFinal->delete();
+
+        // No elimines el informe final aquí si planeas usarlo después
+        // $informefinal->delete();
+
+        // Redirigir a la ruta adecuada, ajusta según sea necesario
+        // Suponiendo que $informefinal->clienteitaid es el ID del cliente
+        $clienteauditoria = ClienteAuditoria::find($informefinal->clienteauditoriaid);
+
+        return redirect()->route('admin.informesfinales.informesfinalesauditoria', $informefinal)->with('info', 'Solicitud enviada exitosamente.');
+    }
+    public function aprobarinformefinalfsauditoria(Request $request, Informefinal $informefinal)
+    {
+        $informeFinal = Informefinal::findOrFail($request->idinformefinal);
+        $informeFinal->estado = 'APROBADO';
+        $informeFinal->save();
+
+        $clienteauditoriaid = ClienteAuditoria::find($informefinal->clienteauditoriaid);
+
+        return redirect()->route('admin.informesfinales.informesfinalesauditoria', $informefinal)->with('info', 'Informe aprobado exitosamente.');
+    }
+    public function buscarprogramacionesclienteauditoria(ClienteAuditoria $clienteauditoria, Request $request)
+        {
+            return $this->informesfinalesauditoria($clienteauditoria, $request);
+        }
+//
+    public function guardarproveedorinformefinal(StoreProveedorInformefinalRequest $request, $id)
+    {
+        $request->validate([
+            'cliente' => 'required|string',
+            'fechabateria' => 'required|date',
+            'celularproveedor' => 'required|string',
+        ]);
+
+        $usuarioId = auth()->user()->id;
+        $usuarioRegistro = auth()->user()->name;
+
+        // Buscar el nombre del proveedor basado en el ID seleccionado
+        $proveedorAsignado = Proveedor::findOrFail($request->proveedorasignado)->proveedor;
+
+        // Crear el registro en ProveedorInformefinal utilizando el nombre del proveedor
+        ProveedorInformefinal::create([
+            'cliente' => $request->cliente,
+            'fechabateria' => $request->fechabateria,
+            'proveedorasignado' => $proveedorAsignado, // Guardar el nombre del proveedor en lugar del ID
+            'celularproveedor' => $request->celularproveedor,
+            'clienteitaid' => $id,
+            'clienteitanombre' => $request->cliente,
+            'usuarioid' => $usuarioId,
+            'usuarioregistro' => $usuarioRegistro,
+        ]);
+
+        return redirect()->route('admin.informesfinales.index')->with('info', 'Proveedor asignado exitosamente.');
+    }
     public function estadodocumentacionprogramacion(Cliente $cliente, Request $request)
     {
         $sucursal = $cliente->sucursal;
@@ -493,9 +1513,15 @@ class InformeFinalController extends Controller
                 ->where('fechabateria', $fechabateria)
                 ->first();
             $usuarioRegistro = Cliente::where('id', $items->first()->clienteitaid)
-            ->first();
+                ->first();
+            $diagnosticomedico = Documentacionsubcliente::withTrashed()
+                ->where('clienteitaid', $items->first()->clienteitaid)
+                ->where('fechabateria', $fechabateria)
+                ->where('accion', 'DIAGNÓSTICO MÉDICO')
+                ->first();
 
             $historiamedicaclienteita = $historiamedica ? $historiamedica->document : null;
+            $diagnosticomedicoita = $diagnosticomedico ? $diagnosticomedico->document : null;
             $usuarioregistro = $usuarioRegistro ? $usuarioRegistro->sucursal : null;
             $motivoabandono = $motivoabandonobateria ? $motivoabandonobateria->motivoabandono : null;
             $clienteitaid = $items->first()->clienteitaid;
@@ -539,8 +1565,6 @@ class InformeFinalController extends Controller
                     ->value('motivoabandono');
 
                 $fechaAtencion = $estadoProgramacion ? $estadoProgramacion->fechaatencionprogramacion : null;
-
-
                 $createdatbateria = $item->bateriasubcliente->where('accionnombre', $item->accionnombre)->first();
 
                 if ($createdatbateria) {
@@ -679,6 +1703,7 @@ class InformeFinalController extends Controller
                 'estadoGeneral' => $estadoGeneral,
                 'usuarioregistro' => $usuarioregistro,
                 'servicio' => $servicio,
+                'diagnostico' => $diagnosticomedicoita,
             ];
         }
  
@@ -820,6 +1845,14 @@ class InformeFinalController extends Controller
                     ->where('fechabateria', $item->fechabateria)
                     ->value('motivoabandono');
 
+                    $diagnosticomedicoauditoria = Documentacionsubcliente::withTrashed()
+                ->where('clienteitaid', $items->first()->clienteitaid)
+                ->where('fechabateria', $fechabateria)
+                ->where('accion', 'DIAGNÓSTICO MÉDICO')
+                ->first();
+
+            $diagnosticomedicoaudi = $diagnosticomedicoauditoria ? $diagnosticomedicoauditoria->document : null;
+
                 $fechaAtencion = $estadoProgramacion ? $estadoProgramacion->fechaatencionprogramacion : null;
                 $createdatbateria = $item->bateriasubcliente->where('accionnombre', $item->accionnombre)->first();
 
@@ -882,6 +1915,7 @@ class InformeFinalController extends Controller
                 'motivoabandono' => $motivoabandono,
                 'usuarioregistro' => $usuarioregistro,
                 'estadoGeneralauditoria' => $estadoGeneralauditoria,
+                'diagnosticoauditoria' => $diagnosticomedicoaudi,
             ];
         }
  
@@ -1013,6 +2047,7 @@ class InformeFinalController extends Controller
             $usuarioRegistro = ClienteBanco::where('id', $items->first()->clientebancoid)
                 ->first();
 
+            
             $fichamedicaclientebanco = $fichamedica ? $fichamedica->document : null;
             $declaracionmedicaclientebanco = $declaracionmedica ? $declaracionmedica->document : null;
             $declaracionmedicaclientebancofisica = $declaracionmedicafisica ? $declaracionmedicafisica->document : null;
@@ -1404,135 +2439,8 @@ class InformeFinalController extends Controller
         // Retornar la vista en lugar de descargar
         return $pdf->stream($pdfName); // Usamos stream() para mostrar el PDF en lugar de descargarlo
     }
-    public function solrevisioninformefinal(Request $request, Informefinal $informefinal)
-    {
-        // Validar los datos del formulario
-        $request->validate([
-            'observaciones' => 'required|string|max:255',
-        ]);
-
-        // Obtener el informe final por su ID
-        $informeFinal = Informefinal::findOrFail($request->idinformefinal);
-
-        // Asignar las observaciones al informe final
-        $informeFinal->observaciones = $request->observaciones;
-        $informeFinal->estado = 'SOLICITÓ REVISIÓN';
-        // Guardar los cambios en el informe final
-        $informeFinal->save();
-
-        // Eliminar el informe final
-        $informeFinal->delete();
-
-        // No elimines el informe final aquí si planeas usarlo después
-        // $informefinal->delete();
-
-        // Redirigir a la ruta adecuada, ajusta según sea necesario
-        // Suponiendo que $informefinal->clienteitaid es el ID del cliente
-        $cliente = Cliente::find($informefinal->clienteitaid);
-
-        return redirect()->route('admin.informesfinales.index', $informefinal)->with('info', 'Solicitud enviada exitosamente.');
-    }
-    public function aprobarinformefinalfs(Request $request, Informefinal $informefinal)
-    {
-        $informeFinal = Informefinal::findOrFail($request->idinformefinal);
-        $informeFinal->estado = 'APROBADO';
-        $informeFinal->save();
-
-        $cliente = Cliente::find($informefinal->clienteitaid);
-
-        return redirect()->route('admin.informesfinales.index', $informefinal)->with('info', 'Informe aprobado exitosamente.');
-    }
-    public function guardaraprobacioninformefinal(Request $request, $id)
-    {
-        $request->validate([
-            'cliente' => 'required|string',
-            'fechabateria' => 'required|date',
-            'estado' => 'required|string',
-            'proveedornombre' => 'required|string',
-            'cliente' => 'required|string',
-        ]);
-        $usuarioId = auth()->user()->id;
-        $usuarioRegistro = auth()->user()->name;
-
-        AprobacionInformeFinal::create([
-            'cliente' => $request->cliente,
-            'fechabateria' => $request->fechabateria,
-            'estado' => $request->estado,
-            'proveedorasignado' => $request->proveedornombre,
-            'clienteitaid' => $id,
-            'clienteitanombre' => $request->cliente,
-            'usuarioid' => $usuarioId,
-            'usuarioregistro' => $usuarioRegistro,
-        ]);
-
-        return redirect()->route('admin.informesfinales.index')->with('info', 'Aprobación guardada exitosamente.');
-    }
-    public function guardarproveedorinformefinal(StoreProveedorInformefinalRequest $request, $id)
-    {
-        $request->validate([
-            'cliente' => 'required|string',
-            'fechabateria' => 'required|date',
-            'celularproveedor' => 'required|string',
-        ]);
-
-        $usuarioId = auth()->user()->id;
-        $usuarioRegistro = auth()->user()->name;
-
-        // Buscar el nombre del proveedor basado en el ID seleccionado
-        $proveedorAsignado = Proveedor::findOrFail($request->proveedorasignado)->proveedor;
-
-        // Crear el registro en ProveedorInformefinal utilizando el nombre del proveedor
-        ProveedorInformefinal::create([
-            'cliente' => $request->cliente,
-            'fechabateria' => $request->fechabateria,
-            'proveedorasignado' => $proveedorAsignado, // Guardar el nombre del proveedor en lugar del ID
-            'celularproveedor' => $request->celularproveedor,
-            'clienteitaid' => $id,
-            'clienteitanombre' => $request->cliente,
-            'usuarioid' => $usuarioId,
-            'usuarioregistro' => $usuarioRegistro,
-        ]);
-
-        return redirect()->route('admin.informesfinales.index')->with('info', 'Proveedor asignado exitosamente.');
-    }
-    public function guardarinformefinal(StoreInformefinalRequest $request, $id, Cliente $cliente)
-    {
-        $clienteitaid = $cliente->id;
-        
-        $archivo_name = null;
-        if ($request->hasFile('document')) {
-            $file = $request->file('document');
-            
-            // Ruta de la carpeta del cliente
-            $carpetaCliente = public_path("/informesfinalesclientesita/{$clienteitaid}");
-            
-            // Crear la carpeta si no existe
-            if (!file_exists($carpetaCliente)) {
-                mkdir($carpetaCliente, 0755, true);
-            }
-            
-            // Nombre único para el archivo
-            $archivo_name = time() . '_' . $file->getClientOriginalName();
-            
-            // Mover el archivo a la carpeta del cliente
-            $file->move($carpetaCliente, $archivo_name);
-        }
-        $usuarioId = auth()->user()->id;
-        $usuarioRegistro = auth()->user()->name;
-
-            InformeFinal::create([
-                'cliente' => $request->cliente,
-                'fechabateria' => $request->fechabateria,
-                'estado' => $request->estado,
-                'clienteitaid' => $id,
-                'clienteitanombre' => $request->cliente,
-                'document' => $archivo_name,
-                'usuarioid' => $usuarioId,
-                'usuarioregistro' => $usuarioRegistro,
-            ]);
-
-        return redirect()->route('admin.informesfinales.index')->with('info', 'Documento subido exitosamente.');
-    } 
+    
+    
     /* public function reservasmedicas(Cliente $cliente, Request $request)
     {
 
@@ -1729,6 +2637,11 @@ class InformeFinalController extends Controller
                 ->where('accion', $reservasmedicaauditoria->accionnombre)
                 ->exists();
 
+            $reservasmedicaauditoria->documentacionfirmadaauditoriaDisponible = Documentacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
+                ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
+                ->where('accion', $reservasmedicaauditoria->accionnombre)
+                ->exists();
+
             $documentacionauditoria = Documentacionsubcliente::where('clienteauditoriaid', $reservasmedicaauditoria->clienteauditoriaid)
                 ->where('fechabateria', $reservasmedicaauditoria->fechabateria)
                 ->where('accion', $reservasmedicaauditoria->accionnombre)
@@ -1749,6 +2662,7 @@ class InformeFinalController extends Controller
                 ->first();
 
             $reservasmedicaauditoria->documentacionDisponibleauditoria = $documentacionauditoria ? $documentacionauditoria->document : null;
+            $reservasmedicaauditoria->documentacionfirmadaauditoriaDisponible = $documentacionauditoria ? $documentacionauditoria->documentfirmado : null;
             $reservasmedicaauditoria->imagen1Disponibleauditoria = $documentacionauditoria ? $documentacionauditoria->image : null;
             $reservasmedicaauditoria->imagen2Disponibleauditoria = $documentacionauditoria ? $documentacionauditoria->image2 : null;
             $reservasmedicaauditoria->fechainformeauditoria = $documentacionauditoria ? $documentacionauditoria->created_at : null;
@@ -1768,8 +2682,6 @@ class InformeFinalController extends Controller
 
         return view('admin.informesfinales.reservasmedicas', compact('usuario','nombreusuario','tienefichamedicaauditoria','tienefichamedica','reservasmedicasauditorias','proveedores', 'rolusuario', 'reservasmedicas', 'cliente', 'atencionpendienteCount', 'informependienteCount', 'informecompletoCount', 'atencionpendienteauditoriaCount', 'informependienteauditoriaCount', 'informecompletoauditoriaCount'));
     }
-
-
     /* public function guardardocumentacionclienteita(StoreDocumentacionsubclienteRequest $request, Cliente $cliente)
     {
         $archivo_name = null;
@@ -1985,7 +2897,7 @@ class InformeFinalController extends Controller
         ]);
 
         $id = $request->input('clienteitaid');
-        $carpetaCliente = public_path("documentacionclientesita/{$id}/firmados");
+        $carpetaCliente = public_path("documentacionclientesita/{$id}");
         if (!file_exists($carpetaCliente)) {
             mkdir($carpetaCliente, 0755, true);
         }
@@ -2020,13 +2932,13 @@ class InformeFinalController extends Controller
             case 'AGUIRRE VASQUEZ MARIA RENEE':
                 $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
                 $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE VERTICAL.png');
-                $firmaAnteriorCoords = ['x' => 180, 'y' => 200, 'width' => 30, 'height' => 45];
-                $selloAnteriorCoords = ['x' => 173, 'y' => 200, 'width' => 40, 'height' => 50];
+                $firmaAnteriorCoords = ['x' => 184, 'y' => 205, 'width' => 20, 'height' => 37];
+                $selloAnteriorCoords = ['x' => 175, 'y' => 200, 'width' => 35, 'height' => 45];
 
-                $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL ULTIMA MARIA RENEE.png');
                 $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE.png');
-                $firmaUltimaCoords = ['x' => 90, 'y' => 190, 'width' => 40, 'height' => 55];
-                $selloUltimaCoords = ['x' => 80, 'y' => 200, 'width' => 60, 'height' => 50];
+                $firmaUltimaCoords = ['x' => 95, 'y' => 190, 'width' => 35, 'height' => 40];
+                $selloUltimaCoords = ['x' => 85, 'y' => 199, 'width' => 50, 'height' => 45];
                 $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
                 $texto2 = "MÉDICO CIRUJANO";
                 $texto3 = "M.P.A - 7676725";
@@ -2063,15 +2975,15 @@ class InformeFinalController extends Controller
                 break;
 
             default:
-                $firmaAnteriorPath = public_path('/glfirmasello/default/firma_anterior.png');
-                $selloAnteriorPath = public_path('/glfirmasello/default/sello_anterior.png');
-                $firmaAnteriorCoords = ['x' => 160, 'y' => 230, 'width' => 50, 'height' => 30];
-                $selloAnteriorCoords = ['x' => 170, 'y' => 230, 'width' => 40, 'height' => 40];
+                $firmaAnteriorPath = public_path('/glfirmasello/default/firma.png');
+                $selloAnteriorPath = public_path('/glfirmasello/default/sello.png');
+                $firmaAnteriorCoords = ['x' => 160, 'y' => 230, 'width' => 1, 'height' => 1];
+                $selloAnteriorCoords = ['x' => 170, 'y' => 230, 'width' => 1, 'height' => 1];
 
-                $firmaUltimaPath = public_path('/glfirmasello/default/firma_ultima.png');
-                $selloUltimaPath = public_path('/glfirmasello/default/sello_ultima.png');
-                $firmaUltimaCoords = ['x' => 85, 'y' => 215, 'width' => 60, 'height' => 40];
-                $selloUltimaCoords = ['x' => 85, 'y' => 220, 'width' => 50, 'height' => 50];
+                $firmaUltimaPath = public_path('/glfirmasello/default/firma.png');
+                $selloUltimaPath = public_path('/glfirmasello/default/sello.png');
+                $firmaUltimaCoords = ['x' => 85, 'y' => 215, 'width' => 1, 'height' => 1];
+                $selloUltimaCoords = ['x' => 85, 'y' => 220, 'width' => 1, 'height' => 1];
                 break;
         }
 
@@ -2100,6 +3012,10 @@ class InformeFinalController extends Controller
 
             try {
                 if ($pageNo == $pageCount) {
+                    // Si los archivos son "firma.png" y "sello.png", no agregar texto
+                    if (basename($firmaUltimaPath) === 'firma.png' && basename($selloUltimaPath) === 'sello.png') {
+                        continue;
+                    }
                     // Última página: firma y sello diferentes
                     $pdf->Image($firmaUltimaPath, $firmaUltimaCoords['x'], $firmaUltimaCoords['y'], $firmaUltimaCoords['width'], $firmaUltimaCoords['height']);
                     $pdf->Image($selloUltimaPath, $selloUltimaCoords['x'], $selloUltimaCoords['y'], $selloUltimaCoords['width'], $selloUltimaCoords['height']);
@@ -2179,6 +3095,11 @@ class InformeFinalController extends Controller
 
             // Si es la última página, añadir solo los textos
             if ($pageNo == $pageCount) {
+                // Si los archivos son "firma.png" y "sello.png", no agregar texto
+                if (basename($firmaUltimaPath) === 'firma.png' && basename($selloUltimaPath) === 'sello.png') {
+                    continue;
+                }
+
                 $xSello = $selloUltimaCoords['x'];
                 $ySello = $selloUltimaCoords['y'];
                 $anchoSello = $selloUltimaCoords['width'];
@@ -2257,9 +3178,9 @@ class InformeFinalController extends Controller
             ]
         );
 
+
         return back()->with('info', 'El archivo PDF firmado y sellado ha sido guardado correctamente.');
     }
-
     public function procesardiagnostico(StoreDocumentacionsubclienteRequest $request, Cliente $cliente) 
     {
         $archivo_name = null;
@@ -2299,9 +3220,8 @@ class InformeFinalController extends Controller
             ]
         );
     
-        return redirect()->route('admin.informesfinales.reservasmedicas')->with('info', 'El documento se subió con éxito');
+        return redirect()->route('admin.informesfinales.estadodocumentacionprogramacion')->with('info', 'El documento se subió con éxito');
     }
-
     public function procesarInformeauditoria(Request $request, ClienteAuditoria $clienteauditoria) 
     {
         $request->validate([
@@ -2309,7 +3229,7 @@ class InformeFinalController extends Controller
         ]);
 
         $id = $request->input('clienteauditoriaid');
-        $carpetaCliente = public_path("documentacionclientesauditoria/{$id}/firmados");
+        $carpetaCliente = public_path("documentacionclientesauditoria/{$id}");
         if (!file_exists($carpetaCliente)) {
             mkdir($carpetaCliente, 0755, true);
         }
@@ -2344,13 +3264,13 @@ class InformeFinalController extends Controller
             case 'AGUIRRE VASQUEZ MARIA RENEE':
                 $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
                 $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE VERTICAL.png');
-                $firmaAnteriorCoords = ['x' => 180, 'y' => 200, 'width' => 30, 'height' => 45];
-                $selloAnteriorCoords = ['x' => 173, 'y' => 200, 'width' => 40, 'height' => 50];
+                $firmaAnteriorCoords = ['x' => 184, 'y' => 205, 'width' => 20, 'height' => 37];
+                $selloAnteriorCoords = ['x' => 175, 'y' => 200, 'width' => 35, 'height' => 45];
 
-                $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL ULTIMA MARIA RENEE.png');
                 $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO ORIGINAL MARIA RENEE.png');
-                $firmaUltimaCoords = ['x' => 90, 'y' => 190, 'width' => 40, 'height' => 55];
-                $selloUltimaCoords = ['x' => 80, 'y' => 200, 'width' => 60, 'height' => 50];
+                $firmaUltimaCoords = ['x' => 95, 'y' => 190, 'width' => 35, 'height' => 40];
+                $selloUltimaCoords = ['x' => 85, 'y' => 199, 'width' => 50, 'height' => 45];
                 $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
                 $texto2 = "MÉDICO CIRUJANO";
                 $texto3 = "M.P.A - 7676725";
@@ -2371,7 +3291,7 @@ class InformeFinalController extends Controller
                 $texto3 = "MAT. PROF. N° 0496";
                 break;
 
-            case 'CARLOS ALEJANDRO GUARACHI SANDOVAL':
+            case 'MONICA MACOÑO FLORES':
                 $firmaAnteriorPath = public_path('/glfirmasello/MONICA MACOÑO FLORES/FIRMA ORIGINAL MONICA MACOÑO VERTICAL.png');
                 $selloAnteriorPath = public_path('/glfirmasello/MONICA MACOÑO FLORES/SELLO ORIGINAL MONICA MAÑOCO VERTICAL.png');
                 $firmaAnteriorCoords = ['x' => 185, 'y' => 205, 'width' => 20, 'height' => 25];
@@ -2387,15 +3307,15 @@ class InformeFinalController extends Controller
                 break;
 
             default:
-                $firmaAnteriorPath = public_path('/glfirmasello/default/firma_anterior.png');
-                $selloAnteriorPath = public_path('/glfirmasello/default/sello_anterior.png');
-                $firmaAnteriorCoords = ['x' => 160, 'y' => 230, 'width' => 50, 'height' => 30];
-                $selloAnteriorCoords = ['x' => 170, 'y' => 230, 'width' => 40, 'height' => 40];
+                $firmaAnteriorPath = public_path('/glfirmasello/default/firma.png');
+                $selloAnteriorPath = public_path('/glfirmasello/default/sello.png');
+                $firmaAnteriorCoords = ['x' => 160, 'y' => 230, 'width' => 1, 'height' => 1];
+                $selloAnteriorCoords = ['x' => 170, 'y' => 230, 'width' => 1, 'height' => 1];
 
-                $firmaUltimaPath = public_path('/glfirmasello/default/firma_ultima.png');
-                $selloUltimaPath = public_path('/glfirmasello/default/sello_ultima.png');
-                $firmaUltimaCoords = ['x' => 85, 'y' => 215, 'width' => 60, 'height' => 40];
-                $selloUltimaCoords = ['x' => 85, 'y' => 220, 'width' => 50, 'height' => 50];
+                $firmaUltimaPath = public_path('/glfirmasello/default/firma.png');
+                $selloUltimaPath = public_path('/glfirmasello/default/sello.png');
+                $firmaUltimaCoords = ['x' => 85, 'y' => 215, 'width' => 1, 'height' => 1];
+                $selloUltimaCoords = ['x' => 85, 'y' => 220, 'width' => 1, 'height' => 1];
                 break;
         }
 
@@ -2424,6 +3344,10 @@ class InformeFinalController extends Controller
 
             try {
                 if ($pageNo == $pageCount) {
+                    // Si los archivos son "firma.png" y "sello.png", no agregar texto
+                    if (basename($firmaUltimaPath) === 'firma.png' && basename($selloUltimaPath) === 'sello.png') {
+                        continue;
+                    }
                     // Última página: firma y sello diferentes
                     $pdf->Image($firmaUltimaPath, $firmaUltimaCoords['x'], $firmaUltimaCoords['y'], $firmaUltimaCoords['width'], $firmaUltimaCoords['height']);
                     $pdf->Image($selloUltimaPath, $selloUltimaCoords['x'], $selloUltimaCoords['y'], $selloUltimaCoords['width'], $selloUltimaCoords['height']);
@@ -2503,6 +3427,11 @@ class InformeFinalController extends Controller
 
             // Si es la última página, añadir solo los textos
             if ($pageNo == $pageCount) {
+                // Si los archivos son "firma.png" y "sello.png", no agregar texto
+                if (basename($firmaUltimaPath) === 'firma.png' && basename($selloUltimaPath) === 'sello.png') {
+                    continue;
+                }
+                
                 $xSello = $selloUltimaCoords['x'];
                 $ySello = $selloUltimaCoords['y'];
                 $anchoSello = $selloUltimaCoords['width'];
@@ -2622,17 +3551,9 @@ class InformeFinalController extends Controller
             ]
         );
     
-        return redirect()->route('admin.informesfinales.reservasmedicas')->with('info', 'El documento se subió con éxito');
+        return redirect()->route('admin.informesfinales.resultadosmedicosclientesauditoria')->with('info', 'El documento se subió con éxito');
     }
-    public function buscarprogramacionesclienteita(Cliente $cliente, Request $request)
-        {
-            return $this->index($cliente, $request);
-        }
-    public function buscarporproveedor(Cliente $cliente, Request $request)
-        {
-            return $this->reservasmedicas($cliente, $request);
-        }
-
+    
     public function buscarprogramacionescomclienteita(Cliente $cliente, Request $request)
     {
         return $this->estadodocumentacionprogramacion($cliente, $request);
@@ -2641,7 +3562,6 @@ class InformeFinalController extends Controller
     {
         return $this->reservasmedicas($cliente, $request);
     }
-
     /**
      * Show the form for creating a new resource.
      *

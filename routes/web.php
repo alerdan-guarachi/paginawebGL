@@ -32,6 +32,9 @@ use App\Http\Controllers\Admin\CodigoController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\ControlProgController;
 use App\Http\Controllers\Admin\QrController;
+use App\Http\Controllers\Admin\MovimientosCajaController;
+use App\Http\Controllers\Admin\CajaCentralController;
+use App\Http\Controllers\Admin\CuentasController;
 
 Route::get('/', function () {return view('welcome');});
 Route::get('/welcome', [App\Http\Controllers\PaginawebController::class, 'welcome'])->name('welcome');
@@ -67,10 +70,17 @@ Route::resource('informesfinales', InformeFinalController::class)/* ->middleware
 Route::resource('informesfinales', InformeFinalController::class)->middleware('auth')->names('admin.informesfinales');
 
 Route::resource('tramites', TramitesController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.tramites');
-Route::resource('caja', CajaController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.caja');
 Route::resource('serviciosrequisitos', ServiciosrequisitosController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.serviciosrequisitos');
 Route::resource('ordenes/ordenesventa', OrdenVentaController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.ordenes.ordenesventa');
 
+Route::resource('caja', MovimientosCajaController::class)->middleware('can:admin.ingreso.index')->names('admin.caja.ingreso');
+
+//CONTABILIDAD
+    Route::get('caja/cierreIngreso', [MovimientosCajaController::class, 'cierreCaja_Ingresos'])->name('admin.caja.ingreso.cierre');
+    Route::post('/buscar-cliente', [MovimientosCajaController::class, 'buscarPorCliente'])->name('buscar.cliente');
+    Route::post('/guardar-cajacentral', [MovimientosCajaController::class, 'guardarCajaCentral'])->name('guardar.cajacentral');
+
+//
 
 /* Route::get('ordenes/ordenesventa', [OrdenVentaController::class, 'index'])->name('admin.ordenes.ordenesventa.index'); */
         Route::get('ordenes/ordenesventa/create/{clientebanco}', [OrdenVentaController::class, 'create'])->name('admin.ordenes.ordenesventa.create');
@@ -98,19 +108,25 @@ Route::post('/procesar-diagnosticoauditoria', [InformeFinalController::class, 'p
     Route::get('informesfinales/documentosprogramaciones/7', 'App\Http\Controllers\Admin\InformeFinalController@documentosprogramaciones')->name('admin.informesfinales.documentosprogramaciones');
     Route::get('/buscarprogramacionesclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarporproveedor')->name('buscarporproveedor');
     Route::get('/buscarporproveedor', 'App\Http\Controllers\Admin\InformeFinalController@buscarprogramacionesclienteita')->name('buscarprogramacionesclienteita');
+    Route::get('/buscarprogramacionesclienteauditoria', 'App\Http\Controllers\Admin\InformeFinalController@buscarprogramacionesclienteauditoria')->name('buscarprogramacionesclienteauditoria');
     Route::get('/buscarprogramacionescomclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarprogramacionescomclienteita')->name('buscarprogramacionescomclienteita');
     Route::get('/buscarreservamedicaclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarreservamedicaclienteita')->name('buscarreservamedicaclienteita');
     Route::post('informesfinales/guardaraprobacioninformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardaraprobacioninformefinal')->name('admin.informesfinales.guardaraprobacioninformefinal');
+    Route::post('informesfinales/guardaraprobacioninformefinalauditoria/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardaraprobacioninformefinalauditoria')->name('admin.informesfinales.guardaraprobacioninformefinalauditoria');
     Route::post('informesfinales/guardarproveedorinformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardarproveedorinformefinal')->name('admin.informesfinales.guardarproveedorinformefinal');
     Route::post('informesfinales/guardarinformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardarinformefinal')->name('admin.informesfinales.guardarinformefinal');
+    Route::post('informesfinales/guardarinformefinalauditoria/{item}', 'App\Http\Controllers\Admin\InformeFinalController@guardarinformefinalauditoria')->name('admin.informesfinales.guardarinformefinalauditoria');
     Route::delete('informesfinales/solrevisioninformefinal/{item}', 'App\Http\Controllers\Admin\InformeFinalController@solrevisioninformefinal')->name('admin.informesfinales.solrevisioninformefinal');
+    Route::delete('informesfinales/solrevisioninformefinalauditoria/{item}', 'App\Http\Controllers\Admin\InformeFinalController@solrevisioninformefinalauditoria')->name('admin.informesfinales.solrevisioninformefinalauditoria');
     Route::put('informesfinales/aprobarinformefinalfs/{item}', 'App\Http\Controllers\Admin\InformeFinalController@aprobarinformefinalfs')->name('admin.informesfinales.aprobarinformefinalfs');
+    Route::put('informesfinales/aprobarinformefinalfsauditoria/{item}', 'App\Http\Controllers\Admin\InformeFinalController@aprobarinformefinalfsauditoria')->name('admin.informesfinales.aprobarinformefinalfsauditoria');
     Route::get('/buscarresultadosclientebanco', 'App\Http\Controllers\Admin\InformeFinalController@buscarresultadosclientebanco')->name('buscarresultadosclientebanco');
     Route::get('/buscarconsiliacionclientebanco', 'App\Http\Controllers\Admin\InformeFinalController@buscarconsiliacionclientebanco')->name('buscarconsiliacionclientebanco');
 
     Route::get('informesfinales/estadodocumentacionprogramacion/7', 'App\Http\Controllers\Admin\InformeFinalController@estadodocumentacionprogramacion')->name('admin.informesfinales.estadodocumentacionprogramacion');
     Route::get('informesfinales/resultadosmedicosclientesauditoria/8', 'App\Http\Controllers\Admin\InformeFinalController@resultadosmedicosclientesauditoria')->name('admin.informesfinales.resultadosmedicosclientesauditoria');
     Route::get('informesfinales/resultadosmedicosclientesbancos/9', 'App\Http\Controllers\Admin\InformeFinalController@resultadosmedicosclientesbancos')->name('admin.informesfinales.resultadosmedicosclientesbancos');
+    Route::get('informesfinales/informesfinalesauditoria/6', 'App\Http\Controllers\Admin\InformeFinalController@informesfinalesauditoria')->name('admin.informesfinales.informesfinalesauditoria');
     Route::get('admprogramaciones/controlregistros/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@controlregistros')->name('admin.admprogramaciones.controlregistros');
     Route::get('informesfinales/reservasmedicas/8', 'App\Http\Controllers\Admin\InformeFinalController@reservasmedicas')->name('admin.informesfinales.reservasmedicas');
     Route::get('informesfinales/consiliacionesclientesbanco/10', 'App\Http\Controllers\Admin\InformeFinalController@consiliacionesclientesbanco')->name('admin.informesfinales.consiliacionesclientesbanco');
@@ -146,6 +162,7 @@ Route::post('/procesar-diagnosticoauditoria', [InformeFinalController::class, 'p
 
     Route::get('tramites/modelocartareclamo/1', 'App\Http\Controllers\Admin\TramitesController@modelocartareclamo')->name('admin.tramites.modelocartareclamo');
 //
+
 
 /* Route::get('tramites/sitsegundacarta/{cliente}', 'App\Http\Controllers\Admin\TramitesController@sitsegundacarta')->name('admin.tramites.sitsegundacarta');
 Route::get('tramites/sitterceracarta/{cliente}', 'App\Http\Controllers\Admin\TramitesController@sitterceracarta')->name('admin.tramites.sitterceracarta');
@@ -520,6 +537,33 @@ Route::get('soporte/revision', [SoporteController::class, 'review'])->name('admi
 Route::post('soporte/atender/{id}', [SoporteController::class, 'atender'])->name('admin.soporte.atender');
 //
 
+//CONTABILIDAD
+    //CENTRAL DE CAJA
+    /* Route::get('caja/nuevaFactura', [CajaCentralController::class, 'nuevaFactura'])->name('admin.caja.nuevaFactura');
+    Route::get('caja/historialFacturas', [CajaCentralController::class, 'historialFacturas'])->name('admin.caja.historialFacturas'); */
+    //
+
+    //CONTROL INGRESO
+    /* Route::get('caja/ingreso', [MovimientosCajaController::class, 'listarIngresos'])->name('admin.caja.ingreso.index');
+    Route::get('caja/cierreIngreso', [MovimientosCajaController::class, 'cierreCaja_Ingresos'])->name('admin.caja.ingreso.cierre'); */
+    //
+
+    //CONTROL EGRESO
+    /* Route::get('caja/egreso', [MovimientosCajaController::class, 'listarEgresos'])->name('admin.caja.egreso.index');
+    Route::get('caja/cierreEgreso', [MovimientosCajaController::class, 'cierreCaja_Egresos'])->name('admin.caja.egreso.cierre'); */
+    //
+
+    //CUENTAS POR COBRAR
+    /* Route::get('caja/cuentasCobrar', [CuentasController::class, 'cuentasCobrar'])->name('admin.caja.cobrar');
+    Route::get('caja/aprobacionesCobrar', [CuentasController::class, 'aprobacionesCobrar'])->name('admin.caja.aprobacionesCobrar'); */
+    //
+
+    //CUENTAS POR PAGAR
+    /* Route::get('caja/cuentasPagar', [CuentasController::class, 'cuentasPagar'])->name('admin.caja.pagar');
+    Route::get('caja/aprobacionesPagar', [CuentasController::class, 'aprobacionesPagar'])->name('admin.caja.aprobacionesPagar'); */
+    //
+
+//
 Route::get('/print', [ClienteController::class, 'print'])->name('admin.clientes.print');
 Route::get('clientes/print/{cliente}', 'App\Http\Controllers\Admin\ClienteController@print')->name('admin.clientes.print');
 Route::post('clientes/print2/{cliente}', 'App\Http\Controllers\Admin\ClienteController@print2')->name('admin.clientes.print2');

@@ -31,6 +31,7 @@ class ProveedorInformefinal extends Model
         'preciocompra' => 'required',
         'servicio' => 'required',
         'pagoinforme' => '',
+        'accionnombre' => '',
     ]; 
 
     protected $fillable = [
@@ -52,6 +53,7 @@ class ProveedorInformefinal extends Model
         'preciocompra',
         'servicio',
         'pagoinforme',
+        'accionnombre',
     ];
     /* public function programacionSubcliente()
     {

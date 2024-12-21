@@ -318,7 +318,7 @@ return [
             'icon' => 'fas fa-fw fas fa-comment',
             'can'  => 'admin.mensajes.index',
         ],
-        [
+       /*  [
             'text' => 'Caja Central',
             'icon' => 'fas fa-cash-register',
             'can'  => 'admin.caja.index',
@@ -336,7 +336,7 @@ return [
                     'can'  => 'admin.caja.index',
                 ],
             ],
-        ],
+        ], */
         [
             'text' => 'Control de Registros',
             'icon' => 'fas fa-fw fas fa-calendar-alt',
@@ -465,12 +465,17 @@ return [
                     'can'  => 'admin.informesfinales.verresultadosmedicosbanco',
                 ],
                 [
-                    'text' => 'Informes Finales',
+                    'text' => 'Informes Finales ITA',
                     'route'  => 'admin.informesfinales.index',
                     'icon' => 'fas fa-fw fas fa-paste',
                     'can'  => 'admin.informesfinales.verinformesfinales',
                 ],
-                
+                [
+                    'text' => 'Informes Finales AUDI',
+                    'route'  => 'admin.informesfinales.informesfinalesauditoria',
+                    'icon' => 'fas fa-fw fas fa-paste',
+                    'can'  => 'admin.informesfinales.verinformesfinales',
+                ],
             ],
         ],
         [
@@ -579,6 +584,104 @@ return [
 
             ],
         ],
+
+        [
+            'text' => 'Ingresos',
+            'icon' => 'fas fa-chart-line',
+            'can'  => 'admin.ingreso.index',
+            'submenu' => [
+                [
+                    'text' => 'Caja de Ingresos',
+                    'route'  => 'admin.caja.ingreso.index',
+                    'icon' => 'fas fa-sign-in-alt',
+                    'can'  => 'admin.ingreso.index',
+                ],
+                [
+                    'text' => 'Cierre de Caja',
+                    'route'  => 'admin.caja.ingreso.cierre',
+                    'icon' => 'fas fa-lock',
+                    'can'  => 'admin.ingreso.index',
+                ],
+            ],
+        ],
+        /* [
+            'text' => 'Cuentas por Cobrar',
+            'icon' => 'fas fa-hand-holding-usd',
+            'can'  => 'admin.cuentasCobrar.index',
+            'submenu' => [
+                [
+                    'text' => 'Pendientes',
+                    'route'  => 'admin.caja.cobrar',
+                    'icon' => 'fas fa-hourglass-half',
+                    'can'  => 'admin.cuentasCobrar.index',
+                ],
+                [
+                    'text' => 'Aprobaciones',
+                    'route'  => 'admin.caja.aprobacionesCobrar',
+                    'icon' => 'fas fa-check-circle',
+                    'can'  => 'admin.cuentasCobrar.index',
+                ],
+            ],
+        ],
+        [
+            'text' => 'Cuentas por Pagar',
+            'icon' => 'fas fa-money-check-alt',
+            'can'  => 'admin.cuentasPagar.index',
+            'submenu' => [
+                [
+                    'text' => 'Pendientes',
+                    'route'  => 'admin.caja.pagar',
+                    'icon' => 'fas fa-hourglass-half',
+                    'can'  => 'admin.cuentasPagar.index',
+                ],
+                [
+                    'text' => 'Aprobaciones',
+                    'route'  => 'admin.caja.aprobacionesPagar',
+                    'icon' => 'fas fa-check-circle',
+                    'can'  => 'admin.cuentasPagar.index',
+                ],
+            ],
+        ], */
+        
+        /* [
+            'text' => 'Caja Central',
+            'icon' => 'fas fa-cash-register',
+            'can'  => 'admin.cajaCentral.index',
+            'submenu' => [
+                [
+                    'text' => 'Conciliación Bancaria',
+                    'route'  => 'admin.caja.ingreso.cierre',
+                    'icon' => 'fas fa-balance-scale',
+                    'can'  => 'admin.cajaCentral.index',
+                ],
+                [
+                    'text' => 'Facturas Emitidas',
+                    'route'  => 'admin.caja.historialFacturas',
+                    'icon' => 'fas fa-file-invoice-dollar',
+                    'can'  => 'admin.cajaCentral.index',
+                ],
+            ],
+        ], */
+        /* [
+            'text' => 'Egresos',
+            'icon' => 'fas fa-money-bill-wave',
+            'can'  => 'admin.egreso.index',
+            'submenu' => [
+                [
+                    'text' => 'Egreso',
+                    'route'  => 'admin.caja.egreso.index',
+                    'icon' => 'fas fa-sign-out-alt',
+                    'can'  => 'admin.egreso.index',
+                ],
+                [
+                    'text' => 'Cierre de Caja',
+                    'route'  => 'admin.caja.egreso.cierre',
+                    'icon' => 'fas fa-lock',
+                    'can'  => 'admin.egreso.index',
+                ],
+            ],
+        ], */
+
         [
             'text' => 'Soporte Técnico',
             'icon' => 'fas fa-tools',

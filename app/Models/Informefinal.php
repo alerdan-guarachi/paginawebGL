@@ -30,7 +30,7 @@ class Informefinal extends Model
         'usuarioid' => '',
         'usuarioregistro' => '',
         'observacion' => '',
-
+        'documentfirmado' => '',
     ]; 
 
     protected $fillable = [
@@ -50,7 +50,8 @@ class Informefinal extends Model
         'proveedorasignado',
         'usuarioid',
         'usuarioregistro',
-        'observacion'
+        'observacion',
+        'documentfirmado',
     ];
 
 }

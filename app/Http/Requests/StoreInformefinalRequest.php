@@ -47,7 +47,7 @@ class StoreInformefinalRequest extends FormRequest
         'usuarioid' => '',
         'usuarioregistro' => '',
         'observacion' => '',
-        
+        'documentfirmado' => '',
     ]; 
     return $rules;
 }

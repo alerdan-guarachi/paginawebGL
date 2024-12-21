@@ -113,6 +113,10 @@ class Programacionsubcliente extends Model
     {
         return $this->hasMany(Tramitesubcliente::class, 'clienteitaid', 'clienteitaid');
     }
+    public function tramitesubclienteauditoria()
+    {
+        return $this->hasMany(Tramitesubcliente::class, 'clienteauditoriaid', 'clienteauditoriaid');
+    }
     public function estadoprogramacionsubclientecomun()
     {
         return $this->hasMany(Estadoprogramacionsubcliente::class, 'clientecomunid', 'clientecomunid');
@@ -133,9 +137,17 @@ class Programacionsubcliente extends Model
     {
         return $this->hasMany(ProveedorInformefinal::class, 'clienteitaid', 'clienteitaid');
     }
+    public function proveedorinformesfinalesauditoria()
+    {
+        return $this->hasMany(ProveedorInformefinal::class, 'clienteauditoriaid', 'clienteauditoriaid');
+    }
     public function informesfinales()
     {
         return $this->hasMany(Informefinal::class, 'clienteitaid', 'clienteitaid');
+    }
+    public function informesfinalesauditoria()
+    {
+        return $this->hasMany(Informefinal::class, 'clienteauditoriaid', 'clienteauditoriaid');
     }
     public function documentacionsubclientebanco()
     {
