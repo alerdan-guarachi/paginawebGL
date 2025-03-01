@@ -28,6 +28,8 @@ class Tramitesubcliente extends Model
         'fechabateria' => '',
         'clienteauditoriaid' => '',
         'clienteauditorianombre' => '',
+        'clientecomunid' => '',
+        'clientecomunnombre' => '',
     ]; 
 
     protected $fillable = [
@@ -46,6 +48,8 @@ class Tramitesubcliente extends Model
         'fechabateria',
         'clienteauditoriaid',
         'clienteauditorianombre',
+        'clientecomunid',
+        'clientecomunnombre',
     ];
 
     public function areaaccion()

@@ -3,7 +3,9 @@
 @section('content_header')
 
 @can('admin.proveedores.create')
+@if ($nombreusuario != 'SIDHARTA HELEN SOTO CHUQUIMIA')
 <a class="btn btn-sm float-right btn-crear" href="{{route('admin.proveedores.create')}}">CREAR PROVEEDOR</a>
+@endif
 @endcan
 <h1>PROVEEDORES</h1>
 @stop

@@ -155,22 +155,50 @@
                                     <div class="col-md-12">
                                         <table style="width: 100%;">
                                             <tbody>
-                                                @if($clienteauditoria->numerocuenta1)
+                                                @if($clienteauditoria->nrocredito1)
+                                                <tr> 
+                                                    <th>Nro. de Crédito Banco 1</th>
+                                                    <td>
+                                                        {{ implode(' / ', array_filter([
+                                                            $clienteauditoria->nrocredito1,
+                                                            $clienteauditoria->nrocredito2,
+                                                            $clienteauditoria->nrocredito3,
+                                                            $clienteauditoria->nrocredito4,
+                                                            $clienteauditoria->nrocredito5,
+                                                            $clienteauditoria->nrocredito6
+                                                        ])) }}
+                                                    </td>
+                                                </tr>
+                                                
+                                                @endif
+                                                @if($clienteauditoria->nrocredito7)
                                                 <tr>
-                                                    <th>Nro. de Cuenta 1</th>
-                                                    <td>{{ $clienteauditoria->numerocuenta1 }}</td>
+                                                    <th>Nro. de Crédito Banco 2</th>
+                                                    <td>
+                                                        {{ implode(' / ', array_filter([
+                                                            $clienteauditoria->nrocredito7,
+                                                            $clienteauditoria->nrocredito8,
+                                                            $clienteauditoria->nrocredito9,
+                                                            $clienteauditoria->nrocredito10,
+                                                            $clienteauditoria->nrocredito11,
+                                                            $clienteauditoria->nrocredito12
+                                                        ])) }}
+                                                    </td>
                                                 </tr>
                                                 @endif
-                                                @if($clienteauditoria->numerocuenta2)
+                                                @if($clienteauditoria->nrocredito13)
                                                 <tr>
-                                                    <th>Nro. de Cuenta 2</th>
-                                                    <td>{{ $clienteauditoria->numerocuenta2 }}</td>
-                                                </tr>
-                                                @endif
-                                                @if($clienteauditoria->numerocuenta3)
-                                                <tr>
-                                                    <th>Nro. de Cuenta 3</th>
-                                                    <td>{{ $clienteauditoria->numerocuenta3 }}</td>
+                                                    <th>Nro. de Crédito Banco 3</th>
+                                                    <td>
+                                                        {{ implode(' / ', array_filter([
+                                                            $clienteauditoria->nrocredito13,
+                                                            $clienteauditoria->nrocredito14,
+                                                            $clienteauditoria->nrocredito15,
+                                                            $clienteauditoria->nrocredito16,
+                                                            $clienteauditoria->nrocredito17,
+                                                            $clienteauditoria->nrocredito18
+                                                        ])) }}
+                                                    </td>
                                                 </tr>
                                                 @endif
                                             </tbody>
@@ -278,9 +306,8 @@
                         <div style="text-align: center; padding: 1.5px;">
                             <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
                         </div> 
-                        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'VANESSA MAMANI HUANACO' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                            <div class="row text-center">
-                                @can('admin.asociados.crearbateriaclienteauditoria')
+                        <div class="row text-center">
+                            @can('admin.asociados.crearbateriaclienteauditoria')
                                     @if ($tieneRequisitos)
                                     <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                         <a href="{{ route('admin.asociados.crearbateriaclienteauditoria', $clienteauditoria) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
@@ -297,34 +324,6 @@
                                     </div>
                                     @endif
                                 @endcan
-                                @can('admin.asociados.aprobacioncotizacionclienteauditoria')
-                                    @if ($tieneBateria)
-                                        <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="{{ route('admin.asociados.aprobacioncotizacionclienteauditoria', $clienteauditoria) }}" class="btn btn-cotizacion btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
-                                                <i class="fas fa-donate"></i>
-                                                <strong>COTIZACIÓN</strong>
-                                            </a>
-                                        </div>
-                                        @else
-                                        <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                            <a href="#" class="btn btn-cotizacion btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
-                                                <i class="fas fa-donate"></i>
-                                                <strong>COTIZACIÓN</strong>
-                                            </a>
-                                        </div>
-                                    @endif
-                                @endcan
-                            </div>
-                        @else
-                        <div class="row text-center">
-                            @can('admin.asociados.crearbateriaclienteauditoria')
-                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
-                                        <i class="fas fa-charging-station"></i>
-                                        <strong>BATERIA</strong>
-                                    </a>
-                                </div>
-                            @endcan
                             @can('admin.asociados.aprobacioncotizacionclienteauditoria')
                                 @if ($tieneBateria)
                                     <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
@@ -343,7 +342,7 @@
                                 @endif
                             @endcan
                         </div>
-                        @endif
+                        
                     </div>
 
                     <div style="margin-top: 10px; background-color: #fbffe7;  border-radius: 40px;">
@@ -410,14 +409,12 @@
                             <strong  style="color: #c47a35; font-size:20px;">OTROS</strong>
                         </div>
                         <div class="row text-center">
-                            @can('admin.asociados.editarclienteauditoria')
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.editarclienteauditoria', $clienteauditoria) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
-                                    <i class="fas fa-edit"></i>
-                                    <strong>EDITAR</strong>
-                                </a>
+                                <button type="button" class="btn btn-proveedorinforme btn-icono btn-block" data-toggle="modal" data-target="#dictamenModal" data-placement="top" title="DICTAMEN">
+                                    <i class="fas fa-file-archive"></i>
+                                    <strong>DICTAMEN</strong>
+                                </button>
                             </div>
-                            @endcan
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <button type="button" class="btn btn-proveedorinforme btn-icono btn-block" data-toggle="modal" data-target="#proveedorinformeModal" data-placement="top" title="PROVEEDOR INFORME FINAL">
                                     <i class="fas fa-user-md"></i>
@@ -431,10 +428,148 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="row text-center">
+                            @can('admin.cartaspolizas.index')
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="{{ route('admin.asociados.cartasdesgravamen.cartasactdesgravamen', $clienteauditoria) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CARTAS DE ACTIVACIÓN DE DESGRAVAMEN">
+                                    <i class="fas fa-file"></i>
+                                    <strong>CARTAS ACT.</strong>
+                                </a>
+                            </div>
+                            @endcan
+                            @can('admin.asociados.editarclienteauditoria')
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="{{ route('admin.asociados.editarclienteauditoria', $clienteauditoria) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
+                                    <i class="fas fa-edit"></i>
+                                    <strong>EDITAR</strong>
+                                </a>
+                            </div>
+                            @endcan
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- DICTAMEN --}}
+    <div class="modal fade modal-custom-height" id="dictamenModal" tabindex="-1" aria-labelledby="dictamenModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="titulo">
+                <h5 class="modal-title" id="dictamenModalLabel">DICTAMEN DE</h5>
+                <h3>{{$clienteauditoria->nombrecompleto}}</h3>
+                </div>
+                {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardardictamenauditoria', $clienteauditoria], 'method' => 'POST', 'enctype' => 'multipart/form-data']) !!}
+                {!! Form::hidden('usuarioregistroid', auth()->user()->id) !!}
+                {!! Form::hidden('usuarioregistronombre', auth()->user()->name) !!}
+                {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id) !!}
+                {!! Form::hidden('clienteauditorianombre', $clienteauditoria->nombrecompleto) !!}
+            
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    {!! Form::label('nrodictamen', 'Nro. Dictamen:') !!}
+                                    {!! Form::text('nrodictamen', null, ['class' => 'form-control', 'placeholder' => '', 'required' => 'required']) !!}
+                                    @error('nrodictamen')
+                                        <small class="text-danger fas fa-exclamation-circle">
+                                            {{ $message }}
+                                        </small>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group col-lg-4">
+                                    {!! Form::label('fechadictamen', 'Fecha Dictamen:') !!}
+                                    {!! Form::date('fechadictamen', null, ['class' => 'form-control', 'placeholder' => '', 'required' => 'required']) !!}
+                                    @error('fechadictamen')
+                                        <small class="text-danger fas fa-exclamation-circle">
+                                            {{ $message }}
+                                        </small>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group col-lg-4"> 
+                                    {!! Form::label('porcentajeinvalidez', 'Porcentaje de Invalidez:') !!}
+                                    <div class="input-group">
+                                        {!! Form::text('porcentajeinvalidez', null, [
+                                            'class' => 'form-control',
+                                            'placeholder' => '',
+                                            'required' => 'required'
+                                        ]) !!}
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                    @error('porcentajeinvalidez')
+                                        <small class="text-danger fas fa-exclamation-circle">
+                                            {{ $message }}
+                                        </small>
+                                    @enderror
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="mb-3">
+                                    {!! Form::label('documento', 'Documento:', ['class' => 'form-label']) !!}
+                                    <input type="file" name="documento" id="documento" accept=".pdf" required/>
+                                    @error('documento')
+                                        <div class="text-danger">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            {{$message}}
+                                        </div>
+                                    @enderror
+                                </div>
+                            </div>
+                            
+                            <div class="modal-footer" style="margin-top: 30px;">
+                                <button type="submit" class="btn btn-si">GUARDAR</button>
+                                <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">CERRAR</button>
+                            </div>
+                            {!! Form::close() !!}
+                        </div>
+
+                        <div class="table-responsive">
+                            <div class="col-lg-12">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th style="color: black">ID Reg.</th>
+                                            <th style="color: black">Nro. Dictamen</th>
+                                            <th style="color: black">Fecha Dictamen</th>
+                                            <th style="color: black">Porcentaje Invalidez</th>
+                                            <th style="color: black">Archivo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($dictamenauditorias as $dictamenauditoria)
+                                            <tr>
+                                                <td style="text-align: left">{{ $dictamenauditoria->id }}</td>
+                                                <td style="text-align: left">{{ $dictamenauditoria->nrodictamen }}</td>
+                                                <td style="text-align: left">{{ $dictamenauditoria->fechadictamen }}</td>
+                                                <td style="text-align: left">{{ $dictamenauditoria->porcentajeinvalidez }}</td>
+                                                <td style="text-align: left">
+                                                    @if($dictamenauditoria->documento)
+                                                        <a href="{{ asset('dictamenauditoria/' . $dictamenauditoria->clienteauditoriaid . '/' . $dictamenauditoria->documento) }}" 
+                                                           target="_blank" class="btn btn-outline-success btn-sm">
+                                                           <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    @else
+                                                        VACIO
+                                                    @endif
+                                                </td>
+                                                
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

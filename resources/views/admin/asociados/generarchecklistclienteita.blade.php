@@ -2,20 +2,13 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
-<a class="btn btn-sm float-right btn-subirrequisitos" href="{{ route('admin.asociados.subirdocrequisitos', $cliente) }}">SUBIR REQUISITOS</a>
-<a class="btn btn-sm float-right btn-generarpdf" onclick="generatePDFOnly()" style="margin-right: 10px;">
-    GENERAR CHECK LIST SIN REGISTRAR</a>
-    
-    
-@if (!$tieneInvalidez)
-<h5>REQUISITOS PARA INICIO DE BATERIA DE:</h5>
-<h3>{{$cliente->nombrecompleto}}</h3>
-@endif
-
 @if ($tieneInvalidez)
-<h5>REQUISITOS DE INVALIDEZ:</h5>
+<a class="btn btn-sm float-right btn-subirrequisitos" href="{{ route('admin.asociados.subirdocrequisitos', $cliente) }}">SUBIR REQUISITOS</a>
+@endif
+{{-- <a class="btn btn-sm float-right btn-generarpdf" onclick="generatePDFOnly()">
+    GENERAR CHECK LIST SIN REGISTRAR</a> --}}
+<h5>DERIVACION Y REQUISITOS DE INVALIDEZ:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
-
 @stop
 
 @section('content')
@@ -37,10 +30,11 @@
     </script>
 @endif
 
+@if ($tieneInvalidez)
+@if (!$tieneRequisitos)
 <div class="card"> 
     <div class="card-body">
         <div class="row">
-            @if ($tieneInvalidez)
             <div class="col-md-4">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">DOCUMENTACIÓN A PRESENTAR</h4>
                 <div class="form-group">
@@ -184,12 +178,9 @@
                     });
                 </script>
             </div>
-            @endif
         </div>
 
-        {{-- @if (!$tieneRequisitos) --}}
         <button onclick="generatePDF(), generatePDF2()" class="btn-crear">GENERAR CHECK LIST</button>
-        {{-- @endif --}}
 
         <script>
             function generatePDF() {
@@ -218,7 +209,7 @@
         </script>
         <script>
             function generatePDFOnly() {
-                        var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                var checkboxes = document.querySelectorAll('input[type="checkbox"]');
                         var documentosSeleccionados = [];
                         checkboxes.forEach(function(checkbox) {
                             if (checkbox.checked) {
@@ -246,52 +237,106 @@
             <div class="col-lg-12">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px; margin-top: 20px;">ATENCIÓN MÉDICA</h4>
                 @if (!$registroExistente && !$registroaprobadoExistente)
-
-                    
-                    <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'generar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                            {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('ci', $cliente->ci, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('sucursal', $cliente->sucursal, ['class' => 'form-control']) !!}
-                            {!! Form::submit('DERIVAR A MEDICINA LABORAL', ['class' => 'btn btn-derivar']) !!}
-                        {!! Form::close() !!}
+                
+                <div class="row">
+                    <!-- Primera Card -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm h-100" style="background-color: #fdf4e3;">
+                            <div class="card-header text-center fw-bold text-white" style="background-color: #edab2e; font-weight:900; font-size:16px;">
+                                DERIVAR A MEDICINA LABORAL
+                            </div>
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                                {!! Form::open(['route' => 'generar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                    {!! Form::hidden('nombres', $cliente->nombres) !!}
+                                    {!! Form::hidden('apepaterno', $cliente->apepaterno) !!}
+                                    {!! Form::hidden('apematerno', $cliente->apematerno) !!}
+                                    {!! Form::hidden('ci', $cliente->ci) !!}
+                                    {!! Form::hidden('sucursal', $cliente->sucursal) !!}
+                                    {!! Form::hidden('tramite', 'INVALIDEZ') !!}
+                                    
+                                    <div class="form-group mb-3">
+                                        <label for="proveedor_id" class="fw-bold d-flex justify-content-center w-100">Seleccionar Proveedor:</label>
+                                        <select name="proveedorasignado" id="proveedor_id" class="form-control" required>
+                                            <option value="" disabled selected></option>
+                                            @foreach($proveedores as $proveedor)
+                                                <option value="{{ $proveedor }}">{{ $proveedor }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                
+                                    <div class="d-flex justify-content-center w-100">
+                                        <button type="submit" class="btn btn-derivar px-4" id="submit-btn" disabled>DERIVAR</button>
+                                    </div>
+                                {!! Form::close() !!}
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'generar.pdf.soloconsentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                            <a class="btn btn-consen btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">GENERAR SOLO CONSENTIMIENTO</a>
-                            {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('ci', $cliente->ci, ['class' => 'form-control']) !!}
-                        {!! Form::close() !!}
-                    </div>
-
-                    @if($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
-                        <div class="form-group" style="display: flex; gap: 5px;">
-                                {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                
+                    <!-- Segunda Card -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm h-100" style="background-color: #f2e8f5;">
+                            <div class="card-header text-center fw-bold text-white" style="background-color: #b02eed; font-weight:900; font-size:16px;">
+                                GENERAR SOLO CONSENTIMIENTO
+                            </div>
+                            <div class="card-body d-flex align-items-center justify-content-center"  style="display: flex; gap: 5px;">
+                                {!! Form::open(['route' => 'generar.pdf.soloconsentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                    <a class="btn btn-consen btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">GENERAR</a>
                                     {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
                                     {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
                                     {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
                                     {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
-                        
-                                    {!! Form::submit('APROBAR INICIAR BATERIA SIN CONSENTIMIENTO', [
-                                        'class' => 'btn btn-aprobarbateria'
-                                    ]) !!}
+                                    {!! Form::hidden('ci', $cliente->ci, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('tramite', 'INVALIDEZ') !!}
                                 {!! Form::close() !!}
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Tercera Card (solo para ADMINISTRADOR y MAESTRO) -->
+                    @if($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
+                        <div class="col-lg-4">
+                            <div class="card shadow-sm h-100" style="background-color: #e0f4ff;"> <!-- Naranja claro -->
+                                <div class="card-header text-center fw-bold text-white" style="background-color: #2ea4ed; font-weight:900; font-size:16px;">
+                                    APROBAR INICIAR BATERIA SIN CONSENTIMIENTO
+                                </div>
+                                <div class="card-body d-flex align-items-center justify-content-center" style="display: flex; gap: 5px;">
+                                    {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                        {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                        {!! Form::hidden('nombres', $cliente->nombres) !!}
+                                        {!! Form::hidden('apepaterno', $cliente->apepaterno) !!}
+                                        {!! Form::hidden('apematerno', $cliente->apematerno) !!}
+                                        {!! Form::hidden('tramite', 'INVALIDEZ') !!}
+                                        
+                                        <div class="d-flex justify-content-center w-100">
+                                            <button type="submit" class="btn btn-aprobarbateria px-4">APROBAR</button>
+                                        </div>
+                                    {!! Form::close() !!}
+                                </div>
+                            </div>
                         </div>
                     @endif
-                    
+                </div>
+                
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        let proveedorSelect = document.getElementById("proveedor_id");
+                        let submitBtn = document.getElementById("submit-btn");
+                
+                        proveedorSelect.addEventListener("change", function() {
+                            submitBtn.disabled = (this.value === "");
+                        });
+                    });
+                </script>
                 @elseif ($registroExistente)
                     <p></p>
                 @elseif ($registroaprobadoExistente)
-                    <p>APROBADO PARA CREAR BATERÍA</p>
+                <div class="d-flex mt-3">
+                    <div class="p-3 border rounded shadow-sm" style="background-color: #edffef; width: fit-content;">
+                        <p class="m-0 fw-bold" style="font-weight: 900">APROBADO PARA CREAR BATERÍA</p>
+                    </div>
+                </div>
                 @endif
-
             </div>
         </div>
 
@@ -314,20 +359,15 @@
                         {!! Form::open(['route' => 'guardar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
                             {!! Form::hidden('clienteitaid', $cliente->id) !!}
                             {!! Form::hidden('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS') !!}
-        
-                            <!-- Custom file input group centrado -->
+                            {!! Form::hidden('tramite', 'INVALIDEZ') !!}
+
                             <div class="mt-4">
-                                <!-- Campo de archivo oculto -->
                                 {!! Form::file('pdf_file', ['id' => 'real-file', 'style' => 'display:none;']) !!}
-                                <!-- Botón visible personalizado centrado -->
                                 <button type="button" class="btn btn-outline-primary" id="custom-button">Buscar archivo</button>
                             </div>
-        
-                            <!-- Texto del archivo seleccionado centrado debajo del botón -->
                             <div class="mt-3">
                                 <span id="custom-text">No se ha seleccionado ningún archivo</span>
                             </div>
-        
                             <div class="text-center mt-5">
                                 {!! Form::submit('Guardar consentimiento', ['class' => 'btn btn-crear btn-lg px-5 py-2 font-weight-bold']) !!}
                             </div>
@@ -336,33 +376,41 @@
                 </div>
             </div>
         </div>
-        
-        <!-- JavaScript para gestionar la selección del archivo -->
+
         <script>
             const realFileBtn = document.getElementById('real-file');
             const customBtn = document.getElementById('custom-button');
             const customTxt = document.getElementById('custom-text');
-        
             customBtn.addEventListener('click', function() {
-                realFileBtn.click(); // Simula el clic en el input de archivo oculto
+                realFileBtn.click();
             });
-        
             realFileBtn.addEventListener('change', function() {
                 if (realFileBtn.value) {
-                    customTxt.innerHTML = realFileBtn.files[0].name; // Muestra el nombre del archivo seleccionado
+                    customTxt.innerHTML = realFileBtn.files[0].name;
                 } else {
-                    customTxt.innerHTML = "No se ha seleccionado ningún archivo"; // Texto por defecto
+                    customTxt.innerHTML = "No se ha seleccionado ningún archivo";
                 }
             });
         </script>
-        
-        
-        
         @endif
     </div>
 </div>
 
-
+@else
+<div class="card"> 
+    <div class="card-body">
+        <div class="row"> 
+            <div class="col-lg-12">
+                <div class="d-flex mt-3">
+                    <div class="p-3 border rounded shadow-sm" style="background-color: #edffef; width: fit-content;">
+                        <p class="m-0 fw-bold" style="font-weight: 900">DIRIGETE A LA SECCION DE SERVICIOS ADICIONALES</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 @stop
 @section('css')
 <style>

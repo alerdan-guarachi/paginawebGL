@@ -23,7 +23,7 @@ use App\Models\Pais;
 use App\Models\Ciudad;
 use App\Models\Cliente;
 use App\Models\Tramitesubcliente;
-use App\Models\Personal;
+use App\Models\Proveedoresservicios;
 use App\Models\Aprobacioninformefinal;
 use App\Models\ProveedorInformefinal;
 use App\Models\Informefinal;
@@ -341,7 +341,7 @@ class TramitesController extends Controller
 
         
         // RELLENAR CON SIGUIENTE APDOERADO
-            $apoderados = Personal::orderBy('nombrecompleto')
+            $apoderados = Proveedoresservicios::orderBy('nombrecompleto')
             ->where('cargo', 'EJECUTIVO PRESTACIONES')
             ->pluck('nombrecompleto', 'nombrecompleto');
 
@@ -577,7 +577,7 @@ class TramitesController extends Controller
         {
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
-            $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+            $personal = Proveedoresservicios::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
 
             $nombreclienteita = $cliente->nombrecompleto;
             $procedimientotramites = Tramite::where('clienteitanombre', $nombreclienteita)
@@ -607,7 +607,7 @@ class TramitesController extends Controller
         {
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
-            $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+            $personal = Proveedoresservicios::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
             
             return view('admin.tramites.procapelacion', compact('id','cliente','nombrecompleto', 'personal'));
         }
@@ -615,7 +615,7 @@ class TramitesController extends Controller
         {
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
-            $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+            $personal = Proveedoresservicios::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
             
             $nombreclienteita = $cliente->nombrecompleto;
             $procedimientotramites = Tramite::where('clienteitanombre', $nombreclienteita)
@@ -631,7 +631,7 @@ class TramitesController extends Controller
         {
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
-            $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+            $personal = Proveedoresservicios::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
             $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')->pluck('tipocarta', 'id');
 
             $inicioocontinuidad = Tramite::where('clienteitaid', $cliente->id)
@@ -767,7 +767,7 @@ class TramitesController extends Controller
         {
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
-            $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+            $personal = Proveedoresservicios::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
             
             $nombreclienteita = $cliente->nombrecompleto;
             $procedimientotramites = Tramite::where('clienteitanombre', $nombreclienteita)
@@ -797,7 +797,7 @@ class TramitesController extends Controller
         {
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
-            $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+            $personal = Proveedoresservicios::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
             
             $nombreclienteita = $cliente->nombrecompleto;
             $procedimientotramites = Tramite::where('clienteitanombre', $nombreclienteita)
@@ -813,7 +813,7 @@ class TramitesController extends Controller
         {
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
-            $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+            $personal = Proveedoresservicios::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
             
             $nombreclienteita = $cliente->nombrecompleto;
             $procedimientotramites = Tramite::where('clienteitanombre', $nombreclienteita)
@@ -829,7 +829,7 @@ class TramitesController extends Controller
         {
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
-            $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+            $personal = Proveedoresservicios::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
             
             $nombreclienteita = $cliente->nombrecompleto;
             $procedimientotramites = Tramite::where('clienteitanombre', $nombreclienteita)
@@ -845,7 +845,7 @@ class TramitesController extends Controller
         {
             $nombrecompleto = $cliente->nombrecompleto;
             $id = $cliente->id;
-            $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
+            $personal = Proveedoresservicios::select('id', 'nombrecompleto', 'ci', 'ciexp')->get();
             
             $nombreclienteita = $cliente->nombrecompleto;
             $procedimientotramites = Tramite::where('clienteitanombre', $nombreclienteita)
@@ -863,7 +863,7 @@ class TramitesController extends Controller
             $tipoPdf = $request->input('tipo_pdf');
             $fechaactual = Carbon::parse($request->input('fechaactual'))->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
             $apoderadoId = $request->input('apoderado');
-            $personal = Personal::findOrFail($apoderadoId);
+            $personal = Proveedoresservicios::findOrFail($apoderadoId);
             $tipocartareclamo = $request->input('tipocartareclamo');
             $notaseguimiento = $request->input('notaseguimiento');
             $folio = $request->input('folio');
@@ -1006,7 +1006,7 @@ class TramitesController extends Controller
             $tipoPdf = $request->input('tipo_pdf');
             $fechaactual = Carbon::parse($request->input('fechaactual'))->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
             $apoderadoId = $request->input('apoderado');
-            $personal = Personal::findOrFail($apoderadoId);
+            $personal = Proveedoresservicios::findOrFail($apoderadoId);
             $tipocartareclamo = $request->input('tipocartareclamo');
             $folio = $request->input('folio');
 
@@ -1151,7 +1151,7 @@ class TramitesController extends Controller
             $tipoPdf = $request->input('tipo_pdf');
             $fechaactual = Carbon::parse($request->input('fechaactual'))->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
             $apoderadoId = $request->input('apoderado');
-            $personal = Personal::findOrFail($apoderadoId);
+            $personal = Proveedoresservicios::findOrFail($apoderadoId);
             $tipocartareclamo = $request->input('tipocartareclamo');
             $folio = $request->input('folio');
             $cambioactualizacion = $request->input('cambioactualizacion');

@@ -97,7 +97,45 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-lg-3">
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                {!! Form::label('servicio', 'Atención de Servicio:') !!}
+                                {!! Form::select('servicio', ['INTERNO' => 'INTERNO', 'EXTERNO' => 'EXTERNO'], $areaaccion->servicio ?? 'INTERNO', ['class' => 'form-control']) !!}
+                                @error('servicio')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                {!! Form::label('pagoservicio', 'Pago de servicio:') !!}
+                                {!! Form::select('pagoservicio', $pagoservicio, null, [
+                                    'class' => 'form-control',
+                                    'placeholder' => '',
+                                ]) !!}
+                                @error('servicio')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-group">
+                                {!! Form::label('comision', 'Comisión:') !!}
+                                {!! Form::text('comision', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                                @error('comision')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-4">
                             <div class="form-group">
                                 {!! Form::label('precio', 'Precio Venta:') !!}
                                 {!! Form::text('precio', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -108,7 +146,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-lg-3">
+                        <div class="col-lg-4">
                             <div class="form-group">
                                 {!! Form::label('preciocompra', 'Precio Compra:') !!}
                                 {!! Form::text('preciocompra', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -119,19 +157,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <!-- Campo Servicio -->
-                        <div class="col-lg-3">
-                            <div class="form-group">
-                                {!! Form::label('servicio', 'Servicio:') !!}
-                                {!! Form::select('servicio', ['INTERNO' => 'INTERNO', 'EXTERNO' => 'EXTERNO'], $areaaccion->servicio ?? 'INTERNO', ['class' => 'form-control']) !!}
-                                @error('servicio')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{ $message }}
-                                    </small>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-lg-3">
+                        <div class="col-lg-4">
                             <div class="form-group">
                                 {!! Form::label('estado', 'Estado:') !!}
                                 {!! Form::select('estado', $estadoproveedor, $areaaccion->estado ?? 'ACTIVO', ['class' => 'form-control'])!!}
@@ -142,7 +168,6 @@
                                 @enderror
                             </div>
                         </div>
-                        
                     </div>
                 {!! Form::submit('ACTUALIZAR ACCIÓN', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}

@@ -3,9 +3,9 @@
 <link href="assets/img/logo.png" rel="icon">
 
 @section('content_header')
-    <a class="btn btn-sm float-right btn-regresar" href="#">REGRESAR</a>
+    {{-- <a class="btn btn-sm float-right btn-regresar" href="#">REGRESAR</a> --}}
     <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaSolicitudes">VER SOLICITUDES</a>
-    <h1>Revisión de Solicitudes</h1>
+    <h1>REVISIÓN DE SOLICITUDES</h1>
 @stop
 
 @section('css')
@@ -17,8 +17,6 @@
             border-color: #faa625;
             border-radius: 5px;
             padding: 10px 20px;
-            margin-left: 10px;
-            margin-right: 10px;
         }
 
         .custom2-button:hover {
@@ -57,7 +55,6 @@
 
         .img-preview {
             display: none;
-            /* Oculto por defecto */
             max-width: 100px;
             max-height: 100px;
             margin-top: 10px;
@@ -68,19 +65,18 @@
 
         .modal-lg {
             max-width: 600px;
-            /* Ajustar el ancho del modal */
         }
 
         .form-group {
             margin-bottom: 15px;
-            /* Espaciado entre campos */
         }
-
+        .modal-xxl {
+            max-width: 90%;
+            width: 90%;
+        }
         .img-preview {
             display: none;
-            /* Oculto por defecto */
             width: 50px;
-            /* Ajuste pequeño */
             height: auto;
             margin-left: 10px;
             vertical-align: middle;
@@ -90,23 +86,18 @@
         }
 
         .badge-priority-alta {
-            /* Estilo actual de la etiqueta alta */
             background-color: #dc3545;
             color: #ffffff;
-
-            /* Animación pulsante de la sombra */
             animation: pulseRedShadow 2s infinite alternate;
         }
 
         @keyframes pulseRedShadow {
             0% {
                 box-shadow: 0 0 0px #dc3545;
-                /* Sin sombra al inicio */
             }
 
             100% {
                 box-shadow: 0 0 10px #dc3545;
-                /* Sombra suave roja */
             }
         }
 
@@ -175,53 +166,26 @@
                                 <td>
                                     <span
                                         class="badge 
-                                    @if ($solicitud->nivelprioridad == 'alta') badge-priority-alta
-                                    @elseif($solicitud->nivelprioridad == 'media') badge-priority-media
+                                    @if ($solicitud->nivelprioridad == 'ALTA') badge-priority-alta
+                                    @elseif($solicitud->nivelprioridad == 'MEDIA') badge-priority-media
                                     @else badge-priority-baja @endif">
                                         {{ ucfirst($solicitud->nivelprioridad) }}
                                     </span>
                                 </td>
                                 <td class="fecha-nowrap">{{ $solicitud->created_at->format('Y-m-d') }}</td>
                                 <td>
-                                    <button class="btn btn-success btn-sm" data-toggle="modal"
-                                        data-target="#modalAtender-{{ $solicitud->id }}">Atender</button>
+                                    <a class="btn btn-outline-success btn-sm" data-toggle="modal"
+                                        data-target="#modalAtender-{{ $solicitud->id }}">ATENDER</a>
                                 </td>
                                 <td>
-                                    <button class="btn btn-link ver-detalles" style="font-size: 1.2rem;"
+                                    <button class="btn ver-detalles btn-outline-primary btn-sm" style="font-size: 1.2rem;"
                                         data-imagen1="{{ $solicitud->motivoimagen1 ? asset($solicitud->motivoimagen1) : '' }}"
                                         data-imagen2="{{ $solicitud->motivoimagen2 ? asset($solicitud->motivoimagen2) : '' }}">
-                                        <i class="fas fa-eye" style="color: #007bff; cursor:pointer;"></i>
+                                        <i class="fas fa-eye" style="cursor:pointer;"></i>
                                     </button>
                                 </td>
                             </tr>
-                            {{-- <tr id="detalles-{{ $solicitud->id }}" style="display:none; background: #f9f9f9;">
-                                <td colspan="7">
-                                    <strong>Motivo de la Solicitud:</strong><br>
-                                    {{ $solicitud->motivosolicitud }}
 
-                                    <div style="margin-top:10px;">
-                                        <strong>Imágenes del solicitante:</strong><br>
-                                        @if ($solicitud->motivoimagen1)
-                                            <a href="#" class="mostrar-imagen"
-                                                data-imagen="{{ asset($solicitud->motivoimagen1) }}" title="Ver Imagen 1">
-                                                <i class="fas fa-file-image"
-                                                    style="font-size:1.5rem; color:#007bff; cursor:pointer;"></i>
-                                            </a>
-                                        @else
-                                            N/A
-                                        @endif
-
-                                        @if ($solicitud->motivoimagen2)
-                                            <a href="#" class="mostrar-imagen"
-                                                data-imagen="{{ asset($solicitud->motivoimagen2) }}" title="Ver Imagen 2"
-                                                style="margin-left:10px;">
-                                                <i class="fas fa-file-image"
-                                                    style="font-size:1.5rem; color:#007bff; cursor:pointer;"></i>
-                                            </a>
-                                        @endif
-                                    </div>
-                                </td>
-                            </tr> --}}
                             <!-- Modal Atender -->
                             <div class="modal fade" id="modalAtender-{{ $solicitud->id }}" tabindex="-1" role="dialog"
                                 aria-labelledby="atenderModalLabel-{{ $solicitud->id }}" aria-hidden="true">
@@ -244,7 +208,7 @@
                                                     <label for="descripcionatendida-{{ $solicitud->id }}">Descripción de la
                                                         Atención:</label>
                                                     <textarea id="descripcionatendida-{{ $solicitud->id }}" name="descripcionatendida" class="form-control"
-                                                        placeholder="Escriba una descripción" rows="3" required></textarea>
+                                                        placeholder="" rows="3" required></textarea>
                                                 </div>
 
                                                 <div class="row">
@@ -276,8 +240,8 @@
 
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="submit" class="btn btn-success">Guardar Atención</button>
-                                                <button type="button" class="btn btn-secondary"
+                                                <button type="submit" class="btn btn-outline-success">Guardar Atención</button>
+                                                <button type="button" class="btn btn-outline-danger"
                                                     data-dismiss="modal">Cancelar</button>
                                             </div>
                                         </form>
@@ -294,10 +258,10 @@
     <!-- Modal Solicitudes (Atendidos y Pendientes) -->
     <div class="modal fade" id="ventanaSolicitudes" tabindex="-1" role="dialog" aria-labelledby="solicitudesModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-dialog modal-xxl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="solicitudesModalLabel">Solicitudes</h5>
+                    <h5 class="modal-title" id="solicitudesModalLabel">SOLICITUDES</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -307,11 +271,11 @@
                     <ul class="nav nav-tabs" id="tabSolicitudes" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="pendientes-tab" data-toggle="tab" href="#pendientes" role="tab"
-                                aria-controls="pendientes" aria-selected="false">Pendientes</a>
+                                aria-controls="pendientes" aria-selected="false">PENDIENTES</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="atendidos-tab" data-toggle="tab" href="#atendidos"
-                                role="tab" aria-controls="atendidos" aria-selected="true">Atendidos</a>
+                                role="tab" aria-controls="atendidos" aria-selected="true">ATENDIDOS</a>
                         </li>
                         
                     </ul>
@@ -327,11 +291,11 @@
                                         <tr>
                                             <th>ID</th>
                                             <th>Solicitante</th>
-                                            <th>Descripción de la Atención</th>
+                                            <th>Desc. de la Atención</th>
                                             <th>Prioridad</th>
-                                            <th>Fecha Atendida</th>
-                                            <th>Hora de Atención</th>
-                                            <th>Atendido por</th>
+                                            <th>Fecha Atención</th>
+                                            <th>Hora Atención</th>
+                                            <th>Atendió</th>
                                             <th>Detalles</th>
                                         </tr>
                                     </thead>
@@ -344,8 +308,8 @@
                                                 <td>
                                                     <span
                                                         class="badge 
-                                                    @if ($solicitud->nivelprioridad == 'alta') badge-priority-alta
-                                                    @elseif($solicitud->nivelprioridad == 'media') badge-priority-media
+                                                    @if ($solicitud->nivelprioridad == 'ALTA') badge-priority-alta
+                                                    @elseif($solicitud->nivelprioridad == 'MEDIA') badge-priority-media
                                                     @else badge-priority-baja @endif">
                                                         {{ ucfirst($solicitud->nivelprioridad) }}
                                                     </span>
@@ -354,10 +318,10 @@
                                                 <td>{{ $solicitud->updated_at->format('H:i') }}</td>
                                                 <td>{{ $solicitud->usuariosoporte }}</td>
                                                 <td>
-                                                    <a class="btn btn-link ver-detalles" style="font-size: 1.2rem;"
+                                                    <a class="btn btn-sm btn-outline-primary ver-detalles"
                                                         data-imagen1="{{ $solicitud->soporteimagen1 ? asset($solicitud->soporteimagen1) : '' }}"
                                                         data-imagen2="{{ $solicitud->soporteimagen2 ? asset($solicitud->soporteimagen2) : '' }}">
-                                                        <i class="fas fa-eye" style="color: #007bff; cursor:pointer;"></i>
+                                                        <i class="fas fa-eye" style="cursor:pointer;"></i>
                                                 </a>
                                                 </td>
                                             </tr>
@@ -390,8 +354,8 @@
                                                 <td>
                                                     <span
                                                         class="badge 
-                                                    @if ($solicitud->nivelprioridad == 'alta') badge-priority-alta
-                                                    @elseif($solicitud->nivelprioridad == 'media') badge-priority-media
+                                                    @if ($solicitud->nivelprioridad == 'ALTA') badge-priority-alta
+                                                    @elseif($solicitud->nivelprioridad == 'MEDIA') badge-priority-media
                                                     @else badge-priority-baja @endif">
                                                         {{ ucfirst($solicitud->nivelprioridad) }}
                                                     </span>
@@ -399,10 +363,10 @@
                                                 <td class="fecha-nowrap">{{ $solicitud->created_at->format('Y-m-d') }}
                                                 </td>
                                                 <td>
-                                                    <a class="btn btn-link ver-detalles" style="font-size: 1.2rem;"
+                                                    <a class="btn btn-sm btn-outline-primary ver-detalles"
                                                         data-imagen1="{{ $solicitud->motivoimagen1 ? asset($solicitud->motivoimagen1) : '' }}"
                                                         data-imagen2="{{ $solicitud->motivoimagen2 ? asset($solicitud->motivoimagen2) : '' }}">
-                                                        <i class="fas fa-eye" style="color: #007bff; cursor:pointer;"></i>
+                                                        <i class="fas fa-eye" style="cursor:pointer;"></i>
                                                     </a>
                                                 </td>
                                             </tr>
@@ -414,7 +378,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>

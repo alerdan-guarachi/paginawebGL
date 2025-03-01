@@ -116,8 +116,12 @@ class AreaaccionController extends Controller
         'CLEINTES ITA' => 'CLEINTES ITA',
         'CLIENTES COMUNES' => 'CLIENTES COMUNES',
     ];
+    $pagoservicio = [
+        'INTERNO' => 'INTERNO',
+        'EXTERNO' => 'EXTERNO',
+    ];
 
-    return view('admin.areaacciones.edit', compact('tipocliente','estadoproveedor', 'areaaccion'));
+    return view('admin.areaacciones.edit', compact('pagoservicio','tipocliente','estadoproveedor', 'areaaccion'));
 }
     public function editarareaaccion(Areaaccion $areaaccion)
     {

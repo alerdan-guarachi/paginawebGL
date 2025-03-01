@@ -173,7 +173,7 @@
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="form-group">
-                            {!! Form::label('servicio', 'Servicio:') !!}
+                            {!! Form::label('servicio', 'Atención de servicio:') !!}
                             {!! Form::select('servicio', $servicio, null, [
                                 'class' => 'form-control',
                                 'placeholder' => '',
@@ -208,6 +208,33 @@
                         </div>
                     </div> --}}
                     {!! Form::hidden('asociadoid', null, ['id' => 'asociadoid', 'class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                </div>
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            {!! Form::label('pagoservicio', 'Pago de servicio:') !!}
+                            {!! Form::select('pagoservicio', $pagoservicio, null, [
+                                'class' => 'form-control',
+                                'placeholder' => '',
+                            ]) !!}
+                            @error('servicio')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{ $message }}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            {!! Form::label('comision', 'Comisión:') !!}
+                            {!! Form::text('comision', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                            @error('comision')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-4">

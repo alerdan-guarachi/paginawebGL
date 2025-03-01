@@ -55,7 +55,12 @@ class UpdateProgramacionsubclienteRequest extends FormRequest
         'usuarioactualizacion' =>'',
         'usuarioeliminacion' =>'',
         'pagoatencion' =>'',
-        
+        'bateriaid' =>'',
+        'comision' => '',
+        'nrosesion' => '',
+        'nrofactura' => '',
+        'motivoanulacion',
+        'usuarioanulacion',
     ]; 
     return $rules;
 }

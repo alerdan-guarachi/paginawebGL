@@ -3,23 +3,24 @@
 <link href="assets/img/logo.png" rel="icon">
 
 @section('content_header')
-    <a class="btn btn-sm float-right btn-regresar" href="#">REGRESAR</a>
-    <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaHistorial">HISTORIAL DE
-        SOLICITUDES</a>
-    <h1>Asignación de Solicitudes</h1>
+    {{-- <a class="btn btn-sm float-right btn-regresar" href="#">REGRESAR</a> --}}
+    <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaHistorial">HISTORIAL DE SOLICITUDES</a>
+    <h1>REGISTRO DE SOLICITUDES</h1>
 @stop
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
     <style>
+        .modal-xxl {
+            max-width: 90%;
+            width: 90%;
+        }
         .custom2-button {
             background-color: #ffffff;
             color: #faa625;
             border-color: #faa625;
             border-radius: 5px;
             padding: 10px 20px;
-            margin-left: 10px;
-            margin-right: 10px;
         }
 
         .custom2-button:hover {
@@ -29,20 +30,16 @@
 
         .img-preview {
             width: 100%;
-            /* Ocupar el ancho máximo permitido */
             height: auto;
-            /* Mantener la proporción original */
             margin-top: 10px;
             display: none;
-            /* Oculto por defecto */
             border: 1px solid #ddd;
             border-radius: 4px;
             padding: 5px;
         }
 
         #motivoSolicitud {
-            height: 220px;
-            /* Ajuste para igualar la altura de los ejemplos */
+            height: 280px;
         }
 
         .priority-examples {
@@ -68,13 +65,11 @@
 
         .badge-warning {
             color: #ffffff !important;
-            /* Forzar texto blanco */
         }
 
         #ventanaHistorial .table-striped th,
         #ventanaHistorial .table-striped td {
             vertical-align: middle;
-            /* Quitar white-space: nowrap; para permitir quiebres de línea */
             text-align: left;
         }
     </style>
@@ -113,31 +108,59 @@
             <form action="{{ route('admin.soporte.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
+                    <style>
+                        .soporte-card {
+                            background-color: #f8f9fa; /* Color de fondo suave */
+                            padding: 10px;
+                            border-radius: 8px;
+                            text-align: center;
+                            font-size: 16px;
+                            font-weight: bold;
+                            border: 2px solid transparent;
+                            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                            animation: brillo 1.5s infinite alternate;
+                        }
+                    
+                        @keyframes brillo {
+                            0% { border-color: #da9e37; box-shadow: 0 0 5px #da9e37; }
+                            100% { border-color: #b88818; box-shadow: 0 0 15px #b88818; }
+                        }
+                    </style>
+                    
+                    <div class="col-lg-12" style="margin-bottom: 20px;"> 
+                        <div class="soporte-card">
+                            📅 <strong>Horarios de Soporte:</strong>
+                            🕒 <span>Lunes a Viernes: 11:00 - 12:00 y 17:00 - 18:00 | </span>
+                            🕒 <span>Sábados: 12:00 - 12:30</span>
+                        </div>
+                    </div>                    
+                    
                     <div class="col-lg-6">
                         <div class="form-group">
                             <label for="motivoSolicitud">Motivo de Solicitud:</label>
                             <textarea id="motivoSolicitud" name="motivosolicitud" class="form-control"
-                                placeholder="Ingrese el motivo de la solicitud" required></textarea>
+                                placeholder="" required></textarea>
                         </div>
                     </div>
                     <div class="col-lg-6">
                         <div class="form-group">
-                            <label for="nivelPrioridad">Nivel de Prioridad:</label>
-                            <select id="nivelPrioridad" name="nivelprioridad" class="form-control" required>
-                                <option value="" disabled selected>Seleccione el nivel de prioridad</option>
-                                <option value="baja">Baja</option>
-                                <option value="media">Media</option>
-                                <option value="alta">Alta</option>
+                            <label for="nivelPrioridad" class="font-weight-bold">Nivel de Prioridad:</label>
+                            <select id="nivelPrioridad" name="nivelprioridad" class="form-control custom-select border-primary" required>
+                                <option value="" disabled selected></option>
+                                <option value="BAJA">🟢 BAJA</option>
+                                <option value="MEDIA">🟡 MEDIA</option>
+                                <option value="ALTA">🔴 ALTA</option>
                             </select>
-                            <div class="priority-examples">
-                                <strong>Ejemplo:</strong>
-                                <p><b>Baja:</b> Cambios estéticos o mejoras opcionales, como actualizar colores o íconos en
-                                    la interfaz.</p>
-                                <p><b>Media:</b> Funcionalidades operativas con fallos menores, como botones que no
-                                    funcionan en casos específicos o menús desplegables que no responden correctamente en
-                                    determinadas situaciones.</p>
-                                <p><b>Alta:</b> Interrupciones críticas, como errores que impiden el inicio de sesión, la
-                                    pérdida de datos o el bloqueo completo del sistema.</p>
+                            
+                            <div class="card mt-3 shadow-sm">
+                                <div class="card-body" style="background-color: #f9f9f9">
+                                    {{-- <h6 class="text-dark font-weight-bold">Ejemplos de Prioridad</h6> --}}
+                                    <ul class="list-unstyled">
+                                        <li><span class="text-success font-weight-bold">🟢 BAJA:</span> Ajustes visuales o mejoras opcionales que no afectan la funcionalidad, como cambios en colores, fuentes o disposición de elementos en la interfaz.</li>  
+                                        <li><span class="text-warning font-weight-bold">🟡 MEDIA:</span> Errores que afectan parcialmente la experiencia del usuario, como botones que no responden en ciertos escenarios, menús desplegables que no funcionan correctamente o funciones secundarias con fallos intermitentes.</li>  
+                                        <li><span class="text-danger font-weight-bold">🔴 ALTA:</span> Problemas graves que impiden el uso normal del sistema, como pérdida de datos, fallos en el acceso o mal funcionamiento de hardware crítico.</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -161,7 +184,7 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-crear">Registrar Solicitud</button>
+                <button type="submit" class="btn btn-crear">REGISTRAR SOLICITUD</button>
             </form>
         </div>
     </div>
@@ -169,10 +192,10 @@
     <!-- Modal Historial -->
     <div class="modal fade" id="ventanaHistorial" tabindex="-1" role="dialog" aria-labelledby="historialModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-dialog modal-xxl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">HISTORIAL DE SOLICITUDES:</h5>
+                    <h5 class="modal-title">HISTORIAL DE SOLICITUDES</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -183,11 +206,11 @@
                     <ul class="nav nav-tabs" id="tabHistorial" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="atendidos-tab" data-toggle="tab" href="#atendidos" role="tab"
-                                aria-controls="atendidos" aria-selected="true">Atendidos</a>
+                                aria-controls="atendidos" aria-selected="true">ATENDIDOS</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="pendientes-tab" data-toggle="tab" href="#pendientes" role="tab"
-                                aria-controls="pendientes" aria-selected="false">Pendientes</a>
+                                aria-controls="pendientes" aria-selected="false">PENDIENTES</a>
                         </li>
                     </ul>
 
@@ -201,9 +224,12 @@
                                         <tr>
                                             <th>ID</th>
                                             <th>Motivo</th>
-                                            <th>Nivel de Prioridad</th>
-                                            <th>Fecha y Hora</th>
-                                            <th>Atención</th>
+                                            <th>Prioridad</th>
+                                            <th>Solicitado</th>
+                                            <th>Desc. Atención</th>
+                                            <th>Atendido</th>
+                                            <th>Img. Atención</th>
+                                            <th>Estado</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -214,23 +240,26 @@
                                                 <td>
                                                     <span
                                                         class="badge 
-                                                @if ($solicitud->nivelprioridad == 'alta') badge-danger 
-                                                @elseif($solicitud->nivelprioridad == 'media') badge-warning 
+                                                @if ($solicitud->nivelprioridad == 'ALTA') badge-danger 
+                                                @elseif($solicitud->nivelprioridad == 'MEDIA') badge-warning 
                                                 @else badge-success @endif">
                                                         {{ ucfirst($solicitud->nivelprioridad) }}
                                                     </span>
                                                 </td>
-                                                <td>{{ $solicitud->updated_at->format('Y-m-d H:i:s') }}</td>
+                                                <td>{{ $solicitud->created_at->format('Y-m-d - H:i:s') }}</td>
+                                                <td>{{ $solicitud->descripcionatendida }}</td>
+                                                <td>{{ $solicitud->updated_at->format('Y-m-d - H:i:s') }}</td>
                                                 <td>
-                                                    <a class="btn btn-link ver-atencion"
+                                                    <a class="btn btn-sm btn-outline-primary ver-detalles"
                                                         data-usuariosoporte="{{ $solicitud->usuariosoporte }}"
                                                         data-descripcionatendida="{{ $solicitud->descripcionatendida }}"
                                                         data-imagen1="{{ $solicitud->soporteimagen1 ? asset($solicitud->soporteimagen1) : '' }}"
                                                         data-imagen2="{{ $solicitud->soporteimagen2 ? asset($solicitud->soporteimagen2) : '' }}"
-                                                        style="font-size: 1.2rem;">
-                                                        <i class="fas fa-eye" style="color: #007bff; cursor:pointer;"></i>
+                                                        {{-- style="font-size: 1.2rem;" --}}>
+                                                        <i class="fas fa-eye" style="cursor:pointer;"></i>
                                                 </a>
                                                 </td>
+                                                <td><span class="badge badge-success">SOLUCIONADO</span></td>
                                             </tr>
                                         @endforeach
                                     </tbody>
@@ -246,9 +275,9 @@
                                         <tr>
                                             <th>ID</th>
                                             <th>Motivo</th>
-                                            <th>Nivel de Prioridad</th>
-                                            <th>Imagen 1</th>
-                                            <th>Imagen 2</th>
+                                            <th>Prioridad</th>
+                                            <th>Img. 1</th>
+                                            <th>Img. 2</th>
                                             <th>Fecha y Hora</th>
                                         </tr>
                                     </thead>
@@ -260,19 +289,18 @@
                                                 <td>
                                                     <span
                                                         class="badge 
-                                                @if ($solicitud->nivelprioridad == 'alta') badge-danger 
-                                                @elseif($solicitud->nivelprioridad == 'media') badge-warning 
+                                                @if ($solicitud->nivelprioridad == 'ALTA') badge-danger 
+                                                @elseif($solicitud->nivelprioridad == 'MEDIA') badge-warning 
                                                 @else badge-success @endif">
                                                         {{ ucfirst($solicitud->nivelprioridad) }}
                                                     </span>
                                                 </td>
                                                 <td>
                                                     @if ($solicitud->motivoimagen1)
-                                                        <a href="#" class="mostrar-imagen"
+                                                        <a href="#" class="mostrar-imagen btn btn-sm btn-outline-secondary"
                                                             data-imagen="{{ asset($solicitud->motivoimagen1) }}"
                                                             title="Ver Imagen 1">
-                                                            <i class="fas fa-file-image"
-                                                                style="font-size: 1.5rem; color: #007bff; cursor:pointer;"></i>
+                                                            <i class="fas fa-eye"></i>
                                                         </a>
                                                     @else
                                                         N/A
@@ -280,17 +308,16 @@
                                                 </td>
                                                 <td>
                                                     @if ($solicitud->motivoimagen2)
-                                                        <a href="#" class="mostrar-imagen"
+                                                        <a href="#" class="mostrar-imagen btn btn-sm btn-outline-secondary"
                                                             data-imagen="{{ asset($solicitud->motivoimagen2) }}"
                                                             title="Ver Imagen 2">
-                                                            <i class="fas fa-file-image"
-                                                                style="font-size: 1.5rem; color: #007bff; cursor:pointer;"></i>
+                                                            <i class="fas fa-eye"></i>
                                                         </a>
                                                     @else
                                                         N/A
                                                     @endif
                                                 </td>
-                                                <td>{{ $solicitud->created_at->format('Y-m-d H:i:s') }}</td>
+                                                <td>{{ $solicitud->created_at->format('Y-m-d - H:i:s') }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>

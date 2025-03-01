@@ -154,6 +154,8 @@
                                                             <input type="hidden" name="areanombre_{{ $accionSanitizada }}" value="{{ $proveedor['area'] ?? '' }}">
                                                             <input type="hidden" name="precio_{{ $accionSanitizada }}" value="{{ $proveedor['precio'] ?? '' }}">
                                                             <input type="hidden" name="preciocompra_{{ $accionSanitizada }}" value="{{ $proveedor['preciocompra'] ?? '' }}">
+                                                            <input type="hidden" name="servicio_{{ $accionSanitizada }}" value="{{ $proveedor['servicio'] ?? '' }}">
+                                                            <input type="hidden" name="pagoservicio_{{ $accionSanitizada }}" value="{{ $proveedor['"pagoservicio'] ?? '' }}">
                                                         </div>
                                                     </div>
                                                 </div>

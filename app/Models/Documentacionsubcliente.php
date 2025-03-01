@@ -30,6 +30,10 @@ class Documentacionsubcliente extends Model
         'image' => '',
         'image2' => '',
         'documentfirmado' => '',
+        'documentword' => '',
+        'programacionid' => '',
+        'motivoanulacion' => '',
+        'usuarioanulacion' => '',
     ]; 
 
     protected $fillable = [
@@ -50,6 +54,10 @@ class Documentacionsubcliente extends Model
         'image',
         'image2',
         'documentfirmado',
+        'documentword',
+        'programacionid',
+        'motivoanulacion',
+        'usuarioanulacion',
     ];
     public function estadoprogramacionsubcliente()
     {

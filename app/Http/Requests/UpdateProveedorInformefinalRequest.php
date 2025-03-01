@@ -45,6 +45,7 @@ class UpdateClienteComunRequest extends FormRequest
         'celularproveedor' => 'required|max:45',
         'usuarioid' => 'required',
         'usuarioregistro' => 'max:45',
+        'nrofactura' => '',
         ]; 
         return $rules;
     }

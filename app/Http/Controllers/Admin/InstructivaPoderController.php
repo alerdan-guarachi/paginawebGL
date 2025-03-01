@@ -8,9 +8,10 @@ use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use App\Models\Cliente;
-use App\Models\Personal;
+use App\Models\Proveedoresservicios;
 use App\Models\Users;
 use App\Models\Asociado;
+use App\Models\Empresa;
 use PDF;
 
 class InstructivaPoderController extends Controller
@@ -57,14 +58,14 @@ class InstructivaPoderController extends Controller
     }
     public function crearinspoderinvalidez(Cliente $cliente)
     {
-        $personal = Personal::select('id', 'nombrecompleto', 'ci', 'ciexp', 'sucursal')->get();
+        $personal = Proveedoresservicios::select('id', 'nombrecompleto', 'ci', 'ciexp', 'sucursal')->get();
         return view('admin.instructivaspoder.crearinspoderinvalidez', compact('cliente', 'personal'));
     }
     public function generarpdfinspoderinvalidez(Request $request, Cliente $cliente)
 {
     $tipoPdf = $request->input('tipo_pdf');
     $personalIds = explode(',', $request->input('personal_ids'));
-    $personal = Personal::whereIn('id', $personalIds)->get(); // Obtener personal seleccionado
+    $personal = Proveedoresservicios::whereIn('id', $personalIds)->get(); // Obtener personal seleccionado
 
     if ($tipoPdf === 'INVALIDEZ') {
         $pdfName = 'InstructivaPoder_' . $cliente->nombrecompleto . '.pdf';

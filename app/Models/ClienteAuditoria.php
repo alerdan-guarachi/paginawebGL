@@ -12,6 +12,10 @@ class ClienteAuditoria extends Model
     use SoftDeletes;
 
     protected $table = 'clienteauditorias';
+    public function getIdAttribute($value)
+    {
+        return $value;
+    }
     static $rules = [
         'id' => '',
         'nombrecompleto' => 'required|max:255',
@@ -31,11 +35,26 @@ class ClienteAuditoria extends Model
         'actividadlaboral' => '',
         'sucursal' => '',
         'banco1' => '',
-        'numerocuenta1' => '',
+        'nrocredito1' => '',
         'banco2' => '',
-        'numerocuenta2' => '',
+        'nrocredito2' => '',
         'banco3' => '',
-        'numerocuenta3' => '',
+        'nrocredito3' => '',
+        'nrocredito4' => '',
+        'nrocredito5' => '',
+        'nrocredito6' => '',
+        'nrocredito7' => '',
+        'nrocredito8' => '',
+        'nrocredito9' => '',
+        'nrocredito10' => '',
+        'nrocredito11' => '',
+        'nrocredito12' => '',
+        'nrocredito13' => '',
+        'nrocredito14' => '',
+        'nrocredito15' => '',
+        'nrocredito16' => '',
+        'nrocredito17' => '',
+        'nrocredito18' => '',
     ]; 
 
     protected $fillable = [
@@ -57,11 +76,26 @@ class ClienteAuditoria extends Model
         'actividadlaboral',
         'sucursal',
         'banco1',
-        'numerocuenta1',
+        'nrocredito1',
         'banco2',
-        'numerocuenta2',
+        'nrocredito2',
         'banco3',
-        'numerocuenta3',
+        'nrocredito3',
+        'nrocredito4',
+        'nrocredito5',
+        'nrocredito6',
+        'nrocredito7',
+        'nrocredito8',
+        'nrocredito9',
+        'nrocredito10',
+        'nrocredito11',
+        'nrocredito12',
+        'nrocredito13',
+        'nrocredito14',
+        'nrocredito15',
+        'nrocredito16',
+        'nrocredito17',
+        'nrocredito18',
     ];
 
     public function user(){
@@ -71,4 +105,9 @@ class ClienteAuditoria extends Model
     {
         return $this->hasMany(ProgramacionSubCliente::class, 'clienteauditorianombre', 'nombrecompleto');
     }
+    public function dictamenauditoria()
+{
+    return $this->hasOne(DictamenAuditoria::class, 'clienteauditoriaid', 'id');
+}
+
 }

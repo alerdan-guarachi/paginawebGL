@@ -12,10 +12,16 @@ class ClienteComun extends Model
     use SoftDeletes;
 
     protected $table = 'clientescomunes';
+
+    public function getIdAttribute($value)
+    {
+        return $value;
+    }
+
     static $rules = [
         'id' => '',
-        'nombrecompleto' => 'required|max:45',
-        'fechanacimiento' => 'required|max:45',
+        'nombrecompleto' => 'required|max:255',
+        'fechanacimiento' => '',
         'ocupacionprofesion' => 'required',
         'estadocivil' => 'required|max:45',
         'ci' => 'required|numeric|max:45',

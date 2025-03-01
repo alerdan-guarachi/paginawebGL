@@ -38,6 +38,17 @@ class Programacionsubcliente extends Model
         'usuarioactualizacion' =>'',
         'usuarioeliminacion' =>'',
         'pagoatencion' =>'',
+        'pagoservicio' => '',
+        'fechacredito' => '',
+        'usuarioautorizador' => '',
+        'documentocredito' => '',
+        'servicio' => '',
+        'bateriaid' => '',
+        'comision' => '',
+        'nrosesion' => '',
+        'nrofactura' => '',
+        'motivoanulacion' => '',
+        'usuarioanulacion' => '',
     ]; 
 
     protected $fillable = [
@@ -68,6 +79,17 @@ class Programacionsubcliente extends Model
         'usuarioactualizacion',
         'usuarioeliminacion',
         'pagoatencion',
+        'pagoservicio',
+        'fechacredito',
+        'usuarioautorizador',
+        'documentocredito',
+        'servicio',
+        'bateriaid',
+        'comision',
+        'nrosesion',
+        'nrofactura',
+        'motivoanulacion',
+        'usuarioanulacion',
     ];
     public function clienteAuditoria()
     {

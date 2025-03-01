@@ -1,5 +1,5 @@
 @extends('adminlte::page')
-
+<link href="assets/img/logo.png" rel="icon">
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclientecomun', $clientecomun) }}">REGRESAR</a>
 <h5>EDITAR DATOS DE:</h5>
@@ -25,7 +25,7 @@
                 <div class="col-lg-12">
                     {!! Form::model($clientecomun, ['route' => ['admin.asociados.actualizarclientecomun', $clientecomun], 'method' => 'PUT', 'files' => true]) !!}
                     {!! Form::hidden('users_id', auth()->user()->id) !!}
-                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                    
                     <div class="row">
                         <div class="col-lg-4">
                             <div class="form-group">

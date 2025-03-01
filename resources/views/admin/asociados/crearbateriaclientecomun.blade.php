@@ -8,7 +8,24 @@
 <h5>CREAR BATERIA DE:</h5> 
 <h3>{{$clientecomun->nombrecompleto}}</h3>
 @stop
-
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
+<style>
+    .custom2-button {
+        background-color: #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 10px 20px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    .custom2-button:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }
+</style>
+@stop
 @section('content')
 @if (session('info'))
     <div id="alert-info" class="alert alert-success">
@@ -74,6 +91,9 @@
                                         </table>
                                     </div>
                                 </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Cerrar</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -97,13 +117,14 @@
                             
                                         acciones.forEach(item => {
                                             const row = document.createElement('tr');
-                                            row.innerHTML = `
+                                            row.innerHTML = ` 
                                                 <td>${item.id}</td>
-                                                <td>${item.accion}</td>
+                                                <td>${item.accion}${item.sesiones ? ' - ' + item.sesiones + ' SESIONES' : ''}</td>
                                                 <td>${item.informe}</td>
                                                 <td>${item.proveedor}</td>
                                                 <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
                                             `;
+
                                             tbody.appendChild(row);
                                         });
                                         accionesTable.style.display = 'table';
@@ -134,7 +155,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" hidden>
                         <strong>Informe:</strong>
                         <select id="informe" name="informe" class="form-control">
                             <option value="NO TIENE INFORME">NO TIENE</option>
@@ -273,7 +294,15 @@
                             @foreach ($areas2 as $area2)
                                 <div class="col-md-12 form-check especialidad-item">
                                     {!! Form::checkbox('accionnombre[]', $area2->id, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area2->id]) !!}
-                                    {!! Form::label('accionnombre_' . $area2->id, $area2->area . ' - Proveedor: ' . $area2->proveedor . (auth()->user()->hasRole('OPERATIVO') ? '' : ' - Precio: ' . $area2->precio), ['class' => 'form-check-label']) !!}
+                                    {{-- {!! Form::label('accionnombre_' . $area2->id, $area2->area . ' - Proveedor: ' . $area2->proveedor . (auth()->user()->hasRole('OPERATIVO') ? '' : ' - Precio: ' . $area2->precio . ' - Sesiones: ' . $area2->sesiones), ['class' => 'form-check-label']) !!} --}}
+                                    {!! Form::label(
+                                        'accionnombre_' . $area2->id, 
+                                        $area2->area . ' - Proveedor: ' . $area2->proveedor . 
+                                        (auth()->user()->hasRole('OPERATIVO') ? '' : ' - Precio: ' . $area2->precio) . 
+                                        (!is_null($area2->sesiones) ? ' - Sesiones: ' . $area2->sesiones : ''), 
+                                        ['class' => 'form-check-label']
+                                    ) !!}
+                                    
                                 </div>
                             @endforeach
                         </div>
@@ -494,122 +523,5 @@
     });
 
 </script>
-{{-- <script>
-    function generatePDF() {
-        // Obtener la fecha seleccionada
-        var fechaSeleccionada = document.getElementById('select-fechas').value;
-
-        if (!fechaSeleccionada) {
-            alert("Por favor, selecciona una fecha.");
-            return;
-        }
-
-        // Obtener el cliente ID
-        var clienteId = {{ $cliente->id }}; // Asegúrate de que tienes acceso a esta variable
-
-        // URL del controlador para generar el PDF
-        var url = '/admin/asociados/generarpdfcliente/' + clienteId;
-
-        // Redirigir a la URL para descargar el PDF directamente
-        window.location.href = url + '?fecha=' + encodeURIComponent(fechaSeleccionada);
-    }
-
-    // Asociar el evento de clic al botón "Generar PDF"
-    document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        generatePDF();
-    });
-</script> --}}
 
 @endsection
-
-@section('css')
-<link rel="styleheet" href="/css/admin_custom.css">
-<style>
-    h1 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-        }
-    h5 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 500;
-        margin-bottom: 0%;
-        }
-    h3 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 1000;
-        }
-    .btn-crear {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 10px 20px;
-        }
-    .btn-crear:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-    .mensaje-error {
-        color: #e1172b;
-        font-family: "Times New Roman";
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 5px;
-        font-size: 12.5px;
-        font-weight: bold;
-        display: inline-block;
-        margin-left: -10px;
-    }
-    .custom-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 5px 20px;
-    }
-    .custom-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .custom2-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    .custom2-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-cerrar {
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 5px 10px;
-
-    }
-    .btn-cerrar:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
-    .btn-regresar {
-        background-color: #ffffff;
-        color: #2926e2;
-        border-color: #2926e2;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-regresar:hover {
-        background-color: #2926e2;
-        color: #ffffff;
-    }
-</style>
-@stop

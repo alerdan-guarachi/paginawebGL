@@ -61,17 +61,17 @@
                                         <div style="text-align: center;padding: 1.5px;">
                                             <strong style="color: #26a1c0; font-size:20px;">ETAPA 1</strong>
                                         </div>
-                                        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'VANESSA MAMANI HUANACO' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                        
                                             <div class="row text-center">
                                                 @can('admin.asociados.crearbateriaclientecomun')
-                                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
                                                     <a href="{{ route('admin.asociados.crearbateriaclientecomun', $clientecomun) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
                                                         <i class="fas fa-charging-station"></i>
                                                         <strong>BATERIA</strong>
                                                     </a>
                                                 </div>
                                                 @endcan
-                                                @can('admin.asociados.aprobacioncotizacionclientecomun')
+                                                {{-- @can('admin.asociados.aprobacioncotizacionclientecomun')
                                                     @if ($tieneBateria)
                                                         <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                                             <a href="{{ route('admin.asociados.aprobacioncotizacionclientecomun', $clientecomun) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
@@ -87,37 +87,9 @@
                                                             </a>
                                                         </div>
                                                     @endif
-                                                @endcan
+                                                @endcan --}}
                                             </div>
-                                        @else
-                                            <div class="row text-center">
-                                                @can('admin.asociados.crearbateriaclientecomun')
-                                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                                    <a href="#" class="btn btn-etapa1 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA" aria-disabled="true">
-                                                        <i class="fas fa-charging-station"></i>
-                                                        <strong>BATERIA</strong>
-                                                    </a>
-                                                </div>
-                                                @endcan
-                                                @can('admin.asociados.aprobacioncotizacionclientecomun')
-                                                @if ($tieneBateria)
-                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                                        <a href="{{ route('admin.asociados.aprobacioncotizacionclientecomun', $clientecomun) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
-                                                            <i class="fas fa-donate"></i>
-                                                            <strong>COTIZACIÓN</strong>
-                                                        </a>
-                                                    </div>
-                                                    @else
-                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                                        <a href="#" class="btn btn-etapa1 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
-                                                            <i class="fas fa-donate"></i>
-                                                            <strong>COTIZACIÓN</strong>
-                                                        </a>
-                                                    </div>
-                                                @endif
-                                                @endcan
-                                            </div>
-                                        @endif
+                                        
                                     </div>
                                     <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
                                         <div style="text-align: center; padding: 1.5px;">
@@ -125,32 +97,32 @@
                                         </div> 
                                         <div class="row text-center">
                                             @can('admin.asociados.crearprogramacionclientecomun')
-                                                @if ($tieneCotizacionaprobada)
-                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                {{-- @if ($tieneCotizacionaprobada) --}}
+                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                                         <a href="{{ route('admin.asociados.crearprogramacionclientecomun', $clientecomun) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
                                                             <i class="fas fa-calendar-alt"></i>
                                                             <strong>PROG.</strong>
                                                         </a>
                                                     </div>
                                                     @else
-                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                                         <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
                                                             <i class="fas fa-calendar-alt"></i>
                                                             <strong>PROG.</strong>
                                                         </a>
                                                     </div>
-                                                @endif
+                                                {{-- @endif --}}
                                             @endcan
                                             @can('admin.asociados.estadoprogramacionclientecomun')
                                                 @if ($tieneProgramacion)
-                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                                         <a href="{{ route('admin.asociados.estadoprogramacionclientecomun', $clientecomun) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ESTADO DE PROGRAMACIÓN">
                                                             <i class="fas fa-calendar-check"></i>
                                                             <strong>ESTADO P.</strong>
                                                         </a>
                                                     </div>
                                                     @else
-                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                                         <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
                                                             <i class="fas fa-calendar-check"></i>
                                                             <strong>ESTADO P.</strong>
@@ -158,7 +130,7 @@
                                                     </div>
                                                 @endif
                                             @endcan
-                                            @can('admin.asociados.creardocumentacionclientecomun')
+                                            {{-- @can('admin.asociados.creardocumentacionclientecomun')
                                                 @if ($tieneProgramacionatentido)
                                                     <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                         <a href="{{ route('admin.asociados.creardocumentacionclientecomun', $clientecomun) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
@@ -174,7 +146,7 @@
                                                         </a>
                                                     </div>
                                                 @endif
-                                            @endcan
+                                            @endcan --}}
                                         </div>
                                     </div>
                 

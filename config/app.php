@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Facade;
+use App\Models\Mensaje;
+use Carbon\Carbon;
 
 return [
 
@@ -178,6 +180,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        Barryvdh\DomPDF\ServiceProvider::class,
        /*  Maatwebsite\Excel\ExcelServiceProvider::class, */
     ],
 

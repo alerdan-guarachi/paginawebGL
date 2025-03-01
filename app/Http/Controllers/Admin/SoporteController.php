@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\SoporteTecnico;
-
+use App\Notifications\SoportetecnicoNotification;
+use App\Notifications\SoportetecnicorespuestaNotification;
+use App\Models\User;
 class SoporteController extends Controller
 {
     /**
@@ -86,7 +88,12 @@ class SoporteController extends Controller
         $solicitud->estado = 'Pendiente'; // Estado inicial
         $solicitud->save();
 
-        // Redirigir con mensaje de éxito
+        if ($solicitud) {
+                $usuariosNotificar = User::whereIn('id', [3])->get();
+                foreach ($usuariosNotificar as $usuarioDestino) {
+                    $usuarioDestino->notify(new SoportetecnicoNotification($solicitud));
+                }
+        }
         return redirect()->route('admin.soporte.index')->with('success', '¡Solicitud registrada exitosamente!');
     }
     /* public function historial()
@@ -157,6 +164,13 @@ class SoporteController extends Controller
 
         $soporte->estado = 'Atendido';
         $soporte->save();
+        
+        if ($soporte) {
+            $usuariosNotificar = User::whereIn('name', $soporte->usuariosolicitante)->get();
+            foreach ($usuariosNotificar as $usuarioDestino) {
+                $usuarioDestino->notify(new SoportetecnicorespuestaNotification($soporte));
+            }
+        }
 
         return redirect()->route('admin.soporte.review')->with('success', 'Solicitud atendida correctamente.');
     }

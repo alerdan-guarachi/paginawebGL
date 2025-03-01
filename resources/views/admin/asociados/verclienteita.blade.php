@@ -5,7 +5,7 @@
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.listadoclienteita', ['asociado' => 6]) }}">REGRESAR</a>
 <a class="btn btn-sm float-right btn-acciones" data-toggle="modal" data-target="#ventanaModal">ACCIONES DEL CLIENTE</a>
-@if ($tieneAuditoriaMedica || $tieneApelacion || $tieneSegundasolicitud)
+@if ($tieneAuditoriaMedica || $tieneApelacion || $tieneSegundasolicitud || $tieneTercerasolicitud)
     <a class="btn btn-sm float-right btn-auditoriamedica" data-toggle="modal" data-target="#ventanaModalauditoriamedica">SERVICIOS ADICIONALES</a>
 @endif
 
@@ -102,17 +102,21 @@
                                                     <th>C/exp.</th>
                                                     <td>{{$cliente->ciexp}}</td>
                                                 </tr>
-                                                <tr>
+                                                <tr> 
                                                     <th>Fecha Ven/CI</th>
-                                                    <td>{{$cliente->fechavencci}}</td>
-                                                </tr>
+                                                    <td>{{ $cliente->fechavencci ? $cliente->fechavencci : 'INDEFINIDO' }}</td>
+                                                </tr>      
+                                                <tr> 
+                                                    <th>Fecha Nac.</th>
+                                                    <td>{{ $cliente->fechanacimiento ? $cliente->fechanacimiento : 'NINGUNO' }}</td>
+                                                </tr>      
                                                 <tr>
                                                     <th>Edad</th>
                                                     <td>{{$cliente->edad}}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th>Ciudad nac.</th>
-                                                    <td>{{$cliente->lugarnacimiento}}</td>
+                                                    <th>Lugar nac.</th>
+                                                    <td>{{$cliente->paisnacimiento}} - {{$cliente->lugarnacimiento}}</td>
                                                 </tr>
                                                 <tr>
                                                     <th>Genero</th>
@@ -199,7 +203,7 @@
                                                     <td>{{$cliente->referenciador}}</td>
                                                 </tr>
                                                 <tr>
-                                                    <th>AFP</th>
+                                                    <th>Gestora</th>
                                                     <td>{{$cliente->afp}}</td>
                                                 </tr>
                                                 <tr>
@@ -227,12 +231,6 @@
 <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="ventanaModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            {{-- <div class="modal-header" >
-                <h5 class="" id="ventanaModalLabel" style="align-content: center"><strong style="color: #000000; text-align:center">ACCIONES DEL CLIENTE</strong></h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div> --}}
             <strong style="text-align: center; font-size:20px; margin-top: 20px;">ACCIONES DEL CLIENTE</strong>
             <style>
                 .bordeetapa1 {
@@ -294,16 +292,16 @@
                         @can('admin.asociados.generarchecklistclienteita')
                             @if ($tieneTramites)
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.generarchecklistclienteita', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                <a href="{{ route('admin.asociados.generarchecklistclienteita', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="DERIVACION Y REQUISITOS">
                                     <i class="fas fa-tasks"></i>
-                                    <strong>REQUISITOS</strong>
+                                    <strong>DERIV. Y REQ.</strong>
                                 </a>
                             </div>
                             @else
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
+                                <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="DERIVACION Y REQUISITOS" aria-disabled="true">
                                     <i class="fas fa-tasks"></i>
-                                    <strong>REQUISITOS</strong>
+                                    <strong>DERIV. Y REQ.</strong>
                                 </a>
                             </div>
                             @endif
@@ -315,82 +313,42 @@
                     <div style="text-align: center; padding: 1.5px;">
                         <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
                     </div>
-                    {{-- @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'VANESSA MAMANI HUANACO' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                        <div class="row text-center">
-                            @can('admin.asociados.crearbateriaclienteita')
-                                @if (($tieneRequisitos && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente)
-                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.crearbateriaclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
-                                        <i class="fas fa-charging-station"></i>
-                                        <strong>BATERIA</strong>
-                                    </a>
-                                </div>
-                                @else
-                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
-                                        <i class="fas fa-charging-station"></i>
-                                        <strong>BATERIA</strong>
-                                    </a>
-                                </div>
-                                @endif
-                            @endcan
-
-                            @can('admin.asociados.aprobacioncotizacionclienteita')
-                            @if ($tieneBateria)
-                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.aprobacioncotizacionclienteita', $cliente) }}" class="btn btn-cotizacion btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
-                                        <i class="fas fa-donate"></i>
-                                        <strong>COTIZACIÓN</strong>
-                                    </a>
-                                </div>
-                                @else
-                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="#" class="btn btn-cotizacion btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
-                                        <i class="fas fa-donate"></i>
-                                        <strong>COTIZACIÓN</strong>
-                                    </a>
-                                </div>
-                                @endif
-                            @endcan
-                        </div>
-                    @else --}}
-                        <div class="row text-center">
-                            @can('admin.asociados.crearbateriaclienteita')
-                                @if (($tieneRequisitos && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente)
-                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.crearbateriaclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
-                                        <i class="fas fa-charging-station"></i>
-                                        <strong>BATERIA</strong>
-                                    </a>
-                                </div>
-                                @else
-                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
-                                        <i class="fas fa-charging-station"></i>
-                                        <strong>BATERIA</strong>
-                                    </a>
-                                </div>
-                                @endif
-                            @endcan
-                            @can('admin.asociados.aprobacioncotizacionclienteita')
-                            @if ($tieneBateria)
-                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.aprobacioncotizacionclienteita', $cliente) }}" class="btn btn-cotizacion btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
-                                        <i class="fas fa-donate"></i>
-                                        <strong>COTIZACIÓN</strong>
-                                    </a>
-                                </div>
-                                @else
-                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="#" class="btn btn-cotizacion btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
-                                        <i class="fas fa-donate"></i>
-                                        <strong>COTIZACIÓN</strong>
-                                    </a>
-                                </div>
-                                @endif
-                            @endcan
-                        </div>
-                    {{-- @endif --}}
+                    <div class="row text-center">
+                        @can('admin.asociados.crearbateriaclienteita')
+                            @if (($tieneRequisitos && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente)
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="{{ route('admin.asociados.crearbateriaclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
+                                    <i class="fas fa-charging-station"></i>
+                                    <strong>BATERIA</strong>
+                                </a>
+                            </div>
+                            @else
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
+                                    <i class="fas fa-charging-station"></i>
+                                    <strong>BATERIA</strong>
+                                </a>
+                            </div>
+                            @endif
+                        @endcan
+                        @can('admin.asociados.aprobacioncotizacionclienteita')
+                        @if ($tieneBateria)
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="{{ route('admin.asociados.aprobacioncotizacionclienteita', $cliente) }}" class="btn btn-cotizacion btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
+                                    <i class="fas fa-donate"></i>
+                                    <strong>COTIZACIÓN</strong>
+                                </a>
+                            </div>
+                            @else
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="#" class="btn btn-cotizacion btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
+                                    <i class="fas fa-donate"></i>
+                                    <strong>COTIZACIÓN</strong>
+                                </a>
+                            </div>
+                            @endif
+                        @endcan
+                    </div>
                 </div>
 
                 <div style="margin-top: 10px; background-color: #fbffe7;  border-radius: 40px;">
@@ -468,33 +426,19 @@
                         </div>
                         @endcan
 
-                        {{-- @can('admin.asociados.subirhistorialmedico') --}}
                         <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                             <button type="button" class="btn btn-proveedorinforme btn-icono btn-block" data-toggle="modal" data-target="#proveedorinformeModal" data-placement="top" title="PROVEEDOR INFORME FINAL">
                                 <i class="fas fa-user-md"></i>
                                 <strong>PROV. INF.</strong>
                             </button>
                         </div>
-                        {{-- @endcan --}}
 
-                        
-                        
-                        {{-- @can('admin.asociados.subirhistorialmedico') --}}
                         <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                             <button type="button" class="btn btn-historiamedica btn-icono btn-block" data-toggle="modal" data-target="#historialMedicoModal" data-placement="top" title="HISTORIA MÉDICA">
                                 <i class="fas fa-archive"></i>
                                 <strong>HIST. MED.</strong>
                             </button>
                         </div>
-                        {{-- @endcan --}}
-                        {{-- @can('admin.asociados.generaretiquetaclienteita')
-                        <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                            <a href="{{ route('admin.asociados.generaretiquetaclienteita', $cliente) }}" class="btn btn-etiqueta btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR ETIQUETA">
-                                <i class="fas fa-tags"></i>
-                                <strong>ETIQUETA</strong>
-                            </a>
-                        </div>
-                        @endcan --}}
                     </div>
                 </div>
             </div>
@@ -520,26 +464,26 @@
                     <div class="row text-center">
                         @can('admin.asociados.generarchecklistclienteita')
                             @if ($tieneContactos)
-                                @if (!$tienerequisitosauditoria)
+                                {{-- @if (!$tienerequisitosauditoria) --}}
                                 <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                     <a href="{{ route('admin.asociados.generarchecklistclienteitaaudi', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                         <i class="fas fa-tasks"></i>
-                                        <strong>REQUISITOS</strong>
+                                        <strong>DERIV. Y REQ.</strong>
                                     </a>
                                 </div>
-                                @else
+                                {{-- @else
                                 <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                     <a href="{{ route('admin.asociados.subirdocrequisitosaudi', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="REQUISITOS" aria-disabled="true">
                                         <i class="fas fa-tasks"></i>
-                                        <strong>REQUISITOS</strong>
+                                        <strong>DERIV. Y REQ.</strong>
                                     </a>
                                 </div>
-                                @endif
+                                @endif --}}
                             @else
                             <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
                                     <i class="fas fa-tasks"></i>
-                                    <strong>REQUISITOS</strong>
+                                    <strong>DERIV. Y REQ.</strong>
                                 </a>
                             </div>
                             @endif
@@ -561,15 +505,6 @@
                             </div>
                             @endif
                         @endcan
-
-                        {{-- @can('admin.asociados.generaretiquetaclienteita')
-                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                            <a href="{{ route('admin.asociados.generaretiquetaclienteitaauditoria', $cliente) }}" class="btn btn-etiqueta2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR ETIQUETA">
-                                <i class="fas fa-tags"></i>
-                                <strong>ETIQUETA</strong>
-                            </a>
-                        </div>
-                        @endcan --}}
                     </div>
                 </div>
                 
@@ -589,14 +524,14 @@
                             <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('admin.asociados.generarchecklistclienteitaapelacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                     <i class="fas fa-tasks"></i>
-                                    <strong>REQUISITOS</strong>
+                                    <strong>DERIV. Y REQ.</strong>
                                 </a>
                             </div>
                             @else
                             <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
                                     <i class="fas fa-tasks"></i>
-                                    <strong>REQUISITOS</strong>
+                                    <strong>DERIV. Y REQ.</strong>
                                 </a>
                             </div>
                             @endif
@@ -646,14 +581,14 @@
                             <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('admin.asociados.generarchecklistclienteitasegsolicitud', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                     <i class="fas fa-tasks"></i>
-                                    <strong>REQUISITOS</strong>
+                                    <strong>DERIV. Y REQ.</strong>
                                 </a>
                             </div>
                             @else
                             <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
                                     <i class="fas fa-tasks"></i>
-                                    <strong>REQUISITOS</strong>
+                                    <strong>DERIV. Y REQ.</strong>
                                 </a>
                             </div>
                             @endif
@@ -675,21 +610,57 @@
                             </div>
                             @endif
                         @endcan
-
-                        {{-- @can('admin.asociados.generaretiquetaclienteita')
-                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                            <a href="{{ route('admin.asociados.generaretiquetaclienteitasegundasolicitud', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR ETIQUETA">
-                                <i class="fas fa-tags"></i>
-                                <strong>ETIQUETA</strong>
-                            </a>
-                        </div>
-                        @endcan --}}
                     </div>
                 </div>
-                
             </div>
             @endif
 
+            @if ($tieneTercerasolicitud)
+            {{-- TERCERA SOLICITUD --}}
+            <div class="modal-body">
+                <div style="background-color: #fde7ff;  border-radius: 40px;">
+                    <div style="text-align: center;padding: 1.5px;">
+                        <strong style="color: #a835bc; font-size:20px;">TERCERA SOLICITUD</strong>
+                    </div>
+                    <div class="row text-center">
+                        @can('admin.asociados.generarchecklistclienteita')
+                            @if ($tieneContactos)
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="{{ route('admin.asociados.generarchecklistclienteitatercerasolicitud', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                    <i class="fas fa-tasks"></i>
+                                    <strong>DERIV. Y REQ.</strong>
+                                </a>
+                            </div>
+                            @else
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="#" class="btn btn-programar222 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
+                                    <i class="fas fa-tasks"></i>
+                                    <strong>DERIV. Y REQ.</strong>
+                                </a>
+                            </div>
+                            @endif
+                        @endcan
+                        @can('admin.asociados.creardocumentacionclienteita')
+                            @if ($tienerequisitostercerasolicitud)
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                    <i class="fas fa-list-alt"></i>
+                                    <strong>INFORMES</strong>
+                                </a>
+                            </div>
+                            @else
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <a href="#" class="btn btn-programar222 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                    <i class="fas fa-list-alt"></i>
+                                    <strong>INFORMES</strong>
+                                </a>
+                            </div>
+                            @endif
+                        @endcan
+                    </div>
+                </div>
+            </div>
+            @endif
             <div class="modal-footer">
                 <button type="button" class="btn btn-no" data-dismiss="modal">Cerrar</button>
             </div>
@@ -742,23 +713,17 @@
                             const tramiteInput = document.querySelector('input[name="tramite"]');
 
                             if (selectFechas) {
-                                // Obtén los datos de trámites desde el atributo data-tramites
                                 const tramitesPorFecha = JSON.parse(selectFechas.getAttribute('data-tramites'));
-
-                                // Escucha cambios en el select
                                 selectFechas.addEventListener('change', function () {
                                     const fechaSeleccionada = this.value;
-
-                                    // Busca el trámite correspondiente a la fecha seleccionada
                                     if (tramitesPorFecha[fechaSeleccionada]) {
                                         tramiteInput.value = tramitesPorFecha[fechaSeleccionada];
                                     } else {
-                                        tramiteInput.value = ''; // Limpia el campo si no hay trámite
+                                        tramiteInput.value = '';
                                     }
                                 });
                             }
                         });
-
                         </script>
                         <div class="form-group">
                             {!! Form::label('proveedorasignado', 'Proveedor:') !!}
@@ -782,15 +747,6 @@
                                 </small>
                             @enderror
                         </div>
-                        {{-- <div class="form-group">
-                            {!! Form::label('precio', 'Precio:') !!}
-                            {!! Form::text('precio', null, ['class' => 'form-control', 'id' => 'precio', 'placeholder' => '' , 'readonly' => 'readonly' ]) !!}
-                            @error('precio')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{ $message }}
-                                </small>
-                            @enderror
-                        </div> --}}
                         <div class="form-group"> 
                             {!! Form::label('precio', 'Precio:') !!}
                             {!! Form::text('precio', null, [
@@ -805,8 +761,6 @@
                                 </small>
                             @enderror
                         </div>
-                        
-                        
                         <div class="form-group" hidden>
                             {!! Form::label('preciocompra', 'Precio Compra:') !!}
                             {!! Form::text('preciocompra', null, ['class' => 'form-control', 'id' => 'preciocompra', 'placeholder' => '' ]) !!}
@@ -818,58 +772,54 @@
                         </div>
                         <script>
                            document.addEventListener('DOMContentLoaded', function () {
-    const selectFechas = document.getElementById('select-fechas');
-    const tramiteInput = document.querySelector('input[name="tramite"]');
-    const precioInput = document.getElementById('precio');
-    const proveedorSelect = document.getElementById('proveedorasignado');
-    const precioCompraInput = document.getElementById('preciocompra');
+                                const selectFechas = document.getElementById('select-fechas');
+                                const tramiteInput = document.querySelector('input[name="tramite"]');
+                                const precioInput = document.getElementById('precio');
+                                const proveedorSelect = document.getElementById('proveedorasignado');
+                                const precioCompraInput = document.getElementById('preciocompra');
 
-    // Variables para verificar registros del cliente
-    const clienteConInvalidez = selectFechas.getAttribute('data-cliente-con-invalidez') === 'true';
-    const clienteConApelacionOSegunda = selectFechas.getAttribute('data-cliente-con-apelacion-segunda') === 'true';
+                                const clienteConInvalidez = selectFechas.getAttribute('data-cliente-con-invalidez') === 'true';
+                                const clienteConApelacionOSegunda = selectFechas.getAttribute('data-cliente-con-apelacion-segunda') === 'true';
 
-    // Escucha cambios en el select Fecha Batería
-    selectFechas.addEventListener('change', function () {
-        const fechaSeleccionada = this.value;
+                                selectFechas.addEventListener('change', function () {
+                                    const fechaSeleccionada = this.value;
 
-        // Simulación de lógica para obtener el trámite basado en la fecha seleccionada
-        const tramitesPorFecha = JSON.parse(this.getAttribute('data-tramites'));
-        if (tramitesPorFecha[fechaSeleccionada]) {
-            const tramiteAutorellenado = tramitesPorFecha[fechaSeleccionada];
-            tramiteInput.value = tramiteAutorellenado;
+                                    const tramitesPorFecha = JSON.parse(this.getAttribute('data-tramites'));
+                                    if (tramitesPorFecha[fechaSeleccionada]) {
+                                        const tramiteAutorellenado = tramitesPorFecha[fechaSeleccionada];
+                                        tramiteInput.value = tramiteAutorellenado;
 
-            // Autorellena el precio según el trámite
-            if (tramiteAutorellenado === 'AUDITORIA MEDICA' || tramiteAutorellenado === 'INVALIDEZ') {
-                precioInput.value = '2100.00'; // "AUDITORIA MEDICA" y "INVALIDEZ" siempre son 2100.00
-            } else if (tramiteAutorellenado === 'APELACION' || tramiteAutorellenado === 'SEGUNDA SOLICITUD') {
-                // Si el cliente tiene "INVALIDEZ"
-                if (clienteConInvalidez) {
-                    precioInput.value = '1100.00';
-                } else {
-                    precioInput.value = '2100.00'; // Si no tiene "INVALIDEZ"
-                }
-            } else {
-                precioInput.value = ''; // Limpia si no coincide
-            }
-        } else {
-            tramiteInput.value = '';
-            precioInput.value = ''; // Limpia si no hay trámite asociado
-        }
-    });
+                                        if (tramiteAutorellenado === 'AUDITORIA MEDICA' || tramiteAutorellenado === 'INVALIDEZ') {
+                                            precioInput.value = '2100.00'; // "AUDITORIA MEDICA" y "INVALIDEZ" siempre son 2100.00
+                                        } else if (tramiteAutorellenado === 'APELACION' || tramiteAutorellenado === 'SEGUNDA SOLICITUD') {
+                                            // Si el cliente tiene "INVALIDEZ"
+                                            if (clienteConInvalidez) {
+                                                precioInput.value = '1100.00';
+                                            } else {
+                                                precioInput.value = '2100.00'; // Si no tiene "INVALIDEZ"
+                                            }
+                                        } else {
+                                            precioInput.value = ''; // Limpia si no coincide
+                                        }
+                                    } else {
+                                        tramiteInput.value = '';
+                                        precioInput.value = ''; // Limpia si no hay trámite asociado
+                                    }
+                                });
 
-    // Escucha cambios en el select Proveedor
-    proveedorSelect.addEventListener('change', function () {
-        const proveedorSeleccionado = proveedorSelect.options[proveedorSelect.selectedIndex].text;
+                                // Escucha cambios en el select Proveedor
+                                proveedorSelect.addEventListener('change', function () {
+                                    const proveedorSeleccionado = proveedorSelect.options[proveedorSelect.selectedIndex].text;
 
-        if (proveedorSeleccionado === 'AGUIRRE VASQUEZ MARIA RENEE') {
-            precioCompraInput.value = '250.00';
-        } else if (proveedorSeleccionado === 'MARIA ANGELA LOZANO FLORES') {
-            precioCompraInput.value = '400.00';
-        } else {
-            precioCompraInput.value = ''; // Limpia si no coincide
-        }
-    });
-});
+                                    if (proveedorSeleccionado === 'AGUIRRE VASQUEZ MARIA RENEE') {
+                                        precioCompraInput.value = '250.00';
+                                    } else if (proveedorSeleccionado === 'MARIA ANGELA LOZANO FLORES') {
+                                        precioCompraInput.value = '400.00';
+                                    } else {
+                                        precioCompraInput.value = ''; // Limpia si no coincide
+                                    }
+                                });
+                            });
 
 
                         </script>
@@ -1358,6 +1308,26 @@
         color: #ffffff;
     }
     .btn-programar i {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .btn-programar222 {
+        width: 100px;
+        height: 90px;
+        font-size: 13px;
+        flex-direction: column;
+        text-align: center;
+        padding: 10px;
+        background-color: #ffffff;
+        color: #ac2bae;
+        border-color: #ac2bae;
+        border-radius: 5px;
+    }
+    .btn-programar222:hover {
+        background-color: #ac2bae;
+        color: #ffffff;
+    }
+    .btn-programar222 i {
         display: inline-block;
         vertical-align: middle;
     }

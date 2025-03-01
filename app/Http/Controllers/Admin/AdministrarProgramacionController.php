@@ -30,8 +30,10 @@ use App\Models\Estadoprogramacionsubcliente;
 use App\Models\Programacionsubcliente;
 use App\Models\Documentacionsubcliente;
 use App\Http\Requests\UpdateProgramacionsubclienteRequest;
+use App\Models\Informefinal;
 use App\Models\ProveedorInformefinal;
 use App\Services\WhatsAppService;
+use App\Models\Requisitosubcliente;
 
 class AdministrarProgramacionController extends Controller
 {
@@ -314,6 +316,35 @@ class AdministrarProgramacionController extends Controller
             ->whereNotNull('clienteauditoriaid')
             ->simplePaginate(10000);
 
+        $informeshoyita = Documentacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteitaid')
+            ->simplePaginate(10000);
+
+        $informeshoycomun = Documentacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clientecomunid')
+            ->simplePaginate(10000);
+
+        $informeshoyauditoria = Documentacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteauditoriaid')
+            ->simplePaginate(10000);
+
+        $informesfinaleshoyita = Informefinal::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteitaid')
+            ->simplePaginate(10000);
+
+        $informesfinaleshoyauditoria = Informefinal::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteauditoriaid')
+            ->simplePaginate(10000);
+            
+        $requisitoshoyita = Requisitosubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteitaid')
+            ->simplePaginate(10000);
+
+        $requisitoshoyauditoria = Requisitosubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteauditoriaid')
+            ->simplePaginate(10000);
+            
+
         $usuarioAutenticado = auth()->user()->name;
         $esProveedor = $usuarioAutenticado->role ?? null;
             
@@ -332,6 +363,21 @@ class AdministrarProgramacionController extends Controller
                 return $count + 1;
             }, 0);
 
+        $todosinformes = $informeshoyita->merge($informeshoycomun)->merge($informeshoyauditoria)->toArray();
+            $contadorinformes = array_reduce($todosinformes, function ($count, $item) {
+                return $count + 1;
+            }, 0);
+                
+        $todosinformesfinales = $informesfinaleshoyita->merge($informesfinaleshoyauditoria)->toArray();
+        $contadorinformesfinales = array_reduce($todosinformesfinales, function ($count, $item) {
+                return $count + 1;
+            }, 0);
+            
+        $todosrequisitos = $requisitoshoyita->merge($requisitoshoyauditoria)->toArray();
+        $contadorrequisitos = array_reduce($todosrequisitos, function ($count, $item) {
+                return $count + 1;
+            }, 0);
+
         return view('admin.admprogramaciones.clientescreadoshoy', compact(
             'clientes',
             'clientes2',
@@ -343,22 +389,211 @@ class AdministrarProgramacionController extends Controller
             'programacioneshoycomun',
             'programacioneshoyauditoria',
             'fechaActual','contadorclientes','contadorbaterias','contadorprogramaciones'
+            ,'informeshoyita'
+            ,'informeshoycomun'
+            ,'informeshoyauditoria'
+            ,'contadorinformes'
+            ,'informesfinaleshoyita'
+            ,'informesfinaleshoyauditoria'
+            ,'contadorinformesfinales'
+            ,'requisitoshoyita'
+            ,'requisitoshoyauditoria'
+            ,'contadorrequisitos'
         ));
     }
+
+    public function eliminarDocumentos(Request $request)
+    {
+        $motivo = $request->input('motivoanulacion');
+        $idsSeleccionados = $request->input('seleccionados');
+
+        // Obtén el nombre del usuario autenticado
+        $usuarioAnulacion = auth()->user()->name;
+
+        foreach ($idsSeleccionados as $id) {
+            $documento = DocumentacionSubCliente::find($id);
+            if ($documento) {
+                $documento->deleted_at = now();
+                $documento->motivoanulacion = $motivo;
+                $documento->usuarioanulacion = $usuarioAnulacion;
+                $documento->save();
+            }
+        }
+
+        return redirect()->back()->with('info', 'Documentos anulados con éxito.');
+    }
+
+    public function eliminarinformesfinal(Request $request)
+    {
+        $motivo = $request->input('motivoanulacion');
+        $idsSeleccionados = $request->input('seleccionados2');
+
+        // Obtén el nombre del usuario autenticado
+        $usuarioAnulacion = auth()->user()->name;
+
+        foreach ($idsSeleccionados as $id) {
+            $documento = Informefinal::find($id);
+            if ($documento) {
+                $documento->deleted_at = now();
+                $documento->motivoanulacion = $motivo;
+                $documento->usuarioanulacion = $usuarioAnulacion;
+                $documento->estado = null;
+                $documento->save();
+            }
+        }
+
+        return redirect()->back()->with('info', 'Documentos anulados con éxito.');
+    }
+
+    public function eliminarbateria(Request $request)
+    {
+        $motivo = $request->input('motivoanulacion');
+        $idsSeleccionados = $request->input('seleccionados3');
+        $usuarioAnulacion = auth()->user()->name;
+
+        foreach ($idsSeleccionados as $id) {
+            $bateria = Bateriasubcliente::find($id);
+
+            if ($bateria) {
+                $programacionIds = ProgramacionSubCliente::where('bateriaid', $id)->pluck('id');
+
+                if ($programacionIds->isNotEmpty()) {
+                    EstadoProgramacionSubCliente::whereIn('programacionid', $programacionIds)->update([
+                        'deleted_at' => now(),
+                        'motivoanulacion' => $motivo,
+                        'usuarioanulacion' => $usuarioAnulacion
+                    ]);
+                    DocumentacionSubCliente::whereIn('programacionid', $programacionIds)->update([
+                        'deleted_at' => now(),
+                        'motivoanulacion' => $motivo,
+                        'usuarioanulacion' => $usuarioAnulacion
+                    ]);
+                    ProgramacionSubCliente::whereIn('id', $programacionIds)->update([
+                        'deleted_at' => now(),
+                        'motivoanulacion' => $motivo,
+                        'usuarioanulacion' => $usuarioAnulacion
+                    ]);
+                }
+
+                $bateria->motivoanulacion = $motivo;
+                $bateria->usuarioanulacion = $usuarioAnulacion;
+                $bateria->save();
+                $bateria->delete();
+            }
+        }
+
+
+        return redirect()->back()->with('info', 'Registros anulados con éxito.');
+    }
+
+    public function anularpendienterequisitos(Request $request) 
+{
+    $idRequisito = $request->input('idrequisito');
+    $seleccionados = $request->input('seleccionados5', []);
+    $accion = $request->input('accion'); // Identificar si es ANULAR o RECHAZAR
+
+    $documento = RequisitosubCliente::find($idRequisito);
+
+    if (!$documento) {
+        return redirect()->back()->with('error', 'Registro no encontrado.');
+    }
+
+    $valores = ($accion === 'anular') ? null : 'PENDIENTE';
+
+    foreach ($seleccionados as $campo) {
+        if (in_array($campo, [
+            'poder', 'numeropoder', 'avcci', 'cnacasegurado', 'ciasegurado',
+            'cmatrimonio', 'cnacconyuge', 'ciconyuge', 'cnacjihos', 'cihijos',
+            'denfaccidente', 'crodomicilio', 'contrato', 'ctrabajo', 'boletapago',
+            'egestora', 'actdatos', 'resolinvhijos', 'cunionlibre', 'cnacimientounionlibre',
+            'ciunionlibre', 'cdivorcio', 'cdefuncion'
+        ])) {
+            $documento->$campo = $valores;
+        }
+    }
+
+    $documento->save();
+
+    return redirect()->back()->with('info', 'Requisitos actualizados correctamente.');
+}
+
 
 
     public function buscarclientesporfecha(Request $request)
     {
-        $busqueda = $request->get('buscarpor');
+        /* $busqueda = $request->get('buscarpor');
         $fechaActual = $busqueda ?: now()->toDateString();
 
-        // Clientes
         $clientes = Cliente::whereDate('created_at', $fechaActual)->simplePaginate(10);
         $clientes2 = ClienteAuditoria::whereDate('created_at', $fechaActual)->simplePaginate(10);
-        $clientes3 = ClienteComun::whereDate('created_at', $fechaActual)->simplePaginate(10);
+        $clientes3 = ClienteComun::whereDate('created_at', $fechaActual)->simplePaginate(10); */
+        $fechaActual = $request->input('buscarpor', now()->toDateString());
+        $query = $request->input('query');
+
+        //CLIENTES
+        $clientes = Cliente::query();
+        $clientes2 = ClienteAuditoria::query();
+        $clientes3 = ClienteComun::query();
+
+        if (!empty($query)) {
+            $clientes->where(function ($q) use ($query) {
+                $q->where('id', $query)
+                ->orWhere('nombreCompleto', 'like', "%$query%");
+            });
+
+            $clientes2->where(function ($q) use ($query) {
+                $q->where('id', $query)
+                ->orWhere('nombreCompleto', 'like', "%$query%");
+            });
+
+            $clientes3->where(function ($q) use ($query) {
+                $q->where('id', $query)
+                ->orWhere('nombreCompleto', 'like', "%$query%");
+            });
+        }
+
+        if (!empty($fechaActual)) {
+            $clientes->whereDate('created_at', $fechaActual);
+            $clientes2->whereDate('created_at', $fechaActual);
+            $clientes3->whereDate('created_at', $fechaActual);
+        }
+        $clientes = $clientes->simplePaginate(10000);
+        $clientes2 = $clientes2->simplePaginate(10000);
+        $clientes3 = $clientes3->simplePaginate(10000);
+
+
+        $bateriashoyita = Bateriasubcliente::whereNotNull('clienteitaid');
+        $bateriashoycomun = Bateriasubcliente::whereNotNull('clientecomunid');
+        $bateriashoyauditoria = Bateriasubcliente::whereNotNull('clienteauditoriaid');
+
+        if (!empty($query)) {
+            $bateriashoyita->where(function ($q) use ($query) {
+                $q->where('clienteitaid', $query)
+                ->orWhere('clienteitanombre', 'like', "%$query%");
+            });
+
+            $bateriashoycomun->where(function ($q) use ($query) {
+                $q->where('clientecomunid', $query)
+                ->orWhere('clientecomunnombre', 'like', "%$query%");
+            });
+
+            $bateriashoyauditoria->where(function ($q) use ($query) {
+                $q->where('clienteauditoriaid', $query)
+                ->orWhere('clienteauditorianombre', 'like', "%$query%");
+            });
+        }
+        if (!empty($fechaActual)) {
+            $bateriashoyita->whereDate('created_at', $fechaActual);
+            $bateriashoycomun->whereDate('created_at', $fechaActual);
+            $bateriashoyauditoria->whereDate('created_at', $fechaActual);
+        }
+
+        $bateriashoyita = $bateriashoyita->simplePaginate(10000);
+        $bateriashoycomun = $bateriashoycomun->simplePaginate(10000);
+        $bateriashoyauditoria = $bateriashoyauditoria->simplePaginate(10000);
 
         // Baterías
-        $bateriashoyita = Bateriasubcliente::whereDate('created_at', $fechaActual)
+        /* $bateriashoyita = Bateriasubcliente::whereDate('created_at', $fechaActual)
             ->whereNotNull('clienteitaid')
             ->simplePaginate(100);
 
@@ -368,10 +603,41 @@ class AdministrarProgramacionController extends Controller
 
         $bateriashoyauditoria = Bateriasubcliente::whereDate('created_at', $fechaActual)
             ->whereNotNull('clienteauditoriaid')
-            ->simplePaginate(100);
+            ->simplePaginate(100); */
+
+
+        $programacioneshoyita = Programacionsubcliente::whereNotNull('clienteitaid');
+        $programacioneshoycomun = Programacionsubcliente::whereNotNull('clientecomunid');
+        $programacioneshoyauditoria = Programacionsubcliente::whereNotNull('clienteauditoriaid');
+
+        if (!empty($query)) {
+            $programacioneshoyita->where(function ($q) use ($query) {
+                $q->where('clienteitaid', $query)
+                ->orWhere('clienteitanombre', 'like', "%$query%");
+            });
+
+            $programacioneshoycomun->where(function ($q) use ($query) {
+                $q->where('clientecomunid', $query)
+                ->orWhere('clientecomunnombre', 'like', "%$query%");
+            });
+
+            $programacioneshoyauditoria->where(function ($q) use ($query) {
+                $q->where('clienteauditoriaid', $query)
+                ->orWhere('clienteauditorianombre', 'like', "%$query%");
+            });
+        }
+        if (!empty($fechaActual)) {
+            $programacioneshoyita->whereDate('created_at', $fechaActual);
+            $programacioneshoycomun->whereDate('created_at', $fechaActual);
+            $programacioneshoyauditoria->whereDate('created_at', $fechaActual);
+        }
+
+        $programacioneshoyita = $programacioneshoyita->simplePaginate(10000);
+        $programacioneshoycomun = $programacioneshoycomun->simplePaginate(10000);
+        $programacioneshoyauditoria = $programacioneshoyauditoria->simplePaginate(10000);
 
         // Programaciones
-        $programacioneshoyita = Programacionsubcliente::whereDate('created_at', $fechaActual)
+        /* $programacioneshoyita = Programacionsubcliente::whereDate('created_at', $fechaActual)
             ->whereNotNull('clienteitaid')
             ->simplePaginate(100);
 
@@ -381,22 +647,139 @@ class AdministrarProgramacionController extends Controller
 
         $programacioneshoyauditoria = Programacionsubcliente::whereDate('created_at', $fechaActual)
             ->whereNotNull('clienteauditoriaid')
-            ->simplePaginate(100);
+            ->simplePaginate(100); */
 
+        $informeshoyita = Documentacionsubcliente::whereNotNull('clienteitaid');
+        $informeshoycomun = Documentacionsubcliente::whereNotNull('clientecomunid');
+        $informeshoyauditoria = Documentacionsubcliente::whereNotNull('clienteauditoriaid');
+
+        if (!empty($query)) {
+            $informeshoyita->where(function ($q) use ($query) {
+                $q->where('clienteitaid', $query)
+                ->orWhere('clienteitanombre', 'like', "%$query%");
+            });
+
+            $informeshoycomun->where(function ($q) use ($query) {
+                $q->where('clientecomunid', $query)
+                ->orWhere('clientecomunnombre', 'like', "%$query%");
+            });
+
+            $informeshoyauditoria->where(function ($q) use ($query) {
+                $q->where('clienteauditoriaid', $query)
+                ->orWhere('clienteauditorianombre', 'like', "%$query%");
+            });
+        }
+        if (!empty($fechaActual)) {
+            $informeshoyita->whereDate('created_at', $fechaActual);
+            $informeshoycomun->whereDate('created_at', $fechaActual);
+            $informeshoyauditoria->whereDate('created_at', $fechaActual);
+        }
+
+        $informeshoyita = $informeshoyita->simplePaginate(10000);
+        $informeshoycomun = $informeshoycomun->simplePaginate(10000);
+        $informeshoyauditoria = $informeshoyauditoria->simplePaginate(10000);
+
+        //INFORMES MEDICOS
+        /* $informeshoyita = Documentacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteitaid')
+            ->simplePaginate(10000);
+
+        $informeshoycomun = Documentacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clientecomunid')
+            ->simplePaginate(10000);
+
+        $informeshoyauditoria = Documentacionsubcliente::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteauditoriaid')
+            ->simplePaginate(10000); */
+
+        $informesfinaleshoyita = Informefinal::whereNotNull('clienteitaid');
+        $informesfinaleshoyauditoria = Informefinal::whereNotNull('clienteauditoriaid');
+
+        if (!empty($query)) {
+            $informesfinaleshoyita->where(function ($q) use ($query) {
+                $q->where('clienteitaid', $query)
+                ->orWhere('clienteitanombre', 'like', "%$query%");
+            });
+
+            $informesfinaleshoyauditoria->where(function ($q) use ($query) {
+                $q->where('clientecomunid', $query)
+                ->orWhere('clientecomunnombre', 'like', "%$query%");
+            });
+
+        }
+        if (!empty($fechaActual)) {
+            $informesfinaleshoyita->whereDate('created_at', $fechaActual);
+            $informesfinaleshoyauditoria->whereDate('created_at', $fechaActual);
+        }
+
+        $informesfinaleshoyita = $informesfinaleshoyita->simplePaginate(10000);
+        $informesfinaleshoyauditoria = $informesfinaleshoyauditoria->simplePaginate(10000);
+
+        //INFORMES FINALES
+        /* $informesfinaleshoyita = Informefinal::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteitaid')
+            ->simplePaginate(10000);
+
+        $informesfinaleshoyauditoria = Informefinal::whereDate('created_at', $fechaActual)
+            ->whereNotNull('clienteauditoriaid')
+            ->simplePaginate(10000); */
+
+
+        $requisitoshoyita = Requisitosubcliente::whereNotNull('clienteitaid');
+        $requisitoshoyauditoria = Requisitosubcliente::whereNotNull('clienteauditoriaid');
+
+        if (!empty($query)) {
+            $requisitoshoyita->where(function ($q) use ($query) {
+                $q->where('clienteitaid', $query)
+                ->orWhere('clienteitanombre', 'like', "%$query%");
+            });
+
+            $requisitoshoyauditoria->where(function ($q) use ($query) {
+                $q->where('clientecomunid', $query)
+                ->orWhere('clientecomunnombre', 'like', "%$query%");
+            });
+
+        }
+        if (!empty($fechaActual)) {
+            $requisitoshoyita->whereDate('created_at', $fechaActual);
+            $requisitoshoyauditoria->whereDate('created_at', $fechaActual);
+        }
+
+        $requisitoshoyita = $requisitoshoyita->simplePaginate(10000);
+        $requisitoshoyauditoria = $requisitoshoyauditoria->simplePaginate(10000);
+        
+        
+        
+        
         $todosClientes = $clientes->merge($clientes2)->merge($clientes3)->toArray();
-        $contadorclientes = array_reduce($todosClientes, function ($count, $item) {
-                return $count + 1;
-            }, 0);
+            $contadorclientes = array_reduce($todosClientes, function ($count, $item) {
+                    return $count + 1;
+                }, 0);
         
         $todosbaterias = $bateriashoyita->merge($bateriashoycomun)->merge($bateriashoyauditoria)->toArray();
-        $contadorbaterias = array_reduce($todosbaterias, function ($count, $item) {
-                return $count + 1;
-            }, 0);
+            $contadorbaterias = array_reduce($todosbaterias, function ($count, $item) {
+                    return $count + 1;
+                }, 0);
 
         $todosprogramaciones = $programacioneshoyita->merge($programacioneshoycomun)->merge($programacioneshoyauditoria)->toArray();
-        $contadorprogramaciones = array_reduce($todosprogramaciones, function ($count, $item) {
-                return $count + 1;
-            }, 0);
+            $contadorprogramaciones = array_reduce($todosprogramaciones, function ($count, $item) {
+                    return $count + 1;
+                }, 0);
+
+        $todosinformes = $informeshoyita->merge($informeshoycomun)->merge($informeshoyauditoria)->toArray();
+            $contadorinformes = array_reduce($todosinformes, function ($count, $item) {
+                    return $count + 1;
+                }, 0);
+
+        $todosinformesfinales = $informesfinaleshoyita->merge($informesfinaleshoyauditoria)->toArray();
+            $contadorinformesfinales = array_reduce($todosinformesfinales, function ($count, $item) {
+                    return $count + 1;
+                }, 0);
+                
+            $todosrequisitos = $requisitoshoyita->merge($requisitoshoyauditoria)->toArray();
+            $contadorrequisitos = array_reduce($todosrequisitos, function ($count, $item) {
+                    return $count + 1;
+                }, 0);
 
         return view('admin.admprogramaciones.clientescreadoshoy', compact(
             'clientes',
@@ -408,7 +791,19 @@ class AdministrarProgramacionController extends Controller
             'programacioneshoyita',
             'programacioneshoycomun',
             'programacioneshoyauditoria',
-            'fechaActual', 'contadorclientes','contadorbaterias','contadorprogramaciones'
+            'fechaActual', 'contadorclientes'
+            ,'contadorbaterias'
+            ,'contadorprogramaciones'
+            ,'informeshoyita'
+            ,'informeshoycomun'
+            ,'informeshoyauditoria'
+            ,'contadorinformes'
+            ,'informesfinaleshoyita'
+            ,'informesfinaleshoyauditoria'
+            ,'contadorinformesfinales'
+            ,'requisitoshoyita'
+            ,'requisitoshoyauditoria'
+            ,'contadorrequisitos'
         ));
     }
 

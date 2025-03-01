@@ -10,7 +10,7 @@ class Consolidadocaja extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $table = 'consolidadocaja';
+    protected $table = 'consolidadoscaja';
     static $rules = [
         'id' => '',
         'usuarioconsolidadoid' => '',
@@ -24,6 +24,7 @@ class Consolidadocaja extends Model
         'consolidadocpp' => '',
         'usuarioregistroid' => '',
         'usuarioregistronombre' => '',
+        'actualizaciondeposito' => '',
     ]; 
 
     protected $fillable = [
@@ -39,6 +40,6 @@ class Consolidadocaja extends Model
         'consolidadocpp',
         'usuarioregistroid',
         'usuarioregistronombre',
-
+        'actualizaciondeposito',
     ];
 }

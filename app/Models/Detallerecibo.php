@@ -20,6 +20,7 @@ class Detallerecibo extends Model
         'descuento' => '',
         'montototal' => '',
         'saldo' => '',
+        'precioprogramado' => '',
         'usuarioregistroid' => '',
         'usuarioregistronombre' => '',
         'programacionid' => '',
@@ -27,6 +28,13 @@ class Detallerecibo extends Model
         'servicio' => '',
         'proveedoratencion' => '',
         'fechaatencion' => '',
+        'estado' => '',
+        'provinfofinalid' => '',
+        'tipomovimiento' => '',
+        'cuentapagarid' => '',
+        'bateriaid' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
     ]; 
 
     protected $fillable = [
@@ -38,6 +46,7 @@ class Detallerecibo extends Model
         'descuento',
         'montototal',
         'saldo',
+        'precioprogramado',
         'usuarioregistroid',
         'usuarioregistronombre',
         'programacionid',
@@ -45,5 +54,12 @@ class Detallerecibo extends Model
         'servicio',
         'proveedoratencion',
         'fechaatencion',
+        'estado',
+        'provinfofinalid',
+        'tipomovimiento',
+        'cuentapagarid',
+        'bateriaid',
+        'clienteid',
+        'clientenombre',
     ];
 }

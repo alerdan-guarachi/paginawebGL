@@ -48,6 +48,7 @@
                                 <th>ID</th>
                                 <th>Área</th>
                                 <th>Acción</th>
+                                <th>Proveedor</th>
                                 <th>Sucursal</th>
                                 <th>Venta</th>
                                 <th>Compra</th>
@@ -61,6 +62,7 @@
                                     <td>{{ $areaaccion->id }}</td>
                                     <td>{{ $areaaccion->area }}</td>
                                     <td>{{ $areaaccion->accion }}</td>
+                                    <td>{{ $areaaccion->proveedor }}</td>
                                     <td>{{ $areaaccion->sucursal }}</td>
                                     <td>{{ $areaaccion->precio }}</td>
                                     <td>{{ $areaaccion->preciocompra }}</td>

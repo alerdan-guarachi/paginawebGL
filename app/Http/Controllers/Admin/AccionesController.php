@@ -86,10 +86,14 @@ class AccionesController extends Controller
             'INTERNO' => 'INTERNO',
             'EXTERNO' => 'EXTERNO',
         ];
+        $pagoservicio = [
+            'INTERNO' => 'INTERNO',
+            'EXTERNO' => 'EXTERNO',
+        ];
 
         $proveedores = Proveedor::orderBy('proveedor')->pluck('proveedor', 'id')->toArray();
 
-        return view('admin.acciones.create', compact('tiponombre', 'bateriaproveedor', 'areas', 'estado', 'tipocliente', 'sucursal', 'proveedores', 'servicio'));
+        return view('admin.acciones.create', compact('pagoservicio', 'tiponombre', 'bateriaproveedor', 'areas', 'estado', 'tipocliente', 'sucursal', 'proveedores', 'servicio'));
     }
     public function store(StoreBateriaproveedorRequest $request)
     {

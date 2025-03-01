@@ -12,18 +12,6 @@
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
 <style>
-    .btn-crearbateria {
-        background-color:  #ffffff;
-        color: #725050d1;
-        border-color: #725050d1;
-        border-radius: 5px;
-        font-weight: bold;
-        padding: 5px 10px;
-    }
-    .btn-crearbateria:hover {
-        background-color: #725050d1;
-        color: #ffffff;
-    }
     .btn-listaclientes {
         background-color:  #ffffff;
         color: #2821f3d1;
@@ -46,6 +34,18 @@
     }
     .btn-documentacionmultiple:hover {
         background-color: #faa625;
+        color: #ffffff;
+    }
+    .btn-crearcartapolizas {
+        background-color:  #ffffff;
+        color: #b91bdc;
+        border-color: #b91bdc;
+        border-radius: 5px;
+        font-weight: bold;
+        padding: 5px 10px;
+    }
+    .btn-crearcartapolizas:hover {
+        background-color: #b91bdc;
         color: #ffffff;
     }
 </style>
@@ -84,7 +84,18 @@
                 <tbody>
                     @foreach ($grupoclientes as $grupocliente)
                         <tr>
-                            <td>{{$grupocliente->asociado}}</td>
+                            <td style="padding: 10 10px;">{{$grupocliente->asociado}}</td>
+                            <td width="10px">
+                                <abbr title="CREAR CARTA DE SOLICITUD DE POLIZAS">
+                                    @if($grupocliente->asociado === 'AUDITORIA MEDICA')
+                                        @can('admin.cartaspolizas.index')
+                                            <a class="btn btn-sm btn-crearcartapolizas" href="{{ route('admin.cartaspolizas.listacartaspolizas') }}">
+                                                <i class="fas fa-file"></i>
+                                            </a>
+                                        @endcan
+                                    @endif
+                                </abbr>
+                            </td>
                             <td width="10px">
                                 <abbr title="Ver bateria">
                                     @if($grupocliente->asociado === 'AUDITORIA MEDICA')
@@ -108,7 +119,6 @@
                                     @endif
                                 </abbr>
                             </td>
-                               
                             <td width="10px">
                                 <abbr title="Lista de clientes">
                                     @if($grupocliente->asociado === 'AUDITORIA MEDICA')
@@ -197,7 +207,10 @@
                         @if($rolusuario === 'ASOCIADO')
                             @if($asociado->asociado === $empresaUsuario)
                                 <tr>
-                                    <td>{{ $asociado->asociado }}</td>
+                                    <td style="padding: 10 10px;">{{ $asociado->asociado }}</td>
+                                    <td width="10px">
+
+                                    </td>
                                     @can('admin.asociados.crearclientebanco')
                                     <td width="10px">
                                         <abbr title="Ver Batería">
@@ -229,8 +242,11 @@
                             @endif
                         @else
                             <tr>
-                                <td>{{ $asociado->asociado }}</td>
+                                <td style="padding: 10 10px;">{{ $asociado->asociado }}</td>
                                 @can('admin.asociados.crearclientebanco')
+                                <td width="10px">
+
+                                </td>
                                 <td width="10px">
                                     <abbr title="Ver Batería">
                                         <a class="btn btn-sm btn-crearbateria" href="{{ route('admin.asociados.verbateriasbanco', $asociado) }}">
@@ -273,7 +289,7 @@
                 </tbody>
                 <style>
                     .table-buttons td {
-                        padding: 12 7px;
+                        padding: 10 4px;
                     }
                 </style>
             </table>

@@ -161,42 +161,94 @@
                 @if (!$registroExistente && !$registroaprobadoExistente)
 
                     
-                    <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'generar.pdf.consentimientoauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                            {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('nombrecompleto', $clienteauditoria->nombrecompleto, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('ci', $clienteauditoria->ci, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('sucursal', $clienteauditoria->sucursal, ['class' => 'form-control']) !!}
-                            {!! Form::submit('DERIVAR A MEDICINA LABORAL', ['class' => 'btn btn-derivar']) !!}
-                        {!! Form::close() !!}
+                <div class="row">
+                    <!-- Primera Card -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm h-100" style="background-color: #fdf4e3;">
+                            <div class="card-header text-center fw-bold text-white" style="background-color: #edab2e; font-weight:900; font-size:16px;">
+                                DERIVAR A MEDICINA LABORAL
+                            </div>
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                                {!! Form::open(['route' => 'generar.pdf.consentimientoauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                    {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('nombrecompleto', $clienteauditoria->nombrecompleto, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('ci', $clienteauditoria->ci, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('sucursal', $clienteauditoria->sucursal, ['class' => 'form-control']) !!}
+                                    {{-- {!! Form::submit('DERIVAR A MEDICINA LABORAL', ['class' => 'btn btn-derivar']) !!} --}}
+                                    <div class="form-group mb-3">
+                                        <label for="proveedor_id" class="fw-bold d-flex justify-content-center w-100">Seleccionar Proveedor:</label>
+                                        <select name="proveedorasignado" id="proveedor_id" class="form-control" required>
+                                            <option value="" disabled selected></option>
+                                            @foreach($proveedores as $proveedor)
+                                                <option value="{{ $proveedor }}">{{ $proveedor }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                
+                                    <div class="d-flex justify-content-center w-100">
+                                        <button type="submit" class="btn btn-derivar px-4" id="submit-btn" disabled>DERIVAR</button>
+                                    </div>
+                                {!! Form::close() !!}
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'generar.pdf.soloconsentimientoauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                            <a class="btn btn-consen btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">GENERAR SOLO CONSENTIMIENTO</a>
-                            {!! Form::hidden('clienteitaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('nombrecompleto', $clienteauditoria->nombres, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('ci', $clienteauditoria->ci, ['class' => 'form-control']) !!}
-                        {!! Form::close() !!}
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm h-100" style="background-color: #f2e8f5;">
+                            <div class="card-header text-center fw-bold text-white" style="background-color: #b02eed; font-weight:900; font-size:16px;">
+                                GENERAR SOLO CONSENTIMIENTO
+                            </div>
+                            <div class="card-body d-flex align-items-center justify-content-center"  style="display: flex; gap: 5px;">
+                                {!! Form::open(['route' => 'generar.pdf.soloconsentimientoauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                    <a class="btn btn-consen btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">GENERAR SOLO CONSENTIMIENTO</a>
+                                    {!! Form::hidden('clienteitaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('nombrecompleto', $clienteauditoria->nombres, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('ci', $clienteauditoria->ci, ['class' => 'form-control']) !!}
+                                {!! Form::close() !!}
+                            </div>
+                        </div>
                     </div>
 
                     @if($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
-                        <div class="form-group" style="display: flex; gap: 5px;">
-                                {!! Form::open(['route' => 'aprobariniciarcrearbateriaauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                                    {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
-                                    {!! Form::hidden('nombrecompleto', $clienteauditoria->nombrecompleto, ['class' => 'form-control']) !!}
-                        
-                                    {!! Form::submit('APROBAR INICIAR BATERIA SIN CONSENTIMIENTO', [
-                                        'class' => 'btn btn-aprobarbateria'
-                                    ]) !!}
-                                {!! Form::close() !!}
+                        <div class="col-lg-4">
+                            <div class="card shadow-sm h-100" style="background-color: #e0f4ff;">
+                                <div class="card-header text-center fw-bold text-white" style="background-color: #2ea4ed; font-weight:900; font-size:16px;">
+                                    APROBAR INICIAR BATERIA SIN CONSENTIMIENTO
+                                </div>
+                                <div class="card-body d-flex align-items-center justify-content-center" style="display: flex; gap: 5px;">
+                                    {!! Form::open(['route' => 'aprobariniciarcrearbateriaauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                        {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id, ['class' => 'form-control']) !!}
+                                        {!! Form::hidden('nombrecompleto', $clienteauditoria->nombrecompleto, ['class' => 'form-control']) !!}
+                            
+                                        {!! Form::submit('APROBAR INICIAR BATERIA SIN CONSENTIMIENTO', [
+                                            'class' => 'btn btn-aprobarbateria'
+                                        ]) !!}
+                                    {!! Form::close() !!}
+                                </div>
+                            </div>
                         </div>
                     @endif
+                </div>
                     
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        let proveedorSelect = document.getElementById("proveedor_id");
+                        let submitBtn = document.getElementById("submit-btn");
+                
+                        proveedorSelect.addEventListener("change", function() {
+                            submitBtn.disabled = (this.value === "");
+                        });
+                    });
+                </script>
+
                 @elseif ($registroExistente)
                     <p></p>
                 @elseif ($registroaprobadoExistente)
-                    <p>APROBADO PARA CREAR BATERÍA</p>
+                <div class="d-flex mt-3">
+                    <div class="p-3 border rounded shadow-sm" style="background-color: #edffef; width: fit-content;">
+                        <p class="m-0 fw-bold" style="font-weight: 900">APROBADO PARA CREAR BATERÍA</p>
+                    </div>
+                </div>
                 @endif
 
             </div>

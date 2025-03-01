@@ -36,7 +36,7 @@ use App\Models\Estadoprogramacionsubcliente;
 use App\Models\Estadocotizacionsubcliente;
 use App\Models\Programacionsubcliente;
 use App\Models\Documentacionsubcliente;
-use App\Models\Personal;
+use App\Models\Proveedoresservicios;
 use App\Http\Requests\StoreInformefinalRequest;
 use App\Http\Requests\StoreProveedorInformefinalRequest;
 use App\Http\Requests\UpdateProveedorInformefinalRequest;
@@ -260,7 +260,7 @@ class OrdenVentaController extends Controller
     public function create(ClienteBanco $clientebanco)
     {
         $opcionesCuentas = NumerosCuenta::pluck('nombrecuenta', 'nombrecuenta');
-        $usuariosPruebaCredito = Personal::pluck('nombrecompleto', 'id');
+        $usuariosPruebaCredito = Proveedoresservicios::pluck('razonsocial', 'id');
 
         $ultimaFechaBateria = Bateriasubcliente::where('clienteid', $clientebanco->id)
             ->orderBy('fechabateria', 'desc')
@@ -326,7 +326,7 @@ class OrdenVentaController extends Controller
         $usuario = Auth::user();
 
         // Obtener los datos del personal asociado al usuario autenticado
-        $personal = Personal::where('usuarioid', $usuario->id)->first();
+        $personal = Proveedoresservicios::where('usuarioid', $usuario->id)->first();
 
         // Verificar si se encontró el asociado
         if (!$asociado) {
@@ -348,7 +348,7 @@ class OrdenVentaController extends Controller
 
         // Cargar las opciones de cuentas y usuarios de prueba para crédito
         $opcionesCuentas = NumerosCuenta::pluck('nombrecuenta', 'nombrecuenta');
-        $usuariosPruebaCredito = Personal::pluck('nombrecompleto', 'id');
+        $usuariosPruebaCredito = Proveedoresservicios::pluck('razonsocial', 'id');
 
         // Obtener la última fecha de batería y los registros correspondientes
         $ultimaFechaBateria = Bateriasubcliente::where('clienteid', $clientebanco->id)

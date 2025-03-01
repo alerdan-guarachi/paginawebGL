@@ -95,38 +95,6 @@
                             </div>
                         </div>
                     </div>
-                    {{-- <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">ESTADO DE APROBACIONES</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <h6>Baterias del cliente:</h6>
-                                    <ul id="fechas-list">
-                                        @foreach($fechasDisponibles as $fecha)
-                                            <li style="color:{{ $fechasRegistradas->contains($fecha) ? '#94c93b' : 'red' }}">{{ $fecha }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                                </div>
-                            </div>
-                            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                            <script>
-                                $(document).ready(function(){
-                                    $('#fechas-list li').click(function(){
-                                        $(this).toggleClass('selected');
-                                    });
-                                });
-                            </script>
-                        </div>
-                    </div> --}}
-                    <!-- Modal Principal -->
                 </div>
                 {!! Form::submit('APROBAR BATERIA', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
@@ -134,51 +102,7 @@
         </div>
     </div>
 </div>
-{{-- <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true"> 
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">ESTADO DE APROBACIONES</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <h6>Baterías del cliente:</h6>
-                <ul id="fechas-list">
-                    @foreach($fechasDisponibles as $fecha)
-                        <li style="color:{{ $fechasRegistradas->contains($fecha) ? '#94c93b' : 'red' }}">
-                            {{ $fecha }}
-                            @if($fechasRegistradas->contains($fecha))
-                                <button type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal"><i class="fas fa-edit"></i></button>
-                                @php
-                                    $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
-                                @endphp
-                                @if($document)
-                                    <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm"><i class="fas fa-eye"></i></a>
-                                @else
-                                    <span class="text-danger">Documento no disponible</span>
-                                @endif
-                                @php
-                                    $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
-                                @endphp
-                                @if($documentconsinfo)
-                                    <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-vercotizacion btn-sm"><i class="fas fa-eye"></i></a>
-                                @else
-                                    
-                                @endif
-                            @endif
-                        </li>
-                    @endforeach
 
-                </ul>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div> --}}
 <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">  
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -188,57 +112,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            {{-- <div class="modal-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Fecha de Bateria</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($fechasDisponibles as $fecha)
-                            <tr style="color:{{ $fechasRegistradas->contains($fecha) ? 'green' : 'red' }}">
-                                <td><span style="display: inline-block; width: 5px; height: 5px; background-color: black; border-radius: 50%; margin-right: 5px;"></span>
-                                    {{ $fecha }}</td>
-                                <td>
-                                    @if($fechasRegistradas->contains($fecha))
-                                        <abbr title="MODIFICAR COTIZACIÓN">
-                                            <button type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                        </abbr>
-                                        @php
-                                            $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
-                                        @endphp
-                                        @if($document)
-                                        <abbr title="VER COTIZACIÓN APROBADA">
-                                            <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm">
-                                                <i class="fas fa-file-invoice-dollar"></i>
-                                            </a>
-                                        </abbr>
-                                        @else
-                                        @endif
-                                        @php
-                                            $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
-                                        @endphp
-                                        @if($documentconsinfo)
-                                        <abbr title="VER CONSENTIMIENTO INFORMADO">
-                                            <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm">
-                                                <i class="fas fa-clone"></i>
-                                            </a>
-                                        </abbr>
-                                        @else
-                                        @endif
-                                    @else
-                                    <span style="color: red;">NO APROBADO</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div> --}}
+
             <div class="modal-body"> 
                 <table class="table">
                     <thead>
@@ -259,7 +133,7 @@
                                         <a type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal" title="MODIFICAR COTIZACIÓN">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        @php
+                                        {{-- @php
                                             $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
                                             $whatsappNumber = $cliente->celular;
                                             $mensaje = urlencode("Hola, le comparto la cotización. Puede descargarla aquí:");
@@ -276,12 +150,38 @@
                                             <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm" title="VER CONSENTIMIENTO INFORMADO">
                                                 <i class="fas fa-clone"></i>
                                             </a>
-                                        @endif
-                                        {{-- @if($document)
-                                            <a href="https://wa.me/{{ $whatsappNumber }}?text={{ $mensaje }}%20{{ url('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-whatsapp btn-sm" title="WHATSAPP">
-                                                <i class="fab fa-whatsapp"></i>
-                                            </a>
                                         @endif --}}
+
+
+                                        @php
+    $documentosMostrados = [];
+@endphp
+
+@foreach ($cotizaciones as $cotizacion)
+    @php
+        $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
+        $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
+    @endphp
+    
+    @if($document && !in_array($document, $documentosMostrados))
+        <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm" title="VER COTIZACIÓN APROBADA">
+            <i class="fas fa-file-invoice-dollar"></i>
+        </a>
+        @php
+            $documentosMostrados[] = $document;
+        @endphp
+    @endif
+
+    @if($documentconsinfo && !in_array($documentconsinfo, $documentosMostrados))
+        <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm" title="VER CONSENTIMIENTO INFORMADO">
+            <i class="fas fa-clone"></i>
+        </a>
+        @php
+            $documentosMostrados[] = $documentconsinfo;
+        @endphp
+    @endif
+@endforeach
+
                                     @else
                                         <span style="color: red;">NO APROBADO</span>
                                     @endif

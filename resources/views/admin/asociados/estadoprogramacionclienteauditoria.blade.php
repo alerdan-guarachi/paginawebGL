@@ -41,7 +41,7 @@
         </nav>     
         {!! Form::hidden('usuarioid', auth()->user()->id) !!}
         {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-        {!! Form::hidden('clienteauditoriaid', $id) !!}
+        {!! Form::hidden('clienteauditoriaid',  $clienteauditoria->id) !!}
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -145,7 +145,7 @@
                 {!! Form::open(['route' => ['admin.asociados.guardarestadoprogramacionclienteauditoria', $clienteauditoria], 'method' => 'POST']) !!}
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                {!! Form::hidden('clienteauditoriaid', $id) !!}
+                {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id) !!}
                 {!! Form::hidden('clienteauditorianombre', $nombreclienteita) !!}
                 {!! Form::hidden('accionid', '', ['id' => 'modalAccionId']) !!}
 

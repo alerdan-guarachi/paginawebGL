@@ -15,32 +15,15 @@
         }, 5000);
     </script>
 @endif
+@can('admin.asociados.listadoclienteita')
 <div class="card">
     <div class="card-body">
+        @endcan
         @can('admin.asociados.listadoclienteita')
         <div class="titulo">CLIENTES GOOD LIFE</div>
         <div class="card-body">
             <div class="row">
-                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
-                    <div class="card card-stats bg-color-1">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5 col-md-4">
-                                    <div class="icon-big text-center icon-warning">
-                                        <i class="fas fa-user fa-5x text-white"></i>
-                                    </div>
-                                </div>
-                                <div class="col-7 col-md-8">
-                                    <div class="numbers">
-                                        <h3>CLIENTES<br>COMUNES</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <h4 class="total-bottom-right">Total: {{ $clientesComunesCount }}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                {{-- <div class="col-lg-3 col-md-6 col-sm-6 col-12">
                     <div class="card card-stats bg-color-2">
                         <div class="card-body">
                             <div class="row">
@@ -58,8 +41,8 @@
                             <h4 class="total-bottom-right">Total: {{ $clientesBancosCount }}</h4>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                </div> --}}
+                <div class="col-lg-4 col-md-6 col-sm-6 col-12">
                     <div class="card card-stats bg-color-3">
                         <div class="card-body">
                             <div class="row">
@@ -78,7 +61,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6 col-sm-6 col-12">
+                <div class="col-lg-4 col-md-6 col-sm-6 col-12">
                     <div class="card card-stats bg-color-4">
                         <div class="card-body">
                             <div class="row">
@@ -94,6 +77,25 @@
                                 </div>
                             </div>
                             <h4 class="total-bottom-right">Total: {{ $clientesAuditoriasCount }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6 col-sm-6 col-12">
+                    <div class="card card-stats bg-color-1">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-5 col-md-4">
+                                    <div class="icon-big text-center icon-warning">
+                                        <i class="fas fa-user fa-5x text-white"></i>
+                                    </div>
+                                </div>
+                                <div class="col-7 col-md-8">
+                                    <div class="numbers">
+                                        <h3>CLIENTES<br>COMUNES</h3>
+                                    </div>
+                                </div>
+                            </div>
+                            <h4 class="total-bottom-right">Total: {{ $clientesComunesCount }}</h4>
                         </div>
                     </div>
                 </div>
@@ -226,7 +228,6 @@
                 </div>
             </div>
         </div>
-        
         
         @else
         @endif
@@ -426,11 +427,85 @@
 
         @if($userRole === 'ASOCIADO')
 
-        <div class="titulo">BIENVENIDO ALIANZA SEGUROS</div>
+        <div class="titulo">{{-- BIENVENIDO ALIANZA SEGUROS --}}</div>
 
         @endif
+
+        @can('admin.asociados.listadoclienteita')
     </div>
 </div>
+@endcan
+
+@if($userRole === 'PROVEEDOR')   
+    <div class="row justify-content-center" style="">
+        <div class="col-md-8">
+            <div class="custom-card shadow-lg">
+                <div class="card-header text-white text-center">
+                    <h3 class="mb-0">¡BIENVENID@ AL SISTEMA WEB DE GOOD LIFE S.R.L.!</h3>
+                </div>
+                <div class="card-body text-center">
+                    <p class="lead">
+                        En nuestro sistema web, los médicos podrán visualizar fácilmente sus programaciones médicas 
+                        y citas programadas para los próximos días, permitiéndoles organizar mejor su tiempo y atención a los pacientes.  
+                    </p>
+                    <p class="lead">
+                        Además, tendrán la posibilidad de subir informes detallados sobre los estudios o especialidades realizadas, 
+                        garantizando un registro completo y actualizado de cada atención médica brindada.  
+                    </p>
+                    <p class="lead">
+                        Accede a todas estas funciones desde cualquier dispositivo y mantén tu información médica siempre disponible.  
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+<style>
+    /* Diseño limpio y elegante con tonos más suaves */
+    .custom-card {
+        background: linear-gradient(to bottom, #faf9f4, #f5f1e8);
+        border-radius: 15px;
+        border-left: 8px solid rgba(250, 166, 37, 0.8);
+        padding: 20px;
+        transition: all 0.3s ease-in-out;
+        position: relative;
+        overflow: hidden;
+        margin-top:20px;
+    }
+
+    .custom-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-header {
+
+        font-size: 1.5rem;
+        font-weight: bold;
+        padding: 15px;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .lead {
+        font-size: 1.2rem;
+        color: #555;
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+
+    .welcome-animation {
+        font-size: 2rem;
+        margin-top: 10px;
+        animation: shine 1.5s infinite alternate;
+    }
+
+    @keyframes shine {
+        from { opacity: 0.3; transform: scale(1); }
+        to { opacity: 1; transform: scale(1.1); }
+    }
+</style>
+
 @endsection
 
 @section('css')

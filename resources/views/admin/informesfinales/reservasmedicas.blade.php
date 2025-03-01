@@ -5,24 +5,7 @@
 @stop
 
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/proveedoresinformes.css') }}">
-<style>
-.nav-link .circle {
-
-    width: 30px; /* Tamaño del círculo */
-
-}
-.btn-crearproveedor {
-background-color:  #ffffff;
-color: #94c93b;
-border-color: #94c93b;
-border-radius: 5px;
-}
-.btn-crearproveedor:hover {
-background-color: #94c93b;
-color: #ffffff;
-}
-</style>
+<link rel="stylesheet" href="{{ asset('css/reservasmedicas.css') }}">
 @stop
 
 @section('content')
@@ -37,77 +20,62 @@ color: #ffffff;
     </script>
 @endif
 <div class="card">
-    {{-- <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg">
         <div class="container-fluid justify-content-end">
             <div class="d-flex flex-wrap align-items-center">
-                <form id="search-form" action="{{ route('buscarreservamedicaclienteita') }}" method="get" class="form-inline">
+                {{-- {{ $programacionclientes->links() }} --}}
+                <form id="search-form" action="{{ route('buscarclientereservamedica') }}" method="get" class="form-inline">
                     <div class="flex-grow-1">
-                        <input type="text" name="buscarporcliente" class="form-control mr-sm-2" placeholder="Nombre del Cliente">
+                        {{-- <input type="date" name="buscarporfecha" class="form-control mr-sm-2" placeholder="Fecha"> --}}
+                        <input type="text" name="buscarporcliente" class="form-control mr-sm-2" placeholder="NOMBRE DEL CLIENTE">
                     </div>
-                    <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit">Buscar</button>
-                    <button id="btn-mostrar-todo" class="btn btn-mostrartodo my-2 my-sm-0 ml-2" type="button">Mostrar Todo</button>
+                    <button id="btn-buscar" class="btn btn-buscar" type="submit">BUSCAR</button>
+                    <button id="btn-mostrar-todo" class="btn btn-mostrartodo my-2 my-sm-0 ml-2" name="buscartodo" type="submit" value="1">MOSTRAR TODO</button>
                 </form>
             </div>
         </div>
-    </nav> --}}
+    </nav>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            /* document.getElementById('btn-mostrar-todo').addEventListener('click', function() {
-                window.location.href = "{{ route('buscarreservamedicaclienteita') }}";
-            }); */
-    
-            const activeTabId = localStorage.getItem('activeTab') || 'tab-1';
-            const tabLink = document.querySelector(`a[href="#${activeTabId}"]`);
-            if (tabLink) {
-                tabLink.click();
-            }
-            document.querySelectorAll('#myTabs .nav-link').forEach(function(link) {
-                link.addEventListener('click', function() {
-                    const href = this.getAttribute('href');
-                    const tabId = href.substring(1);
-                    localStorage.setItem('activeTab', tabId);
-                });
+            document.getElementById('btn-mostrar-todo').addEventListener('click', function() {
+                window.location.href = "{{ route('buscarclientereservamedica') }}";
             });
         });
     </script>
-    {{-- <nav class="navbar navbar-expand-lg float-right">
-            <div class="container-fluid">
-                <div class="d-flex flex-wrap align-items-center">
-                    <form action="{{ route('buscarproveedor') }}" method="get" class="form-inline">
-                        <div class="flex-grow-1">
-                            <input name="buscarpor" class="form-control buscador mr-sm-2" type="search" placeholder="ID / Proveedor / Ciudad" aria-label="Search">
-                        </div>
-                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit" disabled>BUSCAR</button>
-                    </form>
-                </div>
-            </div>
-        </nav> --}}
+
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" id="myTabs">
             <li class="nav-item">
                 <a class="nav-link active" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
                     ATENCIÓN PENDIENTE
-                    <?php if ($atencionpendienteCount > 0): ?>
-                        <span class="circle"><?= $atencionpendienteCount ?></span>
+                    <?php 
+                    $totalatencion = $atencionpendienteCount + $atencionpendienteauditoriaCount;
+                    if ($totalatencion > 0): ?>
+                        <span class="circle"><?= $totalatencion ?></span>
                     <?php endif; ?>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
                     INFORMES PENDIENTES
-                    <?php if ($informependienteCount > 0): ?>
-                        <span class="circle"><?= $informependienteCount ?></span>
+                    <?php 
+                    $totalIncompletos = $informependienteCount + $informependienteauditoriaCount;
+                    if ($totalIncompletos > 0): ?>
+                        <span class="circle"><?= $totalIncompletos ?></span>
                     <?php endif; ?>
                 </a>
             </li> 
-            <li class="nav-item">
+            <li class="nav-item"> 
                 <a class="nav-link" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
                     COMPLETOS
-                    <?php if ($informecompletoCount > 0): ?>
-                        <span class="circle"><?= $informecompletoCount ?></span>
+                    <?php 
+                    $totalCompletos = $informecompletoCount + $informecompletoauditoriaCount;
+                    if ($totalCompletos > 0): ?>
+                        <span class="circle"><?= $totalCompletos ?></span>
                     <?php endif; ?>
                 </a>
             </li>
+            
             {{-- <li class="nav-item">
                 <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
                     PAGOS MENSUALES
@@ -157,6 +125,7 @@ color: #ffffff;
                                                 <button type="button" class="btn btn-subirinforme" 
                                                         data-toggle="modal" 
                                                         data-target="#subirinformeModal"
+                                                        data-id="{{ $reservasmedica->id }}"
                                                         data-clienteitaid="{{ $reservasmedica->clienteitaid }}"
                                                         data-clienteitanombre="{{ $reservasmedica->clienteitanombre }}"
                                                         data-fechabateria="{{ $reservasmedica->fechabateria }}"
@@ -191,6 +160,7 @@ color: #ffffff;
                                                 <button type="button" class="btn btn-subirinforme" 
                                                         data-toggle="modal" 
                                                         data-target="#subirinformeModal"
+                                                        data-id="{{ $reservasmedicaauditoria->id }}"
                                                         data-clienteauditoriaid="{{ $reservasmedicaauditoria->clienteitaid }}"
                                                         data-clienteauditorianombre="{{ $reservasmedicaauditoria->clienteitanombre }}"
                                                         data-fechabateria="{{ $reservasmedicaauditoria->fechabateria }}"
@@ -216,6 +186,7 @@ color: #ffffff;
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th>ID Prog.</th>
                             <th>Tipo Cliente</th>
                             <th>ID Cliente</th>
                             <th>Cliente</th>
@@ -233,6 +204,7 @@ color: #ffffff;
                         @foreach ($reservasmedicas as $reservasmedica)
                             @if(!$reservasmedica->documentacionDisponible && $reservasmedica->informeDisponible)
                                 <tr>
+                                    <td>{{$reservasmedica->id}}</td>
                                     <td>CLIENTE ITA</td>
                                     <td>{{$reservasmedica->clienteitaid}}</td>
                                     <td>{{$reservasmedica->clienteitanombre}}</td>
@@ -245,7 +217,7 @@ color: #ffffff;
                                     <td>{{$reservasmedica->horadesde}} - {{$reservasmedica->horahasta}}</td>
                                     
                                     {{-- FICHA MEDICA --}}
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE')
                                         <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
                                             @if($reservasmedica->fichamedicaita)
                                                 <a href="{{ asset('/fichamedicaclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->fichamedicaita) }}" class="btn btn-sm btn-subirinf" target="_blank" title="VER FICHA MEDICA">
@@ -262,7 +234,7 @@ color: #ffffff;
                                     @endif
 
                                     {{-- DIAGNOSTICO MEDICO --}}
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'MARICELA COLQUE SANDOVAL' || $nombreusuario === 'MONICA MACOÑO FLORES')
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'MARICELA COLQUE SANDOVAL' || $nombreusuario === 'MONICA MACOÑO FLORES')
                                         <td width="10px">
                                             @if($reservasmedica->diagnosticomedicoita)
                                                 <a href="{{ asset('/diagnosticos/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->diagnosticomedicoita) }}" class="btn btn-sm btn-subirdiagnostico" target="_blank" title="VER DIAGNÓSTICO">
@@ -284,17 +256,7 @@ color: #ffffff;
                                                     color: #a5a5a5;
                                                 }
                                             </style>                                             
-                                                {{-- <abbr title="SUBIR DIAGNÓSTICO">
-                                                    <button type="button" class="btn btn-sm btn-subirdiagnostico" 
-                                                            data-toggle="modal" 
-                                                            data-target="#subirdiagnosticoModal"
-                                                            data-clienteitaid="{{ $reservasmedica->clienteitaid }}"
-                                                            data-clienteitanombre="{{ $reservasmedica->clienteitanombre }}"
-                                                            data-fechabateria="{{ $reservasmedica->fechabateria }}"
-                                                            data-accion="{{ $reservasmedica->accionnombre }}">
-                                                        <i class="fas fa-paste"></i>
-                                                    </button>
-                                                </abbr> --}}
+
                                             @endif
                                         </td>
                                         <!-- MODAL DIAGNOSTICO -->
@@ -358,7 +320,10 @@ color: #ffffff;
                                             </div>
                                         </div>
 
-                                        {{-- CREAR BATERIA --}}
+                                    @endif
+
+                                    {{-- CREAR BATERIA --}}
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE')
                                         <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
                                             <abbr title="CREAR BATERIA">
                                                 <a class="btn btn-sm btn-crearproveedor" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
@@ -367,12 +332,15 @@ color: #ffffff;
                                             </abbr>
                                         </td>
                                     @endif
-                                    <td width="10px">
+
+                                    {{-- SUBIR INFORME ITA --}}
+                                    <td>
                                         @if($reservasmedica->informeDisponible)
                                             <abbr title="SUBIR INFORME">
                                                 <button type="button" class="btn btn-sm btn-subirinformeproveedor" 
                                                         data-toggle="modal" 
                                                         data-target="#subirinformeitaModal"
+                                                        data-id="{{ $reservasmedica->id }}"
                                                         data-clienteitaid="{{ $reservasmedica->clienteitaid }}"
                                                         data-clienteitanombre="{{ $reservasmedica->clienteitanombre }}"
                                                         data-fechabateria="{{ $reservasmedica->fechabateria }}"
@@ -384,148 +352,485 @@ color: #ffffff;
                                             <p class="text-incompleto">FECHA DE ATENCIÓN PENDIENTE</p>
                                         @endif
                                     </td>
-                                    <!-- Modal -->
+                                    {{-- MODAL SUBIR INFORMES ITA --}}
                                     <div class="modal fade" id="subirinformeitaModal" tabindex="-1" role="dialog" aria-labelledby="subirinformeitaModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog modal-xl" role="document">
+                                        <div class="modal-dialog modal-lg" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">
-                                                    <h3 class="modal-title" id="subirinformeitaModalLabel" style="color: #94c93b; font-weight: bold;">SUBIR INFORME</h3>
+                                                    <div class="container text-center">
+                                                        <div class="row">
+                                                            <div class="col-12">
+                                                                <h3 class="modal-title" id="subirinformeitaModalLabel" style="color: #94c93b; font-weight: bold;">
+                                                                    SUBIR INFORME
+                                                                </h3>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-12">
+                                                                <p><strong>CLIENTE:</strong> <span id="clienteitanombre-texto"></span></p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row" style="margin-top: -10px; margin-bottom:-10px;">
+                                                            <div class="col-12">
+                                                                <p><strong>EST. / ESP.:</strong> <span id="accionnombre-texto"></span></p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <script>
+                                                        $(document).on('click', '.btn-subirinformeproveedor', function () {
+                                                            let clienteitanombre = $(this).data('clienteitanombre');
+                                                            let accionnombre = $(this).data('accion');
+
+                                                            $('#clienteitanombre-texto').text(clienteitanombre);
+                                                            $('#accionnombre-texto').text(accionnombre);
+                                                        });
+                                                    </script>
+
                                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
                                                 </div>
                                                 {!! Form::open(['route' => 'procesar.informe', 'method' => 'POST', 'files' => true]) !!}
-                                                {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                                                {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                                                {!! Form::hidden('clienteitaid', null, ['id' => 'modal-clienteitaid']) !!}
-                                                {!! Form::hidden('clienteitanombre', null, ['id' => 'modal-clienteitanombre']) !!}
-                                                {!! Form::hidden('fechabateria', null, ['id' => 'modal-fechabateria']) !!}
-                                                {!! Form::hidden('accion', null, ['id' => 'modal-accion']) !!}
+                                                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                                    {!! Form::hidden('clienteitaid', null, ['id' => 'modal-clienteitaid']) !!}
+                                                    {!! Form::hidden('clienteitanombre', null, ['id' => 'modal-clienteitanombre']) !!}
+                                                    {!! Form::hidden('fechabateria', null, ['id' => 'modal-fechabateria']) !!}
+                                                    {!! Form::hidden('accion', null, ['id' => 'modal-accion']) !!}
+                                                    {!! Form::hidden('programacionid', null, ['id' => 'modal-id']) !!}
 
-                                                <div class="modal-body">
-                                                    <div class="row"> 
-                                                        <!-- PDF -->
-                                                        <div class="col-lg-4">
-                                                            <div class="file-upload">
-                                                                <label for="archivoita">INFORME:</label>
-                                                                <input type="file" name="archivo" id="archivoita" class="file-input" accept=".pdf" onchange="handleFileSelectita(this, 'preview-archivoita')" />
-                                                                <label for="archivoita" class="file-custom-label">Elige un PDF</label>
-                                                                <div class="file-preview" id="preview-archivoita"></div>
-                                                                @error('archivo')
-                                                                <small class="text-danger fas fa-exclamation-circle">
-                                                                    {{$message}}
-                                                                </small>
-                                                                @enderror
+                                                    
+                                                    <div class="modal-body">
+                                                        <div class="row"> 
+                                                            <div class="col-lg-6">
+                                                                <div class="file-upload">
+                                                                    <label for="archivoita">INFORME PDF (Obligatorio):</label>
+                                                                    <input type="file" name="archivo" id="archivoita" class="file-input" accept=".pdf" onchange="handleFileSelectita(this, 'preview-archivoita')" />
+                                                                    <label for="archivoita" class="file-custom-label">Elige un PDF</label>
+                                                                    <div class="file-preview" id="preview-archivoita"></div>
+                                                                    @error('archivo')
+                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                        {{$message}}
+                                                                    </small>
+                                                                    @enderror
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    
-                                                        <!-- Imagen 1 -->
-                                                        <div class="col-lg-4">
-                                                            <div class="file-upload">
-                                                                <label for="picture">IMAGEN 1:</label>
-                                                                <input type="file" name="picture" id="picture" accept="image/*" onchange="handleFileSelectita(this, 'preview-picture')" />
-                                                                <div class="file-preview" id="preview-picture"></div>
-                                                                @error('picture')
-                                                                <small class="text-danger fas fa-exclamation-circle">
-                                                                    {{$message}}
-                                                                </small>
-                                                                @enderror
+                                                            
+                                                            <div class="col-lg-6">
+                                                                <div class="file-upload">
+                                                                    <label for="archivoita">INFORME WORD (Se cargará sin firma):</label>
+                                                                    <input type="file" name="archivo3" id="archivoitaword" class="file-input" accept=".docx" onchange="handleFileSelectitaword(this, 'preview-archivoitaword')" />
+                                                                    <label for="archivoitaword" class="file-custom-label">Elige un WORD</label>
+                                                                    <div class="file-preview" id="preview-archivoitaword"></div>
+                                                                    @error('archivo3')
+                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                        {{$message}}
+                                                                    </small>
+                                                                    @enderror
+                                                                </div>
                                                             </div>
+                                                            
+                                                        
+                                                            @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'PROMED S.R.L.' || $nombreusuario === 'SERRANO PORSTENDOERFER VIVIAN YANETH')
+                                                                <div class="col-lg-6">
+                                                                    <div class="file-upload">
+                                                                        <label for="picture">IMAGEN 1:</label>
+                                                                        <input type="file" name="picture" id="picture" accept="image/*" onchange="handleFileSelectita(this, 'preview-picture')" />
+                                                                        <div class="file-preview" id="preview-picture"></div>
+                                                                        @error('picture')
+                                                                        <small class="text-danger fas fa-exclamation-circle">
+                                                                            {{$message}}
+                                                                        </small>
+                                                                        @enderror
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-lg-6">
+                                                                    <div class="file-upload">
+                                                                        <label for="picture2">IMAGEN 2:</label>
+                                                                        <input type="file" name="picture2" id="picture2" accept="image/*" onchange="handleFileSelectita(this, 'preview-picture2')" />
+                                                                        <div class="file-preview" id="preview-picture2"></div>
+                                                                        @error('picture2')
+                                                                        <small class="text-danger fas fa-exclamation-circle">
+                                                                            {{$message}}
+                                                                        </small>
+                                                                        @enderror
+                                                                    </div>
+                                                                </div>
+                                                            @endif
                                                         </div>
-                                                    
-                                                        <!-- Imagen 2 -->
-                                                        <div class="col-lg-4">
-                                                            <div class="file-upload">
-                                                                <label for="picture2">IMAGEN 2:</label>
-                                                                <input type="file" name="picture2" id="picture2" accept="image/*" onchange="handleFileSelectita(this, 'preview-picture2')" />
-                                                                <div class="file-preview" id="preview-picture2"></div>
-                                                                @error('picture2')
-                                                                <small class="text-danger fas fa-exclamation-circle">
-                                                                    {{$message}}
-                                                                </small>
-                                                                @enderror
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <script>
-                                                        function handleFileSelectita(input, previewId) {
-                                                            const preview = document.getElementById(previewId);
-                                                            preview.innerHTML = '';
-                                                    
-                                                            if (input.files && input.files[0]) {
-                                                                const file = input.files[0];
-                                                    
-                                                                if (file.type === 'application/pdf') {
-                                                                    // Muestra solo el nombre del archivo PDF
-                                                                    const fileName = document.createElement('span');
-                                                                    fileName.textContent = `Archivo seleccionado: ${file.name}`;
-                                                                    fileName.className = 'file-name';
-                                                                    preview.appendChild(fileName);
-                                                                } else if (file.type.startsWith('image/')) {
-                                                                    // Muestra la vista previa de la imagen
-                                                                    const fileURL = URL.createObjectURL(file);
-                                                                    const img = document.createElement('img');
-                                                                    img.src = fileURL;
-                                                                    img.style.maxWidth = '100%';
-                                                                    img.style.maxHeight = '300px';
-                                                                    img.alt = 'Vista previa de la imagen';
-                                                                    preview.appendChild(img);
+                                                        
+                                                        <script>
+                                                            function handleFileSelectita(input, previewId) {
+                                                                const preview = document.getElementById(previewId);
+                                                                preview.innerHTML = '';
+                                                        
+                                                                if (input.files && input.files[0]) {
+                                                                    const file = input.files[0];
+                                                        
+                                                                    if (file.type === 'application/pdf') {
+                                                                        // Muestra solo el nombre del archivo PDF
+                                                                        const fileName = document.createElement('span');
+                                                                        fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                        fileName.className = 'file-name';
+                                                                        preview.appendChild(fileName);
+                                                                    } else if (file.type.startsWith('image/')) {
+                                                                        // Muestra la vista previa de la imagen
+                                                                        const fileURL = URL.createObjectURL(file);
+                                                                        const img = document.createElement('img');
+                                                                        img.src = fileURL;
+                                                                        img.style.maxWidth = '100%';
+                                                                        img.style.maxHeight = '300px';
+                                                                        img.alt = 'Vista previa de la imagen';
+                                                                        preview.appendChild(img);
+                                                                    } else {
+                                                                        const fileName = document.createElement('span');
+                                                                        fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                        fileName.className = 'file-name';
+                                                                        preview.appendChild(fileName);
+                                                                    }
                                                                 } else {
-                                                                    const fileName = document.createElement('span');
-                                                                    fileName.textContent = `Archivo seleccionado: ${file.name}`;
-                                                                    fileName.className = 'file-name';
-                                                                    preview.appendChild(fileName);
+                                                                    preview.textContent = 'No se ha seleccionado ningún archivo';
                                                                 }
-                                                            } else {
-                                                                preview.textContent = 'No se ha seleccionado ningún archivo';
                                                             }
-                                                        }
-                                                    </script>
-                                                    
-                                                    <div class="row" hidden>
-                                                        <div class="col-lg-6 text-center">
-                                                            <label for="firma">Firma Digital:</label>
-                                                            <div>
-                                                                @if ($usuario->firmadigital)
-                                                                    <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->firmadigital) }}" 
-                                                                         alt="Firma Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
-                                                                @else
-                                                                    <p>No se ha cargado ninguna firma.</p>
-                                                                @endif
+
+                                                            function handleFileSelectitaword(input, previewId) {
+                                                                const preview = document.getElementById(previewId);
+                                                                preview.innerHTML = '';
+
+                                                                if (input.files && input.files[0]) {
+                                                                    const file = input.files[0];
+
+                                                                    if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                                                                        // Muestra solo el nombre del archivo Word
+                                                                        const fileName = document.createElement('span');
+                                                                        fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                        fileName.className = 'file-name';
+                                                                        preview.appendChild(fileName);
+                                                                    } else if (file.type.startsWith('image/')) {
+                                                                        // Muestra la vista previa de la imagen
+                                                                        const fileURL = URL.createObjectURL(file);
+                                                                        const img = document.createElement('img');
+                                                                        img.src = fileURL;
+                                                                        img.style.maxWidth = '100%';
+                                                                        img.style.maxHeight = '300px';
+                                                                        img.alt = 'Vista previa de la imagen';
+                                                                        preview.appendChild(img);
+                                                                    } else {
+                                                                        const fileName = document.createElement('span');
+                                                                        fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                        fileName.className = 'file-name';
+                                                                        preview.appendChild(fileName);
+                                                                    }
+                                                                } else {
+                                                                    preview.textContent = 'No se ha seleccionado ningún archivo';
+                                                                }
+                                                            }
+                                                        </script>
+                                                        
+                                                        <div class="row" hidden>
+                                                            <div class="col-lg-6 text-center">
+                                                                <label for="firma">Firma Digital:</label>
+                                                                <div>
+                                                                    @if ($usuario->firmadigital)
+                                                                        <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->firmadigital) }}" 
+                                                                            alt="Firma Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                                    @else
+                                                                        <p>No se ha cargado ninguna firma.</p>
+                                                                    @endif
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <div class="col-lg-6 text-center">
-                                                            <label for="sello">Sello Digital:</label>
-                                                            <div>
-                                                                @if ($usuario->sellodigital)
-                                                                    <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->sellodigital) }}" 
-                                                                         alt="Sello Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
-                                                                @else
-                                                                    <p>No se ha cargado ningún sello.</p>
-                                                                @endif
+                                                            <div class="col-lg-6 text-center">
+                                                                <label for="sello">Sello Digital:</label>
+                                                                <div>
+                                                                    @if ($usuario->sellodigital)
+                                                                        <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->sellodigital) }}" 
+                                                                            alt="Sello Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                                    @else
+                                                                        <p>No se ha cargado ningún sello.</p>
+                                                                    @endif
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <div class="text-center w-100">
-                                                        {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
+                                                    <div class="modal-footer">
+                                                        <div class="text-center w-100">
+                                                            {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
+                                                        </div>
                                                     </div>
-                                                </div>
                                                 {!! Form::close() !!}
                                             </div>
                                         </div>
                                     </div>
 
-                                    <td width="10px" style="padding-left: 1px; justify-content: center;">
-                                        <abbr title="SUBIR DOCUMENTACION MULTIPLE">
-                                            <a class="btn btn-sm btn-subirinf" href="{{route('admin.asociados.creardocumentacionclienteita', $reservasmedica->clienteitaid)}}">
-                                                <i class="fas fa-archive"></i>
-                                            </a>
-                                        </abbr>
-                                    </td>
+                                    {{-- SUBIR INFORMES MULTIPLES ITA --}}
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'PROMED S.R.L.' || $nombreusuario === 'SERRANO PORSTENDOERFER VIVIAN YANETH')
+                                        <td width="10px" style="padding-left: 1px; justify-content: center;">
+                                            @if($reservasmedica->informeDisponible)
+                                                <abbr title="SUBIR INFORME MULTIPLE">
+                                                    <button type="button" class="btn btn-sm btn-subirinformeproveedor" 
+                                                            data-toggle="modal" 
+                                                            data-target="#subirinformeitaModal2"
+                                                            data-id="{{ $reservasmedica->id }}"
+                                                            data-clienteitaid2="{{ $reservasmedica->clienteitaid }}"
+                                                            data-clienteitanombre2="{{ $reservasmedica->clienteitanombre }}"
+                                                            data-fechabateria2="{{ $reservasmedica->fechabateria }}"
+                                                            data-accion2="{{ $reservasmedica->accionnombre }}">
+                                                            <i class="fas fa-share-square"></i>
+                                                    </button>
+                                                </abbr>
+                                            @else
+                                                <p class="text-incompleto">FECHA DE ATENCIÓN PENDIENTE</p>
+                                            @endif
+                                        </td>
+                                        <!-- Modal -->
+                                        <div class="modal fade" id="subirinformeitaModal2" tabindex="-1" role="dialog" aria-labelledby="subirinformeitaModal2Label" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <div class="container text-center">
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <h3 class="modal-title" id="subirinformeitaModalLabel" style="color: #94c93b; font-weight: bold;">
+                                                                        SUBIR INFORME
+                                                                    </h3>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <p><strong>CLIENTE:</strong> <span id="clienteitanombre2-texto"></span></p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <script>
+                                                            $(document).on('click', '.btn-subirinformeproveedor', function () {
+                                                                let clienteitanombre2 = $(this).data('clienteitanombre2');
+                                                                let accionnombre2 = $(this).data('accion2');
+    
+                                                                $('#clienteitanombre2-texto').text(clienteitanombre2);
+                                                                $('#accionnombre2-texto').text(accionnombre2);
+                                                            });
+                                                        </script>
+    
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    {!! Form::open(['route' => 'procesar.informe.multiple', 'method' => 'POST', 'files' => true]) !!}
+                                                        {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                                        {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                                        {!! Form::hidden('clienteitaid', null, ['id' => 'modal-clienteitaid']) !!}
+                                                        {!! Form::hidden('clienteitanombre', null, ['id' => 'modal-clienteitanombre']) !!}
+                                                        {!! Form::hidden('fechabateria', null, ['id' => 'modal-fechabateria']) !!}
+                                                        {!! Form::hidden('acciones_seleccionadas', null, ['id' => 'acciones_seleccionadas']) !!}
+                                                        <script>
+                                                            $(document).ready(function() {
+                                                                $('#subirinformeitaModal2').on('show.bs.modal', function (event) {
+                                                                    var button = $(event.relatedTarget);
+                                                                    var clienteitaid = button.data('clienteitaid2');
+                                                                    var clienteitanombre = button.data('clienteitanombre2');
+                                                                    var fechabateria = button.data('fechabateria2');
+                                                                    var id = button.data('id');
+                    
+                                                                    var modal = $(this);
+                                                                    modal.find('#modal-clienteitaid').val(clienteitaid);
+                                                                    modal.find('#modal-clienteitanombre').val(clienteitanombre);
+                                                                    modal.find('#modal-fechabateria').val(fechabateria);
+                                                                    modal.find('#modal-id').val(id);
+                                                                    var formAction = '{{ route("admin.informesfinales.reservasmedicas", ":cliente") }}';
+                                                                    formAction = formAction.replace(':cliente', clienteitaid);
+                                                                    $('#subirinformeFormita2').attr('action', formAction);
+                                                                });
+                                                            });
+                                                        </script>
+                                                        <div class="modal-body">
+                                                            <div class="row"> 
+                                                                <div class="col-lg-6">
 
+                                                                    <div id="acciones-checkboxes">
+                                                                    </div>
+                                                                    
+                                                                </div>
+                                                                <script>
+                                                                    $(document).on('submit', 'form', function () {
+                                                                        // Obtener los checkboxes seleccionados
+                                                                        let seleccionadas = $('input[name="acciones[]"]:checked').map(function () {
+                                                                            return $(this).val();
+                                                                        }).get();
+                                                        
+                                                                        // Asignar el array de acciones seleccionadas al campo oculto
+                                                                        $('#acciones_seleccionadas').val(JSON.stringify(seleccionadas));
+                                                        
+                                                                        console.log('Acciones seleccionadas:', seleccionadas);
+                                                                    });
+                                                                </script>
+                                                                
+                                                                <script>
+                                                                    $(document).on('click', '.btn-subirinformeproveedor', function () {
+                                                                        let clienteitaid = $(this).data('clienteitaid2'); 
+                                                                        let clienteitanombre = $(this).data('clienteitanombre2'); 
+                                                                        let fechabateria = $(this).data('fechabateria2'); 
+
+                                                                        $('#clienteitaid2-texto').text(clienteitaid);
+                                                                        $('#clienteitanombre2-texto').text(clienteitanombre);
+                                                                        $('#fechabateria2-texto').text(fechabateria);
+                                                                        $('#acciones-checkboxes').html('<strong>ESTUDIOS / ESPECIALIDADES</strong>');
+
+                                                                        let selectAllCheckbox = 
+                                                                            '<div>' +
+                                                                                '<input type="checkbox" id="select-all" />' +
+                                                                                '<label for="select-all" class="normal-label">Seleccionar todo</label>' +
+                                                                            '</div>';
+                                                                        $('#acciones-checkboxes').append(selectAllCheckbox);
+
+                                                                        // Verifica si el checkbox de seleccionar todo existe antes de agregar el listener
+                                                                        $('#select-all').on('change', function () {
+                                                                            let isChecked = $(this).prop('checked');
+                                                                            $('#acciones-checkboxes input[type="checkbox"]').not(this).prop('checked', isChecked);
+                                                                        });
+
+                                                                        @foreach($reservasmedicas as $reserva)
+                                                                            @if(!$reserva->documentacionDisponible)
+                                                                                if ({{ $reserva->clienteitaid }} == clienteitaid && '{{ $reserva->fechabateria }}' == fechabateria) {
+                                                                                    let checkbox = '<div>' +
+                                                                                        '<input type="checkbox" name="acciones[]" value="{{ $reserva->accionnombre }}" id="accion-{{ $reserva->id }}">' +
+                                                                                        '<label for="accion-{{ $reserva->id }}">{{ $reserva->accionnombre }}</label>' +
+                                                                                    '</div>';
+                                                                                    $('#acciones-checkboxes').append(checkbox);
+                                                                                }
+                                                                                @endif
+                                                                        @endforeach
+                                                                    });
+
+                                                                    
+                                                                </script>
+                                                                
+                                                                <style>
+                                                                    #acciones-checkboxes label {
+                                                                        font-weight: normal !important;
+                                                                    }
+                                                                    .normal-label {
+                                                                        font-weight: normal !important;
+                                                                    }
+                                                                    #acciones-checkboxes h4 {
+                                                                        font-weight: bold;
+                                                                        margin-bottom: 10px;
+                                                                    }
+                                                                </style>
+                                                                
+                                                                <div class="col-lg-6">
+                                                                    <div class="row"> 
+                                                                        <div class="col-lg-12">
+                                                                            <div class="file-upload">
+                                                                                <label for="archivoita5">INFORME PDF (Obligatorio):</label>
+                                                                                <input type="file" name="archivo" id="archivoita5" class="file-input" accept=".pdf" onchange="handleFileSelectita5(this, 'preview-archivoita5')" />
+                                                                                <label for="archivoita5" class="file-custom-label">Elige un PDF</label>
+                                                                                <div class="file-preview" id="preview-archivoita5"></div>
+                                                                                @error('archivo')
+                                                                                <small class="text-danger fas fa-exclamation-circle">
+                                                                                    {{$message}}
+                                                                                </small>
+                                                                                @enderror
+                                                                            </div>
+                                                                        </div>
+
+                                                                        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'PROMED S.R.L.' || $nombreusuario === 'SERRANO PORSTENDOERFER VIVIAN YANETH')
+                                                                            <div class="col-lg-12" style="margin-top: 10px; margin-bottom: 10px;">
+                                                                                <div class="file-upload">
+                                                                                    <label for="picture">IMAGEN 1:</label>
+                                                                                    <input type="file" name="picture" id="picture" accept="image/*, .pdf" onchange="handleFileSelectita5(this, 'preview-picture5')" />
+                                                                                    <div class="file-preview" id="preview-picture5"></div>
+                                                                                    @error('picture')
+                                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                                        {{$message}}
+                                                                                    </small>
+                                                                                    @enderror
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="col-lg-12">
+                                                                                <div class="file-upload">
+                                                                                    <label for="picture2">IMAGEN 2:</label>
+                                                                                    <input type="file" name="picture2" id="picture52" accept="image/*, .pdf" onchange="handleFileSelectita5(this, 'preview-picture52')" />
+                                                                                    <div class="file-preview" id="preview-picture52"></div>
+                                                                                    @error('picture2')
+                                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                                        {{$message}}
+                                                                                    </small>
+                                                                                    @enderror
+                                                                                </div>
+                                                                            </div>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <script>
+                                                                function handleFileSelectita5(input, previewId) {
+                                                                    const preview = document.getElementById(previewId);
+                                                                    preview.innerHTML = '';
+                                                            
+                                                                    if (input.files && input.files[0]) {
+                                                                        const file = input.files[0];
+                                                            
+                                                                        if (file.type === 'application/pdf') {
+                                                                            const fileName = document.createElement('span');
+                                                                            fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                            fileName.className = 'file-name';
+                                                                            preview.appendChild(fileName);
+                                                                        } else if (file.type.startsWith('image/')) {
+                                                                            const fileURL = URL.createObjectURL(file);
+                                                                            const img = document.createElement('img');
+                                                                            img.src = fileURL;
+                                                                            img.style.maxWidth = '100%';
+                                                                            img.style.maxHeight = '300px';
+                                                                            img.alt = 'Vista previa de la imagen';
+                                                                            preview.appendChild(img);
+                                                                        } else {
+                                                                            const fileName = document.createElement('span');
+                                                                            fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                            fileName.className = 'file-name';
+                                                                            preview.appendChild(fileName);
+                                                                        }
+                                                                    } else {
+                                                                        preview.textContent = 'No se ha seleccionado ningún archivo';
+                                                                    }
+                                                                }
+                                                            </script>
+                                                            
+                                                            <div class="row" hidden>
+                                                                <div class="col-lg-6 text-center">
+                                                                    <label for="firma">Firma Digital:</label>
+                                                                    <div>
+                                                                        @if ($usuario->firmadigital)
+                                                                            <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->firmadigital) }}" 
+                                                                                alt="Firma Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                                        @else
+                                                                            <p>No se ha cargado ninguna firma.</p>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-lg-6 text-center">
+                                                                    <label for="sello">Sello Digital:</label>
+                                                                    <div>
+                                                                        @if ($usuario->sellodigital)
+                                                                            <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->sellodigital) }}" 
+                                                                                alt="Sello Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                                        @else
+                                                                            <p>No se ha cargado ningún sello.</p>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <div class="text-center w-100">
+                                                                {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
+                                                            </div>
+                                                        </div>
+                                                    {!! Form::close() !!}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                     <script>
                                         $(document).ready(function() {
@@ -535,12 +840,14 @@ color: #ffffff;
                                                 var clienteitanombre = button.data('clienteitanombre');
                                                 var fechabateria = button.data('fechabateria');
                                                 var accion = button.data('accion');
+                                                var id = button.data('id');
 
                                                 var modal = $(this);
                                                 modal.find('#modal-clienteitaid').val(clienteitaid);
                                                 modal.find('#modal-clienteitanombre').val(clienteitanombre);
                                                 modal.find('#modal-fechabateria').val(fechabateria);
                                                 modal.find('#modal-accion').val(accion);
+                                                modal.find('#modal-id').val(id);
                                                 var formAction = '{{ route("admin.asociados.guardardocumentacionclienteitadeproveedor", ":cliente") }}';
                                                 formAction = formAction.replace(':cliente', clienteitaid);
                                                 $('#subirinformeFormita').attr('action', formAction);
@@ -553,6 +860,7 @@ color: #ffffff;
                         @foreach ($reservasmedicasauditorias as $reservasmedicaauditoria)
                             @if(!$reservasmedicaauditoria->documentacionDisponibleauditoria && $reservasmedicaauditoria->informeDisponibleauditoria)
                                 <tr>
+                                    <td>{{$reservasmedicaauditoria->id}}</td>
                                     <td>CLIENTE AUDITORIA</td>
                                     <td>{{$reservasmedicaauditoria->clienteauditoriaid}}</td>
                                     <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
@@ -563,10 +871,12 @@ color: #ffffff;
                                     <td>{{$reservasmedicaauditoria->accionnombre}}</td>
                                     <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
                                     <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+
+                                    {{-- FICHA MEDICA AUDITORIA --}}
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE')
                                         <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
                                             @if($reservasmedicaauditoria->fichamedicaauditoria)
-                                                <a href="{{ asset('/fichamedicaclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->fichamedicaauditoria) }}" class="btn btn-sm btn-verdocumentacion" target="_blank" title="VER FICHA MEDICA">
+                                                <a href="{{ asset('/fichamedicaclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->fichamedicaauditoria) }}" class="btn btn-sm btn-subirinf" target="_blank" title="VER FICHA MEDICA">
                                                     <i class="fas fa-file-signature"></i>
                                                 </a>
                                             @else
@@ -577,7 +887,10 @@ color: #ffffff;
                                                 </abbr>
                                             @endif
                                         </td>
+                                    @endif
                                     
+                                    {{-- DIAGNOSTICO AUDITORIA --}}
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'MARICELA COLQUE SANDOVAL' || $nombreusuario === 'MONICA MACOÑO FLORES')
                                         <td width="10px">
                                             @if($reservasmedicaauditoria->diagnosticomedicoauditoria)
                                                 <a href="{{ asset('/diagnosticosauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->diagnosticomedicoauditoria) }}" class="btn btn-sm btn-subirdiagnostico" target="_blank" title="VER DIAGNÓSTICO">
@@ -589,27 +902,17 @@ color: #ffffff;
                                                  <i class="fas fa-laptop-medical"></i>
                                              </a>
                                             <style>
-                                            .btn.disabled {
-                                                pointer-events: none;
-                                                background-color: #d6d6d6;
-                                                color: #a5a5a5;
-                                                border-color: #d6d6d6;
-                                            }
-                                            .btn.disabled i {
-                                                color: #a5a5a5;
-                                            }
+                                                .btn.disabled {
+                                                    pointer-events: none;
+                                                    background-color: #d6d6d6;
+                                                    color: #a5a5a5;
+                                                    border-color: #d6d6d6;
+                                                }
+                                                .btn.disabled i {
+                                                    color: #a5a5a5;
+                                                }
                                             </style>
-                                                {{-- <abbr title="SUBIR DIAGNÓSTICO">
-                                                    <button type="button" class="btn btn-sm btn-subirdiagnostico" 
-                                                            data-toggle="modal" 
-                                                            data-target="#subirdiagnosticoModal2"
-                                                            data-clienteauditoriaid="{{ $reservasmedicaauditoria->clienteauditoriaid }}"
-                                                            data-clienteauditorianombre="{{ $reservasmedicaauditoria->clienteauditorianombre }}"
-                                                            data-fechabateria="{{ $reservasmedicaauditoria->fechabateria }}"
-                                                            data-accion="{{ $reservasmedicaauditoria->accionnombre }}">
-                                                        <i class="fas fa-paste"></i>
-                                                    </button>
-                                                </abbr> --}}
+
                                             @endif
                                         </td>
                                         <!-- DIAGNOSTICO -->
@@ -672,7 +975,10 @@ color: #ffffff;
                                                 </div>
                                             </div>
                                         </div>
-
+                                    @endif
+                                    
+                                    {{-- CREAR BATERIA AUDITORIA --}}
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE')
                                         <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
                                             <abbr title="CREAR BATERIA">
                                                 <a class="btn btn-sm btn-crearproveedor" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
@@ -681,12 +987,15 @@ color: #ffffff;
                                             </abbr>
                                         </td>
                                     @endif
-                                    <td width="10px">
+
+                                    {{-- SUBIR INFORME AUDITORIA --}}
+                                    <td>
                                         @if($reservasmedicaauditoria->informeDisponibleauditoria)
                                             <abbr title="SUBIR INFORME">
                                                 <button type="button" class="btn btn-sm btn-subirinformeproveedor" 
                                                         data-toggle="modal" 
                                                         data-target="#subirinformeModal5"
+                                                        data-id="{{ $reservasmedicaauditoria->id }}"
                                                         data-clienteauditoriaid="{{ $reservasmedicaauditoria->clienteauditoriaid }}"
                                                         data-clienteauditorianombre="{{ $reservasmedicaauditoria->clienteauditorianombre }}"
                                                         data-fechabateria="{{ $reservasmedicaauditoria->fechabateria }}"
@@ -698,9 +1007,9 @@ color: #ffffff;
                                             <p class="text-incompleto">FECHA DE ATENCIÓN PENDIENTE</p>
                                         @endif
                                     </td>
-                                    <!-- Modal -->
+                                    <!-- MODAL SUBIR INFORME -->
                                     <div class="modal fade" id="subirinformeModal5" tabindex="-1" role="dialog" aria-labelledby="subirinformeModal5Label" aria-hidden="true">
-                                        <div class="modal-dialog modal-xl" role="document">
+                                        <div class="modal-dialog modal-lg" role="document">
                                             <div class="modal-content">
                                                 <div class="modal-header">
                                                     <h3 class="modal-title" id="subirinformeModal5Label" style="color: #94c93b; font-weight: bold;">SUBIR INFORME</h3>
@@ -715,13 +1024,14 @@ color: #ffffff;
                                                 {!! Form::hidden('clienteauditorianombre', null, ['id' => 'modal-clienteauditorianombre']) !!}
                                                 {!! Form::hidden('fechabateria', null, ['id' => 'modal-fechabateria']) !!}
                                                 {!! Form::hidden('accion', null, ['id' => 'modal-accion']) !!}
+                                                {!! Form::hidden('programacionid', null, ['id' => 'modal-id']) !!}
 
                                                 <div class="modal-body">
                                                     <div class="row"> 
                                                         <!-- PDF -->
-                                                        <div class="col-lg-4">
+                                                        <div class="col-lg-6">
                                                             <div class="file-upload">
-                                                                <label for="archivoauditoria">INFORME:</label>
+                                                                <label for="archivoauditoria">INFORME PDF (Obligatorio):</label>
                                                                 <input type="file" name="archivo" id="archivoauditoria" class="file-input" accept=".pdf" onchange="handleFileSelect(this, 'preview-archivoauditoria')" />
                                                                 <label for="archivoauditoria" class="file-custom-label">Elige un PDF</label>
                                                                 <div class="file-preview" id="preview-archivoauditoria"></div>
@@ -733,33 +1043,49 @@ color: #ffffff;
                                                             </div>
                                                         </div>
                                                     
-                                                        <!-- Imagen 1 -->
-                                                        <div class="col-lg-4">
+                                                        <div class="col-lg-6">
                                                             <div class="file-upload">
-                                                                <label for="picture">IMAGEN 1:</label>
-                                                                <input type="file" name="picture" id="picture" accept="image/*" onchange="handleFileSelect(this, 'preview-pictureauditoria1')" />
-                                                                <div class="file-preview" id="preview-pictureauditoria1"></div>
-                                                                @error('picture')
+                                                                <label for="archivoauditoria">INFORME WORD (Se cargará sin firma):</label>
+                                                                <input type="file" name="archivo3" id="archivoauditoriaword" class="file-input" accept=".docx" onchange="handleFileSelectauditoriaword(this, 'preview-archivoauditoriaword')" />
+                                                                <label for="archivoauditoriaword" class="file-custom-label">Elige un WORD</label>
+                                                                <div class="file-preview" id="preview-archivoauditoriaword"></div>
+                                                                @error('archivo3')
                                                                 <small class="text-danger fas fa-exclamation-circle">
                                                                     {{$message}}
                                                                 </small>
                                                                 @enderror
                                                             </div>
                                                         </div>
-                                                    
-                                                        <!-- Imagen 2 -->
-                                                        <div class="col-lg-4">
-                                                            <div class="file-upload">
-                                                                <label for="picture2">IMAGEN 2:</label>
-                                                                <input type="file" name="picture2" id="picture2" accept="image/*" onchange="handleFileSelect(this, 'preview-pictureauditoria2')" />
-                                                                <div class="file-preview" id="preview-pictureauditoria2"></div>
-                                                                @error('picture2')
-                                                                <small class="text-danger fas fa-exclamation-circle">
-                                                                    {{$message}}
-                                                                </small>
-                                                                @enderror
+
+                                                        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'PROMED S.R.L.' || $nombreusuario === 'SERRANO PORSTENDOERFER VIVIAN YANETH')
+                                                            <!-- Imagen 1 -->
+                                                            <div class="col-lg-6">
+                                                                <div class="file-upload">
+                                                                    <label for="picture">IMAGEN 1:</label>
+                                                                    <input type="file" name="picture" id="picture" accept="image/*" onchange="handleFileSelect(this, 'preview-pictureauditoria1')" />
+                                                                    <div class="file-preview" id="preview-pictureauditoria1"></div>
+                                                                    @error('picture')
+                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                        {{$message}}
+                                                                    </small>
+                                                                    @enderror
+                                                                </div>
                                                             </div>
-                                                        </div>
+                                                        
+                                                            <!-- Imagen 2 -->
+                                                            <div class="col-lg-6">
+                                                                <div class="file-upload">
+                                                                    <label for="picture2">IMAGEN 2:</label>
+                                                                    <input type="file" name="picture2" id="picture2" accept="image/*" onchange="handleFileSelect(this, 'preview-pictureauditoria2')" />
+                                                                    <div class="file-preview" id="preview-pictureauditoria2"></div>
+                                                                    @error('picture2')
+                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                        {{$message}}
+                                                                    </small>
+                                                                    @enderror
+                                                                </div>
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                     
                                                     <script>
@@ -776,6 +1102,39 @@ color: #ffffff;
                                                                     fileName.className = 'file-name';
                                                                     preview.appendChild(fileName);
                                                                 } else if (file.type.startsWith('image/')) {
+                                                                    const fileURL = URL.createObjectURL(file);
+                                                                    const img = document.createElement('img');
+                                                                    img.src = fileURL;
+                                                                    img.style.maxWidth = '100%';
+                                                                    img.style.maxHeight = '300px';
+                                                                    img.alt = 'Vista previa de la imagen';
+                                                                    preview.appendChild(img);
+                                                                } else {
+                                                                    const fileName = document.createElement('span');
+                                                                    fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                    fileName.className = 'file-name';
+                                                                    preview.appendChild(fileName);
+                                                                }
+                                                            } else {
+                                                                preview.textContent = 'No se ha seleccionado ningún archivo';
+                                                            }
+                                                        }
+
+                                                        function handleFileSelectauditoriaword(input, previewId) {
+                                                            const preview = document.getElementById(previewId);
+                                                            preview.innerHTML = '';
+
+                                                            if (input.files && input.files[0]) {
+                                                                const file = input.files[0];
+
+                                                                if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                                                                    // Muestra solo el nombre del archivo Word
+                                                                    const fileName = document.createElement('span');
+                                                                    fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                    fileName.className = 'file-name';
+                                                                    preview.appendChild(fileName);
+                                                                } else if (file.type.startsWith('image/')) {
+                                                                    // Muestra la vista previa de la imagen
                                                                     const fileURL = URL.createObjectURL(file);
                                                                     const img = document.createElement('img');
                                                                     img.src = fileURL;
@@ -828,13 +1187,279 @@ color: #ffffff;
                                             </div>
                                         </div>
                                     </div>
-                                    <td width="10px" style="padding-left: 1px; justify-content: center;">
-                                        <abbr title="SUBIR DOCUMENTACION MULTIPLE">
-                                            <a class="btn btn-sm btn-subirinf" href="{{route('admin.asociados.creardocumentacionclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
-                                                <i class="fas fa-archive"></i>
-                                            </a>
-                                        </abbr>
-                                    </td>
+
+
+                                    {{-- SUBIR INFORME MULTIPLE AUDITORIA --}}
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'PROMED S.R.L.' || $nombreusuario === 'SERRANO PORSTENDOERFER VIVIAN YANETH')
+                                        <td width="10px" style="padding-left: 1px; justify-content: center;">
+                                            @if($reservasmedicaauditoria->informeDisponibleauditoria)
+                                                <abbr title="SUBIR INFORME MULTIPLE">
+                                                    <button type="button" class="btn btn-sm btn-subirinformeproveedor3" 
+                                                            data-toggle="modal" 
+                                                            data-target="#subirinformeauditoriaModal2"
+                                                            data-id="{{ $reservasmedicaauditoria->id }}"
+                                                            data-clienteauditoriaid5="{{ $reservasmedicaauditoria->clienteauditoriaid }}"
+                                                            data-clienteauditorianombre5="{{ $reservasmedicaauditoria->clienteauditorianombre }}"
+                                                            data-fechabateria5="{{ $reservasmedicaauditoria->fechabateria }}"
+                                                            data-accion5="{{ $reservasmedicaauditoria->accionnombre }}">
+                                                            <i class="fas fa-share-square"></i>
+                                                    </button>
+                                                </abbr>
+                                            @else
+                                                <p class="text-incompleto">FECHA DE ATENCIÓN PENDIENTE</p>
+                                            @endif
+                                        </td>
+                                        <!-- MODAL SUBIR INFORME MULTIPLE AUDITORIA -->
+                                        <div class="modal fade" id="subirinformeauditoriaModal2" tabindex="-1" role="dialog" aria-labelledby="subirinformeauditoriaModal2Label" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <div class="container text-center">
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <h3 class="modal-title" id="subirinformeauditoriaModal2Label" style="color: #94c93b; font-weight: bold;">
+                                                                        SUBIR INFORME
+                                                                    </h3>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row">
+                                                                <div class="col-12">
+                                                                    <p><strong>CLIENTE:</strong> <span id="clienteauditorianombre5-texto"></span></p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <script>
+                                                            $(document).on('click', '.btn-subirinformeproveedor3', function () {
+                                                                let clienteauditorianombre5 = $(this).data('clienteauditorianombre5');
+                                                                let accionnombre5 = $(this).data('accion5');
+    
+                                                                $('#clienteauditorianombre5-texto').text(clienteauditorianombre5);
+                                                                $('#accionnombre5-texto').text(accionnombre5);
+                                                            });
+                                                        </script>
+    
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+
+                                                    {!! Form::open(['route' => 'procesar.informe.multiple.auditoria', 'method' => 'POST', 'files' => true]) !!}
+                                                        {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                                        {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                                        {!! Form::hidden('clienteauditoriaid', null, ['id' => 'modal-clienteauditoriaid']) !!}
+                                                        {!! Form::hidden('clienteauditorianombre', null, ['id' => 'modal-clienteauditorianombre']) !!}
+                                                        {!! Form::hidden('fechabateria', null, ['id' => 'modal-fechabateria']) !!}
+                                                        {!! Form::hidden('acciones_seleccionadas2', null, ['id' => 'acciones_seleccionadas2']) !!}
+                                                        <script>
+                                                            $(document).ready(function() {
+                                                                $('#subirinformeauditoriaModal2').on('show.bs.modal', function (event) {
+                                                                    var button = $(event.relatedTarget);
+                                                                    var clienteauditoriaid = button.data('clienteauditoriaid5');
+                                                                    var clienteauditorianombre = button.data('clienteauditorianombre5');
+                                                                    var fechabateria = button.data('fechabateria5');
+                                                                    var id = button.data('id');
+                    
+                                                                    var modal = $(this);
+                                                                    modal.find('#modal-clienteauditoriaid').val(clienteauditoriaid);
+                                                                    modal.find('#modal-clienteauditorianombre').val(clienteauditorianombre);
+                                                                    modal.find('#modal-fechabateria').val(fechabateria);
+                                                                    modal.find('#modal-id').val(id);
+                                                                    var formAction = '{{ route("admin.informesfinales.reservasmedicas", ":cliente") }}';
+                                                                    formAction = formAction.replace(':cliente', clienteauditoriaid);
+                                                                    $('#subirinformeFormauditoria2').attr('action', formAction);
+                                                                });
+                                                            });
+                                                        </script>
+                                                        <div class="modal-body">
+                                                            <div class="row"> 
+                                                                <div class="col-lg-6">
+
+                                                                    <div id="acciones-checkboxes3">
+                                                                    </div>
+                                                                    
+                                                                </div>
+                                                                <script>
+                                                                    $(document).on('submit', 'form', function () {
+                                                                        let seleccionadas = $('input[name="acciones[]"]:checked').map(function () {
+                                                                            return $(this).val();
+                                                                        }).get();
+
+                                                                        $('#acciones_seleccionadas2').val(JSON.stringify(seleccionadas));
+                                                        
+                                                                        console.log('Acciones seleccionadas:', seleccionadas);
+                                                                    });
+                                                                </script>
+                                                                
+                                                                <script>
+                                                                    $(document).on('click', '.btn-subirinformeproveedor3', function () {
+                                                                        let clienteauditoriaid = $(this).data('clienteauditoriaid5'); 
+                                                                        let clienteauditorianombre = $(this).data('clienteauditorianombre5'); 
+                                                                        let fechabateria = $(this).data('fechabateria5'); 
+
+                                                                        $('#clienteauditoriaid5-texto').text(clienteauditoriaid);
+                                                                        $('#clienteauditorianombre5-texto').text(clienteauditorianombre);
+                                                                        $('#fechabateria5-texto').text(fechabateria);
+                                                                        $('#acciones-checkboxes3').html('<strong>ESTUDIOS / ESPECIALIDADES</strong>');
+
+                                                                        let selectAllCheckbox = 
+                                                                            '<div>' +
+                                                                                '<input type="checkbox" id="select-all" />' +
+                                                                                '<label for="select-all" class="normal-label">Seleccionar todo</label>' +
+                                                                            '</div>';
+                                                                        $('#acciones-checkboxes3').append(selectAllCheckbox);
+
+                                                                        // Verifica si el checkbox de seleccionar todo existe antes de agregar el listener
+                                                                        $('#select-all').on('change', function () {
+                                                                            let isChecked = $(this).prop('checked');
+                                                                            $('#acciones-checkboxes3 input[type="checkbox"]').not(this).prop('checked', isChecked);
+                                                                        });
+
+                                                                        @foreach($reservasmedicasauditorias as $reservaauditoria)
+                                                                            @if(!$reservaauditoria->documentacionDisponibleauditoria)
+                                                                            if ('{{ $reservaauditoria->clienteauditoriaid }}' == clienteauditoriaid && '{{ $reservaauditoria->fechabateria }}' == fechabateria) {
+                                                                                let checkbox = '<div>' +
+                                                                                    '<input type="checkbox" name="acciones[]" value="{{ $reservaauditoria->accionnombre }}" id="accion-{{ $reservaauditoria->id }}">' +
+                                                                                    '<label for="accion-{{ $reservaauditoria->id }}">{{ $reservaauditoria->accionnombre }}</label>' +
+                                                                                '</div>';
+                                                                                $('#acciones-checkboxes3').append(checkbox);
+                                                                            }
+                                                                            @endif
+                                                                        @endforeach
+
+                                                                    });
+
+                                                                    
+                                                                </script>
+                                                                
+                                                                <style>
+                                                                    #acciones-checkboxes3 label {
+                                                                        font-weight: normal !important;
+                                                                    }
+                                                                    .normal-label {
+                                                                        font-weight: normal !important;
+                                                                    }
+                                                                    #acciones-checkboxes3 h4 {
+                                                                        font-weight: bold;
+                                                                        margin-bottom: 10px;
+                                                                    }
+                                                                </style>
+                                                                
+                                                                <div class="col-lg-6">
+                                                                    <div class="row"> 
+                                                                        <div class="col-lg-12">
+                                                                            <div class="file-upload">
+                                                                                <label for="archivoauditoria5">INFORME PDF (Obligatorio):</label>
+                                                                                <input type="file" name="archivo" id="archivoauditoria5" class="file-input" accept=".pdf" onchange="handleFileSelectauditoria5(this, 'preview-archivoauditoria5')" />
+                                                                                <label for="archivoauditoria5" class="file-custom-label">Elige un PDF</label>
+                                                                                <div class="file-preview" id="preview-archivoauditoria5"></div>
+                                                                                @error('archivo')
+                                                                                <small class="text-danger fas fa-exclamation-circle">
+                                                                                    {{$message}}
+                                                                                </small>
+                                                                                @enderror
+                                                                            </div>
+                                                                        </div>
+
+                                                                        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'PROMED S.R.L.' || $nombreusuario === 'SERRANO PORSTENDOERFER VIVIAN YANETH')
+                                                                            <div class="col-lg-12" style="margin-top: 10px; margin-bottom: 10px;">
+                                                                                <div class="file-upload">
+                                                                                    <label for="picture">IMAGEN 1:</label>
+                                                                                    <input type="file" name="picture" id="picture" accept="image/*, .pdf" onchange="handleFileSelectauditoria5(this, 'preview-pictureauditoria5')" />
+                                                                                    <div class="file-preview" id="preview-pictureauditoria5"></div>
+                                                                                    @error('picture')
+                                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                                        {{$message}}
+                                                                                    </small>
+                                                                                    @enderror
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="col-lg-12">
+                                                                                <div class="file-upload">
+                                                                                    <label for="picture2">IMAGEN 2:</label>
+                                                                                    <input type="file" name="picture2" id="pictureauditoria52" accept="image/*, .pdf" onchange="handleFileSelectauditoria5(this, 'preview-pictureauditoria52')" />
+                                                                                    <div class="file-preview" id="preview-pictureauditoria52"></div>
+                                                                                    @error('picture2')
+                                                                                    <small class="text-danger fas fa-exclamation-circle">
+                                                                                        {{$message}}
+                                                                                    </small>
+                                                                                    @enderror
+                                                                                </div>
+                                                                            </div>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <script>
+                                                                function handleFileSelectauditoria5(input, previewId) {
+                                                                    const preview = document.getElementById(previewId);
+                                                                    preview.innerHTML = '';
+                                                            
+                                                                    if (input.files && input.files[0]) {
+                                                                        const file = input.files[0];
+                                                            
+                                                                        if (file.type === 'application/pdf') {
+                                                                            const fileName = document.createElement('span');
+                                                                            fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                            fileName.className = 'file-name';
+                                                                            preview.appendChild(fileName);
+                                                                        } else if (file.type.startsWith('image/')) {
+                                                                            const fileURL = URL.createObjectURL(file);
+                                                                            const img = document.createElement('img');
+                                                                            img.src = fileURL;
+                                                                            img.style.maxWidth = '100%';
+                                                                            img.style.maxHeight = '300px';
+                                                                            img.alt = 'Vista previa de la imagen';
+                                                                            preview.appendChild(img);
+                                                                        } else {
+                                                                            const fileName = document.createElement('span');
+                                                                            fileName.textContent = `Archivo seleccionado: ${file.name}`;
+                                                                            fileName.className = 'file-name';
+                                                                            preview.appendChild(fileName);
+                                                                        }
+                                                                    } else {
+                                                                        preview.textContent = 'No se ha seleccionado ningún archivo';
+                                                                    }
+                                                                }
+                                                            </script>
+                                                            
+                                                            <div class="row" hidden>
+                                                                <div class="col-lg-6 text-center">
+                                                                    <label for="firma">Firma Digital:</label>
+                                                                    <div>
+                                                                        @if ($usuario->firmadigital)
+                                                                            <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->firmadigital) }}" 
+                                                                                alt="Firma Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                                        @else
+                                                                            <p>No se ha cargado ninguna firma.</p>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-lg-6 text-center">
+                                                                    <label for="sello">Sello Digital:</label>
+                                                                    <div>
+                                                                        @if ($usuario->sellodigital)
+                                                                            <img src="{{ asset('/glfirmasello/' . $usuario->id . '/' . $usuario->sellodigital) }}" 
+                                                                                alt="Sello Digital" class="img-fluid img-thumbnail" style="max-height: 200px;">
+                                                                        @else
+                                                                            <p>No se ha cargado ningún sello.</p>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <div class="text-center w-100">
+                                                                {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
+                                                            </div>
+                                                        </div>
+                                                    {!! Form::close() !!}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    
                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                     <script>
                                         $(document).ready(function() {
@@ -844,12 +1469,14 @@ color: #ffffff;
                                                 var clienteauditorianombre = button.data('clienteauditorianombre');
                                                 var fechabateria = button.data('fechabateria');
                                                 var accion = button.data('accion');
+                                                var id = button.data('id');
 
                                                 var modal = $(this);
                                                 modal.find('#modal-clienteauditoriaid').val(clienteauditoriaid);
                                                 modal.find('#modal-clienteauditorianombre').val(clienteauditorianombre);
                                                 modal.find('#modal-fechabateria').val(fechabateria);
                                                 modal.find('#modal-accion').val(accion);
+                                                modal.find('#modal-id').val(id);
                                                 var formAction = '{{ route("admin.asociados.guardardocumentacionclienteauditoriadeproveedor", ":clienteauditoria") }}';
                                                 formAction = formAction.replace(':cliente', clienteauditoriaid);
                                                 $('#subirinformeFormauditoria').attr('action', formAction);
@@ -901,13 +1528,6 @@ color: #ffffff;
                                     <td>{{$reservasmedica->fechainforme}}</td>
                                     
                                     <td width="10px">
-                                        
-                                        <div class="dropdown-container2">
-                                            <button class="btn btn-dropdown2" type="button">
-                                                <i class="fas fa-search-plus"></i>
-                                            </button>
-                                            
-                                            <div class="dropdown-menu2">
                                                 <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionDisponible) }}" class="btn btn-sm btn-verdocumentacion2" target="_blank" title="VER INFORME MÉDICO">
                                                     <i class="fas fa-folder-open"></i>
                                                 </a>
@@ -921,8 +1541,6 @@ color: #ffffff;
                                                             <i class="far fa-images"></i>
                                                         </a>
                                                     @endif
-                                            </div>
-                                        </div>   
                                     </td>  
                                     @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
                                         <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
@@ -933,11 +1551,25 @@ color: #ffffff;
                                             </abbr>
                                         </td>
                                     @endif
-                                    
+
                                     <td width="10px">
-                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionfirmadaDisponible) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME MÉDICO FIRMADO">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
+                                        @if ($reservasmedica->documentacionfirmadaDisponible)
+                                            <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionfirmadaDisponible) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME MÉDICO FIRMADO">
+                                                <i class="fas fa-file"></i>
+                                            </a>
+                                        @else
+
+                                        @endif
+                                    </td>
+
+                                    <td width="10px" style="padding-left: 1px; justify-content: center;">
+                                        @if($reservasmedica->documentacionworditaDisponible)
+                                            <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionworditaDisponible) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME MÉDICO WORD">
+                                                <i class="fas fa-file"></i>
+                                            </a>
+                                        @else
+
+                                        @endif
                                     </td>
                                 </tr>
                             @endif
@@ -958,11 +1590,6 @@ color: #ffffff;
                                     <td>{{$reservasmedicaauditoria->fechainformeauditoria}}</td>
                                     
                                     <td width="10px">
-                                        <div class="dropdown-container2">
-                                            <button class="btn btn-dropdown2" type="button">
-                                                <i class="fas fa-search-plus"></i>
-                                            </button>
-                                            <div class="dropdown-menu2">
                                                 <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionDisponibleauditoria) }}" class="btn btn-sm btn-verdocumentacion2" target="_blank" title="VER INFORME MÉDICO">
                                                     <i class="fas fa-folder-open"></i>
                                                 </a>
@@ -975,9 +1602,7 @@ color: #ffffff;
                                                         <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen2Disponibleauditoria) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 2">
                                                             <i class="far fa-images"></i>
                                                         </a>
-                                                    @endif
-                                            </div>
-                                        </div>   
+                                                    @endif 
                                     </td> 
                                     @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
                                         <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
@@ -988,11 +1613,25 @@ color: #ffffff;
                                             </abbr>
                                         </td>
                                     @endif  
-                                    
+
                                     <td width="10px">
-                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionfirmadaauditoriaDisponible) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME MÉDICO FIRMADO">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
+                                        @if ($reservasmedicaauditoria->documentacionfirmadaauditoriaDisponible)
+                                            <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionfirmadaauditoriaDisponible) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME MÉDICO FIRMADO">
+                                                <i class="fas fa-file"></i>
+                                            </a>
+                                        @else
+
+                                        @endif
+                                    </td>
+
+                                    <td width="10px" style="padding-left: 1px; justify-content: center;">
+                                        @if($reservasmedicaauditoria->documentacionwordauditoriaDisponible)
+                                            <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionwordauditoriaDisponible) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME MÉDICO WORD">
+                                                <i class="fas fa-file"></i>
+                                            </a>
+                                        @else
+
+                                        @endif
                                     </td>
                                 </tr>
                             @endif
@@ -1321,7 +1960,6 @@ color: #ffffff;
     </div>
 </div>
 @stop
-
 
 @section('js')
 <script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>

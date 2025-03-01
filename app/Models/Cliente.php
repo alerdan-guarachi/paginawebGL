@@ -27,7 +27,7 @@ class Cliente extends Model
         'estadocivil' => 'required',
         'genero' => 'required',
         'ocupacion' => 'required',
-        'lugarnacimiento' => 'required',
+        'lugarnacimiento' => '',
         'gradoinstruccion' => '',
         'celular' => 'required',
         'telefono' => 'required',
@@ -47,8 +47,9 @@ class Cliente extends Model
         'usuarioregistro' => 'required',
         'usuarioultimaactualizacion' => 'required',
         'sucursal' => 'required',
-        'fechavencci' => 'required',
+        'fechavencci' => '',
         'tipocliente' => '',
+        'paisnacimiento' => '',
     ]; 
 
     protected $fillable = [
@@ -89,8 +90,8 @@ class Cliente extends Model
         'sucursal',
         'fechavencci',
         'tipocliente',
-        'nombres'
-
+        'nombres',
+        'paisnacimiento',
     ];
 
     public function user(){

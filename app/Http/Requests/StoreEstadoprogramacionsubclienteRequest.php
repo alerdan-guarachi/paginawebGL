@@ -47,7 +47,10 @@ class StoreEstadoprogramacionsubclienteRequest extends FormRequest
             'usuarioregistro' => '',
             'accionnombre' => '',
             'fechabateria' => '',
-
+            'programacionid' => '',
+            'motivoanulacion',
+        'usuarioanulacion',
+        'nrosesion',
 
         ]; 
         return $rules;

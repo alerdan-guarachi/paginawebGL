@@ -10,6 +10,7 @@ use Spatie\Permission\Models\Permission;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
+
 class CodigoController extends Controller
 {
     public function __construct()
@@ -21,14 +22,14 @@ class CodigoController extends Controller
     {
         $nombreusuario = auth()->user()->name;
         $registroscodigos = PermisoCodigo::where('usuarioAutorizador', $nombreusuario)
-                          ->orderBy('fechasolicitada')
+                          ->orderBy('fechasolicitada','desc')
                           ->simplePaginate(10);
 
         $permisos = PermisoCodigo::all();
         $usuarios = User::pluck('name', 'id');
 
         // Usamos mapWithKeys para que el select solo reciba el id y la descripción
-        $permisosSolicitados = Permission::where('name', 'admin.asociados.crearbateriaclienteita')->get()->mapWithKeys(function ($permiso) {
+        $permisosSolicitados = Permission::where('name', 'admin.asociados.crearbateriaclienteita')->orwhere('name', 'admin.ingreso.index')->get()->mapWithKeys(function ($permiso) {
             return [$permiso->id => $permiso->description];
         });        
 

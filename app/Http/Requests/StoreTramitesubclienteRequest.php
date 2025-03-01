@@ -45,6 +45,8 @@ class StoreTramitesubclienteRequest extends FormRequest
         'fechabateria' => '',
         'clienteauditoriaid' => '',
         'clienteauditorianombre' => '',
+        'clientecomunid' => '',
+        'clientecomunnombre' => '',
         ]; 
         return $rules;
     }

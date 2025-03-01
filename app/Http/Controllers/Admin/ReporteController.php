@@ -62,6 +62,9 @@ class ReporteController extends Controller
         $fechaInicial = $request->input('fecha_inicial');
         $fechaFinal = $request->input('fecha_final');
         $sucursalProveedor = $request->input('sucursal');
+        $sucursalbateria = $request->input('sucursalbateria');
+        $sucursalbateriaauditoria = $request->input('sucursalbateriaauditoria');
+        $sucursalbateriacomunes = $request->input('sucursalbateriacomunes');
         $sucursalAreaaccion = $request->input('sucursalareaaccion');
         $sucursalBateriaproveedores = $request->input('sucursalbateriaproveedores');
 
@@ -74,65 +77,72 @@ class ReporteController extends Controller
                 $fechaFinal = Carbon::parse($fechaFinal)->endOfDay();
             }
             switch ($tabla) {
-                case 'bateriasubclientes':
-                    $data = Bateriasubcliente::whereBetween('created_at', [$fechaInicial, $fechaFinal])->get();
+                case 'bateriasubclientesita':
+                    $data = Bateriasubcliente::whereBetween('created_at', [$fechaInicial, $fechaFinal])
+                    ->whereNotNull('clienteitaid')
+                    ->where('clienteitaid', '!=', '')
+                    ->orderBy('created_at', 'asc')
+                    ->get();
                     break;
+                case 'bateriasubclientesauditoria':
+                    $data = Bateriasubcliente::whereBetween('created_at', [$fechaInicial, $fechaFinal])
+                    ->whereNotNull('clienteauditoriaid')
+                    ->where('clienteauditoriaid', '!=', '')
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+                    break;
+                case 'bateriasubclientescomunes': 
+                    $data = Bateriasubcliente::whereBetween('created_at', [$fechaInicial, $fechaFinal])
+                    ->whereNotNull('clientecomunid')
+                    ->where('clientecomunid', '!=', '')
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+                break;
+                    
                 case 'bateriaproveedores':
                     switch ($sucursalBateriaproveedores) {
                         case 'tipo1':
                             $data = Bateriaproveedor::where('sucursal', 'COCHABAMBA')
                                 ->whereBetween('created_at', [$fechaInicial, $fechaFinal])
+                                ->orderBy('created_at', 'asc')
                                 ->get();
                             break;
                         case 'tipo2':
                             $data = Bateriaproveedor::where('sucursal', 'SANTA CRUZ')
                                 ->whereBetween('created_at', [$fechaInicial, $fechaFinal])
+                                ->orderBy('created_at', 'asc')
                                 ->get();
                             break;
                         default:
-                            $data = Bateriaproveedor::whereBetween('created_at', [$fechaInicial, $fechaFinal])->get();
-                            break;
-                    }
-                    break;
-                case 'areaacciones':
-                    switch ($sucursalAreaaccion) {
-                        case 'tipo1':
-                            $data = Areaaccion::where('sucursal', 'COCHABAMBA')
-                                ->whereBetween('created_at', [$fechaInicial, $fechaFinal])
+                            $data = Bateriaproveedor::whereBetween('created_at', [$fechaInicial, $fechaFinal])
+                                ->orderBy('created_at', 'asc')
                                 ->get();
-                            break;
-                        case 'tipo2':
-                            $data = Areaaccion::where('sucursal', 'SANTA CRUZ')
-                                ->whereBetween('created_at', [$fechaInicial, $fechaFinal])
-                                ->get();
-                            break;
-                        default:
-                            $data = Areaaccion::whereBetween('created_at', [$fechaInicial, $fechaFinal])->get();
                             break;
                     }
                     break;
                 case 'clientescomunes':
-                    $data = ClienteComun::whereBetween('created_at', [$fechaInicial, $fechaFinal])->get();
+                    $data = ClienteComun::whereBetween('created_at', [$fechaInicial, $fechaFinal])
+                    ->orderBy('created_at', 'asc')
+                    ->get();
                     break;
                 case 'clientesauditoria':
-                    $data = ClienteAuditoria::whereBetween('created_at', [$fechaInicial, $fechaFinal])->get();
-                    break;
-                case 'clientesbancos':
-                    $data = ClienteBanco::whereBetween('created_at', [$fechaInicial, $fechaFinal])->get();
-                    break;
-                case 'contactosubclientes':
-                    $data = Contactosubcliente::whereBetween('created_at', [$fechaInicial, $fechaFinal])->get();
+                    $data = ClienteAuditoria::whereBetween('created_at', [$fechaInicial, $fechaFinal])
+                    ->orderBy('created_at', 'asc')
+                    ->get();
                     break;
                 case 'clientes':
                     $data = Cliente::whereBetween('created_at', [$fechaInicial, $fechaFinal])->get();
                     break;
                 case 'proveedores':
-                    $data = Proveedor::whereBetween('created_at', [$fechaInicial, $fechaFinal])->get();
+                    $data = Proveedor::whereBetween('created_at', [$fechaInicial, $fechaFinal])
+                    ->orderBy('created_at', 'asc')
+                    ->get();
                     break;
                 case 'programacionsubclientesita':
                     $data = Programacionsubcliente::with('estadoprogramacionsubcliente', 'documentacionsubcliente')
                         ->whereBetween('created_at', [$fechaInicial, $fechaFinal])
                         ->whereNotNull('clienteitaid')
+                        ->orderBy('created_at', 'asc')
                         ->get();
                     $data->each(function ($item) {
                         $item->fechaatencionprogramacion = null;
@@ -166,12 +176,13 @@ class ReporteController extends Controller
                     $data = Programacionsubcliente::with('estadoprogramacionsubclientecomun', 'documentacionsubclientecomun')
                         ->whereBetween('created_at', [$fechaInicial, $fechaFinal])
                         ->whereNotNull('clientecomunid')
+                        ->orderBy('created_at', 'asc')
                         ->get();
                     $data->each(function ($item) {
                         $item->fechaatencionprogramacion = null;
                         $item->created_at = null;
-                        if ($item->estadoprogramacionsubcliente->isNotEmpty()) {
-                            foreach ($item->estadoprogramacionsubcliente as $estado) {
+                        if ($item->estadoprogramacionsubclientecomun->isNotEmpty()) {
+                            foreach ($item->estadoprogramacionsubclientecomun as $estado) {
                                 if ($estado->clientecomunid == $item->clientecomunid
                                     && $estado->accionnombre == $item->accionnombre
                                     && $estado->fechabateria == $item->fechabateria
@@ -181,8 +192,8 @@ class ReporteController extends Controller
                                 }
                             }
                         }
-                        if ($item->documentacionsubcliente->isNotEmpty()) {
-                            foreach ($item->documentacionsubcliente as $documento) {
+                        if ($item->documentacionsubclientecomun->isNotEmpty()) {
+                            foreach ($item->documentacionsubclientecomun as $documento) {
                                 if ($documento->clientecomunid == $item->clientecomunid
                                     && $documento->accion == $item->accionnombre
                                     && $documento->fechabateria == $item->fechabateria
@@ -199,12 +210,13 @@ class ReporteController extends Controller
                     $data = Programacionsubcliente::with('estadoprogramacionsubclienteauditoria', 'documentacionsubclienteauditoria')
                         ->whereBetween('created_at', [$fechaInicial, $fechaFinal])
                         ->whereNotNull('clienteauditoriaid')
+                        ->orderBy('created_at', 'asc')
                         ->get();
                     $data->each(function ($item) {
                         $item->fechaatencionprogramacion = null;
                         $item->created_at = null;
-                        if ($item->estadoprogramacionsubcliente->isNotEmpty()) {
-                            foreach ($item->estadoprogramacionsubcliente as $estado) {
+                        if ($item->estadoprogramacionsubclienteauditoria->isNotEmpty()) {
+                            foreach ($item->estadoprogramacionsubclienteauditoria as $estado) {
                                 if ($estado->clienteauditoriaid == $item->clienteauditoriaid
                                     && $estado->accionnombre == $item->accionnombre
                                     && $estado->fechabateria == $item->fechabateria
@@ -214,8 +226,8 @@ class ReporteController extends Controller
                                 }
                             }
                         }
-                        if ($item->documentacionsubcliente->isNotEmpty()) {
-                            foreach ($item->documentacionsubcliente as $documento) {
+                        if ($item->documentacionsubclienteauditoria->isNotEmpty()) {
+                            foreach ($item->documentacionsubclienteauditoria as $documento) {
                                 if ($documento->clienteauditoriaid == $item->clienteauditoriaid
                                     && $documento->accion == $item->accionnombre
                                     && $documento->fechabateria == $item->fechabateria
@@ -234,9 +246,71 @@ class ReporteController extends Controller
             }
         } else {
             switch ($tabla) {
-                case 'bateriasubclientes':
-                    $data = Bateriasubcliente::all();
+                case 'bateriasubclientesita':
+                    $data = Bateriasubcliente::join('clientes', 'bateriasubclientes.clienteitaid', '=', 'clientes.id')
+                        ->whereNotNull('bateriasubclientes.clienteitaid')
+                        ->orderBy('created_at', 'asc')
+                        ->select(
+                            'bateriasubclientes.id as id',
+                            'bateriasubclientes.*', 
+                            'clientes.sucursal'
+                        );
+                
+                    switch ($sucursalbateria) {
+                        case 'tipo1':
+                            $data = $data->where('clientes.sucursal', 'COCHABAMBA');
+                            break;
+                        case 'tipo2':
+                            $data = $data->where('clientes.sucursal', 'SANTA CRUZ');
+                            break;
+                    }
+                    $data = $data->get();
                     break;
+
+                case 'bateriasubclientesauditoria':
+                    $data = Bateriasubcliente::join('clienteauditorias', 'bateriasubclientes.clienteauditoriaid', '=', 'clienteauditorias.id')
+                        ->whereNotNull('bateriasubclientes.clienteauditoriaid')
+                        ->orderBy('created_at', 'asc')
+                        ->select(
+                            'bateriasubclientes.id as id',
+                            'bateriasubclientes.*', 
+                            'clienteauditorias.sucursal'
+                        );
+                
+                    switch ($sucursalbateriaauditoria) {
+                        case 'tipo1':
+                            $data = $data->where('clienteauditorias.sucursal', 'COCHABAMBA');
+                            break;
+                        case 'tipo2':
+                            $data = $data->where('clienteauditorias.sucursal', 'SANTA CRUZ');
+                            break;
+                    }
+                    $data = $data->get();
+                    break;
+
+                case 'bateriasubclientescomunes':  
+                        $data = Bateriasubcliente::join('clientescomunes', 'bateriasubclientes.clientecomunid', '=', 'clientescomunes.id')
+                            ->whereNotNull('bateriasubclientes.clientecomunid')
+                            ->orderBy('created_at', 'asc')
+                            ->select(
+                                'bateriasubclientes.id as id',
+                                'bateriasubclientes.*', 
+                                'clientescomunes.sucursal'
+                            );
+                    
+                        switch ($sucursalbateriacomunes) {
+                            case 'tipo1':
+                                $data = $data->where('clientescomunes.sucursal', 'COCHABAMBA');
+                                break;
+                            case 'tipo2':
+                                $data = $data->where('clientescomunes.sucursal', 'SANTA CRUZ');
+                                break;
+                        }
+                    
+                    $data = $data->get();
+                    break;
+                    
+                    
                 case 'bateriaproveedores':
                     switch ($sucursalBateriaproveedores) {
                         case 'tipo1':
@@ -252,32 +326,11 @@ class ReporteController extends Controller
                             break;
                     }
                     break;
-                case 'areaacciones':
-                    switch ($sucursalAreaaccion) {
-                        case 'tipo1':
-                            $data = Areaaccion::where('sucursal', 'COCHABAMBA')
-                                ->get();
-                            break;
-                        case 'tipo2':
-                            $data = Areaaccion::where('sucursal', 'SANTA CRUZ')
-                                ->get();
-                            break;
-                        default:
-                            $data = Areaaccion::all();
-                            break;
-                    }
-                    break;
                 case 'clientescomunes':
                     $data = ClienteComun::all();
                     break;
                 case 'clientesauditoria':
                     $data = ClienteAuditoria::all();
-                    break;
-                case 'clientesbancos':
-                    $data = ClienteBanco::all();
-                    break;
-                case 'contactosubclientes':
-                    $data = Contactosubcliente::all();
                     break;
                 case 'clientes':
                     $data = Cliente::all();
@@ -296,7 +349,9 @@ class ReporteController extends Controller
                     }
                     break;
                 case 'programacionsubclientesita':
-                    $data = Programacionsubcliente::whereNotNull('clienteitaid')->get();
+                    $data = Programacionsubcliente::whereNotNull('clienteitaid')
+                    ->orderBy('created_at', 'asc')
+                    ->get();
                     $data->each(function ($item) {
                         $item->fechaatencionprogramacion = null;
                         $item->created_at = null;
@@ -327,13 +382,15 @@ class ReporteController extends Controller
                     $data = $data->sortBy('clienteitanombre');
                     break;
                 case 'programacionsubclientescomunes':
-                    $data = Programacionsubcliente::whereNotNull('clientecomunid')->get();
+                    $data = Programacionsubcliente::whereNotNull('clientecomunid')
+                    ->orderBy('created_at', 'asc')
+                    ->get();
                     $data->each(function ($item) {
                         $item->fechaatencionprogramacion = null;
                         $item->created_at = null;
 
-                        if ($item->estadoprogramacionsubcliente->isNotEmpty()) {
-                            foreach ($item->estadoprogramacionsubcliente as $estado) {
+                        if ($item->estadoprogramacionsubclientecomun->isNotEmpty()) {
+                            foreach ($item->estadoprogramacionsubclientecomun as $estado) {
                                 if ($estado->clientecomunid == $item->clientecomunid
                                     && $estado->accionnombre == $item->accionnombre
                                     && $estado->fechabateria == $item->fechabateria
@@ -343,8 +400,8 @@ class ReporteController extends Controller
                                 }
                             }
                         }
-                        if ($item->documentacionsubcliente->isNotEmpty()) {
-                            foreach ($item->documentacionsubcliente as $documento) {
+                        if ($item->documentacionsubclientecomun->isNotEmpty()) {
+                            foreach ($item->documentacionsubclientecomun as $documento) {
                                 if ($documento->clientecomunid == $item->clientecomunid
                                     && $documento->accion == $item->accionnombre
                                     && $documento->fechabateria == $item->fechabateria
@@ -358,13 +415,15 @@ class ReporteController extends Controller
                     $data = $data->sortBy('clientecomunnombre');
                     break;
                 case 'programacionsubclientesauditoria':
-                    $data = Programacionsubcliente::whereNotNull('clienteauditoriaid')->get();
+                    $data = Programacionsubcliente::whereNotNull('clienteauditoriaid')
+                    ->orderBy('created_at', 'asc')
+                    ->get();
                     $data->each(function ($item) {
                         $item->fechaatencionprogramacion = null;
                         $item->created_at = null;
 
-                        if ($item->estadoprogramacionsubcliente->isNotEmpty()) {
-                            foreach ($item->estadoprogramacionsubcliente as $estado) {
+                        if ($item->estadoprogramacionsubclienteauditoria->isNotEmpty()) {
+                            foreach ($item->estadoprogramacionsubclienteauditoria as $estado) {
                                 if ($estado->clienteauditoriaid == $item->clienteauditoriaid
                                     && $estado->accionnombre == $item->accionnombre
                                     && $estado->fechabateria == $item->fechabateria
@@ -374,8 +433,8 @@ class ReporteController extends Controller
                                 }
                             }
                         }
-                        if ($item->documentacionsubcliente->isNotEmpty()) {
-                            foreach ($item->documentacionsubcliente as $documento) {
+                        if ($item->documentacionsubclienteauditoria->isNotEmpty()) {
+                            foreach ($item->documentacionsubclienteauditoria as $documento) {
                                 if ($documento->clienteauditoriaid == $item->clienteauditoriaid
                                     && $documento->accion == $item->accionnombre
                                     && $documento->fechabateria == $item->fechabateria
@@ -394,13 +453,12 @@ class ReporteController extends Controller
             }
         }
         $nombresTablas = [
-            'bateriasubclientes' => 'BATERIA DE CLIENTES',
+            'bateriasubclientesita' => 'BATERIA DE CLIENTES ITA',
+            'bateriasubclientesauditoria' => 'BATERIA DE CLIENTES AUDITORIA',
+            'bateriasubclientescomunes' => 'BATERIA DE CLIENTES COMUNES',
             'bateriaproveedores' => 'BATERIA DE PROVEEDORES',
-            'areaacciones' => 'BATERIA GENERAL',
             'clientescomunes' => 'CLIENTES COMUNES',
             'clientesauditoria' => 'CLIENTES DE AUDITORÍA MÉDICA',
-            'clientesbancos' => 'CLIENTES DE BANCOS',
-            'contactosubclientes' => 'CONTACTOS DE CLIENTES',
             'clientes' => 'CLIENTES ITA',
             'programacionsubclientescomunes' => 'PROGRAMACIÓN DE CLIENTES COMUNES',
             'programacionsubclientesauditoria' => 'PROGRAMACIÓN DE CLIENTES DE AUDITORÍA MÉDICA',

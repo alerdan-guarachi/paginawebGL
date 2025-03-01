@@ -55,6 +55,17 @@ class StoreProgramacionsubclienteRequest extends FormRequest
         'usuarioactualizacion' =>'',
         'usuarioeliminacion' =>'',
         'pagoatencion' =>'',
+        'pagoservicio' => '',
+        'fechacredito' => '',
+        'usuarioautorizador' => '',
+        'documentocredito' => '',
+        'servicio' => '',
+        'bateriaid' => '',
+        'comision' => '',
+        'nrosesion' => '',
+        'nrofactura' => '',
+        'motivoanulacion',
+        'usuarioanulacion',
         
     ]; 
     return $rules;

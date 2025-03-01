@@ -28,8 +28,8 @@ class ProveedorController extends Controller
         $proveedores = Proveedor::where('proveedor', 'LIKE', "%$nombreasociado%")
                           ->orderBy('proveedor')
                           ->simplePaginate(1000);
-
-        return view('admin.proveedores.index', compact('proveedores'));
+        $nombreusuario = auth()->user()->name;
+        return view('admin.proveedores.index', compact('proveedores','nombreusuario'));
     }
     public function buscarproveedor(Request $request)
     {

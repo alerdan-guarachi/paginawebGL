@@ -50,6 +50,11 @@ class StoreProveedorRequest extends FormRequest
             'linkubicacion' => '',
             'firmadigital' => '',
             'sellodigital' => '',
+            'direccion2' => '',
+            'linkubicacion2' => '',
+            'direccion3' => '',
+            'linkubicacion3' => '',
+            'ciudad2' => '',
         ]; 
         return $rules;
     }

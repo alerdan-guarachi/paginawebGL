@@ -50,6 +50,10 @@ class StoreDocumentacionsubclienteRequest extends FormRequest
             'picture' => '',
             'picture2' => '',
             'archivo2' => '',
+            'archivo3' => '',
+            'programacionid' => '',
+            'motivoanulacion' => '',
+            'usuarioanulacion' => '',
         ]; 
         return $rules;
     }

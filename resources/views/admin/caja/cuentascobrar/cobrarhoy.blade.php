@@ -1,0 +1,729 @@
+@extends('adminlte::page')
+    
+@section('content_header')
+<h1>COBRAR HOY ({{ $fechaActual }})</h1>
+@stop 
+
+@section('content')
+@if (session('info'))
+    <div id="alert-info" class="alert alert-success">
+        <strong>{{ session('info') }}</strong>
+    </div>
+    <script>
+        setTimeout(function() {
+            $('#alert-info').fadeOut('fast');
+        }, 3000);
+    </script>
+@endif
+
+<div class="card">
+    <nav class="navbar navbar-expand-lg float-right">
+        <div class="container-fluid">
+            <div class="d-flex flex-wrap align-items-center ml-auto">
+                <form action="{{ route('buscarccporfecha') }}" method="get" class="form-inline">
+                    <div class="form-group mr-2">
+                        <!-- Campo para ID, Nombre o CI -->
+                        <input 
+                            name="criterio" 
+                            class="form-control" 
+                            type="text" 
+                            placeholder="ID, Nombre del Cliente" 
+                            value="{{ old('criterio') }}" 
+                            aria-label="Criterio de búsqueda">
+                    </div>
+                    <div class="form-group mr-2">
+                        <!-- Campo para la fecha -->
+                        <input 
+                            name="fecha" 
+                            class="form-control" 
+                            type="date" 
+                            {{-- max="{{ now()->toDateString() }}" --}} 
+                            value="{{ old('fecha') }}" 
+                            aria-label="Fecha">
+                    </div>
+                    <button id="btn-buscar" class="btn btn-outline-secondary my-2 my-sm-0" type="submit">BUSCAR</button>
+                </form>
+            </div>
+        </div>
+    </nav>
+    
+    {{-- PESTAÑAS SUPERIORES --}}
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="myTabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
+                    PAGOS PENDIENTES INT.
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-5" data-toggle="tab" href="#tab-content-5" role="tab" aria-controls="tab-content-5" aria-selected="true">
+                    PAGOS PENDIENTES EXT.
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
+                    PAGOS PROCESADOS
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-6" data-toggle="tab" href="#tab-content-6" role="tab" aria-controls="tab-content-6" aria-selected="true">
+                    PAGOS PEND. INFO. FINAL
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-7" data-toggle="tab" href="#tab-content-7" role="tab" aria-controls="tab-content-7" aria-selected="true">
+                    PAGOS PROC. INFO. FINAL
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body">
+        <div class="tab-content" id="myTabContent">
+
+            {{-- PAGOS PENDIENTES INTERNOS --}}
+            <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1"> 
+                <form method="POST" action="{{ route('confirmar-pagos') }}">
+                    @csrf
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th hidden>Sucursal</th>
+                                <th>ID Prog</th>
+                                <th>Tipo Cliente</th>
+                                <th>ID Cliente</th>
+                                <th>Cliente</th>
+                                <th>Proveedor</th>
+                                <th>Acción</th>
+                                <th>Fecha batería</th>
+                                <th>Fecha programada</th>
+                                <th>Hora programada</th>
+                                <th>Servicio</th>
+                                <th>Precio</th>
+                                {{-- <th>Selec.</th> --}}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $nombreUsuario = auth()->user()->name;
+                                $sucursalUsuario = auth()->user()->sucursal;
+                            @endphp
+                                @foreach ($pagosprogramacionesita as $programacion)
+                                    @if (
+                                        (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                        !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                    )
+                                    <tr>
+                                        <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                        <td>{{ $programacion->id }}</td>
+                                        <td>CLIENTE ITA</td>
+                                        <td>{{ $programacion->clienteitaid }}</td>
+                                        <td>{{ $programacion->clienteitanombre }}</td>
+                                        <td>{{ $programacion->proveedornombre }}</td>
+                                        <td>{{ $programacion->accionnombre }}</td>
+                                        <td>{{ $programacion->fechabateria }}</td>
+                                        <td>{{ $programacion->fechaasignada }}</td>
+                                        <td>{{ $programacion->horadesde }} - {{ $programacion->horahasta }}</td>
+                                        <td>{{ $programacion->servicio }}</td>
+                                        <td>{{ $programacion->precio }}</td>
+                                        {{-- <td>
+                                            <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox">
+                                        </td> --}}
+                                    </tr>
+                                    @endif
+                                @endforeach
+
+                                @foreach ($pagosprogramacionescomun as $programacion)
+                                    @if (
+                                        (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                        !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                    )
+                                    <tr>
+                                        <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                        <td>{{ $programacion->id }}</td>
+                                        <td>CLIENTE COMÚN</td>
+                                        <td>{{ $programacion->clientecomunid }}</td>
+                                        <td>{{ $programacion->clientecomunnombre }}</td>
+                                        <td>{{ $programacion->proveedornombre }}</td>
+                                        <td>{{ $programacion->accionnombre }}</td>
+                                        <td>{{ $programacion->fechabateria }}</td>
+                                        <td>{{ $programacion->fechaasignada }}</td>
+                                        <td>{{ $programacion->horadesde }} - {{ $programacion->horahasta }}</td>
+                                        <td>{{ $programacion->servicio }}</td>
+                                        <td>{{ $programacion->precio }}</td>
+                                        {{-- <td>
+                                            <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox">
+                                        </td> --}}
+                                    </tr>
+                                    @endif
+                                @endforeach
+                                @foreach ($pagosprogramacionesauditoria as $programacion)
+                                    @if (
+                                        (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                        !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                    )
+                                    <tr>
+                                        <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                        <td>{{ $programacion->id }}</td>
+                                        <td>CLIENTE AUDITORÍA</td>
+                                        <td>{{ $programacion->clienteauditoriaid }}</td>
+                                        <td>{{ $programacion->clienteauditorianombre }}</td>
+                                        <td>{{ $programacion->proveedornombre }}</td>
+                                        <td>{{ $programacion->accionnombre }}</td>
+                                        <td>{{ $programacion->fechabateria }}</td>
+                                        <td>{{ $programacion->fechaasignada }}</td>
+                                        <td>{{ $programacion->horadesde }} - {{ $programacion->horahasta }}</td>
+                                        <td>{{ $programacion->servicio }}</td>
+                                        <td>{{ $programacion->precio }}</td>
+                                        {{-- <td>
+                                            <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox">
+                                        </td> --}}
+                                    </tr>
+                                    @endif
+                                @endforeach
+                        </tbody>
+                    </table>
+                    {{-- <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-outline-success" id="confirmar-pago-btn" disabled>Confirmar Pago</button>
+                    </div> --}}
+                </form>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const checkboxes = document.querySelectorAll('.programacion-checkbox');
+                    const confirmButton = document.getElementById('confirmar-pago-btn');
+                    function toggleButtonState() {
+                        const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+                        confirmButton.disabled = !anyChecked;
+                    }
+            
+                    checkboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', toggleButtonState);
+                    });
+                    toggleButtonState();
+                });
+            </script>
+            
+            {{-- PAGOS PENDIENTES EXTERNOS --}}
+            <div class="tab-pane fade" id="tab-content-5" role="tabpanel" aria-labelledby="tab-5"> 
+                <form method="POST" action="{{ route('confirmar-pagos') }}">
+                    @csrf
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th hidden>Sucursal</th>
+                                <th>ID Prog</th>
+                                <th>Tipo Cliente</th>
+                                <th>ID Cliente</th>
+                                <th>Cliente</th>
+                                <th>Proveedor</th>
+                                <th>Acción</th>
+                                <th>Fecha batería</th>
+                                <th>Fecha programada</th>
+                                <th>Hora programada</th>
+                                <th>Servicio</th>
+                                <th>Precio</th>
+                                {{-- <th>Selec.</th> --}}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $nombreUsuario = auth()->user()->name;
+                                $sucursalUsuario = auth()->user()->sucursal;
+                            @endphp
+                                @foreach ($pagosexternosprogramacionesita as $programacion)
+                                    @if (
+                                        (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                        !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                    )
+                                    <tr>
+                                        <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                        <td>{{ $programacion->id }}</td>
+                                        <td>CLIENTE ITA</td>
+                                        <td>{{ $programacion->clienteitaid }}</td>
+                                        <td>{{ $programacion->clienteitanombre }}</td>
+                                        <td>{{ $programacion->proveedornombre }}</td>
+                                        <td>{{ $programacion->accionnombre }}</td>
+                                        <td>{{ $programacion->fechabateria }}</td>
+                                        <td>{{ $programacion->fechaasignada }}</td>
+                                        <td>{{ $programacion->horadesde }} - {{ $programacion->horahasta }}</td>
+                                        <td>{{ $programacion->servicio }}</td>
+                                        <td>{{ $programacion->precio }}</td>
+                                        {{-- <td>
+                                            <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox2">
+                                        </td> --}}
+                                    </tr>
+                                    @endif
+                                @endforeach
+                                @foreach ($pagosexternosprogramacionescomun as $programacion)
+                                    @if (
+                                        (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                        !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                    )
+                                    <tr>
+                                        <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                        <td>{{ $programacion->id }}</td>
+                                        <td>CLIENTE COMÚN</td>
+                                        <td>{{ $programacion->clientecomunid }}</td>
+                                        <td>{{ $programacion->clientecomunnombre }}</td>
+                                        <td>{{ $programacion->proveedornombre }}</td>
+                                        <td>{{ $programacion->accionnombre }}</td>
+                                        <td>{{ $programacion->fechabateria }}</td>
+                                        <td>{{ $programacion->fechaasignada }}</td>
+                                        <td>{{ $programacion->horadesde }} - {{ $programacion->horahasta }}</td>
+                                        <td>{{ $programacion->servicio }}</td>
+                                        <td>{{ $programacion->precio }}</td>
+                                        {{-- <td>
+                                            <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox2">
+                                        </td> --}}
+                                    </tr>
+                                    @endif
+                                @endforeach
+                                @foreach ($pagosexternosprogramacionesauditoria as $programacion)
+                                    @if (
+                                        (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                        !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                    )
+                                    <tr>
+                                        <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                        <td>{{ $programacion->id }}</td>
+                                        <td>CLIENTE AUDITORÍA</td>
+                                        <td>{{ $programacion->clienteauditoriaid }}</td>
+                                        <td>{{ $programacion->clienteauditorianombre }}</td>
+                                        <td>{{ $programacion->proveedornombre }}</td>
+                                        <td>{{ $programacion->accionnombre }}</td>
+                                        <td>{{ $programacion->fechabateria }}</td>
+                                        <td>{{ $programacion->fechaasignada }}</td>
+                                        <td>{{ $programacion->horadesde }} - {{ $programacion->horahasta }}</td>
+                                        <td>{{ $programacion->servicio }}</td>
+                                        <td>{{ $programacion->precio }}</td>
+                                        {{-- <td>
+                                            <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox2">
+                                        </td> --}}
+                                    </tr>
+                                    @endif
+                                @endforeach
+                        </tbody>
+                    </table>
+                    {{-- <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-outline-success" id="confirmar-pago-btn2" disabled>Confirmar Pago</button>
+                    </div> --}}
+                </form>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const checkboxes = document.querySelectorAll('.programacion-checkbox2');
+                    const confirmButton = document.getElementById('confirmar-pago-btn2');
+                    function toggleButtonState() {
+                        const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+                        confirmButton.disabled = !anyChecked;
+                    }
+            
+                    checkboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', toggleButtonState);
+                    });
+                    toggleButtonState();
+                });
+            </script>
+
+            {{-- PAGOS PROCESADOS --}}
+            <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th hidden>Sucursal</th>
+                            <th>ID Prog</th>
+                            <th>Tipo Cliente</th>
+                            <th>ID Cliente</th>
+                            <th>Cliente</th>
+                            <th>Proveedor</th>
+                            <th>Acción</th>
+                            <th>Fecha bateria</th>
+                            <th>Fecha programada</th>
+                            <th>Hora programada</th>
+                            <th>Servicio</th>
+                            <th>Precio</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $nombreUsuario = auth()->user()->name;
+                            $sucursalUsuario = auth()->user()->sucursal;
+                        @endphp
+                        
+                            @foreach ($pagadosprogramacionesita as $programacion)
+                                @if (
+                                    (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                    !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                )
+                                <tr>
+                                    <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                    <td>{{ $programacion->id }}</td>
+                                    <td>CLIENTE ITA</td>
+                                    <td>{{$programacion->clienteitaid}}</td>
+                                    <td>{{$programacion->clienteitanombre}}</td>
+                                    <td>{{$programacion->proveedornombre}}</td>
+                                    <td>{{$programacion->accionnombre}}</td>
+                                    <td>{{$programacion->fechabateria}}</td>
+                                    <td>{{$programacion->fechaasignada}}</td>
+                                    <td>{{$programacion->horadesde }} - {{ $programacion->horahasta }}</td>
+                                    <td>{{$programacion->servicio}}</td>
+                                    <td>{{$programacion->precio}}</td>
+                                    
+                                </tr>
+                                @endif
+                            @endforeach
+                            @foreach ($pagadosprogramacionescomun as $programacion)
+                                @if (
+                                    (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                    !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                )
+                                <tr>
+                                    <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                    <td>{{ $programacion->id }}</td>
+                                    <td>CLIENTE COMÚN</td>
+                                    <td>{{$programacion->clientecomunid}}</td>
+                                    <td>{{$programacion->clientecomunnombre}}</td>
+                                    <td>{{$programacion->proveedornombre}}</td>
+                                    <td>{{$programacion->accionnombre}}</td>
+                                    <td>{{$programacion->fechabateria}}</td>
+                                    <td>{{$programacion->fechaasignada}}</td>
+                                    <td>{{$programacion->horadesde}} - {{$programacion->horahasta}}</td>
+                                    <td>{{$programacion->servicio}}</td>
+                                    <td>{{$programacion->precio}}</td>
+                                    
+                                </tr>
+                                @endif
+                            @endforeach
+                            @foreach ($pagadosprogramacionesauditoria as $programacion)
+                                @if (
+                                    (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                    !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                )
+                                <tr>
+                                    <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                    <td>{{ $programacion->id }}</td>
+                                    <td>CLIENTE AUDITORÍA</td>
+                                    <td>{{$programacion->clienteauditoriaid}}</td>
+                                    <td>{{$programacion->clienteauditorianombre}}</td>
+                                    <td>{{$programacion->proveedornombre}}</td>
+                                    <td>{{$programacion->accionnombre}}</td>
+                                    <td>{{$programacion->fechabateria}}</td>
+                                    <td>{{$programacion->fechaasignada}}</td>
+                                    <td>{{$programacion->horadesde}} - {{ $programacion->horahasta}}</td>
+                                    <td>{{$programacion->servicio}}</td>
+                                    <td>{{$programacion->precio}}</td>
+                                </tr>
+                                @endif
+                            @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- PAGOS PENDIENTES INFORMES FINALES --}}
+            <div class="tab-pane fade" id="tab-content-6" role="tabpanel" aria-labelledby="tab-6"> 
+                <form method="POST" action="{{ route('confirmar-pagos-informefinal') }}">
+                    @csrf
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th hidden>Sucursal</th>
+                                <th>ID</th>
+                                <th>Tipo Cliente</th>
+                                <th>ID Cliente</th>
+                                <th>Cliente</th>
+                                <th>Proveedor</th>
+                                <th>Acción</th>
+                                <th>Fecha batería</th>
+                                <th>Servicio</th>
+                                <th>Precio</th>
+                                {{-- <th>Selec.</th> --}}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $nombreUsuario = auth()->user()->name;
+                                $sucursalUsuario = auth()->user()->sucursal;
+                            @endphp
+                                @foreach ($pagosinformefinalita as $programacion)
+                                    @if (
+                                        (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                        !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                    )
+                                    <tr>
+                                        <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                        <td>{{ $programacion->id }}</td>
+                                        <td>CLIENTE ITA</td>
+                                        <td>{{ $programacion->clienteitaid }}</td>
+                                        <td>{{ $programacion->clienteitanombre }}</td>
+                                        <td>{{ $programacion->proveedorasignado }}</td>
+                                        <td>INFORME FINAL</td>
+                                        <td>{{ $programacion->fechabateria }}</td>
+                                        <td>{{ $programacion->servicio }}</td>
+                                        <td>{{ $programacion->precio }}</td>
+                                        {{-- <td>
+                                            <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox3">
+                                        </td> --}}
+                                    </tr>
+                                    @endif
+                                @endforeach
+                    
+                                @foreach ($pagosinformefinalauditoria as $programacion)
+                                    @if (
+                                        (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                        !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                    )
+                                    <tr>
+                                        <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                        <td>{{ $programacion->id }}</td>
+                                        <td>CLIENTE ITA</td>
+                                        <td>{{ $programacion->clienteauditoriaid }}</td>
+                                        <td>{{ $programacion->clienteauditorianombre }}</td>
+                                        <td>{{ $programacion->proveedorasignado }}</td>
+                                        <td>INFORME FINAL</td>
+                                        <td>{{ $programacion->fechabateria }}</td>
+                                        <td>{{ $programacion->servicio }}</td>
+                                        <td>{{ $programacion->precio }}</td>
+                                        {{-- <td>
+                                            <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox3">
+                                        </td> --}}
+                                    </tr>
+                                    @endif
+                                @endforeach
+                        </tbody>
+                    </table>
+                    {{-- <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-outline-success" id="confirmar-pago-btn3" disabled>Confirmar Pago</button>
+                    </div> --}}
+                </form>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const checkboxes = document.querySelectorAll('.programacion-checkbox3');
+                    const confirmButton = document.getElementById('confirmar-pago-btn3');
+                    function toggleButtonState() {
+                        const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
+                        confirmButton.disabled = !anyChecked;
+                    }
+            
+                    checkboxes.forEach(checkbox => {
+                        checkbox.addEventListener('change', toggleButtonState);
+                    });
+                    toggleButtonState();
+                });
+            </script>
+
+            {{-- PAGOS PROCESADOS INFORMES FINALES--}}
+            <div class="tab-pane fade" id="tab-content-7" role="tabpanel" aria-labelledby="tab-7">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th hidden>Sucursal</th>
+                            <th>ID Prog</th>
+                            <th>Tipo Cliente</th>
+                            <th>ID Cliente</th>
+                            <th>Cliente</th>
+                            <th>Proveedor</th>
+                            <th>Acción</th>
+                            <th>Fecha bateria</th>
+                            <th>Servicio</th>
+                            <th>Precio</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $nombreUsuario = auth()->user()->name;
+                            $sucursalUsuario = auth()->user()->sucursal;
+                        @endphp
+                        
+                            @foreach ($pagosprocesadosinformefinalita as $programacion)
+                                @if (
+                                    (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                    !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                )
+                                <tr>
+                                    <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                    <td>{{ $programacion->id }}</td>
+                                    <td>CLIENTE ITA</td>
+                                    <td>{{$programacion->clienteitaid}}</td>
+                                    <td>{{$programacion->clienteitanombre}}</td>
+                                    <td>{{$programacion->proveedorasignado}}</td>
+                                    <td>INFORME FINAL</td>
+                                    <td>{{$programacion->fechabateria}}</td>
+                                    <td>{{$programacion->servicio}}</td>
+                                    <td>{{$programacion->precio}}</td>
+                                </tr>
+                                @endif
+                            @endforeach
+                            @foreach ($pagosprocesadosinformefinalauditoria as $programacion)
+                                @if (
+                                    (in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO']) && $sucursalUsuario == $programacion->cliente_sucursal) || 
+                                    !in_array($nombreUsuario, ['MARLENE ANDREA MONTELLANO ORTIZ', 'VANESSA MAMANI HUANACO'])
+                                )
+                                <tr>
+                                    <td hidden>{{$programacion->cliente_sucursal }}</td>
+                                    <td>{{ $programacion->id }}</td>
+                                    <td>CLIENTE AUDITORÍA</td>
+                                    <td>{{$programacion->clienteauditoriaid}}</td>
+                                    <td>{{$programacion->clienteauditorianombre}}</td>
+                                    <td>{{$programacion->proveedorasignado}}</td>
+                                    <td>INFORME FINAL</td>
+                                    <td>{{$programacion->fechabateria}}</td>
+                                    <td>{{$programacion->servicio}}</td>
+                                    <td>{{$programacion->precio}}</td>
+                                </tr>
+                                @endif
+                            @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@stop
+
+@section('css')
+<link rel="styleheet" href="/css/admin_custom.css">
+<style>
+    .nav-tabs {
+        display: flex;
+        justify-content: space-between;
+    }
+    .nav-tabs .nav-item {
+        flex: 1;
+    }
+    .nav-tabs .nav-link {
+        display: block;
+        text-align: center;
+        width: 100%;
+        font-weight: bold;
+        font-size: 15px;
+        color: #909090;
+        background-color: #eaeaea;
+    }
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+        font-size: 15px;
+        color: #0a0a0a;
+        background-color: #ffffff;
+    }
+    .circle {
+        display: inline-block;
+        width: 30px;
+        height: 20px;
+        line-height: 20px;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+    .nav-link.active .circle {
+        background-color: #94c93b;
+        color: #fff;
+    }
+    .nav-link .circle {
+        background-color: #faa625;
+        color: #fff;
+    }
+    .custom-select-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 150px;
+    }
+    .custom-select-wrapper select {
+        width: 100%;
+        padding: 6px 26px 6px 10px;
+        font-size: 14px;
+        border: none;
+        border-radius: 3px;
+        background-color: #f8f9fa;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        cursor: pointer;
+    }
+    .custom-select-wrapper select:focus {
+        outline: none;
+    }
+    .custom-select-icon {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #000000;
+    }
+    .custom-select-wrapper select {
+        background-color:  #eff9df;
+        color: #000000;
+        border-color: #000000;
+        border-radius: 5px;
+        padding: 10px 20px;
+    }
+    .custom-select-wrapper select:hover {
+        background-color: #f4e1c6;
+        color: #000000;
+    }
+    .custom-select-wrapper select option {
+        background-color: #ffffff;
+    }
+    h1, th {
+        color:#000000; 
+        font-family: "Segoe UI";
+        font-weight: 700;
+    }
+</style>
+@stop
+
+@section('js')
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 
+<script>
+$('.dropify').dropify();
+</script>
+    @if (session('eliminar')=='ok')
+    <script>
+        Swal.fire(
+      '¡Eliminado!',
+      'El perfil se eliminó con éxito',
+      'success')
+    </script>
+    @endif
+<script>
+    $('.formulario-eliminar').submit(function(e){
+        e.preventDefault();
+
+        Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Este perfil se eliminará definitivamente",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: '¡Si, eliminar!',
+        cancelButtonText: 'Cancelar'
+        }).then((result) => {
+        if (result.isConfirmed) {
+            this.submit();
+        }
+        }) 
+    });
+    $(document).ready(function() {
+        $('input[name="buscarpor"]').on('keyup', function() {
+            var query = $(this).val();
+            var botonBuscar = $('#btn-buscar');
+            if (query.trim() === '') {
+                botonBuscar.prop('disabled', true);
+            } else {
+                botonBuscar.prop('disabled', false);
+            }
+        });
+    });
+</script>
+@endsection

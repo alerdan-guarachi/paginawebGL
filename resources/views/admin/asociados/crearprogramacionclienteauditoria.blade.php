@@ -1,13 +1,13 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn btn-sm float-right btn-regresar" href="{{ session('previous_url', route('admin.asociados.verclienteauditoria', $clienteauditoria)) }}">REGRESAR</a>
+<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
 @can('admin.asociados.reprogramacionclienteita')
 <a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.reprogramacionclienteauditoria', $clienteauditoria)}}">REPROGRAMAR</a>
 @endcan
 <a class="btn btn-sm float-right btn-bateria" data-toggle="modal" data-target="#ventanaModal">PROGRAMACIONES DEL CLIENTE</a>
 <a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.estadoprogramacionclienteauditoria', $clienteauditoria)}}">PROGRAMACIONES</a>
-<h5>PROGRAMAR ACCIONES DE:</h5>
+<h5>PROGRAMAR ESTUDIOS / ESPECIALIDADES DE:</h5>
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>
 @stop
 
@@ -46,10 +46,9 @@
                 @if($accionesCliente)
                     {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                     {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                    {!! Form::hidden('clienteauditoriaid', $id) !!}
+                    {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id) !!}
                     {!! Form::hidden('clienteauditorianombre', $clienteauditoria->nombrecompleto) !!}
                     <div class="col-lg-8">
-                        {!! Form::label('', 'ACCIONES PARA PROGRAMAR:') !!}
                         <div class="form-group" hidden>
                             {!! Form::label('nombrecompleto', 'NOMBRE DEL CLIENTE:') !!}
                             {!! Form::text('nombrecompleto', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => true]) !!}
@@ -81,44 +80,12 @@
                             </script>
                         </div>
 
-                        {!! Form::label('', 'ACCIONES REQUERIDAS Y PROVEEDORES DISPONIBLES:') !!}
                         @error('proveedornombre')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
                                 </small>
                             @enderror
-                        {{-- @foreach($accionesPorFecha as $fecha => $acciones) 
-                            <div class="row">
-                                <div class="acciones-{{ $fecha }}" style="display:none;">
-                                    <div style="display:flex; flex-wrap: wrap;">
-                                        @foreach($acciones as $accion)
-                                            @php
-                                            $proveedorAjeno = 'PROVEEDOR AJENO';
-                                                $proveedor = isset($proveedoresDetalles[$accion]) ? $proveedoresDetalles[$accion] : null;
-                                                $optionLabel = $proveedor ? 
-                                                    $proveedor['proveedor'] . ' (' . $proveedor['horarioinicial'] . ' - ' . $proveedor['horariofinal'] . ') (' . $proveedor['tiempoatencion'] . ') (' . $proveedor['accion'] . ') (' . $proveedor['area'] . ') (' . $proveedor['precio'] . ') (' . $proveedor['preciocompra'] . ')'
-                                                    : 'No asignado';
-                                                $registrada = isset($accionesRegistradas[$fecha]) && in_array($accion, $accionesRegistradas[$fecha]);
-                                                $accionShort = strlen($accion) > 35 ? substr($accion, 0, 35) . '...' : $accion;
-                                            @endphp
-                                            @if(!$registrada && (!isset($proveedor) || $proveedor['proveedor'] !== $proveedorAjeno))
-                                                <div class="col-lg-12" style="margin-bottom: 20px;">
-                                                    <div class="form-group">
-                                                        <strong title="{{ $accion }}" style="font-size: 12px">{{ $accionShort }}</strong><br>
-                                                        <div>
-                                                            {!! Form::select('proveedor_' . $accion, ['' => 'Selecciona un proveedor', $optionLabel => $optionLabel], '', ['class' => 'form-control']) !!}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach --}}
-
-                        
-                        
+                            {!! Form::label('', 'ESTUDIOS / ESPECIALIDADES DISPONIBLES:') !!}
                         @foreach($accionesPorFecha as $fecha => $acciones)     
                             {{-- <div class="row"> --}}
                                 <div class="acciones-{{ $fecha }}" style="display:none;">
@@ -159,6 +126,10 @@
                                                             <input type="hidden" name="areanombre_{{ $accionSanitizada }}" value="{{ $proveedor['area'] ?? '' }}">
                                                             <input type="hidden" name="precio_{{ $accionSanitizada }}" value="{{ $proveedor['precio'] ?? '' }}">
                                                             <input type="hidden" name="preciocompra_{{ $accionSanitizada }}" value="{{ $proveedor['preciocompra'] ?? '' }}">
+                                                            <input type="hidden" name="servicio_{{ $accionSanitizada }}" value="{{ $proveedor['servicio'] ?? '' }}">
+                                                            <input type="hidden" name="pagoservicio_{{ $accionSanitizada }}" value="{{ $proveedor['pagoservicio'] ?? '' }}">
+                                                            <input type="hidden" name="bateriaid_{{ $accionSanitizada }}" value="{{ $proveedor['bateriaid'] ?? '' }}">
+                                                            <input type="hidden" name="comision_{{ $accionSanitizada }}" value="{{ $proveedor['comision'] ?? '' }}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -265,89 +236,9 @@
                         </script>
                         <button type="button" id="habilitarSelectores" style="display:none;" class="custom-button">Seleccionar otra acción</button>
                     </div>
-                    {{-- <div class="col-lg-4" hidden>
-                        <div class="form-group">
-                            {!! Form::label('proveedornombre', 'Proveedor seleccionado:') !!}
-                            {!! Form::text('proveedornombre', null, ['id' => 'proveedornombre', 'class' => 'form-control', 'placeholder' => '']) !!}
-                            @error('proveedornombre')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-lg-4" hidden>
-                        <div class="form-group">
-                            {!! Form::label('horarioinicial', 'Horario inicial:') !!}
-                            {!! Form::text('horarioinicial', null, ['id' => 'horarioinicial', 'class' => 'form-control', 'placeholder' => '']) !!}
-                            @error('horarioinicial')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-lg-4" hidden>
-                        <div class="form-group">
-                            {!! Form::label('horariofinal', 'Horario final:') !!}
-                            {!! Form::text('horariofinal', null, ['id' => 'horariofinal', 'class' => 'form-control', 'placeholder' => '']) !!}
-                            @error('horariofinal')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-lg-4" hidden>
-                        <div class="form-group">
-                            {!! Form::label('tiempoatencion', 'Tiempo atención:') !!}
-                            {!! Form::text('tiempoatencion', null, ['id' => 'tiempoatencion', 'class' => 'form-control', 'placeholder' => '']) !!}
-                            @error('tiempoatencion')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                        <div class="form-group" hidden>
-                            {!! Form::label('accionnombre', 'Accion selecionada:') !!}
-                            {!! Form::text('accionnombre', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'accionnombre']) !!}
-                            @error('accionnombre')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                        <div class="form-group" hidden>
-                            {!! Form::label('areanombre', 'Area selecionada:') !!}
-                            {!! Form::text('areanombre', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'areanombre']) !!}
-                            @error('areanombre')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    </div> --}}
                     <br>
                     <div class="col-lg-4">
-                        {!! Form::label('', 'PROGRAMAR ACCION:') !!}
-                        {{-- <div class="form-group">
-                            {!! Form::label('precio', 'Precio:') !!}
-                            {!! Form::text('precio', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'precio', 'readonly' => true]) !!}
-                            @error('precio')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                        <div class="form-group" hidden>
-                            {!! Form::label('preciocompra', 'Precio Compra:') !!}
-                            {!! Form::text('preciocompra', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'preciocompra', 'readonly' => true]) !!}
-                            @error('preciocompra')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div> --}}
+
                         <div class="form-group">
                             {!! Form::label('fechaasignada', 'Fecha a programar:') !!}
                             {!! Form::date('fechaasignada', null, ['class' => 'form-control']) !!}
@@ -375,25 +266,7 @@
                                 </small>
                             @enderror
                         </div>
-                        {{-- <div class="form-group" hidden>
-                            <label for="horariodisponible">Horarios disponibles:</label>
-                            <select name="horariodisponible{{ isset($accion) ? $accion : '' }}" class="form-control horariodisponible no-bloquear" placeholder="" id="horariosdisponibles" {{ isset($accion) ? 'data-accion=' . $accion : '' }}>
-                            </select>
-                            @error('horaasignada')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{ $message }}
-                                </small>
-                            @enderror
-                        </div>
-                        <div class="form-group" hidden>
-                            {!! Form::label('horaasignada', 'Hora asignada:') !!}
-                            {!! Form::text('horaasignada', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'horaasignada']) !!}
-                            @error('horaasignada')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div> --}}
+
                     </div>
                 @else
                     <div class="alert " role="alert">
@@ -431,7 +304,7 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Acción</th>
+                                <th>Estudio / Especialidad</th>
                                 <th>Proveedor</th>
                                 <th>Fecha Asignada</th>
                                 <th>Hora Asignada</th>
@@ -444,50 +317,55 @@
                     </table>
                 </div>
             </div>
-            
+
             <script>
-            document.getElementById('select-fechas').addEventListener('change', function() {
-                const fechaSeleccionada = this.value;
-                const accionesBateria = @json($accionesPorFechaBateria);
-                const accionesDetalles = @json($accionesDetallesPorFecha);
-                const esProveedor = @json($esProveedor);
-
-                const accionesLista = document.getElementById('acciones-lista');
-                accionesLista.innerHTML = '';
-
-                if (fechaSeleccionada && accionesBateria[fechaSeleccionada]) {
-                    accionesBateria[fechaSeleccionada].forEach(function(accionNombre) {
-                        const row = document.createElement('tr');
-                        const detalles = accionesDetalles[fechaSeleccionada]?.[accionNombre];
-
-                        if (detalles) {
-                            row.innerHTML = `
-                                <td>${detalles.id || '0'}</td>
-                                <td>${accionNombre}</td>
-                                <td>${detalles.proveedornombre || 'No registrado'}</td>
-                                <td>${detalles.fechaasignada || 'No registrado'}</td>
-                                <td>${detalles.horadesde || 'No registrado'} - ${detalles.horahasta}</td>
-                                ${!esProveedor ? `<td>${detalles.precio || 'No registrado'}</td>` : ''}
-                            `;
-                            row.style.color = 'green';
-                        } else {
-                            row.innerHTML = `
-                                <td>0</td>
-                                <td>${accionNombre}</td>
-                                <td>No registrado</td>
-                                <td>No registrado</td>
-                                <td>No registrado</td>
-                                ${!esProveedor ? `<td>No registrado</td>` : ''}
-                            `;
-                            row.style.color = 'red';
-                        }
-
-                        accionesLista.appendChild(row);
-                    });
-                }
-            });
-
+                document.getElementById('select-fechas').addEventListener('change', function () {
+                    const fechaSeleccionada = this.value;
+                    const accionesBateria = @json($accionesPorFechaBateria);
+                    const accionesDetalles = @json($accionesDetallesPorFecha);
+                    const esProveedor = @json($esProveedor);
+            
+                    const accionesLista = document.getElementById('acciones-lista');
+                    accionesLista.innerHTML = '';
+            
+                    if (fechaSeleccionada && accionesBateria[fechaSeleccionada]) {
+                        // Filtrar las acciones para excluir "INFORME FINAL"
+                        const accionesFiltradas = accionesBateria[fechaSeleccionada].filter(
+                            accionNombre => accionNombre !== 'INFORME FINAL'
+                        );
+            
+                        accionesFiltradas.forEach(function (accionNombre) {
+                            const row = document.createElement('tr');
+                            const detalles = accionesDetalles[fechaSeleccionada]?.[accionNombre];
+            
+                            if (detalles) {
+                                row.innerHTML = `
+                                    <td>${detalles.id || '0'}</td>
+                                    <td>${accionNombre}</td>
+                                    <td>${detalles.proveedornombre || 'No registrado'}</td>
+                                    <td>${detalles.fechaasignada || 'No registrado'}</td>
+                                    <td>${detalles.horadesde || 'No registrado'} - ${detalles.horahasta}</td>
+                                    ${!esProveedor ? `<td>${detalles.precio || 'No registrado'}</td>` : ''}
+                                `;
+                                row.style.color = 'green';
+                            } else {
+                                row.innerHTML = `
+                                    <td>0</td>
+                                    <td>${accionNombre}</td>
+                                    <td>No registrado</td>
+                                    <td>No registrado</td>
+                                    <td>No registrado</td>
+                                    ${!esProveedor ? `<td>No registrado</td>` : ''}
+                                `;
+                                row.style.color = 'red';
+                            }
+            
+                            accionesLista.appendChild(row);
+                        });
+                    }
+                });
             </script>
+            
             <style>
                 table {
                     width: 100%;

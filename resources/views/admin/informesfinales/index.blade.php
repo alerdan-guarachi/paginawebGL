@@ -4,6 +4,10 @@
 <h1>INFORMES FINALES ITA</h1>
 @stop
  
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/informesfinales.css') }}">
+@stop
+
 @section('content')
 @if (session('info'))
     <div id="alert-info" class="alert alert-success">
@@ -19,48 +23,22 @@
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid justify-content-end">
             <div class="d-flex flex-wrap align-items-center">
+                {{-- {{ $programacionclientes->links() }} --}}
                 <form id="search-form" action="{{ route('buscarprogramacionesclienteita') }}" method="get" class="form-inline">
                     <div class="flex-grow-1">
                         {{-- <input type="date" name="buscarporfecha" class="form-control mr-sm-2" placeholder="Fecha"> --}}
-                        <input type="text" name="buscarporcliente" class="form-control mr-sm-2" placeholder="Nombre del Cliente">
+                        <input type="text" name="buscarporcliente" class="form-control mr-sm-2" placeholder="NOMBRE DEL CLIENTE">
                     </div>
-                    <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit">Buscar</button>
-                    <button id="btn-mostrar-todo" class="btn btn-mostrartodo my-2 my-sm-0 ml-2" type="button">Mostrar Todo</button>
+                    <button id="btn-buscar" class="btn btn-buscar" type="submit">BUSCAR</button>
+                    <button id="btn-mostrar-todo" class="btn btn-mostrartodo my-2 my-sm-0 ml-2" name="buscartodo" type="submit" value="1">MOSTRAR TODO</button>
                 </form>
             </div>
         </div>
     </nav>
-    {{-- <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid justify-content-end">
-            <div class="d-flex flex-wrap align-items-center">
-                <form id="search-form" action="{{ route('buscarprogramacionesclienteita') }}" method="get" class="form-inline">
-                    <div class="d-flex">
-                        <input type="text" name="buscarporcliente" class="form-control mr-sm-2" placeholder="Nombre del Cliente">
-                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0 ml-2" type="submit">Buscar</button>
-                        <button id="btn-mostrar-todo" class="btn btn-mostrartodo my-2 my-sm-0 ml-2" type="button">Mostrar Todo</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </nav> --}}
-    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('btn-mostrar-todo').addEventListener('click', function() {
                 window.location.href = "{{ route('buscarprogramacionesclienteita') }}";
-            });
-    
-            const activeTabId = localStorage.getItem('activeTab') || 'tab-1';
-            const tabLink = document.querySelector(`a[href="#${activeTabId}"]`);
-            if (tabLink) {
-                tabLink.click();
-            }
-            document.querySelectorAll('#myTabs .nav-link').forEach(function(link) {
-                link.addEventListener('click', function() {
-                    const href = this.getAttribute('href');
-                    const tabId = href.substring(1);
-                    localStorage.setItem('activeTab', tabId);
-                });
             });
         });
     </script>
@@ -92,41 +70,42 @@
             </li>     
             {{-- @endcan --}}
 
-            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $usuarioAutenticado === 'VANESSA MAMANI HUANACO')
-            @can('admin.informesfinales.aprobarbateriainformesfinales') 
-            <li class="nav-item">
-                <a class="nav-link" id="tab-5" data-toggle="tab" href="#tab-content-5" role="tab" aria-controls="tab-content-5" aria-selected="true">
-                    APROBAR BATERIA
-                    <?php if ($aprobarbateriaCount > 0): ?>
-                        <span class="circle"><?= $aprobarbateriaCount ?></span>
-                    <?php endif; ?>
-                </a>
-            </li>
-            @endcan  
-
-            @can('admin.informesfinales.subirinformesfinales') 
-                @can('admin.informesfinales.verinformestodosproveedores') 
+            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || $usuarioAutenticado === 'MARLENE ANDREA MONTELLANO ORTIZ' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE')
+                @can('admin.informesfinales.aprobarbateriainformesfinales') 
                 <li class="nav-item">
-                    <a class="nav-link" id="tab-6" data-toggle="tab" href="#tab-content-6" role="tab" aria-controls="tab-content-6" aria-selected="true">
-                        SUBIR INFORME
-                        <?php if ($subirinformeCount > 0): ?>
-                            <span class="circle"><?= $subirinformeCount ?></span>
+                    <a class="nav-link" id="tab-5" data-toggle="tab" href="#tab-content-5" role="tab" aria-controls="tab-content-5" aria-selected="true">
+                        APROBAR BATERIA
+                        <?php if ($aprobarbateriaCount > 0): ?>
+                            <span class="circle"><?= $aprobarbateriaCount ?></span>
                         <?php endif; ?>
                     </a>
                 </li>
-                @endcan
-                @can('admin.informesfinales.soloverinformessegunproveedor')
-                <li class="nav-item">
-                    <a class="nav-link active" id="tab-6" data-toggle="tab" href="#tab-content-6" role="tab" aria-controls="tab-content-6" aria-selected="true">
-                        SUBIR INFORME
-                        <?php if ($subirinformeCount2 > 0): ?>
-                            <span class="circle"><?= $subirinformeCount2 ?></span>
-                        <?php endif; ?>
-                    </a>
-                </li>
-                @endcan
-            @endcan 
-
+                @endcan  
+            @endif
+            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'MARLENE ANDREA MONTELLANO ORTIZ')
+                @can('admin.informesfinales.subirinformesfinales') 
+                    @can('admin.informesfinales.verinformestodosproveedores') 
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-6" data-toggle="tab" href="#tab-content-6" role="tab" aria-controls="tab-content-6" aria-selected="true">
+                            SUBIR INFORME
+                            <?php if ($subirinformeCount > 0): ?>
+                                <span class="circle"><?= $subirinformeCount ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+                    @endcan
+                    @can('admin.informesfinales.soloverinformessegunproveedor')
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab-6" data-toggle="tab" href="#tab-content-6" role="tab" aria-controls="tab-content-6" aria-selected="true">
+                            SUBIR INFORME
+                            <?php if ($subirinformeCount2 > 0): ?>
+                                <span class="circle"><?= $subirinformeCount2 ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+                    @endcan
+                @endcan 
+            @endif
            {{--  @can('admin.informesfinales.subirinformesfinales') 
                 @can('admin.informesfinales.verinformestodosproveedores') 
                 <li class="nav-item">
@@ -161,29 +140,29 @@
                 </li>
                 @endcan 
             @endcan  --}}
-
-            @can('admin.informesfinales.verinformesfinales')
-                @can('admin.informesfinales.verinformestodosproveedores')  
-                <li class="nav-item">
-                    <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
-                        APROBADOS
-                        <?php if ($aprobadosCount > 0): ?>
-                            <span class="circle"><?= $aprobadosCount ?></span>
-                        <?php endif; ?>
-                    </a>
-                </li>
-                @endcan
-                @can('admin.informesfinales.soloverinformessegunproveedor')  
-                <li class="nav-item">
-                    <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
-                        APROBADOS
-                        <?php if ($aprobadosCount2 > 0): ?>
-                            <span class="circle"><?= $aprobadosCount2 ?></span>
-                        <?php endif; ?>
-                    </a>
-                </li>
-                @endcan
-            @endcan 
+            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'MARLENE ANDREA MONTELLANO ORTIZ')
+                @can('admin.informesfinales.verinformesfinales')
+                    @can('admin.informesfinales.verinformestodosproveedores')  
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
+                            APROBADOS
+                            <?php if ($aprobadosCount > 0): ?>
+                                <span class="circle"><?= $aprobadosCount ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+                    @endcan
+                    @can('admin.informesfinales.soloverinformessegunproveedor')  
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
+                            APROBADOS
+                            <?php if ($aprobadosCount2 > 0): ?>
+                                <span class="circle"><?= $aprobadosCount2 ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+                    @endcan
+                @endcan 
             @endif
         </ul>
     </div>
@@ -450,6 +429,7 @@
                                             @if ($aprobado)
                                                 <div class="text-completo">APROBADO</div>
                                             @else
+                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
                                                 <abbr title="APROBAR BATERÍA">
                                                     <a class="btn btn-aprobar" data-toggle="modal" data-target="#modalAprobar{{ $loop->index }}"
                                                             data-cliente="{{ $item['clienteitanombre'] }}" 
@@ -457,6 +437,9 @@
                                                             <i class="fas fa-calendar-check" style="align-items: center"></i>
                                                     </a>
                                                 </abbr>
+                                                @else
+                                                <div class="text-incompleto">NO APROBADO</div>
+                                            @endif
                                             @endif
                                         @else
                                             <button class="btn btn-disabled btn-disabled" disabled>
@@ -1680,10 +1663,30 @@
 
                                         @if ($item['document'])
                                         <abbr title="VER INFORME FINAL">
-                                            <a href="{{ asset('/informesfinalesclientesita/' . $item['clienteitaid'] . '/'. $item['documentfirmado']) }}" class="btn btn-veracciones" target="_blank">
+                                            <a href="{{ asset('/informesfinalesclientesita/' . $item['clienteitaid'] . '/'. $item['documentfirmado']) }}" class="btn btn-sm btn-veracciones" target="_blank">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         </abbr>
+                                        @endif
+
+                                        @if ($item['documentfirmado'])
+                                            <a href="{{ asset('/informesfinalesclientesita/' . $item['clienteitaid'] . '/' . $item['documentfirmado']) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME FINAL FIRMADO">
+                                                <i class="fas fa-file"></i>
+                                            </a>
+                                        @else
+                                            {{-- <a href="" class="btn btn-sm btn-sinregistro disabled" target="_blank" title="VER INFORME MÉDICO FIRMADO" aria-disabled="true">
+                                                <i class="fas fa-file"></i>
+                                            </a> --}}
+                                        @endif
+
+                                        @if ($item['documentword'])
+                                            <a href="{{ asset('/informesfinalesclientesita/' . $item['clienteitaid'] . '/' . $item['documentword']) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME FINAL WORD">
+                                                <i class="fas fa-file"></i>
+                                            </a>
+                                        @else
+                                            {{-- <a href="" class="btn btn-sm btn-sinregistro disabled" target="_blank" title="VER INFORME MÉDICO FIRMADO" aria-disabled="true">
+                                                <i class="fas fa-file"></i>
+                                            </a> --}}
                                         @endif
                                     </td>
                                 </tr>
@@ -1768,12 +1771,31 @@
                                         @endif
 
                                         @if ($item['document'])
-                                        <abbr title="VER INFORME FINAL">
-                                            <a href="{{ asset('/informesfinalesclientesita/'. $item['clienteitaid'] . '/'. $item['document']) }}" class="btn btn-veracciones" target="_blank">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        </abbr>
+                                        <a href="{{ asset('/informesfinalesclientesita/'. $item['clienteitaid'] . '/'. $item['document']) }}" class="btn btn-sm btn-veracciones" target="_blank" title="VER INFORME FINAL">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                         @endif
+
+                                        @if ($item['documentfirmado'])
+                                            <a href="{{ asset('/informesfinalesclientesita/' . $item['clienteitaid'] . '/' . $item['documentfirmado']) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME FINAL FIRMADO">
+                                                <i class="fas fa-file"></i>
+                                            </a>
+                                        @else
+                                            {{-- <a href="" class="btn btn-sm btn-sinregistro disabled" target="_blank" title="VER INFORME MÉDICO FIRMADO" aria-disabled="true">
+                                                <i class="fas fa-file"></i>
+                                            </a> --}}
+                                        @endif
+
+                                        @if ($item['documentword'])
+                                            <a href="{{ asset('/informesfinalesclientesita/' . $item['clienteitaid'] . '/' . $item['documentword']) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME FINAL WORD">
+                                                <i class="fas fa-file"></i>
+                                            </a>
+                                        @else
+                                            {{-- <a href="" class="btn btn-sm btn-sinregistro disabled" target="_blank" title="VER INFORME MÉDICO FIRMADO" aria-disabled="true">
+                                                <i class="fas fa-file"></i>
+                                            </a> --}}
+                                        @endif
+                                        
                                     </td>
                                 </tr>
                                 @endif
@@ -2845,9 +2867,17 @@
                             <input type="hidden" name="cliente" value="{{ $item['clienteitanombre'] }}">
                             <input type="hidden" name="fechabateria" value="{{ $item['fechabateria'] }}">
                             <input type="hidden" name="estado" value="EN REVISIÓN">
-                            {!! Form::label('file', 'Documento:') !!}
+                            {!! Form::label('file', 'INFORME PDF (OBLIGATORIO):') !!}
                             <input type="file" name="document" id="document" class="dropify" accept=".pdf"/>
                             @error('document')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                            @enderror
+<br>
+                            {!! Form::label('file', 'INFORME WORD:') !!}
+                            <input type="file" name="documentword" id="documentword" class="dropify" accept=".docx"/>
+                            @error('documentword')
                             <small class="text-danger fas fa-exclamation-circle">
                                 {{$message}}
                             </small>
@@ -2865,380 +2895,6 @@
 
 @endforeach
 
-@stop
-
-@section('css')
-<link rel="styleheet" href="/css/admin_custom.css">
-<style>
-    .btn-bateria {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-    }
-    .btn-bateria:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-buscar { 
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        }
-    .btn-buscar:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-mostrartodo { 
-        background-color:  #ffffff;
-        color: #2f97e7;
-        border-color: #2f97e7;
-        border-radius: 5px;
-        }
-    .btn-mostrartodo:hover {
-        background-color: #2f97e7;
-        color: #ffffff;
-        }
-    .btn-container {
-        display: flex;
-        align-items: center;
-        gap: 2px;
-    }
-    .btn-container .btn,
-    .btn-container .btn-enviarobservacion {
-        justify-content: center;
-    }
-    .nav-tabs {
-        display: flex;
-        justify-content: space-between;
-    }
-    .nav-tabs .nav-item {
-        flex: 1;
-    }
-    .nav-tabs .nav-link {
-        display: block;
-        text-align: center;
-        width: 100%;
-        font-weight: bold;
-        font-size: 14px;
-        color: #faa625;
-        background-color: #fef4e7;
-    }
-    .nav-tabs .nav-link.active {
-        font-weight: bold;
-        font-size: 14px;
-        color: #94c93b;
-        background-color: #ffffff;
-    }
-    .circle {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        line-height: 20px;
-        border-radius: 50%;
-        text-align: center;
-        font-size: 14px;
-        font-weight: bold;
-        margin-left: 8px;
-    }
-    .nav-link.active .circle {
-        background-color: #94c93b;
-        color: #fff;
-    }
-    .nav-link .circle {
-        background-color: #faa625;
-        color: #fff;
-    }
-    .btn-upload {
-        background-color: #28a745;
-        color: white;
-    }
-    .btn-disabled {
-        background-color: #d3d3d3;
-        color: #6c757d;
-        cursor: not-allowed;
-    }
-    .btn-upload:hover {
-        background-color: #218838;
-    }
-    .btn-disabled:hover {
-        background-color: #d3d3d3;
-    }
-    .modal-content {
-        border-radius: 10px;
-        }
-    .modal-header {
-        border-bottom: none;
-        }
-    .modal-footer {
-        border-top: none;
-        }
-    h4 {
-        font-weight: bold;
-        color: #94c93b;
-        }
-    h1 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-    }
-    .btn-no, .btn-si {
-        background-color: #ffffff;
-        border-radius: 5px;
-        padding: 5px 5px;
-        min-width: 50px;
-        border: 1px solid;
-        }
-    .btn-no {
-        color: #fd1d1d;
-        border-color: #fd1d1d;
-        width: 100px;
-        }
-    .btn-no:hover {
-        background-color: #fd1d1d;
-        color: #ffffff;
-        }
-    .btn-si {
-        color: #8bc02f;
-        border-color: #8bc02f;
-        width: 100px;
-        }
-    .btn-si:hover {
-        background-color: #8bc02f;
-        color: #ffffff;
-        }
-    .checkverde {
-        color:#94c93b; 
-        }
-    .text-completo {
-        color: #94c93b;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .text-incompleto {
-        color: red;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .text-aprobado {
-        color: #94c93b;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .text-enrevision {
-        color: #41b5eb;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .text-solicitorevision {
-        color: #faa625;
-        font-size: 15px;
-        font-weight: 900;
-        }
-    .btn-verdocumentacion {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-verdocumentacion:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-    .btn-verdetalles {
-        background-color:  #ffffff;
-        color: #25c8fa;
-        border-color: #25c8fa;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-verdetalles:hover {
-        background-color: #25c8fa;
-        color: #ffffff;
-        }
-    .btn-verhistoriamedica {
-        background-color:  #ffffff;
-        color: #c9c971;
-        border-color: #c9c971;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-verhistoriamedica:hover {
-        background-color: #c9c971;
-        color: #ffffff;
-        }
-    .btn-requisitosdocumentos {
-        background-color:  #ffffff;
-        color: #b0b0b0;
-        border-color: #b0b0b0;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-requisitosdocumentos:hover {
-        background-color: #b0b0b0;
-        color: #ffffff;
-        }
-    .pendiente {color:#fb2525; 
-        font-weight: 900;
-        font-size: 15px;
-        }
-    .btn-veracciones {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-veracciones:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-    .btn-veracciones2 {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-veracciones2:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-enviarobservacion {
-        background-color:  #ffffff;
-        color: #41b5eb;
-        border-color: #41b5eb;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-enviarobservacion:hover {
-        background-color: #41b5eb;
-        color: #ffffff;
-        }
-    .btn-observaciones {
-        background-color:  #ffffff;
-        color: #876f4a;
-        border-color: #876f4a;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-observaciones:hover {
-        background-color: #876f4a;
-        color: #ffffff;
-        }
-    .btn-solicitarrevision {
-        background-color:  #ffffff;
-        color: #41b5eb;
-        border-color: #41b5eb;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-solicitarrevision:hover {
-        background-color: #41b5eb;
-        color: #ffffff;
-        }
-    .btn-aprobarinforme {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-aprobarinforme:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-subirinforme {
-        background-color:  #ffffff;
-        color: #cf44b8;
-        border-color: #cf44b8;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-subirinforme:hover {
-        background-color: #cf44b8;
-        color: #ffffff;
-        }
-    .btn-subirinformeinicio {
-        background-color:  #ffffff;
-        color: #cf44b8;
-        border-color: #cf44b8;
-        border-radius: 5px;
-        padding: 2px 40px;
-        }
-    .btn-subirinformeinicio:hover {
-        background-color: #cf44b8;
-        color: #ffffff;
-        }
-    .btn-asignarproveedor {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 40px;
-        }
-    .btn-asignarproveedor:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-aprobar {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 40px;
-        }
-    .btn-aprobar:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-disabled {
-        background-color:  #ffffff;
-        color: #737373;
-        border-color: #737373;
-        border-radius: 5px;
-        padding: 2px 10px;
-        }
-    .btn-disabled:hover {
-        background-color: #737373;
-        color: #ffffff;
-        }
-    .btn-cerrar {
-        background-color: #ffffff;
-        color: #fb2525;
-        border-color: #fb2525;
-        border-radius: 5px;
-        padding: 2px 5px;
-        }
-    .btn-cerrar:hover {
-        background-color: #fb2525;
-        color: #ffffff;
-        }
-    .btn-solicitocorreccion {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 5px;
-        }
-    .btn-solicitocorreccion:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-guardarobservacion {
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 2px 5px;
-        }
-    .btn-guardarobservacion:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-</style>
 @stop
 
 @section('js')

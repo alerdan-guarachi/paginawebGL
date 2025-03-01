@@ -3,7 +3,7 @@
 <link href="assets/img/logo.png" rel="icon">
 
 @section('content_header')
-    <div class="text-center mb-0"> <!-- Cambiado de mb-1 a mb-0 -->
+    <div class="text-center mb-0">
         <h1 class="font-weight-bold"
             style="font-size: 1.8rem; color: #343a40; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0;">
             INGRESOS DE CAJA
@@ -15,20 +15,13 @@
     <style>
         .card-body {
             padding: 0.75rem;
-            /* Padding reducido */
         }
-
-        /* Colores y estilos básicos */
         body {
             background-color: #f8f9fa;
         }
-
         .panel {
-
             margin-top: 0;
-            /* Margen superior reducido */
         }
-
         .panel,
         .card {
             background-color: #ffffff;
@@ -36,15 +29,10 @@
             border-radius: 5px;
             padding: 10px;
         }
-
         h5 {
             font-weight: bold;
             font-size: 1.2rem;
-            /* color: #ffffff; */
-            /* Eliminado el color blanco global */
         }
-
-        /* Botones uniformes */
         .table-button {
             border-radius: 5px;
             transition: all 0.2s ease-in-out;
@@ -52,81 +40,57 @@
             align-items: center;
             justify-content: center;
             width: 35px;
-            /* Ancho fijo */
             height: 35px;
-            /* Alto fijo */
             padding: 0;
             font-size: 1rem;
         }
-
         .btn-success.table-button {
             background-color: #28a745;
             color: white;
         }
-
         .btn-success.table-button:hover {
             background-color: #218838;
         }
-
         .btn-danger.table-button {
             background-color: #dc3545;
             color: white;
         }
-
         .btn-danger.table-button:hover {
             background-color: #c82333;
         }
-
         .btn-secondary.table-button {
             background-color: #6c757d;
             color: white;
         }
-
         .btn-secondary.table-button:hover {
             background-color: #5a6268;
         }
-
-        /* Iconos sin texto */
         .table-button i {
             margin: 0;
         }
-
-        /* Tabla Responsiva y Centrando */
         .table-responsive {
             width: 100%;
             overflow: auto;
             max-height: 500px;
-            /* Ajusta según tus necesidades */
             margin: 0 auto;
-            /* Centra el contenedor */
         }
-
-        /* Asegura que la tabla ocupe todo el ancho disponible */
         table {
             background-color: white;
             border-collapse: collapse;
             width: 100%;
         }
-
-        /* Encabezados y celdas */
         table th,
         table td {
             text-align: center;
             padding: 8px;
             white-space: nowrap;
-            /* Evita que el contenido se divida en múltiples líneas */
         }
-
-        /* Reducción del ancho de las columnas de botones */
         table th:last-child,
         table th:nth-last-child(2),
         table td:last-child,
         table td:nth-last-child(2) {
             width: 50px;
-            /* Ajusta según tus necesidades */
         }
-
-        /* Estilo para el modo maximizado */
         .fullscreen {
             position: fixed;
             top: 0;
@@ -138,67 +102,39 @@
             padding: 20px;
             overflow: auto;
         }
-
-        /* Transición suave al maximizar */
         .fullscreen-transition {
             transition: all 0.3s ease-in-out;
         }
-
-        /* Reducir el padding del encabezado de la tarjeta */
         .card-header {
             background-color: #343a40;
-            /* bg-dark */
             color: #ffffff;
             text-align: center;
             padding: 0.30rem;
-            /* Padding aún más reducido */
         }
-
-        /* Eliminar margen inferior del título */
         .card-header h5 {
             margin-bottom: 0;
-            /* Margen inferior eliminado */
             color: #ffffff;
-            /* Color blanco para el título de la tarjeta */
         }
-
-        /* Reducir el padding del cuerpo de la tarjeta */
         .card-body {
             padding: 0.75rem;
-            /* Padding reducido */
         }
-
-        /* Aplicar color negro a las etiquetas <h5> dentro de los paneles */
         .panel h5 {
             color: #343a40;
-            /* Color gris oscuro */
         }
 
         .panel .form-group {
             margin-bottom: 0.2rem;
-            /* Espacio inferior reducido */
         }
-
-        /* Padding de los Botones Dentro de Grupos de Botones */
         .panel .btn-group .btn {
             padding: 0.15rem 0.3rem;
-            /* Padding reducido */
-            /* Mantener el tamaño de fuente sin cambios */
         }
-
-        /* Margen Inferior de los Elementos de Tipo Checkbox */
         .panel .form-check {
             margin-bottom: 0.3rem;
-            /* Margen inferior reducido */
         }
-
-        /* Espacio superior para el botón "Registrar" */
         .registrar-btn {
             margin-top: 1rem;
-            /* Ajusta este valor según tus necesidades */
         }
     </style>
-    <!-- Añadir FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
         integrity="sha512-Fo3rlrZj/k7ujTnHq6dE+TzL1jBj9zF3aSgV7KZFrdAQhPqF2OQG1B6lA1Y0Qhf8kqHzvRFeuW6O6MZqClLkRQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -206,10 +142,8 @@
 
 @section('content')
     <div class="row">
-        <!-- Panel Izquierdo -->
         <div class="col-md-2 panel" style="background-color: #efefef">
             <h6 class="text" style="margin-top: 0;">Recibir Datos</h6>
-            {{-- RELLENAR AUTOMATICO --}}
             <div class="form-group">
                 <label>Ciudad de Operación</label>
                 <select class="form-control">
@@ -287,12 +221,10 @@
             </div>
         </div>
 
-        <!-- Panel Central -->
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header bg-dark text-white text-center">
                     <h5 style="visibility: visible; color: #ffffff; margin-bottom: 0;">Registrar Movimiento</h5>
-                    <!-- Añadido margin-bottom: 0; -->
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -330,7 +262,6 @@
                         </div>
                     </div>
 
-                    <!-- Tabla con Botones "Añadir" y "Maximizar" en Columnas Separadas -->
                     <div class="table-responsive">
                         <table class="table table-bordered mt-3">
                             <thead>
@@ -358,7 +289,7 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td></td> <!-- Celda vacía para mantener la estructura -->
+                                    <td></td>
                                     <td>
                                         <button class="btn btn-danger table-button" title="Eliminar Movimiento"
                                             aria-label="Eliminar Movimiento"
@@ -366,16 +297,14 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
-
                                     <td>Juan Pérez</td>
                                     <td>Ventas</td>
                                     <td>Venta de producto X</td>
                                     <td>Ingreso</td>
                                     <td>200</td>
-
                                 </tr>
                                 <tr>
-                                    <td></td> <!-- Celda vacía para mantener la estructura -->
+                                    <td></td>
                                     <td>
                                         <button class="btn btn-danger table-button" title="Eliminar Movimiento"
                                             aria-label="Eliminar Movimiento"
@@ -388,10 +317,7 @@
                                     <td>Campaña de publicidad</td>
                                     <td>Egreso</td>
                                     <td>150</td>
-
                                 </tr>
-                                
-                                
                             </tbody>
                         </table>
                     </div>

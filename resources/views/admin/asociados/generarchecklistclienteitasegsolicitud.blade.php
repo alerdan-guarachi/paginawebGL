@@ -25,10 +25,10 @@
         }, 5000);
     </script>
 @endif
+@if (!$tieneRequisitos)
 <div class="card"> 
     <div class="card-body">
         <div class="row">
-
             <div class="col-md-4">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">DOCUMENTACIÓN A PRESENTAR</h4>
                 <div class="form-group">
@@ -36,12 +36,10 @@
                     <input type="checkbox" name="poder" value="poder" id="poder" checked disabled>
                     <label for="poder">PODER</label>
                 </div>
-                {{-- @if (strtolower($estadoLaboral) === 'activo') --}}
                 <div class="form-group">
                     <input type="checkbox" name="avcci" value="avcci" id="avcci" checked disabled>
                     <label for="avcci">AVC/CARNET ASEGURADO</label>
                 </div>
-                {{-- @endif --}}
                 <div class="form-group">
                     <input type="checkbox" name="cnacasegurado" value="cnacasegurado" id="cnacasegurado" checked disabled>
                     <label for="cnacasegurado" style="min-height: 20px;">CERTIFICADO NACIMIENTO ASEGURADO</label>
@@ -54,10 +52,6 @@
                     <input type="checkbox" name="crodomicilio" value="crodomicilio" id="crodomicilio" checked disabled>
                     <label for="crodomicilio" style="min-height: 20px;">CROQUIS DE DOMICILIO</label>
                 </div>
-                {{-- <div class="form-group">
-                    <input type="checkbox" name="dictamencalentenc" value="dictamencalentenc" id="dictamencalentenc" checked disabled>
-                    <label for="dictamencalentenc" style="min-height: 20px;">DICTAMEN CALIFICACION ENTIDAD ENCARGADA</label>
-                </div> --}}
                 <div class="form-group">
                     <input type="checkbox" name="egestora" value="egestora" id="egestora">
                     <label for="egestora" style="min-height: 20px;">EXTRACTO DE GESTORA</label>
@@ -128,7 +122,6 @@
                         <label for="cihijos" style="min-height: 20px;">CARNET IDENTIDAD HIJOS < 25</label>
                     </div>
                 @endif
-                
             </div>
             <div class="col-md-4">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">DOCUMENTACIÓN ADICIONAL</h4>
@@ -136,11 +129,6 @@
                     <input type="checkbox" name="anteriordictamen" value="anteriordictamen" id="anteriordictamen">
                     <label for="anteriordictamen" style="min-height: 20px;">ANTERIOR DICTAMEN O RESOLUCION</label>
                 </div>
-                {{-- <div class="form-group">
-                    <input type="checkbox" name="poderciapoderado" value="poderciapoderado" id="poderciapoderado">
-                    <label for="poderciapoderado" style="min-height: 20px;">PODER Y CARNET IDENTIDAD APODERADO</label>
-                </div> --}}
-                
                 <div class="form-group"> 
                     <input type="checkbox" name="denfaccidente" value="denfaccidente" id="denfaccidente">
                     <label for="denfaccidente" class="color-toggle">DENUNCIA ENFERMEDAD ACCIDENTE</label>
@@ -151,11 +139,6 @@
                     <label for="resolinvhijos" class="color-toggle">RESOLUCIÓN INVALIDEZ DE HIJOS < 25</label>
                 </div>
                 @endif
-                {{-- <div class="form-group">
-                    <input type="checkbox" name="poderciapoderado" value="poderciapoderado" id="poderciapoderado">
-                    <label for="poderciapoderado" class="color-toggle">PODER Y CARNET IDENTIDAD APODERADO</label>
-                </div> --}}
-                
                 <script>
                     document.querySelectorAll('.color-toggle').forEach(label => {
                         label.addEventListener('dblclick', () => {
@@ -165,9 +148,9 @@
                 </script>
             </div>
         </div>
-        @if (!$tieneRequisitos)
+        
         <button onclick="generatePDF(), generatePDF2()" class="btn-crear">GENERAR CHECK LIST</button>
-        @endif
+        
         <script>
             function generatePDF() {
                 var checkboxes = document.querySelectorAll('input[type="checkbox"]');
@@ -195,80 +178,192 @@
         </script>
     </div>
 </div>
-{{-- <div class="card"> 
+@endif
+<div class="card"> 
     <div class="card-body">
         <div class="row"> 
             <div class="col-lg-12">
-                <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">ATENCIÓN MÉDICA</h4>
+                <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px; margin-top: 20px;">ATENCIÓN MÉDICA</h4>
                 @if (!$registroExistente && !$registroaprobadoExistente)
-                    <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'generar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                            {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
-                            {!! Form::submit('DERIVAR A MEDICINA LABORAL', ['class' => 'btn btn-derivar']) !!}
-                        {!! Form::close() !!}
+                
+                <div class="row">
+                    <!-- Primera Card -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm h-100" style="background-color: #fdf4e3;">
+                            <div class="card-header text-center fw-bold text-white" style="background-color: #edab2e; font-weight:900; font-size:16px;">
+                                DERIVAR A MEDICINA LABORAL
+                            </div>
+                            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                                {!! Form::open(['route' => 'generar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                    {!! Form::hidden('nombres', $cliente->nombres) !!}
+                                    {!! Form::hidden('apepaterno', $cliente->apepaterno) !!}
+                                    {!! Form::hidden('apematerno', $cliente->apematerno) !!}
+                                    {!! Form::hidden('ci', $cliente->ci) !!}
+                                    {!! Form::hidden('sucursal', $cliente->sucursal) !!}
+                                    {!! Form::hidden('tramite', 'SEGUNDA SOLICITUD') !!}
+                                    
+                                    <div class="form-group mb-3">
+                                        <label for="proveedor_id" class="fw-bold d-flex justify-content-center w-100">Seleccionar Proveedor:</label>
+                                        <select name="proveedorasignado" id="proveedor_id" class="form-control" required>
+                                            <option value="" disabled selected></option>
+                                            @foreach($proveedores as $proveedor)
+                                                <option value="{{ $proveedor }}">{{ $proveedor }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                
+                                    <div class="d-flex justify-content-center w-100">
+                                        <button type="submit" class="btn btn-derivar px-4" id="submit-btn" disabled>DERIVAR</button>
+                                    </div>
+                                {!! Form::close() !!}
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Segunda Card -->
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm h-100" style="background-color: #f2e8f5;">
+                            <div class="card-header text-center fw-bold text-white" style="background-color: #b02eed; font-weight:900; font-size:16px;">
+                                GENERAR SOLO CONSENTIMIENTO
+                            </div>
+                            <div class="card-body d-flex align-items-center justify-content-center"  style="display: flex; gap: 5px;">
+                                {!! Form::open(['route' => 'generar.pdf.soloconsentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                    <a class="btn btn-consen btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">GENERAR</a>
+                                    {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('ci', $cliente->ci, ['class' => 'form-control']) !!}
+                                    {!! Form::hidden('tramite', 'SEGUNDA SOLICITUD') !!}
+                                {!! Form::close() !!}
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group" style="display: flex; gap: 5px;">
-                        {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                            {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
-                            {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
-
-                            {!! Form::submit('APROBAR INICIAR BATERIA', [
-                                'class' => 'btn btn-aprobarbateria', 
-                                'hidden' => !($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
-                            ]) !!}
-                        {!! Form::close() !!}
-                    </div>
+                    @if($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
+                        <div class="col-lg-4">
+                            <div class="card shadow-sm h-100" style="background-color: #e0f4ff;">
+                                <div class="card-header text-center fw-bold text-white" style="background-color: #2ea4ed; font-weight:900; font-size:16px;">
+                                    APROBAR INICIAR BATERIA SIN CONSENTIMIENTO
+                                </div>
+                                <div class="card-body d-flex align-items-center justify-content-center" style="display: flex; gap: 5px;">
+                                    {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                        {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                        {!! Form::hidden('nombres', $cliente->nombres) !!}
+                                        {!! Form::hidden('apepaterno', $cliente->apepaterno) !!}
+                                        {!! Form::hidden('apematerno', $cliente->apematerno) !!}
+                                        {!! Form::hidden('tramite', 'SEGUNDA SOLICITUD') !!}
+                                        
+                                        <div class="d-flex justify-content-center w-100">
+                                            <button type="submit" class="btn btn-aprobarbateria px-4">APROBAR</button>
+                                        </div>
+                                    {!! Form::close() !!}
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                
+                <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+                        let proveedorSelect = document.getElementById("proveedor_id");
+                        let submitBtn = document.getElementById("submit-btn");
+                
+                        proveedorSelect.addEventListener("change", function() {
+                            submitBtn.disabled = (this.value === "");
+                        });
+                    });
+                </script>
                 @elseif ($registroExistente)
                     <p></p>
                 @elseif ($registroaprobadoExistente)
-                    <p>APROBADO PARA CREAR BATERÍA</p>
+                <div class="d-flex mt-3">
+                    <div class="p-3 border rounded shadow-sm" style="background-color: #edffef; width: fit-content;">
+                        <p class="m-0 fw-bold" style="font-weight: 900">APROBADO PARA CREAR BATERÍA</p>
+                    </div>
+                </div>
                 @endif
-
             </div>
         </div>
 
         @if ($registroExistente && is_object($registroExistente))
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="form-group">
-                        @if ($registroExistente->document)
-                            <label>Consentimiento informado para evaluación inicial:</label>
-                            <a href="{{ asset('cotizacionesaprobadasita/' . $cliente->id . '/' . $registroExistente->document) }}" class="btn btn-crear" target="_blank">Ver Consentimiento</a>
-                        @else
-                            <label>Consentimiento informado para evaluación inicial:</label>
-                            {!! Form::open(['route' => 'guardar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-                                {!! Form::hidden('clienteitaid', $cliente->id) !!}
-                                {!! Form::hidden('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS') !!}
-                                {!! Form::file('pdf_file', ['class' => 'dropify', 'data-height' => '150']) !!}
-                                <div class="mt-3">
-                                    {!! Form::submit('Guardar consentimiento', ['class' => 'btn btn-crear']) !!}
-                                </div>
-                            {!! Form::close() !!}
-                        @endif
-                    </div>
+        <div class="row justify-content-center my-5"> 
+            <div class="col-lg-8 col-md-10">
+                <div class="form-group bg-light p-5 rounded-lg border text-center">
+                    <label class="d-block font-weight-bold mb-4 h5" style="font-weight: 600; color: #94c93b;">
+                        Consentimiento informado para evaluación inicial
+                    </label>
+                    
+                    @if ($registroExistente->document)
+                        <div class="text-center">
+                            <a href="{{ asset('cotizacionesaprobadasita/' . $cliente->id . '/' . $registroExistente->document) }}" 
+                               class="btn btn-crear btn-lg px-5 py-2 font-weight-bold" target="_blank">
+                                Ver Consentimiento
+                            </a>
+                        </div>
+                    @else
+                        {!! Form::open(['route' => 'guardar.pdf.consentimiento', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                            {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                            {!! Form::hidden('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS') !!}
+                            {!! Form::hidden('tramite', 'SEGUNDA SOLICITUD') !!}
+        
+                            <div class="mt-4">
+                                {!! Form::file('pdf_file', ['id' => 'real-file', 'style' => 'display:none;']) !!}
+                                <button type="button" class="btn btn-outline-primary" id="custom-button">Buscar archivo</button>
+                            </div>
+                            <div class="mt-3">
+                                <span id="custom-text">No se ha seleccionado ningún archivo</span>
+                            </div>
+                            <div class="text-center mt-5">
+                                {!! Form::submit('Guardar consentimiento', ['class' => 'btn btn-crear btn-lg px-5 py-2 font-weight-bold']) !!}
+                            </div>
+                        {!! Form::close() !!}
+                    @endif
                 </div>
             </div>
+        </div>
+
+        <script>
+            const realFileBtn = document.getElementById('real-file');
+            const customBtn = document.getElementById('custom-button');
+            const customTxt = document.getElementById('custom-text');
+            customBtn.addEventListener('click', function() {
+                realFileBtn.click();
+            });
+            realFileBtn.addEventListener('change', function() {
+                if (realFileBtn.value) {
+                    customTxt.innerHTML = realFileBtn.files[0].name;
+                } else {
+                    customTxt.innerHTML = "No se ha seleccionado ningún archivo";
+                }
+            });
+        </script>
         @endif
     </div>
-</div> --}}
-
+</div>
 
 @stop
 @section('css')
 <style>
+    .btn-consen {
+        background-color: #ffffff;
+        color: #af25fa;
+        border-color: #af25fa;
+        border-radius: 5px;
+        padding: 10px 10px;
+    }
+    .btn-consen:hover {
+        background-color: #af25fa;
+        color: #ffffff;
+    }
     .color-toggle {
         min-height: 20px;
-        color: red; /* Color inicial del texto */
-        cursor: pointer; /* Cambia el cursor al pasar por encima para indicar que es clickeable */
+        color: red;
+        cursor: pointer;
     }
     .color-toggle.black {
-        color: black; /* Color del texto al hacer doble clic */
+        color: black;
     }
     h5 {
         color:#94c93b; 
@@ -286,7 +381,7 @@
         margin-right: 5px;
         }
     input[type="checkbox"]:checked {
-        background-color: green; /* Cambia el color de fondo a verde cuando el checkbox está marcado */
+        background-color: green;
     }
     h1{
         color:#94c93b; 
@@ -355,89 +450,3 @@
     }
 </style>
 @stop
-
-
-{{-- @extends('adminlte::page')
-
-@section('content_header')
-<h1>Check List</h1>
-@stop
-
-@section('content')
-<body>
-    <table>
-        <caption>DOCUMENTACIÓN A PRESENTAR</caption>
-        <tr>
-            <th>PODER</th>
-            <th>AVC/CARNET ASEGURADO</th>
-            <th>CERTIFICADO NACIMIENTO ASEGURADO</th>
-            <th>CARNET IDENTIDAD ASEGURADO</th>
-            <th>CERTIFICADO DE MATRIMONIO</th>
-            <th>CERTIFICADO NACIMIENTO CONYUGE</th>
-            <th>CARNET IDENTIDAD CONYUGE</th>
-            <th>CERTIFICADO NACIMIENTO HIJOS &lt; 25</th>
-            <th>CARNET IDENTIDAD HIJOS &lt; 25</th>
-            <th>DENUNCIA ENFERMEDAD ACCIDENTE</th>
-            <th>CROQUIS DE DOMICILIO</th>
-            <th>CONTRATO</th>
-        </tr>
-        <tr id="documentos">
-            <td><input type="checkbox" name="documentos[]" value="poder"></td>
-            <td><input type="checkbox" name="documentos[]" value="avc"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_nacimiento_asegurado"></td>
-            <td><input type="checkbox" name="documentos[]" value="carnet_identidad_asegurado"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_matrimonio"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_nacimiento_conyuge"></td>
-            <td><input type="checkbox" name="documentos[]" value="carnet_identidad_conyuge"></td>
-            <td><input type="checkbox" name="documentos[]" value="certificado_nacimiento_hijos"></td>
-            <td><input type="checkbox" name="documentos[]" value="carnet_identidad_hijos"></td>
-            <td><input type="checkbox" name="documentos[]" value="denuncia_enfermedad_accidente"></td>
-            <td><input type="checkbox" name="documentos[]" value="croquis_domicilio"></td>
-            <td><input type="checkbox" name="documentos[]" value="contrato"></td>
-        </tr>
-    </table>
-    <form id="pdfForm" action="{{ route('admin.clientes.print2', $cliente) }}" method="POST" style="display: none;">
-        @csrf
-        <input type="hidden" name="documentosSeleccionados" id="documentosSeleccionadosInput">
-    </form>
-    
-    <button onclick="generatePDF()">Generar PDF</button>
-
-    <script>
-        function generatePDF() {
-            var checkboxes = document.querySelectorAll('#documentos input[type="checkbox"]');
-            var documentosSeleccionados = [];
-            checkboxes.forEach(function(checkbox) {
-                if (checkbox.checked) {
-                    documentosSeleccionados.push(checkbox.value);
-                }
-            });
-            document.getElementById('documentosSeleccionadosInput').value = JSON.stringify(documentosSeleccionados);
-            // Ahora envía el formulario
-            document.getElementById('pdfForm').submit();
-        }
-    </script>
-    
-</body>
-</html>
-@endsection
-@section('css')
-<style>
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    th, td {
-        border: 1px solid black;
-        padding: 8px;
-        text-align: center;
-    }
-    caption {
-        caption-side: top;
-        text-align: center;
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 20px;
-    }
-</style>
-@stop --}}

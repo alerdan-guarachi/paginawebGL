@@ -8,9 +8,11 @@ use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use App\Models\Mensaje;
-use App\Models\Personal;
+use App\Models\Proveedoresservicios;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
 
 class MensajeController extends Controller
 {
@@ -43,7 +45,7 @@ class MensajeController extends Controller
         $usuarioAutenticado = Auth::user()->name;
         
         // Obtén todos los usuarios
-    $todosPersonal = Personal::pluck('nombrecompleto', 'id')->toArray();
+    $todosPersonal = Proveedoresservicios::pluck('nombrecompleto', 'id')->toArray();
 
     // Filtra el personal para excluir al usuario autenticado
     $personal = array_filter($todosPersonal, function ($nombre) use ($usuarioAutenticado) {
@@ -90,7 +92,7 @@ class MensajeController extends Controller
         $usuarios = $request->input('usuariodestino');
         foreach ($usuarios as $usuarioId) {
             // Encuentra al usuario en la tabla 'personal' por ID
-            $usuario = Personal::find($usuarioId);
+            $usuario = Proveedoresservicios::find($usuarioId);
             if ($usuario) {
                 // Crea un nuevo mensaje para cada usuario usando el nombre completo
                 Mensaje::create(array_merge($request->except('usuariodestino'), ['usuariodestino' => $usuario->nombrecompleto]));
@@ -100,8 +102,6 @@ class MensajeController extends Controller
 
     return redirect()->route('admin.mensajes.create')->with('info', 'El mensaje se envió con éxito');
 }
-
-
 
     /**
      * Display the specified resource.

@@ -116,7 +116,8 @@
                                                                         @can('admin.areaacciones.verprecioscomprabateria')
                                                                         <th style="background: white;">Compra</th>
                                                                         @endcan
-                                                                        <th style="background: white;">Servicio</th>
+                                                                        <th style="background: white;">Atención</th>
+                                                                        <th style="background: white;">Pago</th>
                                                                         <th style="background: white;">Asociado</th>
                                                                         <th style="background: white;">Estado</th>
                                                                     </tr>
@@ -131,6 +132,7 @@
                                                                             <td>{{ $areaaccion->preciocompra }}</td>
                                                                             @endcan
                                                                             <td>{{ $areaaccion->servicio }}</td>
+                                                                            <td>{{ $areaaccion->pagoservicio }}</td>
                                                                             <td>{{ $areaaccion->asociado }}</td>
                                                                             <td>
                                                                                 @if ($areaaccion->estado == 'ACTIVO')
@@ -209,7 +211,8 @@
                                                                     @can('admin.areaacciones.verprecioscomprabateria')
                                                                     <th style="background: white;">Compra</th>
                                                                     @endcan
-                                                                    <th style="background: white;">Servicio</th>
+                                                                    <th style="background: white;">Atención</th>
+                                                                    <th style="background: white;">Pago</th>
                                                                     <th style="background: white;">Asociado</th>
                                                                     <th style="background: white;">Estado</th>
                                                                     <th style="background: white;"></th>
@@ -226,6 +229,7 @@
                                                                         <td>{{ $areaaccion->preciocompra}}</td>
                                                                         @endcan
                                                                         <td>{{ $areaaccion->servicio}}</td>
+                                                                        <td>{{ $areaaccion->pagoservicio}}</td>
                                                                         <td>{{ $areaaccion->asociado }}</td>
                                                                         <td>
                                                                             @if ($areaaccion->estado == 'ACTIVO')

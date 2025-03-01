@@ -279,12 +279,12 @@
                                 @enderror
                             </div>
                         </div>
-                    </div>
+                    </div> {{-- , 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57' --}}
                     <div class="row">
-                        <div class="col-lg-2">
+                        <div class="col-lg-2"> 
                             <div class="form-group">
                                 {!! Form::label('banco1', 'Entidad financiera 1:') !!}
-                                {!! Form::select('banco1', $bancos, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                {!! Form::select('banco1', $bancos, null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción']) !!}
                                 @error('banco1')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
@@ -292,21 +292,65 @@
                                 @enderror
                             </div>
                         </div>
+                        
                         <div class="col-lg-2">
                             <div class="form-group">
-                                {!! Form::label('numerocuenta1', 'Nro. de Cuenta 1:') !!}
-                                {!! Form::text('numerocuenta1', null, ['class' => 'form-control', 'placeholder' => '', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
-                                @error('numerocuenta1')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
+                                {!! Form::label('nrocredito1', 'Nro. de Crédito Banco 1:') !!}
+                                {!! Form::text('nrocredito1', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 1']) !!}
+                                <div id="additional-credits">
+                                    {!! Form::text('nrocredito2', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 2', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito3', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 3', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito4', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 4', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito5', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 5', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito6', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 6', 'style' => 'display: none;']) !!}
+                                </div>
+                                <button type="button" id="show-more" class="btn btn-sm btn-link p-0">Mostrar más</button>
                             </div>
                         </div>
-                        <div class="col-lg-2">
+                        
+                        <script>
+                            document.getElementById('show-more').addEventListener('click', function() {
+                                const additionalCredits = document.getElementById('additional-credits');
+                                const fields = additionalCredits.querySelectorAll('input');
+                                let hasHiddenFields = false;
+                        
+                                // Mostrar progresivamente los campos adicionales
+                                for (let field of fields) {
+                                    if (field.style.display === 'none') {
+                                        field.style.display = 'block'; // Hacer visible el siguiente campo oculto
+                                        hasHiddenFields = true; // Indicar que todavía hay campos ocultos
+                                        break; // Salir del bucle después de mostrar un campo
+                                    }
+                                }
+                        
+                                // Verificar si quedan campos ocultos
+                                if (!hasHiddenFields) {
+                                    this.style.display = 'none'; // Ocultar el botón si no hay más campos
+                                }
+                            });
+                        
+                            // Comprobación inicial al cargar la página
+                            const checkFields = () => {
+                                const additionalCredits = document.getElementById('additional-credits');
+                                const fields = additionalCredits.querySelectorAll('input');
+                                const showMoreButton = document.getElementById('show-more');
+                        
+                                // Si todos los campos están visibles, ocultar el botón
+                                const allVisible = Array.from(fields).every(field => field.style.display !== 'none');
+                                if (allVisible) {
+                                    showMoreButton.style.display = 'none';
+                                }
+                            };
+                        
+                            // Llamar a la función de comprobación inicial
+                            checkFields();
+                        </script>
+                        
+                        
+                        <div class="col-lg-2"> 
                             <div class="form-group">
                                 {!! Form::label('banco2', 'Entidad financiera 2:') !!}
-                                {!! Form::select('banco2', $bancos, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                {!! Form::select('banco2', $bancos, null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción']) !!}
                                 @error('banco2')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
@@ -314,21 +358,27 @@
                                 @enderror
                             </div>
                         </div>
+                        
                         <div class="col-lg-2">
                             <div class="form-group">
-                                {!! Form::label('numerocuenta2', 'Nro. de Cuenta 2:') !!}
-                                {!! Form::text('numerocuenta2', null, ['class' => 'form-control', 'placeholder' => '', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
-                                @error('numerocuenta2')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
+                                {!! Form::label('numerocuenta7', 'Nro. de Crédito Banco 2:') !!}
+                                {!! Form::text('nrocredito7', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 7']) !!}
+
+                                <div id="additional-credits-2">
+                                    {!! Form::text('nrocredito8', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 8', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito9', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 9', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito10', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 10', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito11', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 11', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito12', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 12', 'style' => 'display: none;']) !!}
+                                </div>
+                                <button type="button" id="show-more-2" class="btn btn-sm btn-link p-0">Mostrar más</button>
                             </div>
                         </div>
+                        
                         <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('banco3', 'Entidad financiera 3:') !!}
-                                {!! Form::select('banco3', $bancos, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                {!! Form::select('banco3', $bancos, null, ['class' => 'form-control', 'placeholder' => 'Seleccione una opción']) !!}
                                 @error('banco3')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
@@ -336,18 +386,62 @@
                                 @enderror
                             </div>
                         </div>
+                        
                         <div class="col-lg-2">
                             <div class="form-group">
-                                {!! Form::label('numerocuenta3', 'Nro. de Cuenta 3:') !!}
-                                {!! Form::text('numerocuenta3', null, ['class' => 'form-control', 'placeholder' => '', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
-                                @error('numerocuenta3')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
+                                {!! Form::label('numerocuenta13', 'Nro. de Crédito Banco 3:') !!}
+                                {!! Form::text('nrocredito13', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 13']) !!}
+
+                                <div id="additional-credits-3">
+                                    {!! Form::text('nrocredito14', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 14', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito15', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 15', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito16', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 16', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito17', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 17', 'style' => 'display: none;']) !!}
+                                    {!! Form::text('nrocredito18', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 18', 'style' => 'display: none;']) !!}
+                                </div>
+
+                                <button type="button" id="show-more-3" class="btn btn-sm btn-link p-0">Mostrar más</button>
                             </div>
                         </div>
+                        
+                        <script>
+                            function setupShowMore(buttonId, containerId) {
+                                const button = document.getElementById(buttonId);
+                                const container = document.getElementById(containerId);
+                                const fields = container.querySelectorAll('input');
+                        
+                                button.addEventListener('click', function() {
+                                    let hasHiddenFields = false;
+
+                                    for (let field of fields) {
+                                        if (field.style.display === 'none') {
+                                            field.style.display = 'block';
+                                            hasHiddenFields = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if (!hasHiddenFields) {
+                                        button.style.display = 'none';
+                                    }
+                                });
+
+                                const checkFields = () => {
+                                    const allVisible = Array.from(fields).every(field => field.style.display !== 'none');
+                                    if (allVisible) {
+                                        button.style.display = 'none';
+                                    }
+                                };
+
+                                checkFields();
+                            }
+
+                            setupShowMore('show-more-2', 'additional-credits-2');
+                            setupShowMore('show-more-3', 'additional-credits-3');
+                        </script>
+                        
                     </div>
+                    
                     {!! Form::submit('CREAR CLIENTE', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
             </div>

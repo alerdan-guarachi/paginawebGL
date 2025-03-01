@@ -195,7 +195,7 @@
                                                             
                                                             <td @if($accion['registrado']) style="color: green;" @else style="color: red;" @endif>
                                                                 @if($accion['document'])
-                                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $accion['document']) }}" class="btn btn-verinforme btn-sm" target="_blank">
+                                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $accion['document']) }}" class="btn btn-verinforme btn-sm" target="_blank" title="VER INFORME">
                                                                         <i class="fas fa-folder-open"></i>
                                                                     </a>
                                                                 @else
@@ -203,14 +203,26 @@
                                                                 @endif
                     
                                                                 @if($accion['image'])
-                                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $accion['image']) }}" class="btn btn-verimagen btn-sm" target="_blank">
-                                                                        <i class="fas fa-images"></i>
+                                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $accion['image']) }}" class="btn btn-verimagen btn-sm" target="_blank" title="VER IMAGEN 1">
+                                                                        <i class="fas fa-image"></i>
                                                                     </a>
                                                                 @endif
                     
                                                                 @if($accion['image2'])
-                                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $accion['image2']) }}" class="btn btn-verimagen btn-sm" target="_blank">
+                                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $accion['image2']) }}" class="btn btn-verimagen btn-sm" target="_blank" title="VER IMAGEN 2">
                                                                         <i class="fas fa-images"></i>
+                                                                    </a>
+                                                                @endif
+
+                                                                @if($accion['docfirmado'])
+                                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $accion['docfirmado']) }}" class="btn btn-docfirmado btn-sm" target="_blank" title="VER INFORME FIRMADO">
+                                                                        <i class="fas fa-paste"></i>
+                                                                    </a>
+                                                                @endif
+
+                                                                @if($accion['docword'])
+                                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $accion['docword']) }}" class="btn btn-docword btn-sm" target="_blank" title="VER INFORME WORD">
+                                                                        <i class="fas fa-paste"></i>
                                                                     </a>
                                                                 @endif
                                                             </td>
@@ -302,6 +314,40 @@
                     
                         .btn-verimagen:hover {
                             background-color: #25b6fa;
+                            color: #ffffff;
+                        }
+                        .btn-docfirmado {
+                            background-color: #ffffff;
+                            border-radius: 5px;
+                            padding: 2px 4px;
+                            font-size: 12px;
+                            margin: 0;
+                            border: 1px solid transparent;
+                            margin-bottom: -8px;
+                            margin-top: -8px;
+                            color: #be26dc;
+                            border-color: #be26dc;
+                        }
+
+                        .btn-docfirmado:hover {
+                            background-color: #be26dc;
+                            color: #ffffff;
+                        }
+                        .btn-docword {
+                            background-color: #ffffff;
+                            border-radius: 5px;
+                            padding: 2px 4px;
+                            font-size: 12px;
+                            margin: 0;
+                            border: 1px solid transparent;
+                            margin-bottom: -8px;
+                            margin-top: -8px;
+                            color: #262cdc;
+                            border-color: #262cdc;
+                        }
+
+                        .btn-docword:hover {
+                            background-color: #262cdc;
                             color: #ffffff;
                         }
                     </style>

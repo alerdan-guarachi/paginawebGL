@@ -46,7 +46,7 @@ class UpdateClienteitaRequest extends FormRequest
             'estadocivil' => 'required|max:45',
             'genero' => 'required|max:45',
             'ocupacion' => 'required|max:45',
-            'lugarnacimiento' => 'required|max:45',
+            'lugarnacimiento' => '',
             'gradoinstruccion' => 'max:45',
             'celular' => 'required',
             'telefono' => '',
@@ -66,8 +66,9 @@ class UpdateClienteitaRequest extends FormRequest
             'usuarioregistro' => '',
             'usuarioultimaactualizacion' => '',
             'sucursal' => 'required|max:45',
-            'fechavencci' => 'required',
+            'fechavencci' => '',
             'tipocliente' => '',
+            'paisnacimiento' => '',
         ]; 
         return $rules;
     }

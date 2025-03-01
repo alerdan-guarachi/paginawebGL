@@ -75,18 +75,26 @@
                     ?>
                     <tr>
                         <td class="align-middle">{{ $accion->id }}</td>
-                        <td class="align-middle">{{ $accion->accionnombre }}</td>
+                        <td class="align-middle">{{ $accion->accionnombre }} {{ $accion->nrosesion }}</td>
                         <td class="align-middle">{{ $accion->proveedornombre }}</td>
                         <td class="align-middle">{{ $accion->fechabateria }}</td>
                         <td class="align-middle">{{ $accion->fechaasignada }}</td>
                         <td class="align-middle">{{ $accion->horadesde }} - {{ $accion->horahasta }}</td>
-                        <td width="10px">
+                        {{-- <td width="10px">
                             @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria]))
                                 <i class="fas fa-check-circle fa-2x checkverde"></i>
                             @else
                                 <i class="fas fa-times-circle fa-2x text-danger"></i>
                             @endif
+                        </td> --}}
+                        <td width="10px"> 
+                            @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria][$accion->nrosesion]))
+                                <i class="fas fa-check-circle fa-2x checkverde"></i>
+                            @else
+                                <i class="fas fa-times-circle fa-2x text-danger"></i>
+                            @endif
                         </td>
+                        
                         
                         <td width="10px"> 
                             <abbr title="Recordar">
@@ -167,7 +175,7 @@
                         </div>
                     </div>
                 
-                    <div id="acciones_select">
+                    {{-- <div id="acciones_select">
                         @foreach($accionesPorFecha as $fecha => $acciones)
                             <div class="acciones-{{ $fecha }}" style="display:none;">
                                 @foreach($acciones as $accion)
@@ -181,7 +189,23 @@
                                 @endforeach
                             </div>
                         @endforeach
+                    </div> --}}
+                    <div id="acciones_select">
+                        @foreach($accionesPorFecha as $fecha => $acciones)
+                            <div class="acciones-{{ $fecha }}" style="display:none;">
+                                @foreach($acciones as $accion)
+                                    <div>
+                                        <label style="font-weight: normal;">
+                                            <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion['nombre'] }}" class="accion-checkbox"> 
+                                            {{ $accion['nombre'] }} {{ isset($accion['nrosesion']) ?  $accion['nrosesion'] : '' }}
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endforeach
                     </div>
+                    
+                    
                     @error('accionesSeleccionadas')
                         <small class="text-danger fas fa-exclamation-circle">
                             {{$message}}

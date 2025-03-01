@@ -1,13 +1,13 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn btn-sm float-right btn-regresar" href="{{ session('previous_url', route('admin.asociados.verclientecomun', $clientecomun)) }}">REGRESAR</a>
+<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclientecomun', $clientecomun) }}">REGRESAR</a>
 @can('admin.asociados.reprogramacionclienteita')
 <a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.reprogramacionclientecomun', $clientecomun)}}">REPROGRAMAR</a>
 @endcan
 <a class="btn btn-sm float-right btn-bateria" data-toggle="modal" data-target="#ventanaModal">PROGRAMACIONES DEL CLIENTE</a>
 <a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.estadoprogramacionclientecomun', $clientecomun)}}">PROGRAMACIONES</a>
-<h5>PROGRAMAR ACCIONES DE:</h5>
+<h5>PROGRAMAR ESTUDIOS / ESPECIALIDADES DE:</h5>
 <h3>{{$clientecomun->nombrecompleto}}</h3>
 @stop
 
@@ -49,7 +49,6 @@
                     {!! Form::hidden('clientecomunid', $id) !!}
                     {!! Form::hidden('clientecomunnombre', $clientecomun->nombrecompleto) !!}
                     <div class="col-lg-8">
-                        {!! Form::label('', 'ACCIONES PARA PROGRAMAR:') !!}
                         <div class="form-group" hidden>
                             {!! Form::label('nombrecompleto', 'NOMBRE DEL CLIENTE:') !!}
                             {!! Form::text('nombrecompleto', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => true]) !!}
@@ -81,7 +80,7 @@
                             </script>
                         </div>
 
-                        {!! Form::label('', 'ACCIONES REQUERIDAS Y PROVEEDORES DISPONIBLES:') !!}
+                        {!! Form::label('', 'ESTUDIOS / ESPECIALIDADES DISPONIBLES:') !!}
                         @error('proveedornombre')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
@@ -112,6 +111,7 @@
                                                 $proveedor = isset($proveedoresDetalles[$accion]) ? $proveedoresDetalles[$accion] : null;
                                                 $registrada = isset($accionesRegistradas[$fecha]) && in_array($accion, $accionesRegistradas[$fecha]);
                                                 $accionSanitizada = str_replace([' ', '.'], ['_', '-'], $accion);
+                                                $sesiones = $proveedor['sesiones'] ?? 0;
                                             @endphp
                                             
                                             @if(!$registrada && (!isset($proveedor) || $proveedor['proveedor'] !== $proveedorAjeno))
@@ -119,12 +119,23 @@
                                                     <div class="form-group">
                                                         <div>
                                                             <label style="font-weight: normal; margin-bottom: -15px;">
-                                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }}
+                                                                {{-- <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }} --}}
+                                                                    <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> 
+                                                                    {{ $accion }}  
+                                                                    @if($sesiones > 0)
+                                                                        <span style="color: gray; font-size: 15px;">
+                                                                            (Sesiones: {{ $sesiones }})
+                                                                        </span>
+                                                                    @endif
                                                             </label>
                                                             <input type="hidden" name="proveedor_{{ $accionSanitizada }}" value="{{ $proveedor['proveedor'] ?? '' }}">
                                                             <input type="hidden" name="areanombre_{{ $accionSanitizada }}" value="{{ $proveedor['area'] ?? '' }}">
                                                             <input type="hidden" name="precio_{{ $accionSanitizada }}" value="{{ $proveedor['precio'] ?? '' }}">
                                                             <input type="hidden" name="preciocompra_{{ $accionSanitizada }}" value="{{ $proveedor['preciocompra'] ?? '' }}">
+                                                            <input type="hidden" name="servicio_{{ $accionSanitizada }}" value="{{ $proveedor['servicio'] ?? '' }}">
+                                                            <input type="hidden" name="pagoservicio_{{ $accionSanitizada }}" value="{{ $proveedor['pagoservicio'] ?? '' }}">
+                                                            <input type="hidden" name="bateriaid_{{ $accionSanitizada }}" value="{{ $proveedor['bateriaid'] ?? '' }}">
+                                                            <input type="hidden" name="sesiones_{{ $accionSanitizada }}" value="{{ $proveedor['sesiones'] ?? '' }}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -231,7 +242,6 @@
                     </div>
                     <br>
                     <div class="col-lg-4">
-                        {!! Form::label('', 'PROGRAMAR ACCION:') !!}
                         <div class="form-group">
                             {!! Form::label('fechaasignada', 'Fecha a programar:') !!}
                             {!! Form::date('fechaasignada', null, ['class' => 'form-control']) !!}
@@ -282,7 +292,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body"> 
+            <div class="modal-body">  
                 <strong>Fecha de Batería:</strong>
                 <select id="select-fechas" class="form-control">
                     <option value="">Seleccione una fecha</option>
@@ -296,63 +306,140 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Acción</th>
+                                <th>Estudio / Especialidad</th>
                                 <th>Proveedor</th>
                                 <th>Fecha Asignada</th>
                                 <th>Hora Asignada</th>
                                 @if (!$esProveedor)
                                     <th>Precio</th>
                                 @endif
+                                <th>Actualizar</th>
                             </tr>
                         </thead>
                         <tbody id="acciones-lista"></tbody>
                     </table>
                 </div>
             </div>
-            
             <script>
-            document.getElementById('select-fechas').addEventListener('change', function() {
-                const fechaSeleccionada = this.value;
-                const accionesBateria = @json($accionesPorFechaBateria);
-                const accionesDetalles = @json($accionesDetallesPorFecha);
-                const esProveedor = @json($esProveedor);
+                document.getElementById('select-fechas').addEventListener('change', function() { 
+                    const fechaSeleccionada = this.value;
+                    const accionesBateria = @json($accionesPorFechaBateria);
+                    const accionesDetalles = @json($accionesDetallesPorFecha);
+                    const esProveedor = @json($esProveedor);
 
-                const accionesLista = document.getElementById('acciones-lista');
-                accionesLista.innerHTML = '';
+                    const accionesLista = document.getElementById('acciones-lista');
+                    accionesLista.innerHTML = '';
 
-                if (fechaSeleccionada && accionesBateria[fechaSeleccionada]) {
-                    accionesBateria[fechaSeleccionada].forEach(function(accionNombre) {
-                        const row = document.createElement('tr');
-                        const detalles = accionesDetalles[fechaSeleccionada]?.[accionNombre];
+                    if (fechaSeleccionada && accionesBateria[fechaSeleccionada]) {
+                        accionesBateria[fechaSeleccionada].forEach(function(accionNombre) {
+                            // Accedemos al array de detalles para cada 'accionnombre'
+                            const detallesArray = accionesDetalles[fechaSeleccionada]?.[accionNombre];
 
-                        if (detalles) {
-                            row.innerHTML = `
-                                <td>${detalles.id || '0'}</td>
-                                <td>${accionNombre}</td>
-                                <td>${detalles.proveedornombre || 'No registrado'}</td>
-                                <td>${detalles.fechaasignada || 'No registrado'}</td>
-                                <td>${detalles.horadesde || 'No registrado'} - ${detalles.horahasta}</td>
-                                ${!esProveedor ? `<td>${detalles.precio || 'No registrado'}</td>` : ''}
-                            `;
-                            row.style.color = 'green';
+                            if (detallesArray) {
+                                detallesArray.forEach(function(detalles) {
+                                    const row = document.createElement('tr');
+                                    
+                                    // Si no tiene fechaAsignada, agregar input de fecha y botón de actualización
+                                    let fechaAsignadaHTML = detalles.fechaasignada || 'No registrado';
+                                    let horadesdeHTML = detalles.horadesde || 'No registrado';
+                                    let horahastaHTML = detalles.horahasta || 'No registrado';
+                                    let botonActualizarHTML = '';
+                                    
+                                    if (!detalles.fechaasignada) {
+                                        fechaAsignadaHTML = `<input type="date" class="form-control" id="fecha-${detalles.id}">`;
+
+                                        // Verificamos que 'horadesde' y 'horahasta' no sean nulos y si no, asignamos el valor vacío
+                                        horadesdeHTML = detalles.horadesde 
+                                            ? `<input type="time" class="form-control" id="horadesde-${detalles.id}" value="${detalles.horadesde}">`
+                                            : `<input type="time" class="form-control" id="horadesde-${detalles.id}" value="">`;
+
+                                        horahastaHTML = detalles.horahasta 
+                                            ? `<input type="time" class="form-control" id="horahasta-${detalles.id}" value="${detalles.horahasta}">`
+                                            : `<input type="time" class="form-control" id="horahasta-${detalles.id}" value="">`;
+
+                                        botonActualizarHTML = `<button class="btn btn-outline-primary btn-sm" onclick="actualizarFecha(${detalles.id})">Actualizar</button>`;
+                                    }
+
+                                    row.innerHTML = `
+                                        <td>${detalles.id || '0'}</td>
+                                        <td>${accionNombre} ${detalles.nrosesion ? detalles.nrosesion : ''}</td>
+                                        <td>${detalles.proveedornombre || 'No registrado'}</td>
+                                        <td>${fechaAsignadaHTML}</td>
+                                        <td>
+                                            <div class="d-flex">
+                                                ${horadesdeHTML} 
+                                                <span class="mx-2">-</span>
+                                                ${horahastaHTML}
+                                            </div>
+                                        </td>
+                                        ${!esProveedor ? `<td>${detalles.precio || 'No registrado'}</td>` : ''}
+                                        <td>${botonActualizarHTML}</td>
+                                    `;
+                                    row.style.color = 'green';
+                                    accionesLista.appendChild(row);
+                                });
+                            } else {
+                                // En caso de que no haya detalles, creamos una fila vacía
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>0</td>
+                                    <td>${accionNombre}</td>
+                                    <td>No registrado</td>
+                                    <td>No registrado</td>
+                                    <td>No registrado</td>
+                                    ${!esProveedor ? `<td>No registrado</td>` : ''}
+                                    <td>No disponible</td>
+                                `;
+                                row.style.color = 'red';
+                                accionesLista.appendChild(row);
+                            }
+                        });
+                    }
+                });
+
+                
+                // Función para actualizar la fecha
+                function actualizarFecha(id) {
+                    const fechaSeleccionada = document.getElementById(`fecha-${id}`).value;
+                    const horadesde = document.getElementById(`horadesde-${id}`).value;
+                    const horahasta = document.getElementById(`horahasta-${id}`).value;
+
+                    if (!fechaSeleccionada) {
+                        alert("Por favor, seleccione una fecha.");
+                        return;
+                    }
+
+                    // Realizar la solicitud para actualizar la fecha
+                    fetch('{{ route("actualizar.fecha", ["id" => "__ID__"]) }}'.replace("__ID__", id), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        },
+                        body: JSON.stringify({ 
+                            fechaasignada: fechaSeleccionada,
+                            horadesde: horadesde,
+                            horahasta: horahasta
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert("Fecha actualizada correctamente.");
+                            location.reload(); // Recargar para ver la fecha actualizada
                         } else {
-                            row.innerHTML = `
-                                <td>0</td>
-                                <td>${accionNombre}</td>
-                                <td>No registrado</td>
-                                <td>No registrado</td>
-                                <td>No registrado</td>
-                                ${!esProveedor ? `<td>No registrado</td>` : ''}
-                            `;
-                            row.style.color = 'red';
+                            alert("Hubo un error al actualizar la fecha.");
                         }
-
-                        accionesLista.appendChild(row);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert("Hubo un error en la solicitud.");
                     });
                 }
-            });
 
             </script>
+            
+            
             <style>
                 table {
                     width: 100%;

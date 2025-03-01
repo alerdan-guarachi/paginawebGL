@@ -25,7 +25,7 @@
                 <div class="col-lg-5">
                     {!! Form::model($cliente, ['route' => ['admin.asociados.actualizarclienteita', $cliente], 'method' => 'PUT', 'files' => true]) !!}
                     {!! Form::hidden('users_id', auth()->user()->id) !!}
-                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                    
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="form-group">
@@ -147,11 +147,20 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-lg-4">
+                    <div class="row"> 
+                        <div class="col-lg-5">
                             <div class="form-group">
                                 {!! Form::label('fechavencci', 'Fecha Venc/CI.:') !!}
-                                {!! Form::date('fechavencci', $cliente->fechavencci ?? \Carbon\Carbon::now(), ['class' => 'form-control']) !!}
+                                <div class="input-group">
+                                    {!! Form::date('fechavencci', old('fechavencci', $cliente->fechavencci), ['class' => 'form-control', 'id' => 'fechavencci']) !!}
+                                    <input type="hidden" name="fechavencci" id="fechavencci_hidden" value="{{ $cliente->fechavencci }}">
+                                    <div class="input-group-append">
+                                        <div class="input-group-text">
+                                            <input type="checkbox" id="indefinidaCheckbox" {{ is_null($cliente->fechavencci) ? 'checked' : '' }}>
+                                            <label for="indefinidaCheckbox" class="ml-2 mb-0">Indef.</label>
+                                        </div>
+                                    </div>
+                                </div>
                                 @error('fechavencci')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{ $message }}
@@ -159,8 +168,38 @@
                                 @enderror
                             </div>
                         </div>
+                    
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const fechaInput = document.getElementById('fechavencci');
+                                const checkbox = document.getElementById('indefinidaCheckbox');
+                                const hiddenInput = document.getElementById('fechavencci_hidden');
                         
-                        <div class="col-lg-4">
+                                // Si ya es indefinido en BD, deshabilitar el input
+                                if (checkbox.checked) {
+                                    fechaInput.value = '';
+                                    fechaInput.disabled = true;
+                                }
+                        
+                                checkbox.addEventListener('change', function () {
+                                    if (this.checked) {
+                                        fechaInput.value = ''; // Borra la fecha
+                                        fechaInput.disabled = true;
+                                        hiddenInput.value = ''; // Enviar campo vacío
+                                    } else {
+                                        fechaInput.disabled = false;
+                                        hiddenInput.value = fechaInput.value; // Mantener la fecha en caso de desmarcar
+                                    }
+                                });
+                        
+                                // Actualizar hidden input cuando se cambia la fecha manualmente
+                                fechaInput.addEventListener('change', function () {
+                                    hiddenInput.value = fechaInput.value;
+                                });
+                            });
+                        </script>
+                        
+                        <div class="col-lg-5">
                             <div class="form-group">
                                 {!! Form::label('fechanacimiento', 'Fecha de nac.:') !!}
                                 {!! Form::date('fechanacimiento', $cliente->fechanacimiento ?? \Carbon\Carbon::now(), ['class' => 'form-control', 'id' => 'fecha_nacimiento']) !!}
@@ -172,7 +211,7 @@
                             </div>
                         </div>
                         
-                        <div class="col-lg-4">
+                        <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('edad', 'Edad:') !!}
                                 {!! Form::text('edad', null, ['class' => 'form-control', 'readonly' => true, 'id' => 'edad']) !!}
@@ -185,7 +224,7 @@
                         </div> 
                     </div>
                     <div class="row">
-                        <div class="col-lg-4">
+                        {{-- <div class="col-lg-4">
                             <div class="form-group">
                                 {!! Form::label('lugarnacimiento', 'Ciudad de nac.:') !!}
                                 {!! Form::select('lugarnacimiento', $departamentos, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -195,8 +234,77 @@
                                     </small>
                                 @enderror
                             </div>
+                        </div> --}}
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                {!! Form::label('paisnacimiento', 'País de nac.:') !!}
+                                {!! Form::select('paisnacimiento', [
+                                    'ARGENTINA' => 'ARGENTINA',
+                                    'BOLIVIA' => 'BOLIVIA',
+                                    'COLOMBIA' => 'COLOMBIA',
+                                    'EE.UU.' => 'EE.UU.',
+                                    'ESPAÑA' => 'ESPAÑA',
+                                    'PARAGUAY' => 'PARAGUAY',
+                                    'VENEZUELA' => 'VENEZUELA'
+                                ], $cliente->paisnacimiento, ['class' => 'form-control', 'id' => 'paisnacimiento']) !!}
+                                @error('paisnacimiento')
+                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                @enderror
+                            </div>
                         </div>
-                        <div class="col-lg-4">
+                        
+                        {{-- Select para ciudades si el país es Bolivia --}}
+                        <div class="col-lg-3" id="select-lugar-nacimiento">
+                            <div class="form-group">
+                                {!! Form::label('lugarnacimiento_select', 'Ciudad de nac.:') !!}
+                                {!! Form::select('lugarnacimiento_select', $departamentos, 
+                                    in_array($cliente->lugarnacimiento, $departamentos->toArray()) ? $cliente->lugarnacimiento : null, 
+                                    ['class' => 'form-control', 'placeholder' => '']) !!}
+                                @error('lugarnacimiento_select')
+                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        {{-- Input para ciudades si el país NO es Bolivia --}}
+                        <div class="col-lg-3" id="input-lugar-nacimiento" style="display: none;">
+                            <div class="form-group">
+                                {!! Form::label('lugarnacimiento_text', 'Ciudad de nac.:') !!}
+                                {!! Form::text('lugarnacimiento_text', 
+                                    !in_array($cliente->lugarnacimiento, $departamentos->toArray()) ? $cliente->lugarnacimiento : null, 
+                                    ['class' => 'form-control', 'placeholder' => '']) !!}
+                                @error('lugarnacimiento_text')
+                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                @enderror
+                            </div>
+                        </div>
+                        
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                const paisSelect = document.getElementById('paisnacimiento');
+                                const selectLugarNacimiento = document.getElementById('select-lugar-nacimiento');
+                                const inputLugarNacimiento = document.getElementById('input-lugar-nacimiento');
+                                const selectLugarNacimientoField = document.querySelector('select[name="lugarnacimiento_select"]');
+                                const inputLugarNacimientoField = document.querySelector('input[name="lugarnacimiento_text"]');
+                        
+                                function actualizarCampos() {
+                                    if (paisSelect.value === 'BOLIVIA') {
+                                        selectLugarNacimiento.style.display = 'block';
+                                        inputLugarNacimiento.style.display = 'none';
+                                        inputLugarNacimientoField.value = ''; // Limpiar input si se usa select
+                                    } else {
+                                        selectLugarNacimiento.style.display = 'none';
+                                        inputLugarNacimiento.style.display = 'block';
+                                        selectLugarNacimientoField.value = ''; // Limpiar select si se usa input
+                                    }
+                                }
+                        
+                                actualizarCampos(); // Llamar al cargar la página
+                                paisSelect.addEventListener('change', actualizarCampos);
+                            });
+                        </script>                        
+                        
+                        <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('genero', 'Genero:') !!}
                                 {!! Form::select('genero', $genero, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -207,7 +315,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('estadocivil', 'Estado civil:') !!}
                                 {!! Form::select('estadocivil', $estciv, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -434,8 +542,8 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="form-group">
-                                {!! Form::label('afp', 'AFP:') !!}
-                                {!! Form::text('afp', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'afp', 'readonly' => 'readonly']) !!}
+                                {!! Form::label('afp', 'Gestora:') !!}
+                                {!! Form::text('afp', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'afp']) !!}
                                 @error('afp')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}

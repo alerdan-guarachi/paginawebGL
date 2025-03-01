@@ -32,6 +32,14 @@ class ProveedorInformefinal extends Model
         'servicio' => 'required',
         'pagoinforme' => '',
         'accionnombre' => '',
+        'fechacredito' =>'',
+        'detallecredito' =>'',
+        'pagoservicio' =>'',
+        'usuarioautorizador' =>'',
+        'documentocredito' =>'',
+        'atencionservicio' =>'',
+        'documentolcambio' => '',
+        'nrofactura' => '',
     ]; 
 
     protected $fillable = [
@@ -54,6 +62,15 @@ class ProveedorInformefinal extends Model
         'servicio',
         'pagoinforme',
         'accionnombre',
+        'fechacredito',
+        'detallecredito',
+        'pagoservicio',
+        'usuarioautorizador',
+        'documentocredito',
+        'pagoservicio',
+        'atencionservicio',
+        'documentolcambio',
+        'nrofactura',
     ];
     /* public function programacionSubcliente()
     {

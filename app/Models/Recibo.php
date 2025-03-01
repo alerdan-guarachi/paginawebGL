@@ -19,10 +19,13 @@ class Recibo extends Model
         'tipocliente' => '',
         'clienteid' => '',
         'clientenombre' => '',
+        'proveedorid' => '',
+        'proveedornombre' => '',
         'tipomovimiento' => '',
         'subtotal' => '',
         'descuentototal' => '',
         'montototal' => '',
+        'saldototal' => '',
         'estado' => '',
     ]; 
 
@@ -34,10 +37,13 @@ class Recibo extends Model
         'tipocliente',
         'clienteid',
         'clientenombre',
+        'proveedorid',
+        'proveedornombre',
         'tipomovimiento',
         'subtotal',
         'descuentototal',
         'montototal',
+        'saldototal',
         'estado',
     ];
 }

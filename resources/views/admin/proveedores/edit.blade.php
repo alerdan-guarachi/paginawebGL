@@ -30,7 +30,7 @@
                     <div class="col-lg-6">
                         <div class="form-group">
                             {!! Form::label('proveedor', 'Nombre Completo:') !!}
-                            {!! Form::text('proveedor', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90']) !!}
+                            {!! Form::text('proveedor', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90', 'readonly' => true]) !!}
                             @error('proveedor')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}

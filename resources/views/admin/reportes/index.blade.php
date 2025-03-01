@@ -19,28 +19,51 @@
     <div class="card-body">
         <form action="{{ route('generar.pdf') }}" method="GET">
             <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="form-group">
                         <label for="tabla">Tabla:</label>
                         <select class="form-control" name="tabla" id="tabla">
                             <option value=""></option>
-                            <option value="bateriasubclientes">BATERÍA DE CLIENTES</option>
+                            <option value="bateriasubclientesita">BATERÍA DE CLIENTES ITA</option>
+                            <option value="bateriasubclientesauditoria">BATERÍA DE CLIENTES AUDITORIA</option>
+                            <option value="bateriasubclientescomunes">BATERÍA DE CLIENTES COMUNES</option>
                             <option value="bateriaproveedores">BATERIA DE PROVEEDORES</option>
-                            <option value="areaacciones">BATERIA GENERAL</option>
-                            <option value="clientescomunes">CLIENTES COMUNES</option>
-                            <option value="clientesauditoria">CLIENTES DE AUDITORÍA MÉDICA</option>
-                            <option value="clientesbancos">CLIENTES DE BANCOS</option>
-                            <option value="contactosubclientes">CONTACTOS DE CLIENTES</option>
                             <option value="clientes">CLIENTES ITA</option>
-                            <option value="programacionsubclientescomunes">PROGRAMACIÓN DE CLIENTES COMUNES</option>
-                            <option value="programacionsubclientesauditoria">PROGRAMACIÓN DE CLIENTES DE AUDITORÍA MÉDICA</option>
+                            <option value="clientesauditoria">CLIENTES AUDITORÍA</option>
+                            <option value="clientescomunes">CLIENTES COMUNES</option>
                             <option value="programacionsubclientesita">PROGRAMACIÓN DE CLIENTES ITA</option>
+                            <option value="programacionsubclientesauditoria">PROGRAMACIÓN DE CLIENTES DE AUDITORÍA</option>
+                            <option value="programacionsubclientescomunes">PROGRAMACIÓN DE CLIENTES COMUNES</option>
                             <option value="proveedores">PROVEEDORES</option>
                         </select>
                     </div>
                     <div id="sucursalproveedor_div" class="form-group" style="display: none;">
                         <label for="sucursal">Sucursal:</label>
                         <select class="form-control" name="sucursal" id="sucursal">
+                            <option value=""></option>
+                            <option value="tipo1">COCHABAMBA</option>
+                            <option value="tipo2">SANTA CRUZ</option>
+                        </select>
+                    </div>
+                    <div id="sucursalbateria_div" class="form-group" style="display: none;">
+                        <label for="sucursalbateria">Sucursal:</label>
+                        <select class="form-control" name="sucursalbateria" id="sucursalbateria">
+                            <option value=""></option>
+                            <option value="tipo1">COCHABAMBA</option>
+                            <option value="tipo2">SANTA CRUZ</option>
+                        </select>
+                    </div>
+                    <div id="sucursalbateriaauditoria_div" class="form-group" style="display: none;">
+                        <label for="sucursalbateriaauditoria">Sucursal:</label>
+                        <select class="form-control" name="sucursalbateriaauditoria" id="sucursalbateriaauditoria">
+                            <option value=""></option>
+                            <option value="tipo1">COCHABAMBA</option>
+                            <option value="tipo2">SANTA CRUZ</option>
+                        </select>
+                    </div>
+                    <div id="sucursalbateriacomunes_div" class="form-group" style="display: none;">
+                        <label for="sucursalbateriacomunes">Sucursal:</label>
+                        <select class="form-control" name="sucursalbateriacomunes" id="sucursalbateriacomunes">
                             <option value=""></option>
                             <option value="tipo1">COCHABAMBA</option>
                             <option value="tipo2">SANTA CRUZ</option>
@@ -62,9 +85,7 @@
                             <option value="tipo2">SANTA CRUZ</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="col-lg-6">
                     <div class="form-group">
                         <label for="fecha_inicial">(Opcional) Desde:</label>
                         <input class="form-control" type="date" name="fecha_inicial">
@@ -73,9 +94,10 @@
                         <label for="fecha_final">(Opcional) Hasta:</label>
                         <input class="form-control" type="date" name="fecha_final">
                     </div>
+
                 </div>
             </div>
-            <button type="submit" class="btn btn-generar">Generar PDF</button>
+            <button type="submit" class="btn btn-sm btn-generar">GENERAR REPORTE</button>
         </form>
     </div>
 </div>
@@ -112,6 +134,39 @@
             tipoAsociadoDiv.style.display = 'none';
         }
     });
+
+    document.getElementById('tabla').addEventListener('change', function() {
+        var tabla = this.value;
+        var tipoAsociadoDiv = document.getElementById('sucursalbateria_div');
+
+        if (tabla === 'bateriasubclientesita') {
+            tipoAsociadoDiv.style.display = 'block';
+        } else {
+            tipoAsociadoDiv.style.display = 'none';
+        }
+    });
+
+    document.getElementById('tabla').addEventListener('change', function() {
+        var tabla = this.value;
+        var tipoAsociadoDiv = document.getElementById('sucursalbateriaauditoria_div');
+
+        if (tabla === 'bateriasubclientesauditoria') {
+            tipoAsociadoDiv.style.display = 'block';
+        } else {
+            tipoAsociadoDiv.style.display = 'none';
+        }
+    });
+
+    document.getElementById('tabla').addEventListener('change', function() {
+        var tabla = this.value;
+        var tipoAsociadoDiv = document.getElementById('sucursalbateriacomunes_div');
+
+        if (tabla === 'bateriasubclientescomunes') {
+            tipoAsociadoDiv.style.display = 'block';
+        } else {
+            tipoAsociadoDiv.style.display = 'none';
+        }
+    });
 </script>
 @stop
 
@@ -123,57 +178,16 @@
     color: #94c93b;
     border-color: #94c93b;
     border-radius: 5px;
-    padding: 10px 20px;
-}
-.btn-generar:hover {
-    background-color: #94c93b;
-    color: #ffffff;
-}
+    padding: 5px 10px;
+    }
+    .btn-generar:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
     h1, th {color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 900;
         }
-        .btn-editar {
-                background-color:  #ffffff;
-                color: #0400ff;
-                border-color: #0400ff;
-                border-radius: 5px;
-            }
-        .btn-editar:hover {
-                background-color: #0400ff;
-                color: #ffffff;
-            }
-        .btn-eliminar {
-                background-color:  #ffffff;
-                color: #ff0000;
-                border-color: #ff0000;
-                border-radius: 5px;
-            }
-        .btn-eliminar:hover {
-                background-color: #ff0000;
-                color: #ffffff;
-            }
-        .btn-crear {
-                background-color:  #ffffff;
-                color: #94c93b;
-                border-color: #94c93b;
-                border-radius: 5px;
-                padding: 10px 20px;
-            }
-        .btn-crear:hover {
-                background-color: #94c93b;
-                color: #ffffff;
-            }
-        .btn-buscar { 
-                background-color:  #ffffff;
-                color: #faa625;
-                border-color: #faa625;
-                border-radius: 5px;
-            }
-        .btn-buscar:hover {
-                background-color: #faa625;
-                color: #ffffff;
-            }
 </style>
 @stop
 

@@ -45,7 +45,15 @@ class StoreProveedorInformefinalRequest extends FormRequest
         'usuarioid' => 'required',
         'usuarioregistro' => '',
         'pagoinforme' => '',
-        
+        'accionnombre' => '',
+        'pagoservicio' => '',
+        'fechacredito' => '',
+        'usuarioautorizador' => '',
+        'documentocredito' => '',
+        'servicio' => '',
+        'atencionservicio' => '',
+        'documentolcambio' => '',
+        'nrofactura' => '',
     ]; 
     return $rules;
 }

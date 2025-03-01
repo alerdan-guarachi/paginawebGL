@@ -41,13 +41,16 @@ class StoreInformefinalRequest extends FormRequest
         'clienteauditorianombre' => '',
         'fechabateria' => '',
         'estado' => '',
-        'document' => '', // Ajusta el tamaño según tus necesidades
+        'document' => '',
         'observaciones' => '5',
         'proveedorasignado' => '',
         'usuarioid' => '',
         'usuarioregistro' => '',
         'observacion' => '',
         'documentfirmado' => '',
+        'documentword' => '',
+        'motivoanulacion' => '',
+        'usuarioanulacion' => '',
     ]; 
     return $rules;
 }

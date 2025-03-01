@@ -2,7 +2,7 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.proveedores.index') }}">REGRESAR</a>
-@can('admin.proveedores.edit')
+@can('admin.proveedores.create')
 <a class="btn btn-sm float-right btn-editar" href="{{route('admin.proveedores.edit', $proveedor)}}">EDITAR  PROVEEDOR</a>
 @endcan
 <h5>DATOS DE:</h5>
@@ -37,31 +37,59 @@
                                                 <td>{{$proveedor->id}}</td>
                                             </tr>
                                             <tr> 
-                                                <th>Dirección</th>
+                                                <th>Dirección Atención</th>
                                                 <td>
                                                     {{$proveedor->direccion}}
-                                                    <!-- Verifica si existe un enlace en linkubicacion -->
                                                     @if(!empty($proveedor->linkubicacion))
-                                                        <!-- Añade el ícono de ubicación como un enlace y con color naranja -->
                                                         <a href="{{ $proveedor->linkubicacion }}" target="_blank" style="margin-left: 8px; color: orange;">
                                                             <i class="fas fa-map-marker-alt"></i>
                                                         </a>
                                                     @endif
                                                 </td>
                                             </tr>
+                                            @if(!empty($proveedor->direccion2))
+                                            <tr> 
+                                                <th>Dirección Atención 2</th>
+                                                <td>
+                                                    {{$proveedor->direccion2}}
+                                                    @if(!empty($proveedor->linkubicacion2))
+                                                        <a href="{{ $proveedor->linkubicacion2 }}" target="_blank" style="margin-left: 8px; color: orange;">
+                                                            <i class="fas fa-map-marker-alt"></i>
+                                                        </a>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @endif
+
+                                            @if(!empty($proveedor->direccion3))
+                                            <tr> 
+                                                <th>Dirección Atención 3</th>
+                                                <td>
+                                                    {{$proveedor->direccion3}}
+                                                    @if(!empty($proveedor->linkubicacion3))
+                                                        <a href="{{ $proveedor->linkubicacion3 }}" target="_blank" style="margin-left: 8px; color: orange;">
+                                                            <i class="fas fa-map-marker-alt"></i>
+                                                        </a>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @endif
                                             
                                             <tr>
                                                 <th>Celular</th>
                                                 <td>{{$proveedor->celular}}</td>
                                             </tr>
                                             <tr>
-                                                <th>Teléfono</th>
+                                                <th>NIT</th>
                                                 <td>{{$proveedor->nit}}</td>
                                             </tr>
-                                            <tr>
-                                                <th>Ciudad</th>
-                                                <td>{{$proveedor->ciudad}}</td>
-                                            </tr>
+                                            <tr> 
+                                                <th>Ciudad Atención</th>
+                                                <td>
+                                                    {{$proveedor->ciudad}} 
+                                                    @if(!empty($proveedor->ciudad2)) - {{$proveedor->ciudad2}} @endif
+                                                </td>
+                                            </tr>                                            
                                             <tr>
                                                 <th>Estado</th>
                                                 <td>{{$proveedor->estadoproveedor}}</td>

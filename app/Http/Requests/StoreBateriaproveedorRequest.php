@@ -50,6 +50,9 @@ class StoreBateriaproveedorRequest extends FormRequest
             'estado'=>'required',
             'tipoid'=>'',
             'areasid'=>'',
+            'pagoservicio'=>'',
+            'comision'=>'',
+            'sesiones'=>'',
         ]; 
         return $rules;
     }

@@ -312,13 +312,19 @@ return [
             'url' => 'admin/blog',
             'can' => 'manage-blog',
         ],
+        /* [
+            'text' => 'Mensajes',
+            'route'  => 'admin.mensajes.create',
+            'icon' => 'fas fa-fw fas fa-comment',
+            'can'  => 'admin.mensajes.index',
+        ], */
         [
             'text' => 'Mensajes',
             'route'  => 'admin.mensajes.create',
             'icon' => 'fas fa-fw fas fa-comment',
             'can'  => 'admin.mensajes.index',
         ],
-       /*  [
+        /*  [
             'text' => 'Caja Central',
             'icon' => 'fas fa-cash-register',
             'can'  => 'admin.caja.index',
@@ -407,7 +413,7 @@ return [
                     'can'  => 'admin.asociados.index',
                 ],
                 [
-                    'text' => 'Proveedores',
+                    'text' => 'Proveedores Médicos',
                     'route'  => 'admin.proveedores.index',
                     'icon' => 'fas fa-fw fas fa-address-card',
                     'can'  => 'admin.proveedores.index',
@@ -418,12 +424,12 @@ return [
                     'icon' => 'fas fa-fw fas fa-building',
                     'can'  => 'admin.empresas.index',
                 ],
-                [
+                /* [
                     'text' => 'Requisitos',
                     'route'  => 'admin.serviciosrequisitos.index',
                     'icon' => 'fas fa-fw fas fa-thumbtack',
                     'can'  => 'admin.empresas.index',
-                ],
+                ], */
                 
 
             ],
@@ -490,10 +496,16 @@ return [
                     'can'  => 'admin.users.index',
                 ],
                 [
-                    'text' => 'Personal',
-                    'route'  => 'admin.personal.index',
+                    'text' => 'Proveedores de Servicios',
+                    'route'  => 'admin.proveedoresservicios.index',
                     'icon' => 'fas fa-fw fa-user-friends',
-                    'can'  => 'admin.personal.index',
+                    'can'  => 'admin.proveedoresservicios.index',
+                ],
+                [
+                    'text' => 'Secciones de Servicios',
+                    'route'  => 'admin.proveedoresservicios.listasecciones',
+                    'icon' => 'fas fa-fw fas fa-swatchbook',
+                    'can'  => 'admin.proveedoresservicios.index',
                 ],
                 [
                     'text' => 'Roles',
@@ -586,63 +598,165 @@ return [
         ],
 
         [
+            'text' => 'Panel Financiero',
+            'icon' => 'fas fa-chart-bar',
+            'can'  => 'admin.ingreso.index',
+            'submenu' => [
+                [
+                    'text' => 'Resumen financiero',
+                    'route'  => 'admin.caja.panel.resumenfinanciero',
+                    'icon' => 'fas fa-chart-pie',
+                    'can'  => 'admin.ingreso.index',
+                ],                
+            ],
+        ],
+
+        [
             'text' => 'Ingresos',
             'icon' => 'fas fa-chart-line',
             'can'  => 'admin.ingreso.index',
             'submenu' => [
                 [
-                    'text' => 'Caja de Ingresos',
+                    'text' => 'Caja de Ingreso',
                     'route'  => 'admin.caja.ingreso.index',
                     'icon' => 'fas fa-sign-in-alt',
                     'can'  => 'admin.ingreso.index',
                 ],
                 [
-                    'text' => 'Cierre de Caja',
-                    'route'  => 'admin.caja.ingreso.cierre',
-                    'icon' => 'fas fa-lock',
+                    'text' => 'Documentacion',
+                    'route'  => 'admin.caja.ingreso.documentacion',
+                    'icon' => 'fas fa-file',
+                    'can'  => 'admin.ingreso.index',
+                ],
+                [
+                    'text' => 'Depósitos bancarios',
+                    'route'  => 'admin.caja.ingreso.depositosbancarios',
+                    'icon' => 'fas fa-piggy-bank',
+                    'can'  => 'admin.ingreso.depositosbancarios',
+                ],
+                
+            ],
+        ],
+        
+        [
+            'text' => 'Cuentas por Cobrar',
+            'icon' => 'fas fa-cash-register',
+            'can'  => 'admin.ingreso.index',
+            'submenu' => [
+                [
+                    'text' => 'Cobrar Hoy',
+                    'route'  => 'admin.caja.cuentascobrar.cobrarhoy',
+                    'icon' => 'fas fa-donate',
+                    'can'  => 'admin.ingreso.index',
+                ],
+                [
+                    'text' => 'Cuentas Cobrar',
+                    'route'  => 'admin.caja.cuentascobrar.listacuentascobrar',
+                    'icon' => 'fas fa-money-bill-wave',
+                    'can'  => 'admin.ingreso.index',
+                ],
+                [
+                    'text' => 'Asignar Crédito',
+                    'route'  => 'admin.caja.cuentascobrar.ccporcredito',
+                    'icon' => 'fas fa-money-check-alt',
                     'can'  => 'admin.ingreso.index',
                 ],
             ],
         ],
-        /* [
-            'text' => 'Cuentas por Cobrar',
-            'icon' => 'fas fa-hand-holding-usd',
-            'can'  => 'admin.cuentasCobrar.index',
+
+        [
+            'text' => 'Egresos',
+            'icon' => 'fas fa-comment-dollar',
+            'can'  => 'admin.egreso.index',
             'submenu' => [
                 [
-                    'text' => 'Pendientes',
-                    'route'  => 'admin.caja.cobrar',
-                    'icon' => 'fas fa-hourglass-half',
-                    'can'  => 'admin.cuentasCobrar.index',
+                    'text' => 'Caja de Egresos',
+                    'route'  => 'admin.caja.egreso.cajaegresos',
+                    'icon' => 'fas fa-hand-holding-usd',
+                    'can'  => 'admin.egreso.index',
                 ],
                 [
-                    'text' => 'Aprobaciones',
-                    'route'  => 'admin.caja.aprobacionesCobrar',
-                    'icon' => 'fas fa-check-circle',
-                    'can'  => 'admin.cuentasCobrar.index',
+                    'text' => 'Documentación',
+                    'route'  => 'admin.caja.egreso.documentacionegreso',
+                    'icon' => 'fas fa-file',
+                    'can'  => 'admin.egreso.index',
                 ],
             ],
         ],
         [
             'text' => 'Cuentas por Pagar',
-            'icon' => 'fas fa-money-check-alt',
+            'icon' => 'fas fa-comments-dollar',
             'can'  => 'admin.cuentasPagar.index',
             'submenu' => [
                 [
-                    'text' => 'Pendientes',
-                    'route'  => 'admin.caja.pagar',
-                    'icon' => 'fas fa-hourglass-half',
+                    'text' => 'Cuentas Pagar',
+                    'route'  => 'admin.caja.cuentaspagar.listacuentaspagar',
+                    'icon' => 'fas fa-money-bill-wave',
                     'can'  => 'admin.cuentasPagar.index',
                 ],
                 [
-                    'text' => 'Aprobaciones',
-                    'route'  => 'admin.caja.aprobacionesPagar',
-                    'icon' => 'fas fa-check-circle',
+                    'text' => 'Pagos Pendientes',
+                    'route'  => 'admin.caja.cuentaspagar.cppregistradas',
+                    'icon' => 'fas fa-hourglass-half',
                     'can'  => 'admin.cuentasPagar.index',
                 ],
             ],
-        ], */
+        ],
+
+        [
+            'text' => 'Cierre de Caja',
+            'route'  => 'admin.caja.ingreso.cierre',
+            'icon' => 'fas fa-lock',
+            'can'  => 'admin.ingreso.index',
+        ],
+
+        [
+            'text' => 'Anulaciones',
+            'icon' => 'fas fa-ban',
+            'can'  => 'admin.caja.anulaciones.anularcaja',
+            'submenu' => [
+                [
+                    'text' => 'Anular Registro Caja',
+                    'route'  => 'admin.caja.anulaciones.anularcaja',
+                    'icon' => 'fas fa-times-circle',
+                    'can'  => 'admin.caja.anulaciones.anularcaja',
+                ],
+                [
+                    'text' => 'Anular Cuenta Cobrar',
+                    'route'  => 'admin.asociados.anulaciones.anularcuentacobrar',
+                    'icon' => 'fas fa-file-excel',
+                    'can'  => 'admin.caja.anulaciones.anularcaja',
+                ],
+            ],
+        ],
         
+        [
+            'text' => 'Inventario',
+            'icon' => 'fas fa-tags',
+            'can'  => 'admin.inventario.index',
+            'submenu' => [
+                [
+                    'text' => 'Adquisición de Inventario',
+                    'route'  => 'admin.inventario.adquisicioninventario',
+                    'icon' => 'fas fa-tag',
+                    'can'  => 'admin.inventario.index',
+                ],
+                [
+                    'text' => 'Gestión de Stock',
+                    'route'  => 'admin.inventario.index',
+                    'icon' => 'fas fa-tag',
+                    'can'  => 'admin.inventario.index',
+                ],
+                [
+                    'text' => 'Solicitud de Inventario',
+                    'route'  => 'admin.inventario.solicitarbienes',
+                    'icon' => 'fas fa-tag',
+                    'can'  => 'admin.inventario.solicitarbienes',
+                ],
+            ],
+        ],
+
+
         /* [
             'text' => 'Caja Central',
             'icon' => 'fas fa-cash-register',
@@ -662,28 +776,10 @@ return [
                 ],
             ],
         ], */
-        /* [
-            'text' => 'Egresos',
-            'icon' => 'fas fa-money-bill-wave',
-            'can'  => 'admin.egreso.index',
-            'submenu' => [
-                [
-                    'text' => 'Egreso',
-                    'route'  => 'admin.caja.egreso.index',
-                    'icon' => 'fas fa-sign-out-alt',
-                    'can'  => 'admin.egreso.index',
-                ],
-                [
-                    'text' => 'Cierre de Caja',
-                    'route'  => 'admin.caja.egreso.cierre',
-                    'icon' => 'fas fa-lock',
-                    'can'  => 'admin.egreso.index',
-                ],
-            ],
-        ], */
+        
 
         [
-            'text' => 'Soporte Técnico',
+            'text' => 'Centro de Soporte',
             'icon' => 'fas fa-tools',
             'can'  => 'admin.soporte.index',
             'submenu' => [
@@ -701,7 +797,6 @@ return [
                 ],
             ],
         ],
-        
     ],
 
     /*

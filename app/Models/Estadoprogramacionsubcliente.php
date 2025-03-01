@@ -30,6 +30,10 @@ class Estadoprogramacionsubcliente extends Model
             'usuarioregistro' => '',
             'accionnombre' => '',
             'fechabateria' => '',
+            'programacionid' => '',
+            'motivoanulacion' => '',
+                'usuarioanulacion' => '',
+                'nrosesion' => '',
     ]; 
 
     protected $fillable = [
@@ -50,6 +54,10 @@ class Estadoprogramacionsubcliente extends Model
             'usuarioregistro',
             'accionnombre',
             'fechabateria',
+            'programacionid',
+            'motivoanulacion',
+        'usuarioanulacion',
+        'nrosesion',
     ];
     
 }

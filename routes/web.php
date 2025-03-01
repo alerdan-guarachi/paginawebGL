@@ -17,7 +17,7 @@ use App\Http\Controllers\Admin\AccionesController;
 use App\Http\Controllers\Admin\ReporteController;
 use App\Http\Controllers\Admin\MensajeController;
 use App\Http\Controllers\Admin\InstructivaPoderController;
-use App\Http\Controllers\Admin\PersonalController;
+use App\Http\Controllers\Admin\ProveedoresserviciosController;
 use App\Http\Controllers\Admin\InformeFinalController;
 use App\Http\Controllers\Admin\CajaController;
 use App\Http\Controllers\Admin\TramitesController;
@@ -31,10 +31,14 @@ use App\Http\Controllers\Admin\AdministrarProgramacionController;
 use App\Http\Controllers\Admin\CodigoController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Admin\ControlProgController;
+use App\Http\Controllers\Admin\CartasPolizasController;
 use App\Http\Controllers\Admin\QrController;
 use App\Http\Controllers\Admin\MovimientosCajaController;
 use App\Http\Controllers\Admin\CajaCentralController;
 use App\Http\Controllers\Admin\CuentasController;
+use App\Http\Controllers\Admin\InventarioController;
+use App\Http\Controllers\Admin\NotificationController;
+use App\Models\Recibo;
 
 Route::get('/', function () {return view('welcome');});
 Route::get('/welcome', [App\Http\Controllers\PaginawebController::class, 'welcome'])->name('welcome');
@@ -64,49 +68,172 @@ Route::resource('acciones', AccionesController::class)->middleware('can:admin.ar
 Route::resource('admprogramaciones', AdministrarProgramacionController::class)->middleware('can:admin.admprogramaciones.index')->names('admin.admprogramaciones');
 Route::resource('reportes', ReporteController::class)->middleware('can:admin.reportes.index')->names('admin.reportes');
 Route::resource('mensajes', MensajeController::class)->middleware('can:admin.mensajes.index')->names('admin.mensajes');
+Route::resource('cartaspolizas', CartasPolizasController::class)->middleware('can:admin.cartaspolizas.index')->names('admin.cartaspolizas');
 Route::resource('instructivaspoder', InstructivaPoderController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.instructivaspoder');
-Route::resource('personal', PersonalController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.personal');
+Route::resource('proveedoresservicios', ProveedoresserviciosController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.proveedoresservicios');
 Route::resource('informesfinales', InformeFinalController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.informesfinales');
-Route::resource('informesfinales', InformeFinalController::class)->middleware('auth')->names('admin.informesfinales');
-
+/* Route::resource('informesfinales', InformeFinalController::class)->middleware('auth')->names('admin.informesfinales'); */
 Route::resource('tramites', TramitesController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.tramites');
 Route::resource('serviciosrequisitos', ServiciosrequisitosController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.serviciosrequisitos');
 Route::resource('ordenes/ordenesventa', OrdenVentaController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.ordenes.ordenesventa');
-
 Route::resource('caja', MovimientosCajaController::class)->middleware('can:admin.ingreso.index')->names('admin.caja.ingreso');
+Route::resource('inventario', InventarioController::class)->middleware('can:admin.inventario.index')->names('admin.inventario');
+Route::get('/notifications/check', function () {
+    $user = auth()->user();
+    $notificaciones = $user->notifications;
+    $notificacionesNoLeidas = $notificaciones->whereNull('read_at');
+    
+    return response()->json([
+        'new_notifications_count' => $notificacionesNoLeidas->count(),
+        'notifications' => $notificaciones->map(function ($notification) {
+            return [
+                'id' => $notification->id,
+                'read_at' => $notification->read_at,
+                'data' => $notification->data
+            ];
+        }),
+    ]);
+})->name('notifications.check');
+Route::post('/notification/{id}/read', [NotificationController::class, 'markAsRead'])->name('notification.markAsRead');
 
-//CONTABILIDAD
-    Route::get('caja/cierreIngreso', [MovimientosCajaController::class, 'cierreCaja_Ingresos'])->name('admin.caja.ingreso.cierre');
-    Route::post('/buscar-cliente', [MovimientosCajaController::class, 'buscarPorCliente'])->name('buscar.cliente');
-    Route::post('/guardar-cajacentral', [MovimientosCajaController::class, 'guardarCajaCentral'])->name('guardar.cajacentral');
+
+//BIENES
+Route::get('crearactivofijo', [InventarioController::class, 'crearactivofijo'])->name('admin.inventario.crearactivofijo');
+Route::post('guardaractivofijo', [InventarioController::class, 'guardaractivofijo'])->name('admin.inventario.guardaractivofijo');
+Route::post('/guardar-entrada', [InventarioController::class, 'guardarEntrada'])->name('guardar.entrada');
+Route::post('/guardar-salida', [InventarioController::class, 'guardarSalida'])->name('guardar.salida');
+Route::get('/historial/{codigo}', 'InventarioController@obtenerHistorial')->name('historial.obtener');
+Route::get('solicitarbienes', [InventarioController::class, 'solicitarbienes'])->name('admin.inventario.solicitarbienes');
+Route::post('/inventario/solicitar', [InventarioController::class, 'guardarsolicitudproducto'])->name('admin.inventario.guardarsolicitudproducto');
+Route::post('/ofertar-producto/{solicitudId}', [InventarioController::class, 'ofertarProducto'])->name('ofertarProducto');
+Route::post('/procesarsolicitud-producto/{solicitudId}', [InventarioController::class, 'procesarsolicitud'])->name('procesarsolicitud');
+Route::put('/aceptar-oferta/{solicitudId}', [InventarioController::class, 'aceptarOferta'])->name('aceptarOferta');
+Route::put('/rechazar-oferta/{solicitudId}', [InventarioController::class, 'rechazarOferta'])->name('rechazarOferta');
+Route::put('/actualizar-stock/{solicitudId}', [InventarioController::class, 'actualizarStock'])->name('actualizarStock');
+Route::get('adquisicioninventario', [InventarioController::class, 'adquisicioninventario'])->name('admin.inventario.adquisicioninventario');
+Route::post('admin/inventario/generarordencompra', [InventarioController::class, 'generarordencompra'])->name('generar.ordencompra');
 
 //
 
-/* Route::get('ordenes/ordenesventa', [OrdenVentaController::class, 'index'])->name('admin.ordenes.ordenesventa.index'); */
-        Route::get('ordenes/ordenesventa/create/{clientebanco}', [OrdenVentaController::class, 'create'])->name('admin.ordenes.ordenesventa.create');
-        Route::post('ordenes/ordenesventa/create/crearNotadeVenta', [OrdenVentaController::class, 'crearNotadeVenta'])->name('admin.ordenes.ordenesventa.create.crearnotadeventa');
-        Route::get('ordenes/ordenesventa/{clientebanco}/generarPDF', [OrdenVentaController::class, 'generarPDFNotaDeVenta'])->name('admin.ordenes.ordenesventa.generarPDF');
+//PROVEEDORES DE SERVICIOS
+    Route::get('/listasecciones', [ProveedoresserviciosController::class, 'listasecciones'])->name('admin.proveedoresservicios.listasecciones');
+    Route::get('/listar-subsecciones/{id}', [ProveedoresserviciosController::class, 'listarSubsecciones'])->name('listar.subsecciones');
+
+    Route::put('/seccion/actualizar', [ProveedoresserviciosController::class, 'actualizarSeccion'])->name('seccion.actualizar');
+    Route::post('/subseccion/crear', [ProveedoresserviciosController::class, 'crearSubseccion'])->name('subseccion.crear');
+    Route::get('/mostrar-subsecciones/{seccionId}', [ProveedoresserviciosController::class, 'mostrarSubsecciones'])->name('mostrarSubsecciones');
+
+    Route::get('crearprovserviciobasico/', [ProveedoresserviciosController::class, 'crearprovserviciobasico'])->name('admin.proveedoresservicios.crearprovserviciobasico');
+    Route::get('crearprovserviciohumano/', [ProveedoresserviciosController::class, 'crearprovserviciohumano'])->name('admin.proveedoresservicios.crearprovserviciohumano');
+//
+
+//CARTAS POLIZAS
+    Route::post('/admin/cartaspolizas/descargarsolicitudpolizas', [CartasPolizasController::class, 'descargarsolicitudpolizas'])->name('admin.cartaspolizas.descargarsolicitudpolizas');
+    Route::post('/admin/cartaspolizas/descargarreclamosolicitudpolizas', [CartasPolizasController::class, 'descargarreclamosolicitudpolizas'])->name('admin.cartaspolizas.descargarreclamosolicitudpolizas');
+    Route::post('/admin/cartaspolizas/descargarreclamosolicitudpolizasgenerales', [CartasPolizasController::class, 'descargarreclamosolicitudpolizasgenerales'])->name('admin.cartaspolizas.descargarreclamosolicitudpolizasgenerales');
+    Route::get('admin/cartaspolizas/listacartaspolizas', [CartasPolizasController::class, 'listacartaspolizas'])->name('admin.cartaspolizas.listacartaspolizas');
+//
+
+//INGRESOS
+    Route::get('caja/cierreIngreso', [MovimientosCajaController::class, 'cierreCaja_Ingresos'])->name('admin.caja.ingreso.cierre');
+    Route::post('/buscar-cliente', [MovimientosCajaController::class, 'buscarPorCliente'])->name('buscar.cliente');
+    Route::post('/guardar-cajacentral', [MovimientosCajaController::class, 'guardarCajaCentral'])->name('guardar.cajacentral');
+    Route::post('/guardar-arqueo', [MovimientosCajaController::class, 'guardarArqueo'])->name('guardar.arqueo');
+    Route::post('/verificar-codigo', [MovimientosCajaController::class, 'verificarCodigo'])->name('verificar.codigo');  
+    Route::post('/apertura/guardar', [MovimientosCajaController::class, 'storeAperturaCaja'])->name('apertura.guardar');
+    
+    Route::get('caja/ingreso/ingresosexternos/', [MovimientosCajaController::class, 'ingresosexternos'])->name('admin.caja.ingreso.ingresosexternos');
+    Route::post('/buscar-proveedor-ingresoexterno', [MovimientosCajaController::class, 'buscarPorProveedoringresoexterno'])->name('buscar.proveedor.ingresoexterno');
+    Route::post('/guardar-cajacentral-ingresoexterno', [MovimientosCajaController::class, 'guardarCajaCentralingresoexterno'])->name('guardar.cajacentral.ingresoexterno');
+    Route::get('/admin/caja/ingreso/siguiente-idexterno', function () {$ultimoId = Recibo::max('id');$siguienteId = $ultimoId ? $ultimoId + 1 : 1;return response()->json(['siguienteId' => $siguienteId]);})->name('actualizar_id_externo');
+//
+
+//CIERRE DE CAJA Y DOCUMENTACION INGRESOS
+    Route::get('caja/ingreso/cierre/', [MovimientosCajaController::class, 'cierrecajaingresos'])->name('admin.caja.ingreso.cierre');
+    Route::get('caja/ingreso/documentacion/', [MovimientosCajaController::class, 'respaldodocumentacioningreso'])->name('admin.caja.ingreso.documentacion');
+    Route::post('/admin/caja/ingreso/guardar', [MovimientosCajaController::class, 'guardarRespaldo'])->name('guardar.respaldo');
+    Route::post('caja/ingreso/cierre', [MovimientosCajaController::class, 'manejarCierreCaja'])->name('cierre.caja');
+    Route::post('/actualizar-estado', [MovimientosCajaController::class, 'actualizarEstado'])->name('actualizar.estado');
+    Route::get('/admin/caja/ingreso/siguiente-id', function () {$ultimoId = Recibo::max('id');$siguienteId = $ultimoId ? $ultimoId + 1 : 1;return response()->json(['siguienteId' => $siguienteId]);})->name('actualizar_id');
+    Route::get('caja/ingreso/depositosbancarios/', [MovimientosCajaController::class, 'depositosbancarios'])->name('admin.caja.ingreso.depositosbancarios');
+    Route::post('/guardar-depositobancario', [MovimientosCajaController::class, 'guardardepositobancario'])->name('guardardepositobancario');
+//
+
+//CUENTAS POR COBRAR
+    Route::get('caja/cuentascobrar/cobrarhoy/', [MovimientosCajaController::class, 'cobrarhoy'])->name('admin.caja.cuentascobrar.cobrarhoy');
+    Route::get('caja/cuentascobrar/ccporcredito/', [MovimientosCajaController::class, 'ccporcredito'])->name('admin.caja.cuentascobrar.ccporcredito');
+    Route::get('/buscarccporfecha', [MovimientosCajaController::class, 'buscarccporfecha'])->name('buscarccporfecha');
+    Route::post('/actualizar-registros', [MovimientosCajaController::class, 'actualizarRegistros'])->name('actualizarRegistros');
+    Route::get('caja/cuentascobrar/listacuentascobrar/', [MovimientosCajaController::class, 'listacuentascobrar'])->name('admin.caja.cuentascobrar.listacuentascobrar');
+    Route::get('/buscarlistacuentascobrar', [MovimientosCajaController::class, 'buscarlistacuentascobrar'])->name('buscarlistacuentascobrar');
+//
+
+//EGRESOS
+    Route::get('caja/egreso/cierrecajaegreso/', [MovimientosCajaController::class, 'cierrecajaegreso'])->name('admin.caja.egreso.cierrecajaegreso');
+    Route::get('caja/egreso/cajaegresos/', [MovimientosCajaController::class, 'cajaegresos'])->name('admin.caja.egreso.cajaegresos');
+    Route::get('caja/egreso/documentacion/', [MovimientosCajaController::class, 'respaldodocumentacionegreso'])->name('admin.caja.egreso.documentacion');
+    Route::POST('/admin/caja/egreso/cierrecajaegreso', [MovimientosCajaController::class, 'manejarCierreCajaegreso'])->name('cierre.caja.egreso');
+    Route::post('/actualizar-estado-egreso', [MovimientosCajaController::class, 'actualizarEstadoegreso'])->name('actualizar.estado.egreso');
+    Route::get('/admin/caja/egreso/siguiente-id', function () {$ultimoId = Recibo::max('id');$siguienteId = $ultimoId ? $ultimoId + 1 : 1;return response()->json(['siguienteId' => $siguienteId]);})->name('actualizar_id_egreso');
+    Route::post('/buscar-proveedor-egreso', [MovimientosCajaController::class, 'buscarPorProveedoregreso'])->name('buscar.proveedor.egreso');
+    Route::post('/guardar-arqueo-egreso', [MovimientosCajaController::class, 'guardarArqueoegreso'])->name('guardar.arqueo.egreso');
+    Route::post('/guardar-cajacentral-egreso', [MovimientosCajaController::class, 'guardarCajaCentralegreso'])->name('guardar.cajacentral.egreso');
+    Route::get('caja/egreso/documentacionegreso/', [MovimientosCajaController::class, 'respaldodocumentacionegreso'])->name('admin.caja.egreso.documentacionegreso');
+    Route::post('/admin/caja/egreso/guardarrespaldoegreso', [MovimientosCajaController::class, 'guardarRespaldoegreso'])->name('guardar.respaldo.egreso');
+//
+
+//CUENTAS POR PAGAR
+    Route::get('caja/cuentaspagar/cppregistradas/', [MovimientosCajaController::class, 'cppregistradas'])->name('admin.caja.cuentaspagar.cppregistradas');
+    Route::get('caja/cuentaspagar/registrarcpp/', [MovimientosCajaController::class, 'registrarcpp'])->name('admin.caja.cuentaspagar.registrarcpp');
+    Route::get('/buscarcppporfecha', [MovimientosCajaController::class, 'buscarcppporfecha'])->name('buscarcppporfecha');
+    Route::post('/proveedores/obtener', [MovimientosCajaController::class, 'obtenerProveedores'])->name('obtener.proveedores');
+    Route::post('caja/cuentaspagar/registrarcpp/', [MovimientosCajaController::class, 'guardarCuentaPagar'])->name('guardar.cuenta.pagar');
+
+    Route::get('caja/panel/resumenfinanciero/', [MovimientosCajaController::class, 'resumenfinanciero'])->name('admin.caja.panel.resumenfinanciero');
+    Route::get('caja/anulaciones/anularcaja/', [MovimientosCajaController::class, 'anularcaja'])->name('admin.caja.anulaciones.anularcaja');
+    Route::post('/anular-regitro-caja', [MovimientosCajaController::class, 'anularregitrocaja'])->name('anularregitrocaja');
+
+    Route::get('caja/cuentaspagar/listacuentaspagar/', [MovimientosCajaController::class, 'listacuentaspagar'])->name('admin.caja.cuentaspagar.listacuentaspagar');
+    Route::get('/buscarlistacuentaspagar', [MovimientosCajaController::class, 'buscarlistacuentaspagar'])->name('buscarlistacuentaspagar');
+
+    Route::post('/actualizarFactura', [MovimientosCajaController::class, 'actualizarFactura'])->name('actualizarFactura');
+
+    Route::get('/reporte-cuentas-pagar', [MovimientosCajaController::class, 'generarPDF'])->name('reporte.cuentaspagar');
+
+//
+
+//ORDENS DE VENTA CLIENTE BANCO
+    /* Route::get('ordenes/ordenesventa', [OrdenVentaController::class, 'index'])->name('admin.ordenes.ordenesventa.index'); */
+    Route::get('ordenes/ordenesventa/create/{clientebanco}', [OrdenVentaController::class, 'create'])->name('admin.ordenes.ordenesventa.create');
+    Route::post('ordenes/ordenesventa/create/crearNotadeVenta', [OrdenVentaController::class, 'crearNotadeVenta'])->name('admin.ordenes.ordenesventa.create.crearnotadeventa');
+    Route::get('ordenes/ordenesventa/{clientebanco}/generarPDF', [OrdenVentaController::class, 'generarPDFNotaDeVenta'])->name('admin.ordenes.ordenesventa.generarPDF');
+//
 
 //CONTROL DE PROGRAMACIONES
     Route::resource('controlprogramacion', ControlProgController::class)/* ->middleware('can:admin.mensajes.index') */->names('admin.controlprogramacion');
     Route::get('/buscar-usuario', [ControlProgController::class, 'buscarPorUsuario'])->name('admin.controlprogramacion.buscarPorUsuario');
-
     Route::post('/confirmar-pagos', [AdministrarProgramacionController::class, 'confirmarPagos'])->name('confirmar-pagos');
     Route::post('/confirmar-pagos-informefinal', [AdministrarProgramacionController::class, 'confirmarPagosInformesfinales'])->name('confirmar-pagos-informefinal');
-
 //
 
-Route::get('asociados/{id}/download-pdf', [AsociadoController::class, 'downloadPDF'])->name('admin.asociados.downloadPDF');
+//INFORMES DE PROVEEDORES Y DIAGNOSTICOS
+    Route::get('asociados/{id}/download-pdf', [AsociadoController::class, 'downloadPDF'])->name('admin.asociados.downloadPDF');
 
-Route::post('/procesar-informe', [InformeFinalController::class, 'procesarInforme'])->name('procesar.informe');
-Route::post('/procesar-informeauditoria', [InformeFinalController::class, 'procesarInformeauditoria'])->name('procesar.informeauditoria');
+    Route::post('/procesar-informe', [InformeFinalController::class, 'procesarInforme'])->name('procesar.informe');
+    Route::post('/procesar-informe-multiple', [InformeFinalController::class, 'procesarInformeMultiple'])->name('procesar.informe.multiple');
+    Route::post('/procesar-informeauditoria', [InformeFinalController::class, 'procesarInformeauditoria'])->name('procesar.informeauditoria');
+    Route::post('/procesar-informe-multipleauditoria', [InformeFinalController::class, 'procesarInformeMultipleauditoria'])->name('procesar.informe.multiple.auditoria');
 
-Route::post('/procesar-diagnostico', [InformeFinalController::class, 'procesardiagnostico'])->name('procesar.diagnostico');
-Route::post('/procesar-diagnosticoauditoria', [InformeFinalController::class, 'procesardiagnosticoauditoria'])->name('procesar.diagnosticoauditoria');
+
+    Route::post('/procesar-diagnostico', [InformeFinalController::class, 'procesardiagnostico'])->name('procesar.diagnostico');
+    Route::post('/procesar-diagnosticoauditoria', [InformeFinalController::class, 'procesardiagnosticoauditoria'])->name('procesar.diagnosticoauditoria');
+
+//
 
 //INFORMES FINALES
     Route::get('informesfinales/documentosprogramaciones/7', 'App\Http\Controllers\Admin\InformeFinalController@documentosprogramaciones')->name('admin.informesfinales.documentosprogramaciones');
     Route::get('/buscarprogramacionesclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarporproveedor')->name('buscarporproveedor');
+    Route::get('/buscarclientereservamedica', 'App\Http\Controllers\Admin\InformeFinalController@buscarclientereservamedica')->name('buscarclientereservamedica');
     Route::get('/buscarporproveedor', 'App\Http\Controllers\Admin\InformeFinalController@buscarprogramacionesclienteita')->name('buscarprogramacionesclienteita');
     Route::get('/buscarprogramacionesclienteauditoria', 'App\Http\Controllers\Admin\InformeFinalController@buscarprogramacionesclienteauditoria')->name('buscarprogramacionesclienteauditoria');
     Route::get('/buscarprogramacionescomclienteita', 'App\Http\Controllers\Admin\InformeFinalController@buscarprogramacionescomclienteita')->name('buscarprogramacionescomclienteita');
@@ -197,6 +324,10 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
     Route::get('/buscarclientesporfecha', 'App\Http\Controllers\Admin\AdministrarProgramacionController@buscarclientesporfecha')->name('buscarclientesporfecha');
     Route::get('/buscarbateriasporfecha', 'App\Http\Controllers\Admin\AdministrarProgramacionController@buscarbateriasporfecha')->name('buscarbateriasporfecha');
     Route::get('/buscarprogramacionesporfecha', 'App\Http\Controllers\Admin\AdministrarProgramacionController@buscarprogramacionesporfecha')->name('buscarprogramacionesporfecha');
+    Route::post('/eliminar-documentos', [AdministrarProgramacionController::class, 'eliminarDocumentos'])->name('eliminar-documentos');
+    Route::post('/eliminar-informesfinal', [AdministrarProgramacionController::class, 'eliminarinformesfinal'])->name('eliminar-informesfinal');
+    Route::post('/eliminar-bateria', [AdministrarProgramacionController::class, 'eliminarbateria'])->name('eliminar-bateria');
+    Route::post('/anular-pendiente-requisitos', [AdministrarProgramacionController::class, 'anularpendienterequisitos'])->name('anular-pendiente-requisitos');
 //
 
 //INSTRUCTIVAS DE PODER
@@ -205,6 +336,8 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
 //
 
 //CLIENTES ITA
+        Route::post('/crear-empresa', [AsociadoController::class, 'crearempresa'])->name('admin.asociados.crearempresa');
+        Route::get('admin/asociados/obtenerEmpresas', [AsociadoController::class, 'obtenerEmpresas'])->name('admin.asociados.obtenerEmpresas');
     //CREAR Y EDITAR CLIENTE ITA
         Route::get('asociados/crearclienteita/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@crearclienteita')->name('admin.asociados.crearclienteita');
         Route::post('asociados/guardarclienteita/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@guardarclienteita')->name('admin.asociados.guardarclienteita');
@@ -282,6 +415,11 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
         Route::get('asociados/subirdocrequisitossegsolicitud/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@subirdocrequisitossegsolicitud')->name('admin.asociados.subirdocrequisitossegsolicitud');
         Route::put('asociados/guardardocrequisitossegsolicitud/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardardocrequisitossegsolicitud')->name('admin.asociados.guardardocrequisitossegsolicitud');
 
+        Route::get('asociados/generarchecklistclienteitatercerasolicitud/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@generarchecklistclienteitatercerasolicitud')->name('admin.asociados.generarchecklistclienteitatercerasolicitud');
+        Route::post('asociados/descargarchecklistclienteitatercerasolicitud/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@descargarchecklistclienteitatercerasolicitud')->name('admin.asociados.descargarchecklistclienteitatercerasolicitud');
+        Route::get('asociados/subirdocrequisitostercerasolicitud/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@subirdocrequisitostercerasolicitud')->name('admin.asociados.subirdocrequisitostercerasolicitud');
+        Route::put('asociados/guardardocrequisitostercerasolicitud/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardardocrequisitostercerasolicitud')->name('admin.asociados.guardardocrequisitostercerasolicitud');
+
         Route::post('/generar-pdf-dermedlab', [AsociadoController::class, 'generarPDFconsentimiento'])->name('generar.pdf.consentimiento');
         Route::post('/generar-pdf-dermedlab2', [AsociadoController::class, 'generarsoloPDFconsentimiento'])->name('generar.pdf.soloconsentimiento');
         Route::post('/generar-pdf-guardardocumentoconsentimiento', [AsociadoController::class, 'generarPDFguardarconsentimiento'])->name('guardar.pdf.consentimiento');
@@ -301,7 +439,8 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
         Route::post('admin/asociados/generarpdfcliente/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@generarPDFCliente')->name('admin.asociados.generarpdfcliente');
         Route::post('admin/asociados/eliminar-pdf', 'App\Http\Controllers\Admin\AsociadoController@eliminarPDF')->name('admin.asociados.eliminarpdf');
 
-
+        Route::get('asociados/anulaciones/anularcuentacobrar/', [AsociadoController::class, 'anularcuentacobrar'])->name('admin.asociados.anulaciones.anularcuentacobrar');
+        Route::post('/anular-regitro-cuentacobrar', [AsociadoController::class, 'anularregitrocuentacobrar'])->name('anularregitrocuentacobrar');
 //
 
 //CLIENTES COMUNES
@@ -334,6 +473,10 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
         Route::get('/buscarprogramacionclientescomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@buscarprogramacionclientescomun')->name('buscarprogramacionclientescomun');
         Route::post('asociados/guardarestadoprogramacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@guardarestadoprogramacionclientecomun')->name('admin.asociados.guardarestadoprogramacionclientecomun');
         Route::get('/buscarprogramacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@buscarprogramacionclientecomun')->name('buscarprogramacionclientecomun');
+        Route::post('actualizarfecha/{id}', 'App\Http\Controllers\Admin\AsociadoController@actualizarFecha')->name('admin.asociados.actualizarFecha');
+        Route::post('/actualizarfecha/{id}', [AsociadoController::class, 'actualizarFecha'])->name('actualizar.fecha');
+
+
     //CREAR DOCUMENTACION DE CLIENTE COMUN
         Route::get('asociados/creardocumentacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@creardocumentacionclientecomun')->name('admin.asociados.creardocumentacionclientecomun');
         Route::post('asociados/guardardocumentacionclientecomun/{clientecomun}', 'App\Http\Controllers\Admin\AsociadoController@guardardocumentacionclientecomun')->name('admin.asociados.guardardocumentacionclientecomun');
@@ -412,6 +555,17 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
         Route::post('/aprobariniciarcrearbateriaauditoria', [AsociadoController::class, 'aprobariniciarcrearbateriaauditoria'])->name('aprobariniciarcrearbateriaauditoria');
     //PROVEEDOR INFORME FINAL
         Route::post('asociados/guardarproveedorinformefinalauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardarproveedorinformefinalauditoria')->name('admin.asociados.guardarproveedorinformefinalauditoria');
+    
+    //DICTAMEN
+    Route::post('asociados/guardardictamenauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@guardardictamenauditoria')->name('admin.asociados.guardardictamenauditoria');
+
+    Route::get('asociados/cartasdesgravamen/cartasactdesgravamen/{clienteauditoria}', 'App\Http\Controllers\Admin\AsociadoController@cartasactdesgravamen')->name('admin.asociados.cartasdesgravamen.cartasactdesgravamen');
+
+    //////////////////////////////////////
+Route::post('/admin/asociados/cartasdesgravamen/descargarcartaactdesgravamen', [AsociadoController::class, 'descargarcartaactdesgravamen'])->name('admin.asociados.cartasdesgravamen.descargarcartaactdesgravamen');
+Route::post('/admin/asociados/cartasdesgravamen/descargarcartaactcoberturadesgravamen', [AsociadoController::class, 'descargarcartaactcoberturadesgravamen'])->name('admin.asociados.cartasdesgravamen.descargarcartaactcoberturadesgravamen');
+////////////////////////////////
+
 //
 
 //CLIENTES BANCOS

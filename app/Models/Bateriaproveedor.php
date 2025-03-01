@@ -33,6 +33,9 @@ class Bateriaproveedor extends Model
         'estado'=>'required',
         'tipoid'=>'',
         'areasid'=>'',
+        'pagoservicio'=>'',
+        'comision'=>'',
+        'sesiones' => '',
     ]; 
 
     protected $fillable = [
@@ -56,6 +59,9 @@ class Bateriaproveedor extends Model
         'estado',
         'tipoid',
         'areasid',
+        'pagoservicio',
+        'comision',
+        'sesiones',
     ];
     public function proveedor()
     {

@@ -35,6 +35,17 @@ class Bateriasubcliente extends Model
         'servicio' => '',
         'usuarioid' => '',
         'usuarioregistro' => '',
+        'pagoservicio' => '',
+        'fechacredito' => '',
+        'usuarioautorizador' => '',
+        'documentocredito' => '',
+        'documentolcambio' => '',
+        'comision' => '',
+        'sesiones' => '',
+        'provinfofinalid' => '',
+        'pagoatencion' => '',
+        'motivoanulacion' => '',
+        'usuarioanulacion' => '',
     ]; 
 
     protected $fillable = [
@@ -62,10 +73,113 @@ class Bateriasubcliente extends Model
         'servicio',
         'usuarioid',
         'usuarioregistro',
+        'pagoservicio',
+        'fechacredito',
+        'usuarioautorizador',
+        'documentocredito',
+        'documentolcambio',
+        'comision',
+        'sesiones',
+        'provinfofinalid',
+        'pagoatencion',
+        'motivoanulacion',
+        'usuarioanulacion',
     ];
     public function cliente()
-{
-    return $this->belongsTo(Cliente::class, 'nombrecompleto', 'clienteitanombre'); // Ajusta los nombres de las claves según tu esquema
-}
+    {
+        return $this->belongsTo(Cliente::class, 'nombrecompleto', 'clienteitanombre');
+    }
 
+    public function clienteAuditoria()
+    {
+        return $this->belongsTo(ClienteAuditoria::class, 'clienteauditorianombre', 'nombrecompleto');
+    }
+    public function clienteComun()
+    {
+        return $this->belongsTo(ClienteComun::class, 'clientecomunnombre', 'nombrecompleto');
+    }
+    public function clienteIta()
+    {
+        return $this->belongsTo(Cliente::class, 'clienteitanombre', 'nombrecompleto');
+    }
+
+    public function estadoprogramacionsubcliente()
+    {
+        return $this->hasMany(Estadoprogramacionsubcliente::class, 'clienteitaid', 'clienteitaid');
+    }
+    public function documentacionsubcliente()
+    {
+        return $this->hasMany(Documentacionsubcliente::class, 'clienteitaid', 'clienteitaid');
+    }
+    public function programacionsubcliente()
+    {
+        return $this->hasMany(Programacionsubcliente::class, 'clienteitaid', 'clienteitaid');
+    }
+    public function informesfinales()
+    {
+        return $this->hasMany(Informefinal::class, 'clienteitaid', 'clienteitaid');
+    }
+    public function pagoservicio()
+    {
+        return $this->hasMany(Detallerecibo::class, 'bateriaid', 'id');
+    }
+    public function pagoservicioinformefinal()
+    {
+        return $this->hasMany(Detallerecibo::class, 'provinfofinalid', 'provinfofinalid');
+    }
+    public function provinfofinal()
+    {
+        return $this->hasMany(ProveedorInformefinal::class, 'clienteitaid', 'clienteitaid');
+    }
+
+    public function estadoprogramacionsubclienteauditoria()
+    {
+        return $this->hasMany(Estadoprogramacionsubcliente::class, 'clienteauditoriaid', 'clienteauditoriaid');
+    }
+    public function documentacionsubclienteauditoria()
+    {
+        return $this->hasMany(Documentacionsubcliente::class, 'clienteauditoriaid', 'clienteauditoriaid');
+    }
+    public function programacionsubclienteauditoria()
+    {
+        return $this->hasMany(Programacionsubcliente::class, 'clienteauditoriaid', 'clienteauditoriaid');
+    }
+    public function informesfinalesauditoria()
+    {
+        return $this->hasMany(Informefinal::class, 'clienteauditoriaid', 'clienteauditoriaid');
+    }
+    public function provinfofinalauditoria()
+    {
+        return $this->hasMany(ProveedorInformefinal::class, 'clienteauditoriaid', 'clienteauditoriaid');
+    }
+    
+    public function estadoprogramacionsubclientecomun()
+    {
+        return $this->hasMany(Estadoprogramacionsubcliente::class, 'clientecomunid', 'clientecomunid');
+    }
+    public function documentacionsubclientecomun()
+    {
+        return $this->hasMany(Documentacionsubcliente::class, 'clientecomunid', 'clientecomunid');
+    }
+    public function programacionsubclientecomun()
+    {
+        return $this->hasMany(Programacionsubcliente::class, 'clientecomunid', 'clientecomunid');
+    }
+    public function informesfinalescomun()
+    {
+        return $this->hasMany(Informefinal::class, 'clientecomunid', 'clientecomunid');
+    }
+    public function provinfofinalcomun()
+    {
+        return $this->hasMany(ProveedorInformefinal::class, 'clientecomunid', 'clientecomunid');
+    }
+
+    public function programacionproveedor()
+    {
+        return $this->hasMany(Programacionsubcliente::class, 'proveedornombre', 'proveedorasignado');
+    }
+    public function proveedorasignado()
+    {
+        return $this->hasMany(Proveedor::class, 'proveedor', 'proveedorasignado');
+    }
 }

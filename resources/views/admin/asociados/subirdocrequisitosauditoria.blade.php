@@ -118,7 +118,7 @@
                                             <td>CERTIFICADO NACIMIENTO ASEGURADO</td>
                                             <td>
                                                 @if ($cnacaseguradoSubido)
-                                                    <a href="{{ asset("/requisitosclientesita/{$clienteauditoria->id}/{$requisitosubido->cnacasegurado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
+                                                    <a href="{{ asset("/requisitosclientesauditoria/{$clienteauditoria->id}/{$requisitosubido->cnacasegurado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
                                                 @elseif($requisitosubido->cnacasegurado === 'PENDIENTE')
                                                     <div class="pendiente">PENDIENTE</div>
                                                 @else
@@ -132,7 +132,7 @@
                                             <td>CARNET IDENTIDAD ASEGURADO</td>
                                             <td>
                                                 @if ($ciaseguradoSubido)
-                                                    <a href="{{ asset("/requisitosclientesita/{$clienteauditoria->id}/{$requisitosubido->ciasegurado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
+                                                    <a href="{{ asset("/requisitosclientesauditoria/{$clienteauditoria->id}/{$requisitosubido->ciasegurado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
                                                 @elseif($requisitosubido->ciasegurado === 'PENDIENTE')
                                                     <div class="pendiente">PENDIENTE</div>
                                                 @else
@@ -164,7 +164,7 @@
                                                 @if ($requisito->polizageneral === 'PENDIENTE')
                                                     <div class="pendiente">PENDIENTE</div>
                                                 @else
-                                                    <a href="{{ asset("/requisitosclientesita/{$clienteauditoria->id}/{$requisito->polizageneral}") }}" target="_blank" class="verdoc">VER DOC.</a>
+                                                    <a href="{{ asset("/requisitosclientesauditoria/{$clienteauditoria->id}/{$requisito->polizageneral}") }}" target="_blank" class="verdoc">VER DOC.</a>
                                                 @endif
                                             </td>
                                             <td> 
@@ -173,7 +173,7 @@
                                                 @elseif ($requisito->declasalud === 'NO APLICA')
                                                     <div class="noaplica">NO APLICA</div>
                                                 @else
-                                                    <a href="{{ asset("/requisitosclientesita/{$clienteauditoria->id}/{$requisito->declasalud}") }}" target="_blank" class="verdoc">VER DOC.</a>
+                                                    <a href="{{ asset("/requisitosclientesauditoria/{$clienteauditoria->id}/{$requisito->declasalud}") }}" target="_blank" class="verdoc">VER DOC.</a>
                                                 @endif
                                             </td>
                                             
@@ -182,7 +182,7 @@
                                                 @if ($requisito->polizasegurodesgravamen === 'PENDIENTE')
                                                     <div class="pendiente">PENDIENTE</div>
                                                 @else
-                                                    <a href="{{ asset("/requisitosclientesita/{$clienteauditoria->id}/{$requisito->polizasegurodesgravamen}") }}" target="_blank" class="verdoc">VER DOC.</a> 
+                                                    <a href="{{ asset("/requisitosclientesauditoria/{$clienteauditoria->id}/{$requisito->polizasegurodesgravamen}") }}" target="_blank" class="verdoc">VER DOC.</a> 
                                                 @endif
                                             </td>
                                         </tr>

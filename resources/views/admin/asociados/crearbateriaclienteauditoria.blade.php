@@ -22,6 +22,8 @@
 @endif 
 <div class="card">
     <div class="card-body">
+        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE')
+
         {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardarbateriaclienteauditoria', $clienteauditoria], 'method' => 'POST']) !!}
         <div class="row">
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
@@ -200,16 +202,16 @@
                             });
                         </script>
 
-<style>
-    .compact-table th, .compact-table td {
-        padding: 4px 8px; /* Reduce el padding para compactar las celdas */
-        line-height: 1.2; /* Ajusta el interlineado de las celdas */
-    }
+                    <style>
+                        .compact-table th, .compact-table td {
+                            padding: 4px 8px; /* Reduce el padding para compactar las celdas */
+                            line-height: 1.2; /* Ajusta el interlineado de las celdas */
+                        }
 
-    .compact-table {
-        font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
-    }
-</style>
+                        .compact-table {
+                            font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
+                        }
+                    </style>
 
                     <div class="form-group">
                         <strong>Fecha de Batería:</strong>
@@ -401,27 +403,31 @@
                             @endforeach
                         </div>
                     </div>
-<script>
-    
-    function buscarEspecialidad() {
-    var query = $('#search_especialidades').val().toLowerCase(); // Toma el valor del input y lo convierte a minúsculas
-    $('.especialidad-item').each(function() {  // Recorre todas las especialidades
-        var label = $(this).find('label').text().toLowerCase();
-        
-        if (label.includes(query)) {  // Si el texto de la especialidad incluye la búsqueda, mostrar
-            $(this).show();
-        } else {  // Si no incluye, ocultar
-            $(this).hide();
-        }
-    });
-}
-</script>                    
+                    <script>
+                        
+                        function buscarEspecialidad() {
+                        var query = $('#search_especialidades').val().toLowerCase(); // Toma el valor del input y lo convierte a minúsculas
+                        $('.especialidad-item').each(function() {  // Recorre todas las especialidades
+                            var label = $(this).find('label').text().toLowerCase();
+                            
+                            if (label.includes(query)) {  // Si el texto de la especialidad incluye la búsqueda, mostrar
+                                $(this).show();
+                            } else {  // Si no incluye, ocultar
+                                $(this).hide();
+                            }
+                        });
+                    }
+                    </script>                    
                     
                 </div>
             </div>
             {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-crear']) !!}
             {!! Form::close() !!}
         </div>
+
+        @else
+        <p>USTED NO TIENE PERMISO PARA CREAR BATERIA</p>
+        @endif
     </div>
 </div>
 @stop

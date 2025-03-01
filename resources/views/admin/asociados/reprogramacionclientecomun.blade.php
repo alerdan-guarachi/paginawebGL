@@ -97,7 +97,7 @@
                 <tbody>
                     @foreach ($programacionsubclientes as $programacionsubcliente)
                     <tr>
-                        <td>{{$programacionsubcliente->accionnombre}}</td>
+                        <td>{{$programacionsubcliente->accionnombre}} {{$programacionsubcliente->nrosesion}}</td>
                         <td>{{$programacionsubcliente->proveedornombre}}</td>
                         <td>{{$programacionsubcliente->fechaasignada}}</td>
                         <td>{{$programacionsubcliente->horadesde}} - {{$programacionsubcliente->horahasta}}</td>
@@ -127,6 +127,64 @@
                                             <label for="motivoreprogramacion">Motivo de Reprogramación:</label>
                                             <input type="text" name="motivoreprogramacion" id="motivoreprogramacion" class="form-control" required>
                                         </div>
+
+
+                                        <div class="form-group">
+                                            {!! Form::label('proveedornombre', 'Proveedor:') !!}
+                                            {!! Form::select('proveedornombre', $proveedorprogramacion, null, [
+                                                'class' => 'form-control',
+                                                'id' => 'proveedornombre',
+                                                'required' => true,
+                                            ]) !!}
+                                            @error('proveedornombre')
+                                                <small
+                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Campo dinámico para ingresar texto si es "Proveedor Ajeno" -->
+                                        <div class="form-group" id="proveedorajeno-container" style="display: none;">
+                                            {!! Form::label('proveedorajeno', 'Ingrese el nombre del Proveedor Ajeno:') !!}
+                                            {!! Form::text('proveedorajeno', null, [
+                                                'class' => 'form-control',
+                                                'id' => 'proveedorajeno',
+                                            ]) !!}
+                                            @error('proveedorajeno')
+                                                <small
+                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Campo para la fecha de reprogramación -->
+                                        <div class="form-group">
+                                            {!! Form::label('fechaasignada', 'Fecha de Reprogramación:') !!}
+                                            {!! Form::date('fechaasignada', null, ['class' => 'form-control', 'required' => true]) !!}
+                                            @error('fechaasignada')
+                                                <small
+                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Campo para la hora desde -->
+                                        <div class="form-group">
+                                            {!! Form::label('horadesde', 'Hora Desde:') !!}
+                                            {!! Form::time('horadesde', null, ['class' => 'form-control', 'required' => true]) !!}
+                                            @error('horadesde')
+                                                <small
+                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+
+                                        <!-- Campo para la hora hasta -->
+                                        <div class="form-group">
+                                            {!! Form::label('horahasta', 'Hora Hasta:') !!}
+                                            {!! Form::time('horahasta', null, ['class' => 'form-control', 'required' => true]) !!}
+                                            @error('horahasta')
+                                                <small
+                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                                            @enderror
+                                        </div>
+                                        
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-cancelar" data-dismiss="modal">CANCELAR</button>
@@ -338,7 +396,7 @@ $('.dropify').dropify();
 $(document).ready(function(){
     $('.btn-eliminar').on('click', function(){
         var id = $(this).data('id');
-        var url = "{{ route('admin.asociados.guardarreprogramacionclienteita', ':id') }}";
+        var url = "{{ route('admin.asociados.guardarreprogramacionclientecomun', ':id') }}";
         url = url.replace(':id', id);
         $('#deleteForm').attr('action', url);
         $('#deleteModal').modal('show');

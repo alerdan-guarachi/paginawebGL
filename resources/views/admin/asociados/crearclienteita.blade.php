@@ -1,7 +1,11 @@
 @extends('adminlte::page')
 
 @section('content_header')
+
 <a class="btn btn-sm float-right btn-regresar" href="{{route('admin.asociados.listadoclienteita', $asociado)}}">REGRESAR</a>
+<button type="button" class="btn btn-sm float-right btn-crearempresa" style="margin-right: 10px;" data-toggle="modal" data-target="#crearEmpresaModal">
+CREAR EMPRESA
+</button>
 <h1>NUEVO CLIENTE ITA</h1>
 @stop
 
@@ -18,7 +22,7 @@
 @endif
 <div class="card">
     <div class="card-body">
-        <div class="row ">
+        <div class="row">
             <div class="col-lg-5">
                 {!! Form::model($asociado, ['route' => ['admin.asociados.guardarclienteita', $asociado], 'method' => 'POST', 'files' => true]) !!}
                 {!! Form::hidden('users_id', auth()->user()->id) !!}
@@ -134,10 +138,18 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-lg-4">
+                    <div class="col-lg-5"> 
                         <div class="form-group">
                             {!! Form::label('fechavencci', 'Fecha Venc/CI.:') !!}
-                            {!! Form::date('fechavencci', null, ['class' => 'form-control']) !!}
+                            <div class="input-group">
+                                {!! Form::date('fechavencci', null, ['class' => 'form-control', 'id' => 'fechavencci']) !!}
+                                <div class="input-group-append">
+                                    <div class="input-group-text">
+                                        <input type="checkbox" id="indefinidaCheckbox">
+                                        <label for="indefinidaCheckbox" class="ml-2 mb-0">Indef.</label>
+                                    </div>
+                                </div>
+                            </div>
                             @error('fechavencci')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{ $message }}
@@ -145,7 +157,24 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-4">
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const fechaInput = document.getElementById('fechavencci');
+                            const checkbox = document.getElementById('indefinidaCheckbox');
+                    
+                            checkbox.addEventListener('change', function () {
+                                if (this.checked) {
+                                    fechaInput.value = '';
+                                    fechaInput.disabled = true;
+                                } else {
+                                    fechaInput.disabled = false;
+                                }
+                            });
+                        });
+                    </script>
+                    
+                    <div class="col-lg-5">
                         <div class="form-group">
                             {!! Form::label('fechanacimiento', 'Fecha de nac.:') !!}
                             {!! Form::date('fechanacimiento', null, ['class' => 'form-control', 'id' => 'fecha_nacimiento']) !!}
@@ -156,7 +185,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-4">
+                    <div class="col-lg-2">
                         <div class="form-group">
                             {!! Form::label('edad', 'Edad:') !!}
                             {!! Form::text('edad', null, ['class' => 'form-control', 'readonly' => true, 'id' => 'edad']) !!}
@@ -169,7 +198,18 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-lg-4">
+                    {{-- <div class="col-lg-3">
+                        <div class="form-group">
+                            {!! Form::label('paisnacimiento', 'Pais de nac.:') !!}
+                            {!! Form::select('paisnacimiento', null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                            @error('paisnacimiento')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
                         <div class="form-group">
                             {!! Form::label('lugarnacimiento', 'Ciudad de nac.:') !!}
                             {!! Form::select('lugarnacimiento', $departamentos, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -179,8 +219,80 @@
                                 </small>
                             @enderror
                         </div>
+                    </div> --}}
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            {!! Form::label('paisnacimiento', 'País de nac.:') !!}
+                            {!! Form::select('paisnacimiento', [
+                                '' => '',
+                                'ARGENTINA' => 'ARGENTINA',
+                                'BOLIVIA' => 'BOLIVIA',
+                                'COLOMBIA' => 'COLOMBIA',
+                                'EE.UU.' => 'EE.UU.',
+                                'ESPAÑA' => 'ESPAÑA',
+                                'PARAGUAY' => 'PARAGUAY',
+                                'VENEZUELA' => 'VENEZUELA'
+                            ], $cliente->paisnacimiento, ['class' => 'form-control', 'id' => 'paisnacimiento']) !!}
+                            @error('paisnacimiento')
+                                <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                            @enderror
+                        </div>
                     </div>
-                    <div class="col-lg-4">
+                    
+                    {{-- Select para ciudades si el país es Bolivia --}}
+                    <div class="col-lg-3" id="select-lugar-nacimiento">
+                        <div class="form-group">
+                            {!! Form::label('lugarnacimiento_select', 'Ciudad de nac.:') !!}
+                            {!! Form::select('lugarnacimiento_select', $departamentos, 
+                                in_array($cliente->lugarnacimiento, $departamentos->toArray()) ? $cliente->lugarnacimiento : null, 
+                                ['class' => 'form-control', 'placeholder' => '']) !!}
+                            @error('lugarnacimiento_select')
+                                <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    {{-- Input para ciudades si el país NO es Bolivia --}}
+                    <div class="col-lg-3" id="input-lugar-nacimiento" style="display: none;">
+                        <div class="form-group">
+                            {!! Form::label('lugarnacimiento_text', 'Ciudad de nac.:') !!}
+                            {!! Form::text('lugarnacimiento_text', 
+                                !in_array($cliente->lugarnacimiento, $departamentos->toArray()) ? $cliente->lugarnacimiento : null, 
+                                ['class' => 'form-control', 'placeholder' => '']) !!}
+                            @error('lugarnacimiento_text')
+                                <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const paisSelect = document.getElementById('paisnacimiento');
+                            const selectLugarNacimiento = document.getElementById('select-lugar-nacimiento');
+                            const inputLugarNacimiento = document.getElementById('input-lugar-nacimiento');
+                            const selectLugarNacimientoField = document.querySelector('select[name="lugarnacimiento_select"]');
+                            const inputLugarNacimientoField = document.querySelector('input[name="lugarnacimiento_text"]');
+                    
+                            function actualizarCampos() {
+                                if (paisSelect.value === 'BOLIVIA') {
+                                    selectLugarNacimiento.style.display = 'block';
+                                    inputLugarNacimiento.style.display = 'none';
+                                    inputLugarNacimientoField.value = ''; // Limpiar input si se usa select
+                                } else {
+                                    selectLugarNacimiento.style.display = 'none';
+                                    inputLugarNacimiento.style.display = 'block';
+                                    selectLugarNacimientoField.value = ''; // Limpiar select si se usa input
+                                }
+                            }
+                    
+                            actualizarCampos(); // Llamar al cargar la página
+                            paisSelect.addEventListener('change', actualizarCampos);
+                        });
+                    </script>         
+                    
+
+
+                    <div class="col-lg-3">
                         <div class="form-group">
                             {!! Form::label('genero', 'Genero:') !!}
                             {!! Form::select('genero', $genero, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -191,7 +303,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="form-group">
                             {!! Form::label('estadocivil', 'Estado civil:') !!}
                             {!! Form::select('estadocivil', $estciv, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -393,20 +505,28 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-lg-6">
-                        <div class="form-group">
+                    <div class="col-lg-8 d-flex flex-column">
+                        <div class="form-group mb-0">
                             {!! Form::label('empresa', 'Empresa:') !!}
-                            {!! Form::select('empresa', $empresas, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                        </div>
+                        <div class="form-group mb-0 d-flex">
+                            <div class="input-group w-100">
+                                {!! Form::select('empresa', $empresas, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-primary" id="actualizarEmpresasBtn" title="ACTUALIZAR EMPRESAS">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
                             @error('empresa')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
+                                <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-6">
+                    
+                    <div class="col-lg-4">
                         <div class="form-group">
-                            {!! Form::label('paisresidencia', 'Pais de Residencia:') !!}
+                            {!! Form::label('paisresidencia', 'Pais de Res.:') !!}
                             {!! Form::select('paisresidencia', $pais, null, ['class' => 'form-control', 'placeholder' => '']) !!}
                             @error('paisresidencia')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -459,7 +579,7 @@
                     @enderror
                 </div>
                 <div class="form-group">
-                    {!! Form::label('afp', 'AFP:') !!}
+                    {!! Form::label('afp', 'Gestora:') !!}
                     {!! Form::text('afp', $afp, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
                     @error('afp')
                         <small class="text-danger fas fa-exclamation-circle">
@@ -642,6 +762,125 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="crearEmpresaModal" tabindex="-1" aria-labelledby="crearEmpresaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="crearEmpresaModalLabel" style="font-weight: 900;">REGISTRAR NUEVA EMPRESA</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>                                        
+            <div class="modal-body">
+                <form id="crearEmpresaForm">
+                    @csrf
+                    <div class="form-group" style="text-align: left">
+                        {!! Form::label('nombreempresa', 'Nombre de la empresa:') !!}
+                        {!! Form::text('nombreempresa', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                    </div>
+                    <div class="form-group" style="text-align: left">
+                        {!! Form::label('contacto', 'Contacto:') !!}
+                        {!! Form::text('contacto', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                    </div>
+                    <div class="form-group" style="text-align: left">
+                        {!! Form::label('celular', 'Celular:') !!}
+                        {!! Form::text('celular', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                    </div>
+                    <div class="form-group" style="text-align: left">
+                        {!! Form::label('telefono', 'Teléfono:') !!}
+                        {!! Form::text('telefono', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                    </div>
+                    <div class="form-group" style="text-align: left">
+                        {!! Form::label('direccion', 'Dirección:') !!}
+                        {!! Form::text('direccion', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-crear">GUARDAR</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('crearEmpresaForm').addEventListener('submit', function (e) { 
+    e.preventDefault(); // Evitar que se recargue la página
+
+    let formData = new FormData(this);
+
+    // Enviar la solicitud AJAX
+    fetch('{{ route('admin.asociados.crearempresa') }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) { // Verifica si la respuesta tiene el campo 'success' igual a true
+            // Mostrar la alerta de éxito
+            alert("La empresa ha sido registrada exitosamente.");
+            
+            // Agregar la nueva empresa al select
+            let empresaSelect = document.getElementById('empresa-select');
+            let option = new Option(data.empresa.nombreempresa, data.empresa.id);
+            empresaSelect.add(option);
+
+            // Cerrar el modal
+            $('#crearEmpresaModal').modal('hide');
+
+            // Opcional: Seleccionar automáticamente la nueva empresa
+            empresaSelect.value = data.empresa.id;
+
+            // Limpiar los campos del formulario
+            document.getElementById('crearEmpresaForm').reset();
+        } else {
+            alert('Hubo un error al registrar la empresa.');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+
+document.getElementById('actualizarEmpresasBtn').addEventListener('click', function () {
+    // Obtener el select
+    let empresaSelect = document.getElementById('empresa');
+
+    // Hacer la solicitud para obtener las empresas
+    fetch('{{ route('admin.asociados.obtenerEmpresas') }}')
+        .then(response => response.json())
+        .then(data => {
+            // Limpiar el select antes de agregar las nuevas opciones
+            empresaSelect.innerHTML = '';
+
+            // Agregar un option vacío
+            let placeholderOption = new Option('Seleccione una empresa', '');
+            empresaSelect.add(placeholderOption);
+
+            // Recargar las empresas
+            data.empresas.forEach(empresa => {
+                let option = new Option(empresa.nombreempresa, empresa.id);
+                empresaSelect.add(option);
+            });
+
+            // Opcional: Seleccionar automáticamente la primera empresa
+            if (data.empresas.length > 0) {
+                empresaSelect.value = data.empresas[0].id;
+            }
+        })
+        .catch(error => console.error('Error al actualizar las empresas:', error));
+});
+
+</script>          
+<STYle>
+    .modal {
+z-index: 1050 !important;
+}
+.modal-backdrop {
+z-index: 1040 !important;
+}
+
+</STYle>      
+
 @stop
 @section('js')
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -807,6 +1046,17 @@ $('.dropify').dropify();
     }
     .btn-regresar:hover {
         background-color: #2926e2;
+        color: #ffffff;
+    }
+    .btn-crearempresa {
+        background-color: #ffffff;
+        color: #e29d26;
+        border-color: #e29d26;
+        border-radius: 5px;
+        padding: 10px 10px;
+    }
+    .btn-crearempresa:hover {
+        background-color: #e29d26;
         color: #ffffff;
     }
 </style>

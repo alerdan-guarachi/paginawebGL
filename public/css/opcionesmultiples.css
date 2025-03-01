@@ -1,0 +1,176 @@
+.page {
+    width: 812px;
+    height: 5992px;
+    border: 1px solid #ddd;
+    margin: auto;
+    padding: 20px;
+    background: #fff;
+    page-break-before: always;
+}
+.pages-container {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: none;
+}
+.btn-regresar {
+    background-color: #ffffff;
+    color: #2926e2;
+    border-color: #2926e2;
+    border-radius: 5px;
+    padding: 10px 10px;
+    }
+.btn-regresar:hover {
+    background-color: #2926e2;
+    color: #ffffff;
+    }
+.btn-botongris {
+    background-color: #ffffff;
+    color: #676767;
+    border-color: #676767;
+    border-radius: 5px;
+    }
+.btn-botongris:hover {
+    background-color: #676767;
+    color: #ffffff;
+    }
+.btn-otraopcion {
+    background-color: #ffffff;
+    color: #faa625;
+    border-color: #faa625;
+    border-radius: 5px;
+    padding: 10px 10px;
+    }
+.btn-otraopcion:hover {
+    background-color: #faa625;
+    color: #ffffff;
+    }
+.btn-crear {
+    background-color: #ffffff;
+    color: #94c93b;
+    border-color: #94c93b;
+    border-radius: 5px;
+    padding: 10px 10px;
+    }
+.btn-crear:hover {
+    background-color: #94c93b;
+    color: #ffffff;
+    }
+h1 {
+    color:#94c93b; 
+    font-family: "Segoe UI";
+    font-weight: 900;
+}
+.btn-custom {
+    background-color:  #ffffff;
+    color: #94c93b;
+    border-color: #94c93b;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+.btn-custom:hover {
+    background-color: #94c93b;
+    color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: scale(1.05);
+}
+.btn-custom:disabled {
+    background-color: #d6d6d6;
+    color: #a0a0a0;
+    cursor: not-allowed;
+}
+
+.nav-tabs {
+    display: flex;
+    justify-content: space-between;
+}
+.nav-tabs .nav-item {
+    flex: 1;
+}
+.nav-tabs .nav-link {
+    display: block;
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+    font-size: 15px;
+    color: #909090;
+    background-color: #eaeaea;
+}
+.nav-tabs .nav-link.active {
+    font-weight: bold;
+    font-size: 15px;
+    color: #0a0a0a;
+    background-color: #ffffff;
+}
+.circle {
+    display: inline-block;
+    width: 30px;
+    height: 20px;
+    line-height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 8px;
+}
+.nav-link.active .circle {
+    background-color: #94c93b;
+    color: #fff;
+}
+.nav-link .circle {
+    background-color: #faa625;
+    color: #fff;
+}
+.custom-select-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 150px;
+}
+.custom-select-wrapper select {
+    width: 100%;
+    padding: 6px 26px 6px 10px;
+    font-size: 14px;
+    border: none;
+    border-radius: 3px;
+    background-color: #f8f9fa;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+.custom-select-wrapper select:focus {
+    outline: none;
+}
+.custom-select-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #000000;
+}
+.custom-select-wrapper select {
+    background-color:  #eff9df;
+    color: #000000;
+    border-color: #000000;
+    border-radius: 5px;
+    padding: 10px 20px;
+}
+.custom-select-wrapper select:hover {
+    background-color: #f4e1c6;
+    color: #000000;
+}
+.custom-select-wrapper select option {
+    background-color: #ffffff;
+}
+h1, th {
+    color:#000000; 
+    font-family: "Segoe UI";
+    font-weight: 700;
+}

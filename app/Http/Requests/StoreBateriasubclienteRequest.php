@@ -61,6 +61,16 @@ class StoreBateriasubclienteRequest extends FormRequest
             'servicio' => '',
             'usuarioid' => '',
             'usuarioregistro' => '',
+            'pagoservicio' => '',
+            'fechacredito' => '',
+            'usuarioautorizador' => '',
+            'documentocredito' => '',
+            'documentolcambio' => '',
+            'comision' => '',
+            'sesiones'=>'',
+            'provinfofinalid' => '',
+            'motivoanulacion',
+        'usuarioanulacion',
         ]; 
         return $rules;
         }
