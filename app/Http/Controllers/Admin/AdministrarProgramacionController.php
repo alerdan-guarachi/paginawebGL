@@ -34,6 +34,8 @@ use App\Models\Informefinal;
 use App\Models\ProveedorInformefinal;
 use App\Services\WhatsAppService;
 use App\Models\Requisitosubcliente;
+use setasign\Fpdi\Fpdi;
+use Illuminate\Support\Facades\File;
 
 class AdministrarProgramacionController extends Controller
 {
@@ -177,80 +179,99 @@ class AdministrarProgramacionController extends Controller
 
     public function documentacionpendiente(Request $request, Asociado $asociado, Cliente $cliente)
     {
-        /* $proveedor = $request->get('buscarpor');
-
-        $clientes = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$proveedor%")
-            ->whereIn('accionnombre', function ($query) use ($proveedor) {
-                $query->select('accionnombre')
-                    ->from('estadoprogramacionsubclientes')
-                    ->where('proveedornombre', 'LIKE', "%$proveedor%");
-            })
-            ->whereNotNull('clienteitaid')
-            ->whereNotExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('documentacionsubclientes')
-                    ->whereRaw('documentacionsubclientes.clienteitaid = programacionsubclientes.clienteitaid')
-                    ->whereRaw('documentacionsubclientes.accion = programacionsubclientes.accionnombre')
-                    ->whereRaw('documentacionsubclientes.fechabateria = programacionsubclientes.fechabateria');
-            })
-            ->orderBy('proveedornombre')
-            ->simplePaginate(10000);
-        $clientes2 = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$proveedor%")
-            ->whereIn('accionnombre', function ($query) use ($proveedor) {
-                $query->select('accionnombre')
-                    ->from('estadoprogramacionsubclientes')
-                    ->where('proveedornombre', 'LIKE', "%$proveedor%");
-            })
-            ->whereNotNull('clientecomunid')
-            ->whereNotExists(function ($query) {
-                $query->select(DB::raw(1))
-                    ->from('documentacionsubclientes')
-                    ->whereRaw('documentacionsubclientes.clientecomunid = programacionsubclientes.clientecomunid')
-                    ->whereRaw('documentacionsubclientes.accion = programacionsubclientes.accionnombre')
-                    ->whereRaw('documentacionsubclientes.fechabateria = programacionsubclientes.fechabateria');
-            })
-            ->orderBy('proveedornombre')
-            ->simplePaginate(10000);
-
-        return view('admin.admprogramaciones.documentacionpendiente', compact('cliente', 'asociado', 'clientes', 'clientes2')); */
         $buscar = $request->get('buscarpor');
 
-        // Documentación Pendiente
-        $clientes = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$buscar%")
-            ->whereNotNull('clienteitaid')
-            ->simplePaginate(10000);
+        /* PROGRAMACIONES ITA SIN INFORMES */
+        $programaciones = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$buscar%")
+        ->whereNotNull('clienteitaid')
+        ->whereNotExists(function ($query) {
+            $query->select(DB::raw(1))
+                ->from('documentacionsubclientes')
+                ->whereRaw('documentacionsubclientes.clienteitaid = programacionsubclientes.clienteitaid')
+                ->whereRaw('documentacionsubclientes.fechabateria = programacionsubclientes.fechabateria')
+                ->whereRaw('documentacionsubclientes.accion = programacionsubclientes.accionnombre');
+        })
+        ->simplePaginate(200);
+        $informesfinalessin = ProveedorInformefinal::where('proveedorasignado', 'LIKE', "%$buscar%")
+        ->whereNotNull('clienteitaid')
+        ->whereNotExists(function ($query) {
+            $query->select(DB::raw(1))
+                ->from('informesfinales')
+                ->whereRaw('informesfinales.clienteitaid = proveedorinformesfinales.clienteitaid')
+                ->whereRaw('informesfinales.fechabateria = proveedorinformesfinales.fechabateria');
+        })
+        ->simplePaginate(200);
 
-        $clientes2 = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$buscar%")
-            ->whereNotNull('clientecomunid')
-            ->simplePaginate(10000);
+        /* PROGRAMACIONES ITA CON INFORMES */
+        $documentaciones = Programacionsubcliente::join('documentacionsubclientes', function ($join) {
+            $join->on('documentacionsubclientes.clienteitaid', '=', 'programacionsubclientes.clienteitaid')
+                 ->on('documentacionsubclientes.fechabateria', '=', 'programacionsubclientes.fechabateria')
+                 ->on('documentacionsubclientes.accion', '=', 'programacionsubclientes.accionnombre');
+        })
+        ->where('programacionsubclientes.proveedornombre', 'LIKE', "%$buscar%")
+        ->whereNotNull('programacionsubclientes.clienteitaid')
+        ->select('programacionsubclientes.*', 'documentacionsubclientes.document', 'documentacionsubclientes.created_at as document_created_at', 'documentacionsubclientes.id as docid')
+        ->simplePaginate(200);
+        $informesfinalescon = ProveedorInformefinal::join('informesfinales', function ($join) {
+            $join->on('informesfinales.clienteitaid', '=', 'proveedorinformesfinales.clienteitaid')
+                 ->on('informesfinales.fechabateria', '=', 'proveedorinformesfinales.fechabateria');
+        })
+        ->where('proveedorinformesfinales.proveedorasignado', 'LIKE', "%$buscar%")
+        ->whereNotNull('proveedorinformesfinales.clienteitaid')
+        ->select('proveedorinformesfinales.*', 'informesfinales.document', 'informesfinales.created_at as document_created_at', 'informesfinales.id as docid')
+        ->simplePaginate(200);
 
-        $clientes3 = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$buscar%")
-            ->whereNotNull('clienteauditoriaid')
-            ->simplePaginate(10000);
 
-        // Documentación Activa
-        $documentacion = Documentacionsubcliente::with('estadoprogramacionsubcliente')
-            ->where('clienteitaid', 'LIKE', "%$buscar%")
-            ->orWhere('clienteitanombre', 'LIKE', "%$buscar%")
-            ->simplePaginate(10000);
+        /* PROGRAMACIONES AUDITORIA SIN INFORME */
+        $programacionesauditoria = Programacionsubcliente::where('proveedornombre', 'LIKE', "%$buscar%")
+        ->whereNotNull('clienteauditoriaid')
+        ->whereNotExists(function ($query) {
+            $query->select(DB::raw(1))
+                ->from('documentacionsubclientes')
+                ->whereRaw('documentacionsubclientes.clienteauditoriaid = programacionsubclientes.clienteauditoriaid')
+                ->whereRaw('documentacionsubclientes.fechabateria = programacionsubclientes.fechabateria')
+                ->whereRaw('documentacionsubclientes.accion = programacionsubclientes.accionnombre');
+        })
+        ->simplePaginate(200);
+        $informesfinalesauditoriasin = ProveedorInformefinal::where('proveedorasignado', 'LIKE', "%$buscar%")
+        ->whereNotNull('clienteauditoriaid')
+        ->whereNotExists(function ($query) {
+            $query->select(DB::raw(1))
+                ->from('informesfinales')
+                ->whereRaw('informesfinales.clienteauditoriaid = proveedorinformesfinales.clienteauditoriaid')
+                ->whereRaw('informesfinales.fechabateria = proveedorinformesfinales.fechabateria');
+        })
+        ->simplePaginate(200);
 
-        // Documentación Activa
-        $documentacionauditoria = Documentacionsubcliente::with('estadoprogramacionsubcliente')
-            ->where('clienteauditoriaid', 'LIKE', "%$buscar%")
-            ->orWhere('clienteauditorianombre', 'LIKE', "%$buscar%")
-            ->simplePaginate(10000);
-
-        // Documentación Activa
-        $documentacioncomun = Documentacionsubcliente::with('estadoprogramacionsubcliente')
-            ->where('clientecomunid', 'LIKE', "%$buscar%")
-            ->orWhere('clientecomunnombre', 'LIKE', "%$buscar%")
-            ->simplePaginate(10000);
+        /* PROGRAMACIONES AUDITORIA CON INFORME */
+        $documentacionesauditoria = Programacionsubcliente::join('documentacionsubclientes', function ($join) {
+            $join->on('documentacionsubclientes.clienteauditoriaid', '=', 'programacionsubclientes.clienteauditoriaid')
+                 ->on('documentacionsubclientes.fechabateria', '=', 'programacionsubclientes.fechabateria')
+                 ->on('documentacionsubclientes.accion', '=', 'programacionsubclientes.accionnombre');
+        })
+        ->where('programacionsubclientes.proveedornombre', 'LIKE', "%$buscar%")
+        ->whereNotNull('programacionsubclientes.clienteauditoriaid')
+        ->select('programacionsubclientes.*', 'documentacionsubclientes.document', 'documentacionsubclientes.created_at as document_created_at', 'documentacionsubclientes.id as docid')
+        ->simplePaginate(200);
+        $informesfinalesauditoriacon = ProveedorInformefinal::join('informesfinales', function ($join) {
+            $join->on('informesfinales.clienteauditoriaid', '=', 'proveedorinformesfinales.clienteauditoriaid')
+                 ->on('informesfinales.fechabateria', '=', 'proveedorinformesfinales.fechabateria');
+        })
+        ->where('proveedorinformesfinales.proveedorasignado', 'LIKE', "%$buscar%")
+        ->whereNotNull('proveedorinformesfinales.clienteauditoriaid')
+        ->select('proveedorinformesfinales.*', 'informesfinales.document', 'informesfinales.created_at as document_created_at', 'informesfinales.id as docid')
+        ->simplePaginate(200);
 
         return view('admin.admprogramaciones.documentacionpendiente', compact(
             'asociado',
-            'clientes',
-            'clientes2','clientes3',
-            'documentacion','documentacionauditoria','documentacioncomun'
+            'programaciones',
+            'documentaciones',
+            'programacionesauditoria',
+            'documentacionesauditoria',
+            'informesfinalessin',
+            'informesfinalesauditoriasin',
+            'informesfinalescon',
+            'informesfinalesauditoriacon',
         ));
     }
     public function documentacionactiva(Request $request, Asociado $asociado, Cliente $cliente)
@@ -270,6 +291,52 @@ class AdministrarProgramacionController extends Controller
 
         return view('admin.admprogramaciones.documentacionactiva', compact('cliente', 'asociado', 'clientes', 'clientes2'));
     }
+
+    public function unirpdf(Request $request)
+    {
+
+        return view('admin.admprogramaciones.unirpdf');
+    }
+
+    public function upload(Request $request)
+    {
+        if ($request->hasFile('pdfs')) {
+            foreach ($request->file('pdfs') as $pdf) {
+                $pdf->storeAs('public/uploads', $pdf->getClientOriginalName());
+            }
+            return response()->json(['success' => true]);
+        }
+        return response()->json(['success' => false]);
+    }
+
+    public function merge(Request $request)
+{
+    $pdf = new Fpdi();
+
+    // Obtén el array de nombres de archivos enviados en el JSON
+    $files = $request->input('files');
+
+    // Ruta donde se almacenaron los PDFs
+    $uploadPath = storage_path('app/public/uploads/');
+
+    foreach ($files as $fileName) {
+        $path = $uploadPath . $fileName;
+        if (!file_exists($path)) {
+            continue; // o manejar el error de archivo no encontrado
+        }
+        $pageCount = $pdf->setSourceFile($path);
+        for ($i = 1; $i <= $pageCount; $i++) {
+            $tpl = $pdf->importPage($i);
+            $pdf->AddPage();
+            $pdf->useTemplate($tpl);
+        }
+    }
+
+    return response()->streamDownload(function () use ($pdf) {
+        $pdf->Output('I');
+    }, 'merged.pdf');
+}
+
 
     /* public function clientescreadoshoy(Request $request)
     {

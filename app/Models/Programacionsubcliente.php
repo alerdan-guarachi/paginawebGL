@@ -49,6 +49,10 @@ class Programacionsubcliente extends Model
         'nrofactura' => '',
         'motivoanulacion' => '',
         'usuarioanulacion' => '',
+        'medicoderivante' => '',
+        'comprobante' => '',
+        'factura' => '',
+        'usuariocomprobante' => '',
     ]; 
 
     protected $fillable = [
@@ -90,6 +94,10 @@ class Programacionsubcliente extends Model
         'nrofactura',
         'motivoanulacion',
         'usuarioanulacion',
+        'medicoderivante',
+        'comprobante',
+        'factura',
+        'usuariocomprobante',
     ];
     public function clienteAuditoria()
     {
@@ -175,4 +183,10 @@ class Programacionsubcliente extends Model
     {
         return $this->hasMany(Documentacionsubcliente::class, 'clientebancoid', 'clientebancoid');
     }
+
+    public function documentacion()
+    {
+        return $this->hasOne(Documentacionsubcliente::class, 'programacionid', 'id');
+    }
+
 }

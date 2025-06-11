@@ -1,14 +1,18 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
+<a class="btn btn-sm float-right btn-azulgrande" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
 @can('admin.asociados.reprogramacionclienteita')
-<a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.reprogramacionclienteita', $cliente)}}">REPROGRAMAR</a>
+<a class="btn btn-sm float-right btn-lilagrande" href="{{route('admin.asociados.reprogramacionclienteita', $cliente)}}">REPROGRAMAR</a>
 @endcan
-<a class="btn btn-sm float-right btn-bateria" data-toggle="modal" data-target="#ventanaModal">PROGRAMACIONES DEL CLIENTE</a>
-<a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.estadoprogramacionclienteita', $cliente)}}">PROGRAMACIONES</a>
+<a class="btn btn-sm float-right btn-naranjagrande" data-toggle="modal" data-target="#ventanaModal">PROGRAMACIONES</a>
+<a class="btn btn-sm float-right btn-verdegrande" href="{{route('admin.asociados.estadoprogramacionclienteita', $cliente)}}">ESTADO DE PROG.</a>
 <h5>PROGRAMAR ESTUDIOS / ESPECIALIDADES DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
+@stop
+
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/programacionesmedicas.css') }}">
 @stop
 
 @section('content')
@@ -48,7 +52,7 @@
                     {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                     {!! Form::hidden('clienteitaid', $id) !!}
                     {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
-                    <div class="col-lg-8">
+                    <div class="col-lg-8" style="margin-bottom:20px;">
                         <div class="form-group" hidden>
                             {!! Form::label('nombrecompleto', 'NOMBRE DEL CLIENTE:') !!}
                             {!! Form::text('nombrecompleto', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => true]) !!}
@@ -80,7 +84,7 @@
                             </script>
                         </div>
 
-                        {!! Form::label('', 'ESTUDIOS / ESPECIALIDADES DISPONIBLES:') !!}
+                        {!! Form::label('', 'Estudios / Especialidades Disponibles:') !!}
                         @error('proveedornombre')
                             <small class="text-danger fas fa-exclamation-circle">
                                 {{$message}}
@@ -90,19 +94,19 @@
                         @foreach($accionesPorFecha as $fecha => $acciones)     
                                 <div class="acciones-{{ $fecha }}" style="display:none;">
                                     <div class="row" style="margin-top: 5px; margin-bottom: 20px; align-items: center;">
-                                        <div class="col-lg-8">
+                                        <div class="col-lg-12">
                                             <input type="text" id="search-{{ $fecha }}" placeholder="Buscar estudio / especialidad..."
                                                 style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); 
                                                         transition: box-shadow 0.3s ease; outline: none;" 
                                                 onfocus="this.style.boxShadow='0 0 8px rgba(0, 0, 255, 0.3)';" 
                                                 onblur="this.style.boxShadow='none';">
                                         </div>
-                                        <div class="col-lg-4">
-                                            <label style="font-weight: normal; display: flex; align-items: center;">
-                                                <input type="checkbox" id="select-all-{{ $fecha }}" style="margin-right: 5px;"> 
-                                                <span style="font-weight: bold; font-size: 14px;">SELECCIONAR TODO</span>
-                                            </label>
-                                        </div>
+                                    </div>
+                                    <div class="col-lg-2" style="margin-left: -8px;">
+                                        <label style="font-weight: normal; display: flex; align-items: center;">
+                                            <input type="checkbox" id="select-all-{{ $fecha }}" style="margin-right: 5px;"> 
+                                            <span style="font-weight: bold; font-size: 14px;">SELECCIONAR TODO</span>
+                                        </label>
                                     </div>
                                     <div class="row action-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
                                         @foreach($acciones as $accion)
@@ -118,7 +122,7 @@
                                                     <div class="form-group">
                                                         <div>
                                                             <label style="font-weight: normal; margin-bottom: -15px;">
-                                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }}
+                                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }} - {{ $proveedor['proveedor'] }}
                                                             </label>
                                                             <input type="hidden" name="proveedor_{{ $accionSanitizada }}" value="{{ $proveedor['proveedor'] ?? '' }}">
                                                             <input type="hidden" name="areanombre_{{ $accionSanitizada }}" value="{{ $proveedor['area'] ?? '' }}">
@@ -128,6 +132,7 @@
                                                             <input type="hidden" name="pagoservicio_{{ $accionSanitizada }}" value="{{ $proveedor['pagoservicio'] ?? '' }}">
                                                             <input type="hidden" name="bateriaid_{{ $accionSanitizada }}" value="{{ $proveedor['bateriaid'] ?? '' }}">
                                                             <input type="hidden" name="comision_{{ $accionSanitizada }}" value="{{ $proveedor['comision'] ?? '' }}">
+                                                            <input type="hidden" name="medicoderivante_{{ $accionSanitizada }}" value="{{ $proveedor['medicoderivante'] ?? '' }}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -141,49 +146,37 @@
                             document.querySelectorAll('[id^="search-"]').forEach(function(searchInput) {
                                 searchInput.addEventListener('keyup', function() {
                                     var input = this.value.toLowerCase();
-                                    var fecha = this.id.split('-')[1]; // Extrae la fecha del id
+                                    var fecha = this.id.split('-')[1];
                                     var actionItems = document.querySelectorAll('.action-item');
                                     var selectAllCheckbox = document.getElementById('select-all-' + fecha);
                                     
                                     actionItems.forEach(function(item) {
                                         var actionText = item.textContent.toLowerCase();
                                         if (actionText.includes(input)) {
-                                            item.style.display = ""; // Muestra el item
+                                            item.style.display = "";
                                         } else {
-                                            item.style.display = "none"; // Oculta el item
+                                            item.style.display = "none";
                                         }
                                     });
-                                    
-                                    // Desmarcar "Seleccionar Todo" al buscar
                                     selectAllCheckbox.checked = false;
-
-                                    // Actualiza el checkbox "Seleccionar Todo"
                                     updateSelectAll(fecha);
                                 });
                             });
-
-                            // Función para actualizar el checkbox "Seleccionar Todo"
                             function updateSelectAll(fecha) {
                                 var actionItems = document.querySelectorAll('.action-item');
                                 var selectAllCheckbox = document.getElementById('select-all-' + fecha);
                                 var visibleItems = Array.from(actionItems).filter(function(item) {
                                     return item.style.display !== "none";
                                 });
-
-                                // Marca el checkbox "Seleccionar Todo" si todos los visibles están seleccionados
                                 selectAllCheckbox.checked = visibleItems.length > 0 && visibleItems.every(function(item) {
                                     return item.querySelector('input[type="checkbox"]').checked;
                                 });
                             }
-
-                            // Evento para el checkbox "Seleccionar Todo"
                             document.querySelectorAll('[id^="select-all-"]').forEach(function(selectAllCheckbox) {
                                 selectAllCheckbox.addEventListener('change', function() {
-                                    var fecha = this.id.split('-')[2]; // Extrae la fecha del id
+                                    var fecha = this.id.split('-')[2];
                                     var actionItems = document.querySelectorAll('.action-item');
-
                                     actionItems.forEach(function(item) {
-                                        // Verifica si el item es visible antes de seleccionar
                                         if (item.style.display !== "none") {
                                             item.querySelector('input[type="checkbox"]').checked = selectAllCheckbox.checked;
                                         }
@@ -191,7 +184,6 @@
                                 });
                             });
                         </script>
-
                         <script>
                             document.addEventListener("DOMContentLoaded", function() {
                                     const fechaSelect = document.getElementById('fecha_bateria');
@@ -205,25 +197,18 @@
                                         });
                                     });
                                 });
-
-
                                 document.addEventListener("DOMContentLoaded", function() {
                                 const mostrarAccionesBtns = document.querySelectorAll('.mostrar-acciones');
-
                                 mostrarAccionesBtns.forEach(btn => {
                                     btn.addEventListener('click', function() {
                                         const fecha = this.getAttribute('data-fecha');
                                         const acciones = document.querySelector('.acciones-' + fecha);
                                         const accionesVisible = acciones.style.display === 'block';
-
-                                        // Ocultar todas las demás acciones
                                         const todasLasAcciones = document.querySelectorAll('[class^="acciones-"]');
                                         todasLasAcciones.forEach(acc => {
                                             acc.style.display = 'none';
                                             acc.parentElement.querySelector('.mostrar-acciones').innerText = 'Mostrar acciones';
                                         });
-
-                                        // Mostrar u ocultar la acción correspondiente
                                         acciones.style.display = accionesVisible ? 'none' : 'block';
                                         this.innerText = accionesVisible ? 'Mostrar acciones' : 'Ocultar acciones';
                                     });
@@ -244,7 +229,7 @@
                             @enderror
                         </div>
                         <div class="form-group">
-                            {!! Form::label('horadesde', 'Desde:') !!}
+                            {!! Form::label('horadesde', 'Hora Desde:') !!}
                             {!! Form::time('horadesde', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'horadesde']) !!}
                             @error('horadesde')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -253,7 +238,7 @@
                             @enderror
                         </div>
                         <div class="form-group">
-                            {!! Form::label('horahasta', 'Hasta:') !!}
+                            {!! Form::label('horahasta', 'Hora Hasta:') !!}
                             {!! Form::time('horahasta', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'horahasta']) !!}
                             @error('horahasta')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -267,7 +252,7 @@
                         ESTE CLIENTE NO TIENE BATERIA
                     </div>
                 @endif 
-                {!! Form::submit('PROGRAMAR CLIENTE', ['class' => 'btn btn-crear', 'style' => 'margin-top: 30px;']) !!}
+                {!! Form::submit('PROGRAMAR', ['class' => 'btn btn-verdegrande', 'style' => 'margin-top: 30px;']) !!}
             </div>
             {!! Form::close() !!}
         </div>
@@ -315,7 +300,6 @@
                             <tbody id="acciones-lista"></tbody>
                         </table>
                     </div>
-                    {{-- <button type="submit" class="btn btn-primary">Guardar Cambios</button> --}}
                 </form>
             </div>
 
@@ -325,26 +309,18 @@
                     const accionesBateria = @json($accionesPorFechaBateria);
                     const accionesDetalles = @json($accionesDetallesPorFecha);
                     const esProveedor = @json($esProveedor);
-            
                     const accionesLista = document.getElementById('acciones-lista');
                     const accionesTable = document.getElementById('acciones-table');
-            
-                    // Limpiar el contenido de la tabla antes de agregar nuevas filas
                     accionesLista.innerHTML = '';
-            
-                    // Verificar si hay algún proveedor ajeno
                     let hasProveedorAjeno = false;
             
                     if (fechaSeleccionada && accionesBateria[fechaSeleccionada]) {
-                        // Comprobar si existe un proveedor ajeno
                         accionesBateria[fechaSeleccionada].forEach(function(accionNombre) {
                             const detalles = accionesDetalles[fechaSeleccionada]?.[accionNombre];
                             if (detalles && detalles.proveedornombre === 'PROVEEDOR AJENO') {
                                 hasProveedorAjeno = true;
                             }
                         });
-            
-                        // Construir el encabezado de la tabla dinámicamente
                         let tableHeader = `
                             <tr>
                                 <th>ID</th>
@@ -357,18 +333,13 @@
                             </tr>
                         `;
                         accionesTable.querySelector('thead').innerHTML = tableHeader;
-            
-                        // Construir las filas de la tabla
                         accionesBateria[fechaSeleccionada]
                         .filter(accion => accion !== 'INFORME FINAL')
                         .forEach(function(accionNombre) {
                             const detalles = accionesDetalles[fechaSeleccionada]?.[accionNombre];
                             const row = document.createElement('tr');
-            
                             if (detalles) {
                                 const isProveedorAjeno = detalles.proveedornombre === 'PROVEEDOR AJENO';
-            
-                                // Columna de acciones (si existe el proveedor ajeno)
                                 let accionesColumn = '';
                                 if (hasProveedorAjeno) {
                                     accionesColumn = `
@@ -387,14 +358,10 @@
                                         </td>
                                     `;
                                 }
-            
-                                // Columna de precio (si no es proveedor)
                                 let precioColumn = '';
                                 if (!esProveedor) {
                                     precioColumn = `<td>${detalles.precio || 'No registrado'}</td>`;
                                 }
-            
-                                // Crear fila con datos
                                 row.innerHTML = `
                                     <td>${detalles.id || '0'}</td>
                                     <td>${accionNombre}</td>
@@ -412,7 +379,6 @@
                                 `;
                                 row.style.color = 'green';
                             } else {
-                                // Si no hay detalles, crear fila con datos "No registrado"
                                 let accionesColumn = hasProveedorAjeno ? `<td></td>` : '';
                                 let precioColumn = !esProveedor ? `<td>No registrado</td>` : '';
                                 row.innerHTML = `
@@ -426,81 +392,16 @@
                                 `;
                                 row.style.color = 'red';
                             }
-            
-                            // Agregar fila a la tabla
                             accionesLista.appendChild(row);
                         });
                     } else {
-                        // Si no hay acciones para la fecha seleccionada, limpiamos el encabezado y el cuerpo de la tabla
                         accionesTable.querySelector('thead').innerHTML = '';
                         accionesLista.innerHTML = '';
                     }
                 });
             </script>
-            
-            {{-- <script>
-                document.getElementById('select-fechas').addEventListener('change', function() {
-                    const fechaSeleccionada = this.value;
-                    const accionesBateria = @json($accionesPorFechaBateria);
-                    const accionesDetalles = @json($accionesDetallesPorFecha);
-                    const esProveedor = @json($esProveedor);
-    
-                    const accionesLista = document.getElementById('acciones-lista');
-                    accionesLista.innerHTML = '';
-    
-                    if (fechaSeleccionada && accionesBateria[fechaSeleccionada]) {
-                        accionesBateria[fechaSeleccionada].forEach(function(accionNombre) {
-                            const row = document.createElement('tr');
-                            const detalles = accionesDetalles[fechaSeleccionada]?.[accionNombre];
-    
-                            if (detalles) {
-                                row.innerHTML = `
-                                    <td>${detalles.id || '0'}</td>
-                                    <td>${accionNombre}</td>
-                                    <td>${detalles.proveedornombre || 'No registrado'}</td>
-                                    <td>${detalles.fechaasignada || 'No registrado'}</td>
-                                    <td>${detalles.horadesde || 'No registrado'} - ${detalles.horahasta}</td>
-                                    ${!esProveedor ? `<td>${detalles.precio || 'No registrado'}</td>` : ''}
-                                `;
-                                row.style.color = 'green';
-                            } else {
-                                row.innerHTML = `
-                                    <td>0</td>
-                                    <td>${accionNombre}</td>
-                                    <td>No registrado</td>
-                                    <td>No registrado</td>
-                                    <td>No registrado</td>
-                                    ${!esProveedor ? `<td>No registrado</td>` : ''}
-                                `;
-                                row.style.color = 'red';
-                            }
-    
-                            accionesLista.appendChild(row);
-                        });
-                    }
-                });
-    
-                </script> --}}
-            <style>
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    line-height: 1;
-                }
-
-                th,
-                td {
-                    padding: 8px;
-                    text-align: left;
-                }
-
-                tbody tr:nth-child(odd) {
-                    background-color: #f7f7f7;
-                }
-            </style>
-
             <div class="modal-footer">
-                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-rojogrande" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -571,7 +472,6 @@
     });
 </script>
 
-
 <script>
     document.querySelector('.horariodisponible').addEventListener('change', function() {
         var horarioSeleccionado = this.value;
@@ -579,41 +479,43 @@
     });
 </script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <script>
     $(document).ready(function() {
-    $('select[name^="proveedor_"]').change(function() {
-        var selectedOption = $(this).val();
-        $('.row').find('select').not('.no-bloquear').not(this).prop('disabled', selectedOption !== '');
-        
-        if ($('select:disabled').not('.no-bloquear').length > 0) {
-            $('#habilitarSelectores').show();
-        } else {
+        $('select[name^="proveedor_"]').change(function() {
+            var selectedOption = $(this).val();
+            $('.row').find('select').not('.no-bloquear').not(this).prop('disabled', selectedOption !== '');
             
-        }
+            if ($('select:disabled').not('.no-bloquear').length > 0) {
+                $('#habilitarSelectores').show();
+            } else {
+                
+            }
+        });
+
+        $('#habilitarSelectores').click(function() {
+            var $selectores = $('.row').find('select').not('.no-bloquear');
+            var fechaSeleccionada = $('#fecha_bateria').val();
+
+            $selectores.prop('disabled', false);
+            $selectores.val('');
+
+            $('#horariosdisponibles').val('');
+            $('#proveedornombre').val('');
+            $('#horaasignada').val('');
+            $('#horarioinicial').val('');
+            $('#horariofinal').val('');
+            $('#tiempoatencion').val('');
+            $('#accionnombre').val('');
+            $('#areanombre').val('');
+            $('#precio').val('');
+            $('#preciocompra').val('');
+            $('#fecha_bateria').val(fechaSeleccionada);
+            $(this).hide();
+        });
     });
-
-    $('#habilitarSelectores').click(function() {
-        var $selectores = $('.row').find('select').not('.no-bloquear');
-        var fechaSeleccionada = $('#fecha_bateria').val();
-
-        $selectores.prop('disabled', false);
-        $selectores.val('');
-
-        $('#horariosdisponibles').val('');
-        $('#proveedornombre').val('');
-        $('#horaasignada').val('');
-        $('#horarioinicial').val('');
-        $('#horariofinal').val('');
-        $('#tiempoatencion').val('');
-        $('#accionnombre').val('');
-        $('#areanombre').val('');
-        $('#precio').val('');
-        $('#preciocompra').val('');
-        $('#fecha_bateria').val(fechaSeleccionada);
-        $(this).hide();
-    });
-});
 </script>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function(){
@@ -728,7 +630,7 @@
         actualizarHorariosDisponibles();
     });
 
-//CANCELAR FUNCION DE LA TECLA ENTER
+    //CANCELAR FUNCION DE LA TECLA ENTER
     document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
@@ -738,137 +640,3 @@
     });
 </script>
 @endsection
-
-@section('css')
-<link rel="styleheet" href="/css/admin_custom.css">
-<style>
-    .icono-editar {
-            font-size: 1.2em;
-            color: #00008B;
-        }
-
-        .icono-guardar {
-            font-size: 1.2em;
-            color: #94c93b;
-        }
-        .btn-edit {
-            background-color: transparent;
-            border: none;
-        }
-
-        .btn-save {
-            background-color: transparent;
-            border: none;
-        }
-        .btn-edit:hover,
-        .btn-save:hover {
-            cursor: pointer;
-        }
-
-        .input-proveedor,
-        .input-fecha {
-            width: 100%;
-        }
-
-    .hidden-field {
-        display: none;
-    }
-    h1 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-        }
-    h5 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 500;
-        margin-bottom: 0%;
-        }
-    h3 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 1000;
-        }
-    .custom-button {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 5px 15px;
-        }
-    .custom-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-crear {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin-left: 10px;
-        margin-right: 10px;
-        }
-    .btn-crear:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-    .btn-bateria {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 10px 20px;
-        }
-    .btn-bateria:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .mensaje-error {
-        color: #e1172b;
-        font-family: "Times New Roman";
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 5px;
-        font-size: 12.5px;
-        font-weight: bold;
-        display: inline-block;
-        margin-left: -10px;
-    }
-    .custom2-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 5px 20px;
-        margin-top: 33px;
-    }
-    .custom2-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-cerrar {
-        background-color: #ffffff;
-        color: #e22f2f;
-        border-color: #e22f2f;
-        border-radius: 5px;
-        padding: 5px 10px;
-
-    }
-    .btn-cerrar:hover {
-        background-color: #e22f2f;
-        color: #ffffff;
-    }
-    .btn-regresar {
-        background-color: #ffffff;
-        color: #2926e2;
-        border-color: #2926e2;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-regresar:hover {
-        background-color: #2926e2;
-        color: #ffffff;
-    }
-</style>
-@stop

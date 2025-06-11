@@ -2,7 +2,7 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
-<a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">ESTADO DE APROB.</a>
+<a class="btn btn-aprobarcotizacion btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">ESTADO DE APROB.</a>
 <a class="btn btn-nrofactura btn-sm float-right" data-toggle="modal" data-target="#facturaModal">NRO. FACTURA</a>
 {!! Form::open(['route' => 'generar.pdf.consentimientoinformado', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
     <a class="btn btn-consentimientoinformado btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">CONS. INFORMADO</a>
@@ -15,6 +15,10 @@
 
 <h5>APROBAR COTIZACIÓN DE PROGRAMACIÓN DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
+@stop
+
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/cotizacionmedicaclientes.css') }}">
 @stop
 
 @section('content')
@@ -107,83 +111,67 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">ESTADO DE APROBACIONES</h5>
+                <h5 class="modal-title" id="exampleModalLabel" style="font-weight:750;">ESTADO DE APROBACIONES</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-
             <div class="modal-body"> 
-                <table class="table">
-                    <thead>
+                <table class="table table-bordered table-hover">
+                    <thead class="text-center" style="background-color: #f9fff7;">
                         <tr>
-                            <th>Fecha de Bateria</th>
-                            <th>Acciones</th>
+                            <th style="color: black; font-weight:700;">Fecha de Batería</th>
+                            <th style="color: black; font-weight:700;">Documentos</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($fechasDisponibles as $fecha)
-                            <tr style="color:{{ $fechasRegistradas->contains($fecha) ? 'green' : 'red' }}">
-                                <td>
-                                    <span style="display: inline-block; width: 5px; height: 5px; background-color: black; border-radius: 50%; margin-right: 5px;"></span>
-                                    {{ $fecha }}
+                            <tr style="color:{{ $fechasRegistradas->contains($fecha) ? '#94c93b' : 'red' }}">
+                                <td style="vertical-align: middle;">
+                                    <span style="display: inline-block; width: 8px; height: 8px; background-color: black; border-radius: 50%; margin-right: 8px;"></span>
+                                    <strong>{{ $fecha }}</strong>
                                 </td>
-                                <td>
+                                <td class="text-left" style="vertical-align: middle;">
                                     @if($fechasRegistradas->contains($fecha))
-                                        <a type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal" title="MODIFICAR COTIZACIÓN">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        {{-- @php
-                                            $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
-                                            $whatsappNumber = $cliente->celular;
-                                            $mensaje = urlencode("Hola, le comparto la cotización. Puede descargarla aquí:");
+                                        @php
+                                            $documentosMostrados = [];
+                                            $documentoDisponible = false;
                                         @endphp
-                                        @if($document)
-                                            <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm" title="VER COTIZACIÓN APROBADA">
-                                                <i class="fas fa-file-invoice-dollar"></i>
+            
+                                        @foreach ($cotizaciones as $cotizacion)
+                                            @php
+                                                $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
+                                                $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
+                                            @endphp
+                                            
+                                            @if($document && !in_array($document, $documentosMostrados))
+                                                <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm" title="VER COTIZACIÓN APROBADA">
+                                                    COTIZACIÓN
+                                                </a>
+                                                @php
+                                                    $documentosMostrados[] = $document;
+                                                    $documentoDisponible = true;
+                                                @endphp
+                                            @endif
+            
+                                            @if($documentconsinfo && !in_array($documentconsinfo, $documentosMostrados))
+                                                <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm" title="VER CONSENTIMIENTO INFORMADO">
+                                                    CONSENTIMIENTO
+                                                </a>
+                                                @php
+                                                    $documentosMostrados[] = $documentconsinfo;
+                                                    $documentoDisponible = true;
+                                                @endphp
+                                            @endif
+                                        @endforeach
+            
+                                        @if($documentoDisponible && $loop->last)
+                                            <a type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal" title="MODIFICAR DOCUMENTOS">
+                                                <i class="fas fa-edit"></i>
                                             </a>
                                         @endif
-                                        @php
-                                            $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
-                                        @endphp
-                                        @if($documentconsinfo)
-                                            <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm" title="VER CONSENTIMIENTO INFORMADO">
-                                                <i class="fas fa-clone"></i>
-                                            </a>
-                                        @endif --}}
-
-
-                                        @php
-    $documentosMostrados = [];
-@endphp
-
-@foreach ($cotizaciones as $cotizacion)
-    @php
-        $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
-        $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
-    @endphp
-    
-    @if($document && !in_array($document, $documentosMostrados))
-        <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm" title="VER COTIZACIÓN APROBADA">
-            <i class="fas fa-file-invoice-dollar"></i>
-        </a>
-        @php
-            $documentosMostrados[] = $document;
-        @endphp
-    @endif
-
-    @if($documentconsinfo && !in_array($documentconsinfo, $documentosMostrados))
-        <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm" title="VER CONSENTIMIENTO INFORMADO">
-            <i class="fas fa-clone"></i>
-        </a>
-        @php
-            $documentosMostrados[] = $documentconsinfo;
-        @endphp
-    @endif
-@endforeach
-
                                     @else
-                                        <span style="color: red;">NO APROBADO</span>
+                                        <span class="badge badge-danger">NO APROBADO</span>
                                     @endif
                                 </td>
                             </tr>
@@ -204,7 +192,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="editPdfModalLabel">MODIFICAR COTIZACIÓN</h5>
+                <h5 class="modal-title" id="editPdfModalLabel" style="font-weight:750;">MODIFICAR COTIZACIÓN</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -213,69 +201,33 @@
                 <form id="editPdfForm" action="{{ route('admin.actualizarPdf') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="clienteitaid" id="clienteitaid" value="{{ $cliente->id }}">
-                    <label for="">Fecha de Bateria:</label>
-                    @if (!is_null($fecha))
-                        <input type="text" name="fechabateria" id="fechabateria" value="{{ $fecha }}">
-                    @endif
-
-                    <div class="form-group">
-                        <label for="archivo">Nueva cotización:</label>
-                        <input type="file" class="form-control-file dropify" name="archivo" id="archivo" accept="application/pdf" required>
+                    
+                    <label for="">Fecha de Batería:</label>
+                    <input type="text" name="fechabateria" id="fechabateria" value="{{ $fecha }}">
+                
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            <label for="archivo">Nueva cotización (PDF):</label>
+                            <input type="file" class="form-control-file dropify" name="archivo" id="archivo" accept="application/pdf">
+                        </div>
+                    
+                        <div class="form-group col-lg-6">
+                            <label for="archivo2">Nuevo consentimiento informado (PDF):</label>
+                            <input type="file" class="form-control-file dropify" name="archivo2" id="archivo2" accept="application/pdf">
+                        </div>
                     </div>
+                    
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-crear">Actualizar cotización</button>
+                        <button type="submit" class="btn btn-crear">Actualizar Doc.</button>
                         <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
                     </div>
                 </form>
+                
             </div>
             
         </div>
     </div>
 </div>
-{{-- <div class="modal fade" id="facturaModal" tabindex="-1" role="dialog" aria-labelledby="facturaModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="facturaModalLabel">NUMERO DE FACTURA</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="card-body">
-                <form id="facturaForm" method="POST" action="{{ route('admin.asociados.guardarFacturacotclienteita', $cliente->id) }}">
-                    @csrf
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="form-group">
-                                {!! Form::label('fechabateria', 'Fecha de batería:') !!}
-                                {!! Form::select('fechabateria', $fechasregis->toArray(), null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'fechabateria']) !!}
-                                {!! Form::hidden('fechabateriaSeleccionada', null, ['class' => 'form-control', 'readonly', 'id' => 'fechaSeleccionada']) !!}
-                                @error('fechabateria')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                            <div class="form-group">
-                                {!! Form::label('nrofactura', 'Nro. factura:') !!}
-                                {!! Form::text('nrofactura', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('nrofactura')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary">Guardar</button>
-                        <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div> --}}
 <div class="modal fade" id="facturaModal" tabindex="-1" role="dialog" aria-labelledby="facturaModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -468,186 +420,3 @@
     }
 </script>
 @endsection
-
-@section('css')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
-<link rel="styleheet" href="/css/admin_custom.css">
-<style>
-    .btn-editar {
-    background-color:  #ffffff;
-    color: #faa625;
-    border-color: #faa625;
-    border-radius: 5px;
-    font-weight: bold;
-    padding: 5px 10px;
-}
-.btn-editar:hover {
-    background-color: #faa625;
-    color: #ffffff;
-}
-.btn-whatsapp {
-    background-color:  #ffffff;
-    color: #94c93b;
-    border-color: #94c93b;
-    border-radius: 5px;
-    font-weight: bold;
-    padding: 5px 10px;
-}
-.btn-whatsapp:hover {
-    background-color: #94c93b;
-    color: #ffffff;
-}
-.btn-vercotizacion {
-    background-color:  #ffffff;
-    color: #1294b8d1;
-    border-color: #1294b8d1;
-    border-radius: 5px;
-    font-weight: bold;
-    padding: 5px 10px;
-}
-.btn-vercotizacion:hover {
-    background-color: #1294b8d1;
-    color: #ffffff;
-}
-.btn-verconsentimiento {
-    background-color:  #ffffff;
-    color: #1294b8d1;
-    border-color: #1294b8d1;
-    border-radius: 5px;
-    font-weight: bold;
-    padding: 5px 10px;
-}
-.btn-verconsentimiento:hover {
-    background-color: #1294b8d1;
-    color: #ffffff;
-}
-    .dropify-wrapper {
-        height: 125px !important;
-    }
-    .dropify-message p {
-        font-size: 14px;
-    }
-    h1 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-        }
-    h5 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 500;
-        margin-bottom: 0%;
-        }
-    h3 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 1000;
-        }
-    h6 {
-        font-weight: 900;
-        }
-    .btn-crear {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 5px 20px;
-        }
-    .btn-crear:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-    .mensaje-error {
-        color: #e1172b;
-        font-family: "Times New Roman";
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 5px;
-        font-size: 12.5px;
-        font-weight: bold;
-        display: inline-block;
-        margin-left: -10px;
-    }
-    .custom-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 5px 40px;
-    }
-    .custom-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .custom2-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    .custom2-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-nrofactura {
-        background-color: #ffffff;
-        color: #f04cc4;
-        border-color: #f04cc4;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin-left: 10px;
-    }
-    .btn-nrofactura:hover {
-        background-color: #f04cc4;
-        color: #ffffff;
-    }
-    .btn-consentimientoinformado {
-        background-color: #ffffff;
-        color: #5db2cd;
-        border-color: #5db2cd;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin-left: 10px;
-    }
-    .btn-consentimientoinformado:hover {
-        background-color: #5db2cd;
-        color: #ffffff;
-    }
-    .btn-cerrar {
-        background-color: #ffffff;
-        color: #e62e2e;
-        border-color: #e62e2e;
-        border-radius: 5px;
-        padding: 5px 10px;
-    }
-    .btn-cerrar:hover {
-        background-color: #e62e2e;
-        color: #ffffff;
-    }
-    .btn-guardarobservacion {
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 5px 10px;
-    }
-    .btn-guardarobservacion:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
-    .btn-regresar {
-        background-color: #ffffff;
-        color: #2926e2;
-        border-color: #2926e2;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-regresar:hover {
-        background-color: #2926e2;
-        color: #ffffff;
-    }
-</style>
-@stop

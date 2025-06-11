@@ -64,7 +64,7 @@
                             <th>Usuario Registro</th>
                             <th>Total Efectivo</th>
                             <th>Respaldo</th>
-                            <th>Factura</th>
+                            <th>Comprob.</th>
                             <th>Bancarizacion</th>
                             <th>Banco Destino</th>
                             <th>Selec.</th>
@@ -89,7 +89,7 @@
                                 <td>
                                     @if ($registro->documentofactura)
                                         <a href="{{ asset('documentacioncaja/depositosbancarios/' . $registro->usuarioregistroid . '/' . $registro->documentofactura) }}" 
-                                           class="btn btn-sm btn-outline-success" target="_blank" title="VER FACTURA">
+                                           class="btn btn-sm btn-outline-success" target="_blank" title="VER COMPROBANTE">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                     @else
@@ -125,9 +125,9 @@
                                 </div>
                             </div>
                 
-                            <!-- Factura -->
+                            <!-- Comprobante -->
                             <div class="col-md-3 mb-4">
-                                <label for="archivo3" class="form-label fs-5 fw-semibold">Factura:</label>
+                                <label for="archivo3" class="form-label fs-5 fw-semibold">Comprobante:</label>
                                 <div class="d-flex align-items-center">
                                     <input type="file" name="archivo3" id="archivo3" class="form-control me-3" accept=".pdf,.jpg,.png" onchange="validateInputs()">
                                     <button type="button" class="btn btn-outline-primary me-3" id="verVistaPrevia" onclick="previewFile3()"><i class="fas fa-eye"></i></button>
@@ -145,8 +145,9 @@
                                 <label for="bancodestino" class="form-label fs-5 fw-semibold">Nro. Banco Destino</label>
                                 <select name="bancodestino" id="bancodestino" class="form-control">
                                     <option value=""></option>
-                                    <option value="3000189269">3000189269</option>
-                                    <option value="2505314878">2505314878</option>
+                                    @foreach ($cuentas as $cuenta)
+                                        <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>

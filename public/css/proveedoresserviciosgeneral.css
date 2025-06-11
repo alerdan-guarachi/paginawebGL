@@ -1,0 +1,193 @@
+
+    .modal-body {
+        padding: 40px;
+    }
+    h1, th {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 900;
+        }
+    .btn-verperfil {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-verperfil:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-pasarinterno {
+        background-color:  #ffffff;
+        color: #dce000;
+        border-color: #dce000;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-pasarinterno:hover {
+        background-color: #dce000;
+        color: #ffffff;
+        }
+    .btn-verinventario {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 2px 9px;
+        }
+    .btn-verinventario:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
+    .btn-verplanes {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 2px 9px;
+        }
+    .btn-verplanes:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
+    .btn-crear {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-crear:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-agregar {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-agregar:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
+    .btn-regresar {
+        background-color: #ffffff;
+        color: #2926e2;
+        border-color: #2926e2;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-regresar:hover {
+        background-color: #2926e2;
+        color: #ffffff;
+        }
+    .nav-tabs {
+        display: flex;
+        justify-content: space-between;
+    }
+    .nav-tabs .nav-item {
+        flex: 1;
+    }
+    .nav-tabs .nav-link {
+        display: block;
+        text-align: center;
+        width: 100%;
+        font-weight: bold;
+        font-size: 14px;
+        color: #faa625;
+        background-color: #fef4e7;
+    }
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+        font-size: 14px;
+        color: #94c93b;
+        background-color: #ffffff;
+    }
+    .circle {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+    .nav-link.active .circle {
+        background-color: #94c93b;
+        color: #fff;
+    }
+    .nav-link .circle {
+        background-color: #faa625;
+        color: #fff;
+    }
+    .btn-buscar {
+        background-color: #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 2px 10px;
+        }
+    .btn-buscar:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
+    .btn-custom {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+    .btn-custom:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transform: scale(1.15);
+    }
+    .btn-custom:disabled {
+        background-color: #d6d6d6;
+        color: #a0a0a0;
+        cursor: not-allowed;
+    }
+    table {
+        white-space: nowrap;
+    }
+    .table td {
+        padding: 5px 10px;;
+    }
+    .table tbody tr:nth-child(odd) {
+        background-color: #f2f2f2;
+    }
+    .color-box {
+        width: 35px;
+        height: 35px;
+        margin: 5px;
+        border: 2px solid #ddd;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .color-box:hover {
+        transform: scale(1.1);
+    }
+    .selected {
+        border: 3px solid black !important;
+    }
+    .color-selector {
+        width: 50px;
+        height: 38px;
+        border: 2px solid #ddd;
+        text-align: center;
+        padding: 0;
+        font-size: 1.2rem;
+    }

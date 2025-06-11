@@ -655,7 +655,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     .btn-crear:hover {
         background-color: #94c93b;
@@ -688,7 +688,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
     }
     .custom2-button:hover {
         background-color: #faa625;
@@ -710,7 +710,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         margin-left: 10px;
     }
     .btn-regresar:hover {

@@ -230,6 +230,7 @@ CREAR EMPRESA
                                 'COLOMBIA' => 'COLOMBIA',
                                 'EE.UU.' => 'EE.UU.',
                                 'ESPAÑA' => 'ESPAÑA',
+                                'MEXICO' => 'MEXICO',
                                 'PARAGUAY' => 'PARAGUAY',
                                 'VENEZUELA' => 'VENEZUELA'
                             ], $cliente->paisnacimiento, ['class' => 'form-control', 'id' => 'paisnacimiento']) !!}

@@ -1,8 +1,138 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.proveedores.index') }}">REGRESAR</a>
+<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.proveedoresservicios.listaproveedoresservicios') }}">REGRESAR</a>
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">BATERIA DEL PROVEEDOR</a>
+<div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL PROVEEDOR</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {{-- <div class="modal-body"> 
+                @if($accionesProveedorEstudios->isNotEmpty())
+                <label for="">ESTUDIOS</label>
+                <ul>
+                    @foreach($accionesProveedorEstudios as $accion)
+                    <li>
+                        {{ $accion->accion }} - <span class="precio">PV: <strong>Bs.{{ $accion->precio }}</strong></span> - <span class="precio-compra">PC: <strong>Bs.{{ $accion->preciocompra }}</strong></span>- {{ $accion->asociado }}- {{ $accion->sucursal }}
+                    </li>
+                    @endforeach
+                </ul>
+                @endif
+                @if($accionesProveedorEspecialidad->isNotEmpty())
+                <label for="">ESPECIALIDADES</label>
+                <ul>
+                    @foreach($accionesProveedorEspecialidad as $accion)
+                    <li>
+                        {{ $accion->accion }} - <span class="precio">PV: <strong>Bs.{{ $accion->precio }}</strong></span> -  <span class="precio-compra">PC: <strong>Bs.{{ $accion->preciocompra }}</strong></span>- {{ $accion->asociado }}- {{ $accion->sucursal }}
+                    </li>
+                    @endforeach
+                </ul>
+                @endif
+            </div> --}}
+            <form action="{{ route('actualizar_estado_acciones') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    @if($accionesProveedorEstudios->isNotEmpty())
+                    <label for="">ESTUDIOS</label>
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Estudio</th>
+                                    <th>P_Venta</th>
+                                    <th>P_Compra</th>
+                                    <th>Asociado</th>
+                                    <th>Sucursal</th>
+                                    <th>Estado</th>
+                                    <th>Selec.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($accionesProveedorEstudios as $accion)
+                                <tr>
+                                    <td>{{ $accion->id }}</td>
+                                    <td>{{ $accion->accion }}</td>
+                                    <td>{{ $accion->precio }}</td>
+                                    <td>{{ $accion->preciocompra }}</td>
+                                    <td>{{ $accion->asociado }}</td>
+                                    <td>{{ $accion->sucursal }}</td>
+                                    <td>
+                                        @if($accion->estado == 'ACTIVO')
+                                            <span class="badge bg-success">ACTIVO</span>
+                                        @elseif($accion->estado == 'INACTIVO')
+                                            <span class="badge bg-danger">INACTIVO</span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ $accion->estado }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="acciones_estudios[]" value="{{ $accion->id }}">
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @endif
+                <br>
+                    @if($accionesProveedorEspecialidad->isNotEmpty())
+                    <label for="">ESPECIALIDADES</label>
+                    <div class="table-responsive">
+                        <table class="table table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Especialidad</th>
+                                    <th>P_Venta</th>
+                                    <th>P_Compra</th>
+                                    <th>Asociado</th>
+                                    <th>Sucursal</th>
+                                    <th>Estado</th>
+                                    <th>Selec.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($accionesProveedorEspecialidad as $accion)
+                                <tr>
+                                    <td>{{ $accion->id }}</td>
+                                    <td>{{ $accion->accion }}</td>
+                                    <td>{{ $accion->precio }}</td>
+                                    <td>{{ $accion->preciocompra }}</td>
+                                    <td>{{ $accion->asociado }}</td>
+                                    <td>{{ $accion->sucursal }}</td>
+                                    <td>
+                                        @if($accion->estado == 'ACTIVO')
+                                            <span class="badge bg-success">ACTIVO</span>
+                                        @elseif($accion->estado == 'INACTIVO')
+                                            <span class="badge bg-danger">INACTIVO</span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ $accion->estado }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="acciones_especialidad[]" value="{{ $accion->id }}">
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    @endif
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-inactivar">INACTIVAR</button>
+                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">CERRAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <h5>CREAR BATERIA DE:</h5>
 <h3>{{$proveedor->proveedor}}</h3>
 @stop
@@ -38,106 +168,7 @@
                         </div>
                     </div>
                 </div>
-                {{-- <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL PROVEEDOR</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <label for="">ESTUDIOS</label>
-                                <ul>
-                                    @foreach($accionesProveedorEstudios as $accion)
-                                    <li>
-                                        {{ $accion }}
-                                    </li>
-                                    @endforeach
-                                </ul>
-                                <label for="">ESPECIALIDADES</label>
-                                <ul>
-                                    @foreach($accionesProveedorEspecialidad as $accion)
-                                    <li>
-                                        {{ $accion }}
-                                    </li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div> --}}
-                <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL PROVEEDOR</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body"> 
-                                @if($accionesProveedorEstudios->isNotEmpty())
-                                <label for="">ESTUDIOS</label>
-                                <ul>
-                                    @foreach($accionesProveedorEstudios as $accion)
-                                    <li>
-                                        {{ $accion->accion }} - <span class="precio">PV: <strong>Bs.{{ $accion->precio }}</strong></span> - <span class="precio-compra">PC: <strong>Bs.{{ $accion->preciocompra }}</strong></span>- {{ $accion->asociado }}
-                                    </li>
-                                    @endforeach
-                                </ul>
-                                @endif
-                                @if($accionesProveedorEspecialidad->isNotEmpty())
-                                <label for="">ESPECIALIDADES</label>
-                                <ul>
-                                    @foreach($accionesProveedorEspecialidad as $accion)
-                                    <li>
-                                        {{ $accion->accion }} - <span class="precio">PV: <strong>Bs.{{ $accion->precio }}</strong></span> -  <span class="precio-compra">PC: <strong>Bs.{{ $accion->preciocompra }}</strong></span>- {{ $accion->asociado }}
-                                    </li>
-                                    @endforeach
-                                </ul>
-                                @endif
-                            </div>
-                            
-                            <style>
-                                .modal-body li {
-                                    padding: 10px;
-                                    border-bottom: 1px solid #ddd;
-                                    margin-bottom: 0px;
-                                }
-                                .modal-body li:nth-child(odd) {
-                                    background-color: #f0f0f0;
-                                }
-
-                                .modal-body li:nth-child(even) {
-                                    background-color: #fff;
-                                }
-                                .precio {
-                                    color: #333;
-                                    background-color: #f7ffe9;
-                                    padding: 3px 5px;
-                                    border-radius: 4px;
-                                    margin: 0 5px;
-                                }
-                                .precio-compra {
-                                    color: #555;
-                                    background-color: #fff4e4;
-                                    padding: 3px 5px;
-                                    border-radius: 4px;
-                                    margin: 0 5px;
-                                }
-                            </style>
-                            
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
                 <div class="col-lg-4">
                     <div class="form-group" hidden>
                         {!! Form::label('proveedor', 'Nombre:') !!}
@@ -148,54 +179,6 @@
                             </small>
                         @enderror
                     </div>
-                    {{-- <div class="row">
-                        <div class="col-lg-6">
-                            <div class="form-group">
-                                {!! Form::label('horarioinicial', 'Desde:') !!}
-                                {!! Form::time('horarioinicial', null, ['class' => 'form-control', 'placeholder' => '',]) !!}
-                                @error('horarioinicial')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="form-group">
-                                {!! Form::label('horariofinal', 'Hasta:') !!}
-                                {!! Form::time('horariofinal', null, ['class' => 'form-control', 'placeholder' => '',]) !!}
-                                @error('horariofinal')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <div class="form-group">
-                                {!! Form::label('tiempoatencion', 'Tiempo de atención:') !!}
-                                {!! Form::time('tiempoatencion', '--:--', ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('tiempoatencion')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="form-group">
-                                {!! Form::label('cantidadatencion', 'Cantidad de atención:') !!}
-                                {!! Form::text('cantidadatencion', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => true]) !!}
-                                @error('cantidadatencion')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                        </div>
-                    </div> --}}
                     <div class="form-group">
                         {!! Form::label('sucursal', 'Sucursal:') !!}
                         {!! Form::select('sucursal', ['SANTA CRUZ' => 'SANTA CRUZ', 'COCHABAMBA' => 'COCHABAMBA'], null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -220,8 +203,6 @@
                         document.addEventListener('DOMContentLoaded', function () {
                             var asociadoSelect = document.getElementById('asociado');
                             var asociadoIdInput = document.getElementById('asociadoid');
-                    
-                            // Function to update asociadoid based on the selection
                             function updateAsociadoId() {
                                 var selectedValue = asociadoSelect.value;
                                 if (selectedValue === 'CLIENTES ITA') {
@@ -229,21 +210,15 @@
                                 } else if (selectedValue === 'CLIENTES COMUNES') {
                                     asociadoIdInput.value = '3';
                                 } else {
-                                    asociadoIdInput.value = ''; // Clear if no valid option
+                                    asociadoIdInput.value = '';
                                 }
                             }
-                    
-                            // Attach event listener to select element
                             asociadoSelect.addEventListener('change', updateAsociadoId);
-                    
-                            // Initialize value in case the form is pre-filled
                             updateAsociadoId();
                         });
                     </script>
-                    
                 </div>
-                
-                
+            
                 <div class="col-lg-8">
                     <div class="row">
                         <div class="col-lg-6">
@@ -309,7 +284,7 @@
                     </div>
                 </div>
             </div> 
-            {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-crear']) !!}
+            {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-sm btn-crear']) !!}
             {!! Form::close() !!}
         </div>
     </div>
@@ -596,7 +571,7 @@ $('#tiempoatencion').change(function() {
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     
     .btn-crear:hover {
@@ -619,7 +594,7 @@ $('#tiempoatencion').change(function() {
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 5px 25px;
+        padding: 5px 10px;
         margin-top: 0px;
         margin-bottom: 10px;
     }
@@ -632,7 +607,7 @@ $('#tiempoatencion').change(function() {
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -640,15 +615,26 @@ $('#tiempoatencion').change(function() {
         background-color: #faa625;
         color: #ffffff;
     }
-    .btn-cerrar {
+    .btn-inactivar {
         background-color: #ffffff;
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
         padding: 5px 10px;
     }
-    .btn-cerrar:hover {
+    .btn-inactivar:hover {
         background-color: #94c93b;
+        color: #ffffff;
+    }
+    .btn-cerrar {
+        background-color: #ffffff;
+        color: #e1172b;
+        border-color: #e1172b;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-cerrar:hover {
+        background-color: #e1172b;
         color: #ffffff;
     }
     .btn-regresar {
@@ -656,11 +642,14 @@ $('#tiempoatencion').change(function() {
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
         color: #ffffff;
+    }
+    .table td {
+        padding: 5px 10px;;
     }
 </style>
 @stop

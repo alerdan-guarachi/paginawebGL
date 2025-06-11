@@ -13,7 +13,8 @@ class SolicitudInventario extends Model
     protected $table = 'solicitudinventario';
     static $rules = [
         'id' => '',
-        'usuarioregistroid' => '',
+        'usuariosolicitanteid' => '',
+        'usuarioregistro' => '',
         'usuariosolicitante' => '',
         'productosolicitado' => '',
         'productoofertado' => '',
@@ -21,6 +22,7 @@ class SolicitudInventario extends Model
         'cantidad' => '',
         'estado' => '',
         'usuarioactualizacion' => '',
+        'usuarioactualizacionid' => '',
         'sucursal' => '',
         'cantidadrecibido' => '',
         'cantidadofertado' => '',
@@ -29,7 +31,8 @@ class SolicitudInventario extends Model
 
     protected $fillable = [
         'id',
-        'usuarioregistroid',
+        'usuariosolicitanteid',
+        'usuarioregistro',
         'usuariosolicitante',
         'productosolicitado',
         'productoofertado',
@@ -37,6 +40,7 @@ class SolicitudInventario extends Model
         'cantidad',
         'estado',
         'usuarioactualizacion',
+        'usuarioactualizacionid',
         'sucursal',
         'cantidadrecibido',
         'cantidadofertado',

@@ -100,7 +100,8 @@
                                 <th>Hora programada</th>
                                 <th>Servicio</th>
                                 <th>Precio</th>
-                                {{-- <th>Selec.</th> --}}
+                                <th hidden>Bateria</th>
+                                <th>Crédito</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -126,9 +127,8 @@
                                         <td>{{ $programacion->horadesde }} - {{ $programacion->horahasta }}</td>
                                         <td>{{ $programacion->servicio }}</td>
                                         <td>{{ $programacion->precio }}</td>
-                                        {{-- <td>
-                                            <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox">
-                                        </td> --}}
+                                        <td hidden>{{ $programacion->bateriaid }}</td>
+                                        <td>{{ $programacion->tiene_credito }}</td>
                                     </tr>
                                     @endif
                                 @endforeach
@@ -151,6 +151,8 @@
                                         <td>{{ $programacion->horadesde }} - {{ $programacion->horahasta }}</td>
                                         <td>{{ $programacion->servicio }}</td>
                                         <td>{{ $programacion->precio }}</td>
+                                        <td hidden>{{ $programacion->bateriaid }}</td>
+                                        <td>{{ $programacion->tiene_credito }}</td>
                                         {{-- <td>
                                             <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox">
                                         </td> --}}
@@ -175,6 +177,8 @@
                                         <td>{{ $programacion->horadesde }} - {{ $programacion->horahasta }}</td>
                                         <td>{{ $programacion->servicio }}</td>
                                         <td>{{ $programacion->precio }}</td>
+                                        <td hidden>{{ $programacion->bateriaid }}</td>
+                                        <td>{{ $programacion->tiene_credito }}</td>
                                         {{-- <td>
                                             <input type="checkbox" name="programaciones[]" value="{{ $programacion->id }}" class="programacion-checkbox">
                                         </td> --}}

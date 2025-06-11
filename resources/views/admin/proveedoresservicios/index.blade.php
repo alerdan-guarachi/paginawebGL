@@ -100,6 +100,17 @@
         background-color: #94c93b;
         color: #ffffff;
         }
+    .btn-agregar {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-agregar:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
     .btn-regresar {
         background-color: #ffffff;
         color: #2926e2;
@@ -163,6 +174,67 @@
         background-color: #faa625;
         color: #ffffff;
         }
+    .btn-custom {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+    .btn-custom:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transform: scale(1.15);
+    }
+    .btn-custom:disabled {
+        background-color: #d6d6d6;
+        color: #a0a0a0;
+        cursor: not-allowed;
+    }
+
+</style>
+<style>
+    table {
+        white-space: nowrap;
+    }
+    .table td {
+        padding: 5px;
+    }
+    .table tbody tr:nth-child(odd) {
+        background-color: #f2f2f2;
+    }
+
+</style>
+<style>
+    .color-box {
+        width: 35px;
+        height: 35px;
+        margin: 5px;
+        border: 2px solid #ddd;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .color-box:hover {
+        transform: scale(1.5);
+    }
+    .selected {
+        border: 3px solid black !important;
+    }
+    .color-selector {
+        width: 50px;
+        height: 38px;
+        border: 2px solid #ddd;
+        text-align: center;
+        padding: 0;
+        font-size: 1.2rem;
+    }
 </style>
 @stop
 
@@ -214,7 +286,8 @@
                             <a class="btn btn-sm btn-verinventario" 
                                 data-toggle="modal" 
                                 data-target="#modalInventarios" 
-                                data-id="{{ $proveedoresservicios->id }}" 
+                                data-id="{{ $proveedoresservicios->id }}"
+                                data-nombre="{{ $proveedoresservicios->razonsocial }}"
                                 title="VER INVENTARIOS">
                                 <i class="fas fa-clipboard-list"></i>
                             </a>
@@ -299,7 +372,8 @@
                                             <a class="btn btn-sm btn-verinventario" 
                                                data-toggle="modal" 
                                                data-target="#modalInventarios" 
-                                               data-id="{{ $proveedoresservicios->id }}" 
+                                               data-id="{{ $proveedoresservicios->id }}"
+                                               data-nombre="{{ $proveedoresservicios->razonsocial }}"
                                                title="VER INVENTARIOS">
                                                <i class="fas fa-clipboard-list"></i>
                                             </a>
@@ -349,7 +423,8 @@
                                             <a class="btn btn-sm btn-verinventario" 
                                                data-toggle="modal" 
                                                data-target="#modalInventarios" 
-                                               data-id="{{ $proveedoresservicios->id }}" 
+                                               data-id="{{ $proveedoresservicios->id }}"
+                                               data-nombre="{{ $proveedoresservicios->razonsocial }}"
                                                title="VER INVENTARIOS">
                                                <i class="fas fa-clipboard-list"></i>
                                             </a>
@@ -400,7 +475,8 @@
                                             <a class="btn btn-sm btn-verinventario" 
                                                data-toggle="modal" 
                                                data-target="#modalInventarios" 
-                                               data-id="{{ $proveedoresservicios->id }}" 
+                                               data-id="{{ $proveedoresservicios->id }}"
+                                               data-nombre="{{ $proveedoresservicios->razonsocial }}"
                                                title="VER INVENTARIOS">
                                                <i class="fas fa-clipboard-list"></i>
                                             </a>
@@ -417,17 +493,17 @@
 </div>      
 
 <div class="modal fade" id="modalInventarios" tabindex="-1" aria-labelledby="modalInventariosLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalInventariosLabel" style="font-weight: 900">BATERIA E INVENTARIO DEL PROVEEDOR</h5>
+                <h5 class="modal-title" id="modalInventariosLabel" style="font-weight: 900">PORTAFOLIO DEL PROVEEDOR: <span id="modalProveedorNombre"></span></h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>
                 </button>         
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-lg-12"> 
+                    <div class="col-lg-12" hidden> 
                         <div class="table-responsive">
                             <table class="table">
                                 <tbody id="modalproveedorserviciosBody">
@@ -435,22 +511,160 @@
                             </table>
                         </div>
                     </div>
-                    
 
-                    <div class="col-lg-12">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Producto</th>
-                                        <th>Marca</th>
-                                        <th>Precio</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="modalInventariosBody">
-                                </tbody>
-                            </table>
+                    <div class="form-group" style="margin-top: -15px; margin-bottom: 0px;">
+                        <a class="btn btn-agregar btn-sm" id="btnAgregarRegistro">
+                            AGREGAR NUEVO
+                        </a>
+                    </div>
+                    
+                    <div id="formNuevoRegistro" style="display: none;">
+                        <div class="card">
+                            <div class="card-body" style="background-color: #f5f5f5">
+                                {!! Form::open(['route' => 'admin.proveedoresservicios.guardarnuevoproducto', 'method'=>'POST']) !!}
+                                    <div class="row">
+                                        <input type="hidden" id="proveedorid" name="proveedorid">
+                                        <input type="hidden" id="proveedornombre" name="proveedornombre">
+                                        <div class="col-md-2 form-group">
+                                            <label for="ciudad">Ciudad</label>
+                                            <select id="ciudad" name="ciudad" class="form-control">
+                                                <option value="" disabled selected></option>
+                                                <option value="SANTA CRUZ">SANTA CRUZ</option>
+                                                <option value="COCHABAMBA">COCHABAMBA</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2 form-group">
+                                            <label for="tipoinventario">Tipo Inventario</label>
+                                            <select name="tipo_inventario" id="tipo_inventario"  class="form-control">
+                                                <option value="" disabled selected></option>
+                                                <option value="ALMACEN">ALMACEN</option>
+                                                <option value="ACTIVO FIJO">ACTIVO FIJO</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2 form-group">
+                                            <label for="seccion">Sección</label>
+                                            <select name="seccion" id="seccion" class="form-control">
+                                                <option value="" disabled selected></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2 form-group">
+                                            <label>Producto</label>
+                                            <input type="text" class="form-control" id="nombreproducto" name="nombreproducto" required>
+                                        </div>
+                                        <div class="col-md-2 form-group">
+                                            <label for="materiaprima">Mat. Prima</label>
+                                            <select name="materia_prima" id="materia_prima" class="form-control">
+                                                <option value="" disabled selected></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2 form-group">
+                                            <label>Especif. Medida</label>
+                                            <input type="text" class="form-control" id="especificacionmedida" name="especificacionmedida">
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            {!! Form::label('color', 'Color:') !!}
+                                            <div class="d-flex align-items-center">
+                                                {!! Form::text('color', null, ['class' => 'form-control', 'id' => 'colorInput', 'readonly' => 'readonly', 'placeholder' => '']) !!}
+                                                <div class="dropdown ml-2">
+                                                    <button class="btn btn-secondary dropdown-toggle color-selector" type="button" id="colorDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        ▼
+                                                    </button>
+                                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="colorDropdown">
+                                                        <div class="d-flex flex-wrap">
+                                                            <div class="col-4 p-1">
+                                                                <div class="color-box" data-color="#000000"></div>
+                                                                <div class="color-box" data-color="#FFFFFF"></div>
+                                                                <div class="color-box" data-color="#FF0000"></div>
+                                                                <div class="color-box" data-color="#008000"></div>
+                                                                <div class="color-box" data-color="#0000FF"></div>
+                                                            </div>
+                                                            <div class="col-4 p-1">
+                                                                <div class="color-box" data-color="#FFFF00"></div>
+                                                                <div class="color-box" data-color="#FFA500"></div>
+                                                                <div class="color-box" data-color="#800080"></div>
+                                                                <div class="color-box" data-color="#FFC0CB"></div>
+                                                                <div class="color-box" data-color="#808080"></div>
+                                                            </div>
+                                                            <div class="col-4 p-1">
+                                                                <div class="color-box" data-color="#A52A2A"></div>
+                                                                <div class="color-box" data-color="#00BFFF"></div>
+                                                                <div class="color-box" data-color="#FFD700"></div>
+                                                                <div class="color-box" data-color="#008B8B"></div>
+                                                                <div class="color-box" data-color="#B22222"></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @error('color')
+                                            <small class="text-danger fas fa-exclamation-circle">
+                                                {{$message}}
+                                            </small>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-2 form-group">
+                                            <label for="marca">Marca</label>
+                                            <select name="marca" id="marca" class="form-control">
+                                                <option value="" disabled selected></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2 form-group">
+                                            <label for="unidadmedida">Unidad Medida</label>
+                                            <select name="unidad_medida" id="unidad_medida" class="form-control">
+                                                <option value="" disabled selected></option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-1 form-group">
+                                            <label>Present.</label>
+                                            <input type="text" class="form-control" id="presentacion" name="presentacion">
+                                        </div>
+                                        <div class="col-md-1 form-group">
+                                            <label>Unidades</label>
+                                            <input type="number" class="form-control" id="unidades" name="unidades" required>
+                                        </div>
+                                        <div class="col-md-1 form-group">
+                                            <label>Cantidad</label>
+                                            <input type="number" class="form-control" id="cantidad" name="cantidad" required>
+                                        </div>
+                                        <div class="col-md-1 form-group">
+                                            <label>Precio</label>
+                                            <input type="number" step="0.01" class="form-control" id="precio" name="precio" required>
+                                        </div>
+                                        <div class="col-md-2 form-group">
+                                            <label>Modelo</label>
+                                            <input type="text" class="form-control" name="modelo" id="modelo" placeholder="" disabled>
+                                        </div>
+                                    </div>
+                                    {!! Form::submit('REGISTRAR PRODUCTO', ['class' => ' float-right btn btn-sm btn-crear']) !!}
+                                {!! Form::close() !!}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="col-lg-12">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Cód.</th>
+                                                <th>Producto</th>
+                                                <th>Tipo_Inv.</th>
+                                                <th>Sección</th>
+                                                <th>M_Prima</th>
+                                                <th>Especif.</th>
+                                                <th>Color</th>
+                                                <th>Marca</th>
+                                                <th>Cant.</th>
+                                                <th>Precio</th>
+                                                <th>Ciudad</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="modalInventariosBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -460,20 +674,25 @@
 </div>
 <script> 
     document.addEventListener("DOMContentLoaded", function() {
-        const inventarios = @json($inventarios); // Convertimos el inventario a JSON
-        const bateriaproveedorservicios = @json($bateriaproveedorservicios); // Convertimos el inventario a JSON
+        const inventarios = @json($inventarios);
+        const bateriaproveedorservicios = @json($bateriaproveedorservicios);
     
         document.querySelectorAll('[data-target="#modalInventarios"]').forEach(button => {
             button.addEventListener("click", function() {
                 const proveedorId = this.getAttribute("data-id");
+
+                const proveedorNombre = this.getAttribute("data-nombre");
+            
+                document.getElementById("modalProveedorNombre").textContent = proveedorNombre;
+
+                document.getElementById("proveedorid").value = proveedorId;
+                document.getElementById("proveedornombre").value = proveedorNombre;
+
                 const modalBodyInventarios = document.getElementById("modalInventariosBody");
                 const modalBodyProveedorServicios = document.getElementById("modalproveedorserviciosBody");
-    
-                // Limpiar contenido previo
+
                 modalBodyInventarios.innerHTML = "";
                 modalBodyProveedorServicios.innerHTML = "";
-
-                // Filtrar los inventarios correspondientes al proveedor
                 const inventarioFiltrado = inventarios.filter(item => item.proveedorid == proveedorId);
     
                 if (inventarioFiltrado.length > 0) {
@@ -481,60 +700,260 @@
                         let row = `<tr>
                             <td>${item.id}</td>
                             <td>${item.nombreproducto}</td>
+                            <td>${item.tipoinventario}</td>
+                            <td>${item.seccion}</td>
+                            <td>${item.materiaprima}</td>
+                            <td>${item.especificacionmedida}</td>
+                            <td>${item.color}</td>
                             <td>${item.marca}</td>
+                            <td>${item.cantidad}</td>
                             <td>${item.precio}</td>
+                            <td>${item.ciudad}</td>
                         </tr>`;
                         modalBodyInventarios.innerHTML += row;
                     });
                 } else {
-                    modalBodyInventarios.innerHTML = `<tr><td colspan="3" class="text-center">NO HAY REGISTROS PARA ESTE PROVEEDOR</td></tr>`;
+                    modalBodyInventarios.innerHTML = `<tr><td colspan="11" class="text-center">NO HAY PORTAFOLIO PARA ESTE PROVEEDOR</td></tr>`;
                 }
 
-                // Filtrar los proveedores de servicios correspondientes
                 const proveedorServicioFiltrado = bateriaproveedorservicios.filter(item => item.proveedorid == proveedorId);
-    
                 if (proveedorServicioFiltrado.length > 0) {
-                    // Variable para añadir las filas dinámicamente
                     let rows = "";
-                    
-                    // Variables de los títulos para cada columna
                     let compraProducto = [];
                     let compraServicio = [];
                     let ventaProducto = [];
-
-                    // Recorrer los registros filtrados
                     proveedorServicioFiltrado.forEach(item => {
                         if (item.compraproducto) compraProducto.push(item.compraproducto);
                         if (item.compraservicio) compraServicio.push(item.compraservicio);
                         if (item.ventaproducto) ventaProducto.push(item.ventaproducto);
                     });
-
-                    // Agregar título "Compra Producto" si existen valores
                     if (compraProducto.length > 0) {
-                        rows += `<tr><td colspan="4"><strong>Adquisición de Productos:</strong> ${compraProducto.join(", ")}</td></tr>`;
+                        rows += `<tr><td colspan="11"><strong>Adquisición de Productos:</strong> ${compraProducto.join(", ")}</td></tr>`;
                     }
-
-                    // Agregar título "Compra Servicio" si existen valores
                     if (compraServicio.length > 0) {
-                        rows += `<tr><td colspan="4"><strong>Adquisición de Servicios:</strong> ${compraServicio.join(", ")}</td></tr>`;
+                        rows += `<tr><td colspan="11"><strong>Adquisición de Servicios:</strong> ${compraServicio.join(", ")}</td></tr>`;
                     }
-
-                    // Agregar título "Venta Producto" si existen valores
                     if (ventaProducto.length > 0) {
-                        rows += `<tr><td colspan="4"><strong>Venta de Productos:</strong> ${ventaProducto.join(", ")}</td></tr>`;
+                        rows += `<tr><td colspan="11"><strong>Venta de Productos:</strong> ${ventaProducto.join(", ")}</td></tr>`;
                     }
-
-                    // Insertar las filas en el cuerpo de la tabla
                     modalBodyProveedorServicios.innerHTML = rows;
                 } else {
-                    modalBodyProveedorServicios.innerHTML = `<tr><td colspan="4" class="text-center">NO HAY PRODUCTOS DE SERVICIO PARA ESTE PROVEEDOR</td></tr>`;
+                    modalBodyProveedorServicios.innerHTML = `<tr><td colspan="11" class="text-center">NO HAY PRODUCTOS DE SERVICIO PARA ESTE PROVEEDOR</td></tr>`;
                 }
+            });
+        });
+
+
+        document.getElementById("btnAgregarRegistro").addEventListener("click", function() {
+            var formNuevoRegistro = document.getElementById("formNuevoRegistro");
+            
+            // Alterna la visibilidad del formulario
+            if (formNuevoRegistro.style.display === "block") {
+                formNuevoRegistro.style.display = "none";
+            } else {
+                formNuevoRegistro.style.display = "block";
+            }
+        });
+
+
+    document.getElementById("nuevoRegistroForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(this);
+        fetch("/guardarnuevoproducto", { 
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert("Registro guardado correctamente");
+            document.getElementById("formNuevoRegistro").style.display = "none";
+            this.reset();
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
+    });
+</script>
+
+{{-- RELLENAR SEGUN LO SELECCIONADO --}}
+<script>
+    const opciones = {
+        "ALMACEN": {
+            "seccion": ["ESCRITORIO", "COCINA", "USO MEDICO", "PROMOCIONAL", "LIMPIEZA", "CONSTRUCCION Y FERRETERIA", "INSUMOS DECORATIVOS"],
+            "unidad_medida": {
+                "ESCRITORIO": ["BOLSA", "CAJA", "PAQUETE", "UNIDADES"],
+                "COCINA": ["UNIDADES", "BOLSA"],
+                "USO MEDICO": ["CAJA", "UNIDADES"],
+                "PROMOCIONAL": ["UNIDADES"],
+                "LIMPIEZA": ["CAJA", "PAQUETE", "UNIDADES"],
+                "CONSTRUCCION Y FERRETERIA": ["BOLSA", "CAJA", "ROLLO", "UNIDADES"],
+                "INSUMOS DECORATIVOS": ["UNIDADES"]
+            },
+            "materia_prima": {
+                "ESCRITORIO": ["ACRILICO", "CARBONICO", "CARTON", "GOMA", "LIQUIDO", "MADERA", "METALICO", "PAPEL", "PLASTICO", "TELA", "VENESTA"],
+                "COCINA": ["PLASTICO", "MADERA", "PAPEL"],
+                "USO MEDICO": ["FIBRA", "GEL", "GOMA", "ISOPROPILICO", "LATEX", "LIQUIDO", "MADERA", "METALICO", "PAPEL", "PLASTICO", "POLIPROPILENO", "ROLLO", "TELA", "TERMICO"],
+                "PROMOCIONAL": ["ALGODÓN", "CARTULINA", "CERAMICA", "LONA", "METALICO", "PAPEL", "PLASTICO", "POLIESTER", "PORCELANA", "PVC"],
+                "LIMPIEZA": ["GOMA", "INTERFOLIADAS", "LIQUIDO", "MADERA", "MICROFIBRA", "PAPEL", "PLASTICO", "POLVO", "TELA"],
+                "CONSTRUCCION Y FERRETERIA": ["ACRILICA", "ALUMINIO", "CARTULINA", "CAUCHO", "CERAMICA", "COBRE", "CONCRETO", "CUERO", "GOMA", "LATA", "LINO", "LIQUIDO", "MADERA", "MALLA", "METALICO", "PLASTICO", "POLIESTER", "PORCELANA", "PVC", "SINTETICO", "TELA", "YESO"],
+                "INSUMOS DECORATIVOS": ["MADERA"]
+            },
+            "marca": {
+                "ESCRITORIO": ["ACRICOLOR", "ARTESCO", "BWHITE", "CASIO", "CHRISTMAS HOUSE", "CONDOR", "ENERGIZER", "FIVE STICK", "FRINGE CURTAIN", "ISOFIT", "MADISON", "MAXOFFICE", "MERTETTO", "MILCAR", "MONAMI"],
+                "COCINA": ["SCOTT", "COPOBRAS", "BELEN"],
+                "USO MEDICO": ["A&E", "BIOHIT", "BIOPLAST", "BRAUN", "BTL", "CAPULLO", "CUREBAND", "DRENACATH", "EARNIZ", "EKOSUR"],
+                "PROMOCIONAL": ["S/M"],
+                "LIMPIEZA": ["ARCHER", "ARISTECH", "ARMORALL", "BELEN", "BRISTAR", "CLIN", "ELITE", "HIGIA", "LIZ"],
+                "CONSTRUCCION Y FERRETERIA": ["ABRO", "ADHEPLAS", "AMERICAN WORKS", "ARATY", "ARCELOR MITTAL"],
+                "INSUMOS DECORATIVOS": ["S/M"]
+            }
+        },
+        "ACTIVO FIJO": {
+            "seccion": [
+                "ALMACEN","GERENCIA GENERAL", "GERENCIA COMERCIAL Y FINANCIERA", "SALA DE REUNIONES", "ZONA DE MONITOREO", "BAÑO GERENCIAL",
+                "SALA DE ESPERA PLANTA ALTA", "COCINA", "BAÑO PLANTA ALTA", "OFICINA 1 PLANTA ALTA", "CONSULTORIO 1 PLANTA ALTA",
+                "CONSULTORIO 2 PLANTA ALTA", "CONSULTORIO 3 PLANTA ALTA", "CONSULTORIO 4 PLANTA ALTA", "CONSULTORIO 5 PLANTA ALTA",
+                "CONSULTORIO 6 PLANTA BAJA", "CONSULTORIO 7 PLANTA BAJA", "CONSULTORIO 8 PLANTA BAJA", "CONSULTORIO 9 PLANTA BAJA",
+                "OFICINA 2 PLANTA BAJA", "OFICINA 3 PLANTA BAJA", "SALA DE ESPERA PLANTA BAJA", "SALA DE ATENCION AL CLIENTE",
+                "BAÑO PLANTA BAJA", "BAÑO CONSULTORIO 7 PLANTA BAJA", "DEPOSITO PRINCIPAL", "DEPOSITO SECUNDARIO",
+                "PASILLO PLANTA ALTA", "PASILLO PLANTA BAJA", "GRADAS", "ENTRADA PRINCIPAL", "VISTA FRONTAL"
+            ],
+            "unidad_medida": ["UNIDADES"],
+            "materia_prima": ["CONCRETO", "GOMA", "MADERA", "METALICO", "PLASTICO", "POLIESTER"],
+            "marca": ["3D OPTICAL MOUSE", "AC-DELL", "ARRIX", "BIZLINK", "BREATHALYZER", "CONTEC", "DAHUA", "DIMAX", "DYMO", "ECCOSUR"]
+        }
+    };
+
+    document.getElementById("tipo_inventario").addEventListener("change", function () {
+        const tipo = this.value;
+        const seccion = document.getElementById("seccion");
+        const materia = document.getElementById("materia_prima");
+        const unidad = document.getElementById("unidad_medida");
+        const marca = document.getElementById("marca");
+        const modelo = document.getElementById("modelo");
+
+        seccion.innerHTML = '<option value="" disabled selected></option>';
+        materia.innerHTML = '<option value="" disabled selected></option>';
+        unidad.innerHTML = '<option value="" disabled selected></option>';
+        marca.innerHTML = '<option value="" disabled selected></option>';
+
+        if (tipo in opciones) {
+            opciones[tipo].seccion.forEach(s => {
+                seccion.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+
+            opciones[tipo].materia_prima.forEach(m => {
+                materia.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+
+            opciones[tipo].unidad_medida.forEach(u => {
+                unidad.innerHTML += `<option value="${u}">${u}</option>`;
+            });
+
+            opciones[tipo].marca.forEach(m => {
+                marca.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+
+            if (tipo === "ACTIVO FIJO") {
+                modelo.disabled = false;
+                modelo.style.display = "block";
+            } else {
+                modelo.disabled = true;
+                modelo.style.display = "none";
+            }
+        }
+    });
+
+    document.getElementById("seccion").addEventListener("change", function () {
+        const tipo = document.getElementById("tipo_inventario").value;
+        const seccionSeleccionada = this.value;
+        const materia = document.getElementById("materia_prima");
+        const unidad = document.getElementById("unidad_medida");
+        const marca = document.getElementById("marca");
+
+        materia.innerHTML = '<option value="" disabled selected></option>';
+        unidad.innerHTML = '<option value="" disabled selected></option>';
+        marca.innerHTML = '<option value="" disabled selected></option>';
+
+        if (tipo === "ALMACEN") {
+            const materias = opciones[tipo].materia_prima[seccionSeleccionada] || opciones[tipo].materia_prima["default"];
+            const unidades = opciones[tipo].unidad_medida[seccionSeleccionada] || opciones[tipo].unidad_medida["default"];
+            const marcas = opciones[tipo].marca[seccionSeleccionada] || opciones[tipo].marca["default"];
+
+            materias.forEach(m => {
+                materia.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+
+            unidades.forEach(u => {
+                unidad.innerHTML += `<option value="${u}">${u}</option>`;
+            });
+
+            marcas.forEach(m => {
+                marca.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+        }
+
+        if (tipo === "ACTIVO FIJO" && seccionSeleccionada) {
+            const materias = opciones[tipo].materia_prima || [];
+            const unidades = opciones[tipo].unidad_medida || [];
+            const marcas = opciones[tipo].marca || [];
+
+            materias.forEach(m => {
+                materia.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+
+            unidades.forEach(u => {
+                unidad.innerHTML += `<option value="${u}">${u}</option>`;
+            });
+
+            marcas.forEach(m => {
+                marca.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+        }
+    });
+</script>
+
+{{-- COLORES --}}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let colorBoxes = document.querySelectorAll(".color-box");
+        let colorInput = document.getElementById("colorInput");
+        let colorDropdown = document.getElementById("colorDropdown");
+
+        const colorNames = {
+            "#000000": "NEGRO",
+            "#FFFFFF": "BLANCO",
+            "#FF0000": "ROJO",
+            "#008000": "VERDE",
+            "#0000FF": "AZUL",
+            "#FFFF00": "AMARILLO",
+            "#FFA500": "NARANJA",
+            "#800080": "MORADO",
+            "#FFC0CB": "ROSADO",
+            "#808080": "GRIS",
+            "#A52A2A": "MARRON",
+            "#00BFFF": "CELESTE",
+            "#FFD700": "DORADO",
+            "#008B8B": "TURQUESA",
+            "#B22222": "GUINDO"
+        };
+
+        colorBoxes.forEach(box => {
+            box.style.backgroundColor = box.getAttribute("data-color");
+            box.addEventListener("click", function() {
+                colorBoxes.forEach(b => b.classList.remove("selected"));
+                this.classList.add("selected");
+                let selectedColor = this.getAttribute("data-color");
+                colorInput.value = colorNames[selectedColor];
+                colorDropdown.style.backgroundColor = selectedColor;
             });
         });
     });
 </script>
-
-
 @stop
 
 @section('js')

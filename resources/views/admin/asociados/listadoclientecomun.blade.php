@@ -28,7 +28,7 @@
                         <div class="flex-grow-1">
                             <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="Cliente  /  CI  /  Sucursal" aria-label="Search">
                         </div>
-                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit" disabled>Buscar</button>
+                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit" disabled><i class="fas fa-search"></i></button>
                     </form>
                 </div>
             </div>
@@ -42,6 +42,7 @@
                         <th>Nombres y Apellidos</th>
                         <th>CI</th>
                         <th>Edad</th>
+                        <th>Celular</th>
                         <th>Sucursal</th>
                     </tr>
                 </thead>
@@ -52,10 +53,11 @@
                         <td>{{$clientecomun->nombrecompleto}}</td>
                         <td>{{$clientecomun->ci}}</td>
                         <td>{{$clientecomun->edad}}</td>
+                        <td>{{$clientecomun->celular}}</td>
                         <td>{{$clientecomun->sucursal}}</td>
                         <td width="10px">
                             <abbr title="Ver Cliente">
-                                <a class="btn btn-sm btn-bateria" href="{{ route('admin.asociados.verclientecomun', $clientecomun) }}">
+                                <a class="btn btn-sm btn-vercliente" href="{{ route('admin.asociados.verclientecomun', $clientecomun) }}">
                                     <i class="fas fa-eye"></i>
                                 </a>
                             </abbr>
@@ -65,6 +67,7 @@
                 </tbody>
             </table>
         </div>
+        {{ $clientecomunes->links() }}
     </div>
 </div>
 @stop
@@ -77,17 +80,6 @@
         font-family: "Segoe UI";
         font-weight: 900;
     }
-    .btn-crear {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 10px 20px;
-    }
-    .btn-crear:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
     .btn-buscar { 
         background-color:  #ffffff;
         color: #faa625;
@@ -98,82 +90,12 @@
         background-color: #faa625;
         color: #ffffff;
     }  
-    .btn-mostrartodo { 
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-    }
-    .btn-mostrartodo:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
-    .btn-bateria {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-    }
-    .btn-bateria:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
-    .btn-programar {
-        background-color:  #ffffff;
-        color: #2136bd;
-        border-color: #2136bd;
-        border-radius: 5px;
-    }
-    .btn-programar:hover {
-        background-color: #2136bd;
-        color: #ffffff;
-    }
-    .btn-estadoprogramacion {
-        background-color:  #ffffff;
-        color: #58a6f4;
-        border-color: #58a6f4;
-        border-radius: 5px;
-    }
-    .btn-estadoprogramacion:hover {
-        background-color: #58a6f4;
-        color: #ffffff;
-    }
-    .btn-subirdocumentacion {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-    }
-    .btn-subirdocumentacion:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-verdocumentacion {
-        background-color:  #ffffff;
-        color: #8721f3;
-        border-color: #8721f3;
-        border-radius: 5px;
-    }
-    .btn-verdocumentacion:hover {
-        background-color: #8721f3;
-        color: #ffffff;
-    }
-    .btn-formulario {
-        background-color:  #ffffff;
-        color: #ea3ab8;
-        border-color: #ea3ab8;
-        border-radius: 5px;
-    }
-    .btn-formulario:hover {
-        background-color: #ea3ab8;
-        color: #ffffff;
-    }
     .btn-regresar {
         background-color: #ffffff;
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -184,7 +106,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -192,6 +114,20 @@
         background-color: #94c93b;
         color: #ffffff;
     }
+    .table td {
+        padding: 5px 10px;;
+    }
+    .btn-vercliente {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-vercliente:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
 </style>
 @stop
 

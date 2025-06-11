@@ -1,8 +1,12 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn float-right btn-outline-secondary" href="{{ route('admin.bienes.index') }}">REGRESAR</a>
-<h1>NUEVO PRODUCTO DE ALMACÉN PARA {{ $sucursal }}</h1>
+<a class="btn btn-sm float-right btn-outline-secondary" href="{{ route('admin.inventario.index') }}">REGRESAR</a>
+<h1>NUEVO PRODUCTO DE ALMACÉN</h1>
+@stop
+
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/opcionesmultiples.css') }}">
 @stop
 
 @section('content')
@@ -20,70 +24,109 @@
         <div class="card-body">
             <div class="row ">
                 <div class="col-lg-12">
-                    {!! Form::open(['route' => 'admin.bienes.store', 'method'=>'POST']) !!}
+                    {!! Form::open(['route' => 'admin.inventario.store', 'method'=>'POST']) !!}
                         <div class="row">
-                            <div class="form-group col-lg-5">
-                                {!! Form::label('seccion', 'Sección:') !!}
-                                {!! Form::select('seccion', $secciones, null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'seccion']) !!}
-                                @error('seccion')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
+                            <div class="col-md-2 form-group">
+                                <label for="tipoinventario">Tipo Inventario</label>
+                                <select name="tipo_inventario" id="tipo_inventario" class="form-control">
+                                    <option value=""></option>
+                                    <option value="ALMACEN">ALMACEN</option>
+                                    {{-- <option value="ACTIVO FIJO">ACTIVO FIJO</option> --}}
+                                </select>
                             </div>
-                            <div class="form-group col-lg-5">
-                                {!! Form::label('subseccion', 'Producto:') !!}
-                                {!! Form::select('subseccion', [], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'subseccion']) !!}
-                                @error('subseccion')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
+
+                            <div class="col-md-3 form-group">
+                                <label for="proveedornombre">Proveedor</label>
+                                <select id="proveedornombre" name="proveedornombre" class="form-control" required>
+                                    <option value=""></option>
+                                    @foreach ($proveedores as $proveedor)
+                                        <option value="{{ $proveedor->id }}" data-razon="{{ $proveedor->razonsocial }}">
+                                            {{ $proveedor->razonsocial }}
+                                        </option>
+                                    @endforeach
+                                </select>
                             </div>
-                            <div class="form-group col-lg-2">
-                                {!! Form::label('codigo', 'Código de Producto:') !!}
-                                {!! Form::text('codigo', null, ['class' => 'form-control', 'id' => 'codigo', 'readonly' => 'readonly']) !!}
-                                @error('codigo')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
+                            <div class="col-md-1 form-group">
+                                <label>ID.Prov</label>
+                                <input type="text" id="proveedorid" name="proveedorid" class="form-control" readonly>
+                            </div>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    const select = document.getElementById('proveedornombre');
+                                    const hiddenInput = document.getElementById('proveedorid');
+
+                                    select.addEventListener('change', function () {
+                                        hiddenInput.value = this.value;
+                                    });
+                                });
+                            </script>
+
+                            <div class="col-md-2 form-group">
+                                <label for="ciudad">Ciudad</label>
+                                <select id="ciudad" name="ciudad" class="form-control" required>
+                                    <option value="" disabled selected></option>
+                                    <option value="SANTA CRUZ">SANTA CRUZ</option>
+                                    <option value="COCHABAMBA">COCHABAMBA</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-2 form-group">
+                                <label for="seccion">Sección</label>
+                                <select name="seccion" id="seccion" class="form-control" required>
+                                    <option value="" disabled selected></option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 form-group">
+                                <label for="deposito">Deposito</label>
+                                <select id="deposito" name="deposito" class="form-control" required>
+                                    <option value="" disabled selected></option>
+                                    <option value="PRINCIPAL">PRINCIPAL</option>
+                                    <option value="SECUNDARIO">SECUNDARIO</option>
+                                </select>
                             </div>
                         </div>
-
                         <div class="row">
-                            <div class="form-group col-lg-4">
-                                {!! Form::label('materiaprima', 'Materia Prima:') !!}
-                                {!! Form::select('materiaprima', [], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'materiaprima']) !!}
-                                @error('materiaprima')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
+                            <div class="col-md-4 form-group">
+                                <label>Producto</label>
+                                <input type="text" class="form-control" id="nombreproducto" name="nombreproducto" required>
                             </div>
-                            <div class="form-group col-lg-4">
-                                {!! Form::label('marca', 'Marca:') !!}
-                                {!! Form::select('marca', [], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'marca']) !!}
-                                @error('marca')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
+                            <div class="col-md-4 form-group">
+                                <label>Especif. Medida</label>
+                                <input type="text" class="form-control" id="especificacionmedida" name="especificacionmedida" required>
                             </div>
-                            <div class="form-group col-lg-4">
-                                {!! Form::label('unidadmedida', 'Unidad de medida:') !!}
-                                {!! Form::select('unidadmedida', [], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'unidadmedida']) !!}
-                                @error('unidadmedida')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
+                            <div class="col-md-2 form-group">
+                                <label for="inventario">Inventario</label>
+                                <select id="inventario" name="inventario" class="form-control" required>
+                                    <option value="" disabled selected></option>
+                                    <option value="PRINCIPAL">PRINCIPAL</option>
+                                    <option value="ASIGNACION Y DEVOLUCION">ASIGNACION Y DEVOLUCION</option>
+                                    <option value="STOCK DEPURADO">STOCK DEPURADO</option>
+                                    <option value="AGOTADO">AGOTADO</option>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-2 form-group">
+                                <label for="materiaprima">Mat. Prima</label>
+                                <select name="materia_prima" id="materia_prima" class="form-control" required>
+                                    <option value="" disabled selected></option>
+                                </select>
                             </div>
                         </div>
-
                         <div class="row">
-                            <div class="form-group col-lg-12">
-                                {!! Form::label('especificacionmedida', 'Especificacion de medida:') !!}
-                                {!! Form::text('especificacionmedida', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('especificacionmedida')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                                @enderror
+                            <div class="col-md-2 form-group">
+                                <label for="unidadmedida">Unidad Medida</label>
+                                <select name="unidad_medida" id="unidad_medida" class="form-control" required>
+                                    <option value="" disabled selected></option>
+                                </select>
                             </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="form-group col-lg-4">
-                                {!! Form::label('color', 'Color:') !!}
+                            <div class="col-md-2 form-group">
+                                <label for="marca">Marca</label>
+                                <select name="marca" id="marca" class="form-control" required>
+                                    <option value="" disabled selected></option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-2">
+                                <label for="marca">Color</label>
                                 <div class="d-flex align-items-center">
                                     {!! Form::text('color', null, ['class' => 'form-control', 'id' => 'colorInput', 'readonly' => 'readonly', 'placeholder' => '']) !!}
                                     <div class="dropdown ml-2">
@@ -123,117 +166,79 @@
                                 </small>
                                 @enderror
                             </div>
-                            <div class="form-group col-lg-4">
-                                {!! Form::label('inventario', 'Inventario:') !!}
-                                {!! Form::select('inventario', [
-                                    'PRINCIPAL' => 'PRINCIPAL',
-                                    'AGOTADO' => 'AGOTADO',
-                                    'ASIGNACION Y DEVOLUCION' => 'ASIGNACION Y DEVOLUCION',
-                                    'STOCK DEPURADO' => 'STOCK DEPURADO'
-                                ], null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('inventario')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
+                            
+                            {{-- <div class="col-md-2 form-group">
+                                <label>Modelo</label>
+                                <input type="text" class="form-control" name="modelo" id="modelo">
                             </div>
-                            <div class="form-group col-lg-4">
-                                {!! Form::label('deposito', 'Depósito:') !!}
-                                {!! Form::select('deposito', [
-                                    'PRINCIPAL' => 'PRINCIPAL',
-                                    'SECUNDARIO' => 'SECUNDARIO'
-                                ], null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('deposito')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
-                            </div> 
+                            <div class="col-md-2 form-group">
+                                <label>Serie</label>
+                                <input type="text" class="form-control" name="serie" id="serie">
+                            </div> --}}
+                            <div class="col-md-2 form-group">
+                                <label>Cant. Minima</label>
+                                <input type="number" class="form-control" id="minimocantidad" name="minimocantidad" required>
+                            </div>
+                            <div class="col-md-2 form-group">
+                                <label>Stock Inicial</label>
+                                <input type="number" class="form-control" id="stockinicial" name="stockinicial" required>
+                            </div>
+                            <div class="col-md-2 form-group">
+                                <label>Stock Actual</label>
+                                <input type="number" class="form-control" id="stockactual" name="stockactual" required>
+                            </div>
                         </div>
-
                         <div class="row">
-                            <div class="form-group col-lg-4">
-                                {!! Form::label('stockinicial', 'Stock inicial:') !!}
-                                {!! Form::text('stockinicial', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('stockinicial')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                                @enderror
+                            <div class="col-md-2 form-group">
+                                <label>Presentación</label>
+                                <input type="text" class="form-control" id="presentacion" name="presentacion">
                             </div>
-                            <div class="form-group col-lg-4">
-                                {!! Form::label('stockactual', 'Stock actual:') !!}
-                                {!! Form::text('stockactual', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('stockactual')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                                @enderror
+                            <div class="col-md-2 form-group">
+                                <label>Unidades</label>
+                                <input type="number" class="form-control" id="unidades" name="unidades" required>
                             </div>
-                            <div class="form-group col-lg-4">
-                                {!! Form::label('precio', 'Precio:') !!}
-                                <div class="input-group">
-                                    {!! Form::text('precio', null, ['class' => 'form-control', 'id' => 'precio', 'placeholder' => '']) !!}
-                                    <div class="input-group-append">
-                                        <span class="input-group-text" id="basic-addon2">Bs.</span>
-                                    </div>
-                                </div>
-                                @error('precio')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
+                            <div class="col-md-2 form-group"> 
+                                <label>Cantidad</label>
+                                <input type="number" class="form-control" id="cantidad" name="cantidad" required>
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label>Precio Total</label>
+                                <input type="number" step="0.01" class="form-control" id="precio" name="precio" required>
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label>Precio Unitario</label>
+                                <input type="number" step="0.01" class="form-control" id="preciounitario" name="preciounitario" required readonly>
                             </div>
                         </div>
-                        {!! Form::submit('REGISTRAR PRODUCTO', ['class' => 'btn btn-outline-secondary']) !!}
+                            
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function() {
+                                const cantidadInput = document.getElementById("cantidad");
+                                const precioTotalInput = document.getElementById("precio");
+                                const precioUnitarioInput = document.getElementById("preciounitario");
+                            
+                                function calcularPrecioUnitario() {
+                                    const cantidad = parseFloat(cantidadInput.value) || 0;
+                                    const precioTotal = parseFloat(precioTotalInput.value) || 0;
+                                    
+                                    if (cantidad > 0) {
+                                        precioUnitarioInput.value = (precioTotal / cantidad).toFixed(2);
+                                    } else {
+                                        precioUnitarioInput.value = "";
+                                    }
+                                }
+                            
+                                cantidadInput.addEventListener("input", calcularPrecioUnitario);
+                                precioTotalInput.addEventListener("input", calcularPrecioUnitario);
+                            });
+                        </script>
+                        {!! Form::submit('REGISTRAR PRODUCTO', ['class' => 'btn btn-sm btn-outline-secondary']) !!}
                     {!! Form::close() !!}
                 </div>
             </div>
         </div>
     </div>
 @endsection
-
-@section('css')
-<link rel="styleheet" href="/css/admin_custom.css">
-<style>
-    h1, th {
-        color:#000000; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-        }
-
-    .btn-crear {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 10px 20px;
-        }
-
-    .btn-crear:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-</style>
-<style>
-    .color-box {
-        width: 35px;
-        height: 35px;
-        margin: 5px;
-        border: 2px solid #ddd;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-    .color-box:hover {
-        transform: scale(1.1);
-    }
-    .selected {
-        border: 3px solid black !important;
-    }
-    .color-selector {
-        width: 50px;
-        height: 38px;
-        border: 2px solid #ddd;
-        text-align: center;
-        padding: 0;
-        font-size: 1.2rem;
-    }
-</style>
-@stop
 
 @section('js')
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -267,6 +272,165 @@
     });
 </script>
 
+{{-- RELLENAR SEGUN LO SELECCIONADO --}}
+<script>
+    const opciones = {
+        "ALMACEN": {
+            "seccion": ["ESCRITORIO", "COCINA", "USO MEDICO", "PROMOCIONAL", "LIMPIEZA", "CONSTRUCCION Y FERRETERIA", "INSUMOS DECORATIVOS"],
+            "unidad_medida": {
+                "ESCRITORIO": ["BOLSA", "CAJA", "PAQUETE", "UNIDADES"],
+                "COCINA": ["UNIDADES", "BOLSA"],
+                "USO MEDICO": ["CAJA", "UNIDADES"],
+                "PROMOCIONAL": ["UNIDADES"],
+                "LIMPIEZA": ["CAJA", "PAQUETE", "UNIDADES"],
+                "CONSTRUCCION Y FERRETERIA": ["BOLSA", "CAJA", "ROLLO", "UNIDADES"],
+                "INSUMOS DECORATIVOS": ["UNIDADES"]
+            },
+            "materia_prima": {
+                "ESCRITORIO": ["ACRILICO", "CARBONICO", "CARTON", "GOMA", "LIQUIDO", "MADERA", "METALICO", "PAPEL", "PLASTICO", "TELA", "VENESTA"],
+                "COCINA": ["PLASTICO", "MADERA", "PAPEL"],
+                "USO MEDICO": ["FIBRA", "GEL", "GOMA", "ISOPROPILICO", "LATEX", "LIQUIDO", "MADERA", "METALICO", "PAPEL", "PLASTICO", "POLIPROPILENO", "ROLLO", "TELA", "TERMICO"],
+                "PROMOCIONAL": ["ALGODÓN", "CARTULINA", "CERAMICA", "LONA", "METALICO", "PAPEL", "PLASTICO", "POLIESTER", "PORCELANA", "PVC"],
+                "LIMPIEZA": ["GOMA", "INTERFOLIADAS", "LIQUIDO", "MADERA", "MICROFIBRA", "PAPEL", "PLASTICO", "POLVO", "TELA"],
+                "CONSTRUCCION Y FERRETERIA": ["ACRILICA", "ALUMINIO", "CARTULINA", "CAUCHO", "CERAMICA", "COBRE", "CONCRETO", "CUERO", "GOMA", "LATA", "LINO", "LIQUIDO", "MADERA", "MALLA", "METALICO", "PLASTICO", "POLIESTER", "PORCELANA", "PVC", "SINTETICO", "TELA", "YESO"],
+                "INSUMOS DECORATIVOS": ["MADERA"]
+            },
+            "marca": {
+                "ESCRITORIO": ["ACRICOLOR", "ARTESCO", "BWHITE", "CASIO", "CHRISTMAS HOUSE", "CONDOR", "ENERGIZER", "FIVE STICK", "FRINGE CURTAIN", "ISOFIT", "MADISON", "MAXOFFICE", "MERTETTO", "MILCAR", "MONAMI","PAPER ONE", "RICOH"],
+                "COCINA": ["SCOTT", "COPOBRAS", "BELEN"],
+                "USO MEDICO": ["A&E", "BIOHIT", "BIOPLAST", "BRAUN", "BTL", "CAPULLO", "CUREBAND", "DRENACATH", "EARNIZ", "EKOSUR"],
+                "PROMOCIONAL": ["S/M"],
+                "LIMPIEZA": ["ARCHER", "ARISTECH", "ARMORALL", "BELEN", "BRISTAR", "CLIN", "ELITE", "HIGIA", "LIZ"],
+                "CONSTRUCCION Y FERRETERIA": ["ABRO", "ADHEPLAS", "AMERICAN WORKS", "ARATY", "ARCELOR MITTAL", "NXL"],
+                "INSUMOS DECORATIVOS": ["S/M"]
+            }
+        },
+        "ACTIVO FIJO": {
+            "seccion": [
+                "ALMACEN","GERENCIA GENERAL","GERENCIA FINANCIERA", "GERENCIA COMERCIAL Y FINANCIERA", "SALA DE REUNIONES", "ZONA DE MONITOREO", "BAÑO GERENCIAL",
+                "SALA DE ESPERA PLANTA ALTA", "COCINA", "BAÑO PLANTA ALTA", "OFICINA 1 PLANTA ALTA", "CONSULTORIO 1 PLANTA ALTA",
+                "CONSULTORIO 2 PLANTA ALTA", "CONSULTORIO 3 PLANTA ALTA", "CONSULTORIO 4 PLANTA ALTA", "CONSULTORIO 5 PLANTA ALTA",
+                "CONSULTORIO 6 PLANTA BAJA", "CONSULTORIO 7 PLANTA BAJA", "CONSULTORIO 8 PLANTA BAJA", "CONSULTORIO 9 PLANTA BAJA",
+                "OFICINA 2 PLANTA BAJA", "OFICINA 3 PLANTA BAJA", "SALA DE ESPERA PLANTA BAJA", "SALA DE ATENCION AL CLIENTE", "SALA DE ESPERA", "SALA DE REUNIONES",
+                "BAÑO PLANTA BAJA", "BAÑO CONSULTORIO 7 PLANTA BAJA", "DEPOSITO PRINCIPAL", "DEPOSITO SECUNDARIO",
+                "PASILLO PLANTA ALTA", "PASILLO PLANTA BAJA", "GRADAS", "ENTRADA PRINCIPAL", "VISTA FRONTAL",
+                "ADMINISTRACION","AUDIOMETRIA","CAJA","ELECTROCARDIOGRAMA","ERGOMETRIA","ESPIROMETRIA","FISIOTERAPIA-MEDICINA LABORAL","LABORATORIO",
+                "OFICINA ADMINISTRATIVA","OFTALMOLOGIA","PRESTACIONES 1","PRESTACIONES 2","PROGRAMACION","PSICOLOGIA","SISTEMAS"
+            ],
+            "unidad_medida": ["UNIDADES"],
+            "materia_prima": ["CONCRETO", "GOMA", "MADERA", "METALICO", "PLASTICO", "POLIESTER"],
+            "marca": ["3D OPTICAL MOUSE", "AC-DELL", "ARRIX", "BIZLINK", "BREATHALYZER", "CONTEC", "DAHUA", "DIMAX", "DYMO", "ECCOSUR", "RICOH"]
+        }
+    };
+
+    document.getElementById("tipo_inventario").addEventListener("change", function () {
+        const tipo = this.value;
+        const seccion = document.getElementById("seccion");
+        const materia = document.getElementById("materia_prima");
+        const unidad = document.getElementById("unidad_medida");
+        const marca = document.getElementById("marca");
+        const modelo = document.getElementById("modelo");
+
+        seccion.innerHTML = '<option value="" disabled selected></option>';
+        materia.innerHTML = '<option value="" disabled selected></option>';
+        unidad.innerHTML = '<option value="" disabled selected></option>';
+        marca.innerHTML = '<option value="" disabled selected></option>';
+
+        if (tipo in opciones) {
+            opciones[tipo].seccion.forEach(s => {
+                seccion.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+
+            opciones[tipo].materia_prima.forEach(m => {
+                materia.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+
+            opciones[tipo].unidad_medida.forEach(u => {
+                unidad.innerHTML += `<option value="${u}">${u}</option>`;
+            });
+
+            opciones[tipo].marca.forEach(m => {
+                marca.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+
+            if (tipo === "ACTIVO FIJO") {
+                modelo.disabled = false;
+                modelo.style.display = "block";
+            } else {
+                modelo.disabled = true;
+                modelo.style.display = "none";
+            }
+        }
+    });
+
+    document.getElementById("seccion").addEventListener("change", function () {
+        const tipo = document.getElementById("tipo_inventario").value;
+        const seccionSeleccionada = this.value;
+        const materia = document.getElementById("materia_prima");
+        const unidad = document.getElementById("unidad_medida");
+        const marca = document.getElementById("marca");
+
+        materia.innerHTML = '<option value="" disabled selected></option>';
+        unidad.innerHTML = '<option value="" disabled selected></option>';
+        marca.innerHTML = '<option value="" disabled selected></option>';
+
+        if (tipo === "ALMACEN") {
+            const materias = opciones[tipo].materia_prima[seccionSeleccionada] || opciones[tipo].materia_prima["default"];
+            const unidades = opciones[tipo].unidad_medida[seccionSeleccionada] || opciones[tipo].unidad_medida["default"];
+            const marcas = opciones[tipo].marca[seccionSeleccionada] || opciones[tipo].marca["default"];
+
+            materias.forEach(m => {
+                materia.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+
+            unidades.forEach(u => {
+                unidad.innerHTML += `<option value="${u}">${u}</option>`;
+            });
+
+            marcas.forEach(m => {
+                marca.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+        }
+
+        if (tipo === "ACTIVO FIJO" && seccionSeleccionada) {
+            const materias = opciones[tipo].materia_prima || [];
+            const unidades = opciones[tipo].unidad_medida || [];
+            const marcas = opciones[tipo].marca || [];
+
+            materias.forEach(m => {
+                materia.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+
+            unidades.forEach(u => {
+                unidad.innerHTML += `<option value="${u}">${u}</option>`;
+            });
+
+            marcas.forEach(m => {
+                marca.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+        }
+    });
+    // Ejecutar automáticamente al cargar la página si ya hay un valor seleccionado
+    window.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("tipo_inventario").dispatchEvent(new Event("change"));
+    });
+
+</script>
+<style>
+    .color-box {
+        width: 35px;
+        height: 35px;
+        margin: 5px;
+        border: 2px solid #ddd;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .color-box:hover {
+        transform: scale(1.1);
+    }
+</style>
+
+{{-- COLORES --}}
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         let colorBoxes = document.querySelectorAll(".color-box");
@@ -301,104 +465,6 @@
                 colorDropdown.style.backgroundColor = selectedColor;
             });
         });
-    });
-</script>
-
-<script>
-    const subsecciones = @json($subsecciones);
-    const materiaprimas = @json($materiaprimas);
-    const marcas = @json($marcas);
-    const unidadmedidas = @json($unidadmedidas);
-    const seccionSelect = document.getElementById('seccion');
-    const subseccionSelect = document.getElementById('subseccion');
-    const materiaprimaSelect = document.getElementById('materiaprima');
-    const marcaSelect = document.getElementById('marca');
-    const unidadmedidaSelect = document.getElementById('unidadmedida');
-    const codigoSubseccionInput = document.getElementById('codigo');
-
-    function updateSubsecciones() {
-        const seccion = seccionSelect.value;
-        subseccionSelect.innerHTML = '<option value=""></option>';
-        codigoSubseccionInput.value = '';
-        if (seccion) {
-            const subseccionesFiltradas = subsecciones.filter(sub => sub.seccion === seccion);
-            subseccionesFiltradas.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub.subseccion;
-                option.textContent = sub.subseccion;
-                subseccionSelect.appendChild(option);
-            });
-        }
-    }
-
-    function updateMateriaprima() {
-        const seccion = seccionSelect.value;
-        materiaprimaSelect.innerHTML = '<option value=""></option>';
-        if (seccion) {
-            const materiaprimasFiltradas = materiaprimas.filter(sub => sub.seccion === seccion);
-            materiaprimasFiltradas.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub.subseccion;
-                option.textContent = sub.subseccion;
-                materiaprimaSelect.appendChild(option);
-            });
-        }
-    }
-
-    function updateMarca() {
-        const seccion = seccionSelect.value;
-        marcaSelect.innerHTML = '<option value=""></option>';
-        if (seccion) {
-            const marcasFiltradas = marcas.filter(sub => sub.seccion === seccion);
-            marcasFiltradas.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub.subseccion;
-                option.textContent = sub.subseccion;
-                marcaSelect.appendChild(option);
-            });
-        }
-    }
-
-    function updateUnidadmedida() {
-        const seccion = seccionSelect.value;
-        unidadmedidaSelect.innerHTML = '<option value=""></option>';
-        if (seccion) {
-            const unidadmedidasFiltradas = unidadmedidas.filter(sub => sub.seccion === seccion);
-            unidadmedidasFiltradas.forEach(sub => {
-                const option = document.createElement('option');
-                option.value = sub.subseccion;
-                option.textContent = sub.subseccion;
-                unidadmedidaSelect.appendChild(option);
-            });
-        }
-    }
-
-    function updateCodigoSubseccion() {
-        const subseccion = subseccionSelect.value;
-        
-        if (subseccion) {
-            const subseccionSeleccionada = subsecciones.find(sub => sub.subseccion === subseccion);
-            if (subseccionSeleccionada) {
-                codigoSubseccionInput.value = subseccionSeleccionada.codigo;
-            }
-        }
-    }
-
-    seccionSelect.addEventListener('change', updateSubsecciones);
-    seccionSelect.addEventListener('change', updateMateriaprima);
-    seccionSelect.addEventListener('change', updateMarca);
-    seccionSelect.addEventListener('change', updateUnidadmedida);
-    subseccionSelect.addEventListener('change', updateCodigoSubseccion);
-</script>
-
-<script>
-    document.getElementById('precio').addEventListener('input', function(e) {
-        let value = e.target.value;
-        value = value.replace(/[^0-9.]/g, '');
-        if (value.split('.').length > 2) {
-            value = value.slice(0, value.lastIndexOf('.'));
-        }
-        e.target.value = value;
     });
 </script>
 @endsection

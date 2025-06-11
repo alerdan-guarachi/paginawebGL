@@ -1,97 +1,122 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Comprobante de Inventario</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-            color: #333;
-            line-height: 1.6;
-        }
+  <meta charset="UTF-8">
+  <title>Comprobante de Inventario</title>
+  <style>
+    @page {
+      size: 80mm;
+      margin: 2mm;
+    }
 
-        .container {
-            width: 75%;
-            margin: 30px auto;
-            background-color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            padding: 40px;
-        }
+    body {
+      font-family: 'Arial', sans-serif;
+      font-size: 10px;
+      width: 80mm;
+      margin: 0 auto;
+      color: #000;
+    }
 
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
+    .container {
+      width: 100%;
+      padding: 0;
+      margin-top: 5mm; /* Bajamos todo el contenido */
+    }
 
-        .header img {
-            width: 200px; /* Aumenté el tamaño del logo */
+    .header {
+      text-align: center;
+      margin-bottom: 5mm;
+    }
 
-        }
+    .header img {
+      max-width: 40mm;
+      height: auto;
+      margin-bottom: 2mm;
+    }
 
-        .header h3 {
-            font-size: 22px; /* Reduje el tamaño del título */
-            color: #2D3E50;
-            margin-bottom: 10px;
-        }
+    .header h3 {
+      font-size: 14px;
+      margin: 2mm 0 1mm;
+      font-weight: bold;
+    }
 
-        .header p {
-            font-size: 14px;
-            color: #7B8C99;
-            margin: 5px 0;
-        }
+    .header p {
+      font-size: 9px;
+      margin: 1mm 0;
+    }
 
-        .details {
-            font-size: 15px;
-            margin-bottom: 40px;
-        }
+    .details {
+      text-align: left;
+      font-size: 10px;
+      border-top: 1px dashed #000;
+      border-bottom: 1px dashed #000;
+      padding: 4mm 0;
+      margin: 8mm 0;
+    }
 
-        .details table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+    .details p {
+      margin: 2mm 0;
+      padding-left: 5mm; /* margen interno izquierdo bonito */
+    }
 
-        .details th, .details td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 2px solid #eee;
-        }
+    .details .label {
+      font-weight: bold;
+    }
 
-        .details th {
-            background-color: #F9FAFB;
-            color: #2D3E50;
-            font-weight: bold;
-        }
+    .signature {
+      margin-top: 15mm; /* más espacio para la firma */
+      text-align: center;
+    }
 
-        .details td {
-            color: #555;
-        }
-    </style>
+    .signature p {
+      margin: 6mm 0 2mm;
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .signature .line {
+      border-top: 1px solid #000;
+      width: 50mm;
+      margin: 0 auto;
+      padding-top: 2mm;
+      margin-bottom: 2mm;
+    }
+
+    .print-button {
+      display: none;
+    }
+
+    @media print {
+      .print-button {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<div class="container">
+  <div class="container">
     <div class="header">
-        <img src="{{ asset('img/logo.png') }}" alt="Logo">
-        <h3>COMPROBANTE N° {{ $solicitud->id }}</h3>
-        <p><strong>Ciudad:</strong> {{ $solicitud->sucursal }}</p>
-        <p><strong>Fecha:</strong> {{ $fecha }}</p>
+      {{-- <img src="{{ public_path('img/logo3.png') }}" alt="Logo"> --}}
+
+      <h3>COMPROBANTE N° {{ $solicitud->id }}</h3>
+      <p><span class="label">Ciudad:</span> {{ $solicitud->sucursal }}</p>
+      <p><span class="label">Fecha:</span> {{ $fecha }}</p>
     </div>
 
     <div class="details">
-        <table>
-            <tr><th>Entregado por:</th><td>{{ $usuarioNombre }}</td></tr>
-            <tr><th>Solicitante:</th><td>{{ $solicitud->usuariosolicitante }}</td></tr>
-            <tr><th>Código del Producto:</th><td>{{ $solicitud->codigoproducto }}</td></tr>
-            <tr><th>Producto Entregado:</th><td>{{ $solicitud->productoofertado }}</td></tr>
-            <tr><th>Cantidad Entregada:</th><td>{{ $cantidadOfertada }} {{ $producto->unidadmedida }}</td></tr>
-        </table>
+      <p><span class="label">Entregado por:</span> {{ $usuarioNombre }}</p>
+      <p><span class="label">Solicitante:</span> {{ $solicitud->usuariosolicitante }}</p>
+      <p><span class="label">Código de Producto:</span> {{ $solicitud->codigoproducto }}</p>
+      <p><span class="label">Producto Entregado:</span> {{ $solicitud->productoofertado }}</p>
+      <p><span class="label">Cantidad Entregada:</span> {{ $cantidadOfertada }}{{--  {{ $producto->unidadmedida }} --}}</p>
     </div>
-</div>
 
+    <div class="signature">
+      <div class="line"></div>
+      <p style="margin-top: -10px;">FIRMA RECEPTOR</p>
+    </div>
+
+    <button class="print-button" onclick="window.print()">Imprimir Comprobante</button>
+  </div>
 </body>
 </html>

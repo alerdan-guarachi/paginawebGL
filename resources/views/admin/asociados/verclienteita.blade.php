@@ -273,6 +273,8 @@
                         </div>
                         @endcan
 
+                        @can('admin.asociados.crearbateriaclienteita')
+
                         @if ($tieneContactos)
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO">
@@ -289,6 +291,7 @@
                             </div>
                         @endif
 
+                        @endcan
                         @can('admin.asociados.generarchecklistclienteita')
                             @if ($tieneTramites)
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
@@ -309,6 +312,8 @@
                     </div>
                 </div>
                 
+                @can('admin.asociados.crearbateriaclienteita')
+
                 <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
                     <div style="text-align: center; padding: 1.5px;">
                         <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
@@ -417,6 +422,7 @@
                         <strong  style="color: #c47a35; font-size:20px;">OTROS</strong>
                     </div>
                     <div class="row text-center">
+                        
                         @can('admin.asociados.editarclienteita')
                         <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                             <a href="{{ route('admin.asociados.editarclienteita', $cliente) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
@@ -441,6 +447,7 @@
                         </div>
                     </div>
                 </div>
+                @endcan
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-no" data-dismiss="modal">Cerrar</button>
@@ -783,27 +790,24 @@
 
                                 selectFechas.addEventListener('change', function () {
                                     const fechaSeleccionada = this.value;
-
                                     const tramitesPorFecha = JSON.parse(this.getAttribute('data-tramites'));
+
                                     if (tramitesPorFecha[fechaSeleccionada]) {
                                         const tramiteAutorellenado = tramitesPorFecha[fechaSeleccionada];
                                         tramiteInput.value = tramiteAutorellenado;
 
                                         if (tramiteAutorellenado === 'AUDITORIA MEDICA' || tramiteAutorellenado === 'INVALIDEZ') {
-                                            precioInput.value = '2100.00'; // "AUDITORIA MEDICA" y "INVALIDEZ" siempre son 2100.00
-                                        } else if (tramiteAutorellenado === 'APELACION' || tramiteAutorellenado === 'SEGUNDA SOLICITUD') {
-                                            // Si el cliente tiene "INVALIDEZ"
-                                            if (clienteConInvalidez) {
-                                                precioInput.value = '1100.00';
-                                            } else {
-                                                precioInput.value = '2100.00'; // Si no tiene "INVALIDEZ"
-                                            }
+                                            precioInput.value = '2100.00';
+                                        } else if (tramiteAutorellenado === 'APELACION') {
+                                            precioInput.value = '1100.00';
+                                        } else if (tramiteAutorellenado === 'SEGUNDA SOLICITUD') {
+                                            precioInput.value = clienteConInvalidez ? '1100.00' : '2100.00';
                                         } else {
-                                            precioInput.value = ''; // Limpia si no coincide
+                                            precioInput.value = '1100.00';
                                         }
                                     } else {
                                         tramiteInput.value = '';
-                                        precioInput.value = ''; // Limpia si no hay trámite asociado
+                                        precioInput.value = '';
                                     }
                                 });
 
@@ -1139,7 +1143,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -1150,7 +1154,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -1163,7 +1167,7 @@
         color: #e0752e;
         border-color: #e0752e;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
 
     }
     .btn-auditoriamedica:hover {

@@ -43,63 +43,78 @@
                     </div>
                 </div> --}}
                 <div class="col-lg-4 col-md-6 col-sm-6 col-12">
-                    <div class="card card-stats bg-color-3">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5 col-md-4">
-                                    <div class="icon-big text-center icon-warning">
-                                        <i class="fas fa-user fa-5x text-white"></i>
+                    <a href="{{ route('admin.asociados.listadoclienteita',6) }}" style="text-decoration: none; color: inherit;">
+                        <div class="card card-stats bg-color-3 zoom-card-ita">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-5 col-md-4">
+                                        <div class="icon-big text-center icon-warning">
+                                            <i class="fas fa-users fa-5x text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 col-md-8">
+                                        <div class="numbers">
+                                            <h3>CLIENTES<br>ITA</h3>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-7 col-md-8">
-                                    <div class="numbers">
-                                        <h3>CLIENTES<br>ITA</h3>
-                                    </div>
-                                </div>
+                                <h4 class="total-bottom-right">Total: {{ $clientesITACount }}</h4>
                             </div>
-                            <h4 class="total-bottom-right">Total: {{ $clientesITACount }}</h4>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 <div class="col-lg-4 col-md-6 col-sm-6 col-12">
-                    <div class="card card-stats bg-color-4">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5 col-md-4">
-                                    <div class="icon-big text-center icon-warning">
-                                        <i class="fas fa-user fa-5x text-white"></i>
+                    <a href="{{ route('admin.asociados.listadoclienteauditoria',3) }}" style="text-decoration: none; color: inherit;">
+                        <div class="card card-stats bg-color-4 zoom-card-ita">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-5 col-md-4">
+                                        <div class="icon-big text-center icon-warning">
+                                            <i class="fas fa-users fa-5x text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 col-md-8">
+                                        <div class="numbers">
+                                            <h3>CLIENTES<br>AUDITORIA</h3>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-7 col-md-8">
-                                    <div class="numbers">
-                                        <h3>CLIENTES<br>AUDITORIAS</h3>
-                                    </div>
-                                </div>
+                                <h4 class="total-bottom-right">Total: {{ $clientesAuditoriasCount }}</h4>
                             </div>
-                            <h4 class="total-bottom-right">Total: {{ $clientesAuditoriasCount }}</h4>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 <div class="col-lg-4 col-md-6 col-sm-6 col-12">
-                    <div class="card card-stats bg-color-1">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-5 col-md-4">
-                                    <div class="icon-big text-center icon-warning">
-                                        <i class="fas fa-user fa-5x text-white"></i>
+                    <a href="{{ route('admin.asociados.listadoclientecomun',3) }}" style="text-decoration: none; color: inherit;">
+                        <div class="card card-stats bg-color-1 zoom-card-ita">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-5 col-md-4">
+                                        <div class="icon-big text-center icon-warning">
+                                            <i class="fas fa-users fa-5x text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div class="col-7 col-md-8">
+                                        <div class="numbers">
+                                            <h3>CLIENTES<br>COMUNES</h3>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="col-7 col-md-8">
-                                    <div class="numbers">
-                                        <h3>CLIENTES<br>COMUNES</h3>
-                                    </div>
-                                </div>
+                                <h4 class="total-bottom-right">Total: {{ $clientesComunesCount }}</h4>
                             </div>
-                            <h4 class="total-bottom-right">Total: {{ $clientesComunesCount }}</h4>
                         </div>
-                    </div>
+                    </a>
                 </div>
                 <style>
+                    .zoom-card-ita {
+                        transition: transform 0.3s ease;
+                         box-shadow: 0 10px 15px rgba(0, 0, 0, 0.25); /* sombra permanente */
+                    }
+                    .zoom-card-ita:hover {
+                        transform: scale(1.05);
+                        z-index: 2;
+                        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+                    }
                     .card {
                         min-height: 150px;
                         position: relative;
@@ -134,7 +149,7 @@
         @endcan
         @can('admin.mensajes.index')
         @if($mensajes->isNotEmpty())
-        <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+        {{-- <div class="col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="card card-stats bg-color-5">
                 <div class="card-body">
                     <div class="novedadtitulo">MENSAJES</div>
@@ -144,7 +159,6 @@
                                 <th class="novedad">Encargado</th>
                                 <th class="novedad">Destino</th>
                                 <th class="novedad">Asunto</th>
-                                {{-- <th class="novedad">Fecha y Hora</th> --}}
                                 <th class="novedad">Ver</th>
                                 <th class="novedad">ESTADO</th>
                             </tr>
@@ -155,7 +169,6 @@
                                     <td>{{ $data['mensaje']->usuarioregistro }}</td>
                                     <td>{{ $data['mensaje']->usuariodestino }}</td>
                                     <td>{{ $data['mensaje']->titulo }}</td>
-                                    {{-- <td>{{ $data['mensaje']->created_at->format('Y-m-d H:i:s') }}</td> --}}
                                     <td>
                                         <button type="button" class="btn btn-ver btn-sm" data-toggle="modal" data-target="#modalMensaje{{ $titulo }}">
                                             <i class="fas fa-eye"></i>
@@ -170,7 +183,6 @@
                                     </td>
                                 </tr>
         
-                                <!-- Modal para mostrar todos los mensajes del título -->
                                 <div class="modal fade" id="modalMensaje{{ $titulo }}" tabindex="-1" role="dialog" aria-labelledby="modalMensajeLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-lg" role="document">
                                         <div class="modal-content">
@@ -181,7 +193,6 @@
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                <!-- Mostrar toda la conversación -->
                                                 <div class="message-container" id="messageContainer{{ $titulo }}">
                                                     @foreach ($data['mensajes'] as $mensajeConversacion)
                                                         <div class="message {{ $mensajeConversacion->usuarioregistro == Auth::user()->name ? 'message-sent' : 'message-received' }}">
@@ -192,8 +203,6 @@
                                                         <hr>
                                                     @endforeach
                                                 </div>
-                                            
-                                                <!-- Campo de respuesta y botón de enviar -->
                                                 <form action="{{ route('admin.home.store') }}" method="POST">
                                                     @csrf
                                                     <input type="hidden" name="asunto" value="{{ $titulo }}">
@@ -214,11 +223,8 @@
                                 </div>
         
                                 <script>
-                                    // Asegúrate de que el script se ejecute después de que el modal se haya mostrado
                                     $('#modalMensaje{{ $titulo }}').on('shown.bs.modal', function () {
-                                        // Selecciona el contenedor de mensajes para el modal actual
                                         var messageContainer = document.getElementById('messageContainer{{ $titulo }}');
-                                        // Desplaza el contenedor de mensajes hacia el final
                                         messageContainer.scrollTop = messageContainer.scrollHeight;
                                     });
                                 </script>
@@ -227,9 +233,105 @@
                     </table>
                 </div>
             </div>
+        </div> --}}
+        <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+            <div class="card card-stats bg-color-5">
+                <div class="card-body">
+                    <div class="novedadtitulo">MENSAJES</div>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th class="novedad">Emisor</th>
+                                <th class="novedad">Receptor</th>
+                                <th class="novedad">Asunto</th>
+                                <th class="novedad">Ver</th>
+                                <th class="novedad">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($mensajesPrincipales as $titulo => $data)
+                                <tr>
+                                    <td>{{ $data['mensaje']->usuarioregistro }}</td>
+                                    <td>{{ $data['mensaje']->usuariodestino }}</td>
+                                    <td>{{ $data['mensaje']->titulo }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-ver2 btn-sm" data-toggle="modal" data-target="#modalMensaje{{ Str::slug($titulo) }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        @if ($data['esUltimoMensajeParaUsuario'])
+                                            <span class="badge badge-success">NUEVO</span>
+                                        @else
+                                            <span class="badge badge-warning">ENVIADO</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- MODALES FUERA DE LA TABLA --}}
+            @foreach ($mensajesPrincipales as $titulo => $data)
+                <div class="modal fade" id="modalMensaje{{ Str::slug($titulo) }}" tabindex="-1" role="dialog" aria-labelledby="modalMensajeLabel{{ Str::slug($titulo) }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="titulo" id="modalMensajeLabel{{ Str::slug($titulo) }}">{{ $titulo }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="card" style="background-color: #f0f0f0">
+                                    <div class="card-body">
+                                        <div class="message-container" id="messageContainer{{ Str::slug($titulo) }}">
+                                            @foreach ($data['mensajes'] as $mensajeConversacion)
+                                                <div class="message {{ $mensajeConversacion->usuarioregistro == Auth::user()->name ? 'message-sent' : 'message-received' }}">
+                                                    <strong style="font-size: 12px; margin-bottom: -4px;">{{ $mensajeConversacion->usuarioregistro }}</strong>
+                                                    <p style="font-size: 17px; margin-bottom: -4px; line-height: 1.2;">{{ $mensajeConversacion->mensaje }}</p>
+                                                    <small class="text-muted" style="font-size: 12px;">{{ $mensajeConversacion->created_at->format('H:i:s') }}</small>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                                <form action="{{ route('admin.home.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="asunto" value="{{ $titulo }}">
+                                    <input type="hidden" name="usuariodestino" value="{{ $data['mensaje']->usuarioregistro }}">
+                                    <input type="hidden" name="usuarioregistro" value="{{ Auth::user()->name }}">
+                                    <input type="hidden" name="usuarioid" value="{{ Auth::user()->id }}">
+                                    
+                                    <div class="form-group" style="display: flex; align-items: center; gap: 8px; background-color: #f0f0f0; padding: 8px; border-radius: 6px;">
+                                        <textarea name="respuesta" class="form-control" rows="1" placeholder="ESCRIBIR RESPUESTA..." required style="flex-grow: 1; resize: none;"></textarea>
+                                        
+                                        <button type="submit" class="btn btn-whatsapp" style="padding: 8px 12px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
-        
-        @else
+
+        {{-- SCRIPT para hacer scroll en el modal --}}
+        <script>
+            @foreach ($mensajesPrincipales as $titulo => $data)
+                $('#modalMensaje{{ Str::slug($titulo) }}').on('shown.bs.modal', function () {
+                    var messageContainer = document.getElementById('messageContainer{{ Str::slug($titulo) }}');
+                    if(messageContainer) {
+                        messageContainer.scrollTop = messageContainer.scrollHeight;
+                    }
+                });
+            @endforeach
+        </script>
+
         @endif
         @endcan
 
@@ -239,11 +341,11 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Cliente</th>
-                        <th>Acciones</th>
-                        <th>Proveedor</th>
-                        <th>Fecha asignada</th>
-                        <th>Hora asignada</th>
+                        <th>Nombre_Cliente</th>
+                        <th>Estudio/Especialidad</th>
+                        <th>Proveedor_Asignado</th>
+                        <th>Fecha_Asignada</th>
+                        <th>Hora_Asignada</th>
                         <th>Celular</th>
                         {{-- <th>Estado</th> --}}
                     </tr>
@@ -269,13 +371,6 @@
                             <td>{{ $programacionclienteauditoria->fechaasignada }}</td>
                             <td>{{ $programacionclienteauditoria->horadesde }} - {{ $programacionclienteauditoria->horahasta }}</td>
                             <td>{{ $celular }}</td>
-                            {{-- <td width="10px">
-                                @if(in_array($programacionclienteauditoria->accionnombre, $estadoRegistradosAuditoria))
-                                    <i class="fas fa-check-circle fa-2x text-success"></i>
-                                @else
-                                    <i class="fas fa-times-circle fa-2x text-danger"></i>
-                                @endif
-                            </td> --}}
                             <td width="10px">
                                 <abbr title="Recordar">
                                     <a class="btn btn-sm btn-whatsapp @if(in_array($programacionclienteauditoria->accionnombre, $estadoRegistradosAuditoria)) disabled @endif" 
@@ -311,13 +406,6 @@
                             <td>{{ $programacionclientecomun->fechaasignada }}</td>
                             <td>{{ $programacionclientecomun->horadesde }} - {{ $programacionclientecomun->horahasta }}</td>
                             <td>{{ $celular }}</td>
-                            {{-- <td width="10px">
-                                @if(in_array($programacionclientecomun->accionnombre, $estadoRegistradosComun))
-                                    <i class="fas fa-check-circle fa-2x text-success"></i>
-                                @else
-                                    <i class="fas fa-times-circle fa-2x text-danger"></i>
-                                @endif
-                            </td> --}}
                             <td width="10px">
                                 <abbr title="Recordar">
                                     <a class="btn btn-sm btn-whatsapp @if(in_array($programacionclientecomun->accionnombre, $estadoRegistradosComun)) disabled @endif" 
@@ -332,6 +420,7 @@
                             </td>
                         </tr>
                     @endforeach
+
                     @foreach($programacionclienteitas as $programacionclienteita)
                         <?php
                         $clienteIta = $programacionclienteita->clienteIta;
@@ -352,13 +441,6 @@
                             <td>{{ $programacionclienteita->fechaasignada }}</td>
                             <td>{{ $programacionclienteita->horadesde }} - {{ $programacionclienteita->horahasta }}</td>
                             <td>{{ $celular }}</td>
-                            {{-- <td width="10px">
-                                @if(in_array($programacionclienteita->accionnombre, $estadoRegistradosIta))
-                                    <i class="fas fa-check-circle fa-2x text-success"></i>
-                                @else
-                                    <i class="fas fa-times-circle fa-2x text-danger"></i>
-                                @endif
-                            </td> --}}
                             <td width="10px">
                                 <abbr title="Recordar">
                                     <a class="btn btn-sm btn-whatsapp @if(in_array($programacionclienteita->accionnombre, $estadoRegistradosIta)) disabled @endif" 
@@ -373,6 +455,7 @@
                             </td>
                         </tr>
                     @endforeach 
+                    
                     @foreach($programacionclientebancos as $programacionclientebanco)
                         <?php
                         $clienteBanco = $programacionclientebanco->clienteBanco;
@@ -393,13 +476,6 @@
                             <td>{{ $programacionclientebanco->fechaasignada }}</td>
                             <td>{{ $programacionclientebanco->horadesde }} - {{ $programacionclientebanco->horahasta }}</td>
                             <td>{{ $celular }}</td>
-                            {{-- <td width="10px">
-                                @if(in_array($programacionclientebanco->accionnombre, $estadoRegistradosBanco))
-                                    <i class="fas fa-check-circle fa-2x text-success"></i>
-                                @else
-                                    <i class="fas fa-times-circle fa-2x text-danger"></i>
-                                @endif
-                            </td> --}}
                             <td width="10px">
                                 <abbr title="Recordar">
                                     <a class="btn btn-sm btn-whatsapp @if(in_array($programacionclientebanco->accionnombre, $estadoRegistradosBanco)) disabled @endif" 
@@ -414,7 +490,6 @@
                             </td>
                         </tr>
                     @endforeach
-                    
                 </tbody>
             </table>
             @error('accion')
@@ -462,7 +537,6 @@
 @endif
 
 <style>
-    /* Diseño limpio y elegante con tonos más suaves */
     .custom-card {
         background: linear-gradient(to bottom, #faf9f4, #f5f1e8);
         border-radius: 15px;
@@ -511,6 +585,20 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .table td {
+        padding: 5px 10px;
+        }
+    td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .truncar {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
     .modal-body {
         display: flex;
         flex-direction: column;
@@ -518,7 +606,7 @@
     }
 
     .message-container {
-        max-height: 350px; /* Ajusta el valor según tus necesidades */
+        max-height: 450px; /* Ajusta el valor según tus necesidades */
         overflow-y: auto; /* Permite el desplazamiento vertical */
         margin-bottom: 10px; /* Espacio entre los mensajes y el formulario */
     }
@@ -532,21 +620,27 @@
     }
 
     .message-received {
-        background-color: #e2ffde;
+        background-color: #eefced;
         color: #000000;
         align-self: flex-start;
         margin-left: 0;
         margin-right: auto;
         text-align: left;
+        border: 2px solid #92df8e; /* Aquí agregas el borde */
+    border-radius: 5px; /* Opcional para bordes redondeados */
+    padding: 8px; /* Opcional para que el contenido no quede pegado al borde */
     }
 
     .message-sent {
-        background-color: #f1f1f1;
+        background-color: #fef9ed;
         color: #000000;
         align-self: flex-end;
         margin-left: auto;
         margin-right: 0;
         text-align: right;
+        border: 2px solid #efca74; /* Aquí agregas el borde */
+    border-radius: 5px; /* Opcional para bordes redondeados */
+    padding: 8px; /* Opcional para que el contenido no quede pegado al borde */
     }
 
     .message strong {
@@ -578,6 +672,16 @@
         }
     .btn-ver:hover {
         background-color: #94c93b;
+        color: #ffffff;
+        }
+        .btn-ver2 {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        }
+    .btn-ver2:hover {
+        background-color: #faa625;
         color: #ffffff;
         }
     .titulo {

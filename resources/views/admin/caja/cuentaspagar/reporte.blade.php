@@ -19,10 +19,9 @@
         <thead>
             <tr>
                 <th>Proveedor</th>
-                {{-- <th>ID Cliente</th> --}}
                 <th>Cliente</th>
-                <th>Fecha Batería</th>
                 <th>Estudio/Especialidad</th>
+                <th>Fecha_Prog</th>
                 <th>Pago</th>
                 <th>Informe</th>
                 <th>Factura</th>
@@ -31,15 +30,31 @@
         <tbody>
             @foreach ($result as $item)
                 @foreach ($item['acciones'] as $accion)
-                    @if (!is_null($accion['informedocumentacion']) && is_null($accion['pagoservicioinforme']))
+                    @if (
+                        !is_null($accion['fechaprogramacion']) &&
+                        is_null($accion['pagoservicioinforme']) &&
+                        !is_null($accion['fechaatencionprogramacion']) &&
+                        $accion['accion'] != 'INFORME FINAL'
+                    )
+                
                         <tr>
                             <td>{{ $item['proveedorasignado'] }}</td>
-                            {{-- <td>{{ $accion['id'] }}</td> --}}
                             <td>{{ $accion['clienteitanombre'] }}{{ $accion['clienteauditorianombre'] }}{{ $accion['clientecomunnombre'] }}</td>
-                            <td>{{ $accion['fechabateria'] }}</td>
-                            <td>{{ $accion['accionnombre'] }}</td>
+                            <td>{{ $accion['accion'] }}</td>
+                            <td>{{ $accion['fechaprogramacion'] }}</td>
                             <td>{{ $accion['preciocompra'] }}</td>
                             <td>{{ $accion['informedocumentacion'] ?? 'Pendiente' }}</td>
+                            <td>{{ $accion['nrofacturaprog'] ?? 'Pendiente' }}</td>
+                        </tr>
+                    @endif
+                    @if (is_null($accion['pagoservicioinformefinal']) && $accion['accion'] == 'INFORME FINAL')
+                        <tr>
+                            <td>{{ $item['proveedorasignado'] }}</td>
+                            <td>{{ $accion['clienteitanombre'] }}{{ $accion['clienteauditorianombre'] }}{{ $accion['clientecomunnombre'] }}</td>
+                            <td>{{ $accion['accion'] }}</td>
+                            <td>----------</td>
+                            <td>{{ $accion['preciocompra'] }}</td>
+                            <td>{{ $accion['informedocumentacionfinal'] ?? 'Pendiente' }}</td>
                             <td>{{ $accion['nrofacturaprog'] ?? 'Pendiente' }}</td>
                         </tr>
                     @endif

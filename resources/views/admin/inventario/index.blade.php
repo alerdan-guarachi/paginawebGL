@@ -1,11 +1,6 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn float-right btn-outline-secondary" data-toggle="modal" data-target="#crearProductoModal">
-    CREAR PRODUCTO
-</a>
-
-<!-- Modal -->
 <div class="modal fade" id="crearProductoModal" tabindex="-1" aria-labelledby="crearProductoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -16,15 +11,15 @@
             <div class="modal-body text-center" style="margin-top: 30px;">
                 <div class="row">
                     <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
-                        <button type="button" class="btn btn-custom" style="width: 80%;" onclick="redirectTo('almacen')">
+                        <button type="button" class="btn btn-custom2" style="width: 80%;" onclick="redirectTo('almacen')">
                             <div class="d-flex flex-column align-items-center justify-content-center">
                                 <i class="fas fa-warehouse fa-5x mb-2"></i> 
-                                <span class="h5 mb-0">ALMACÉN</span>
+                                <span class="h5 mb-0">ALMACEN</span>
                             </div>
                         </button>
                     </div>
                     <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
-                        <button type="button" class="btn btn-custom" style="width: 80%;" onclick="redirectTo('activosfijos')">
+                        <button type="button" class="btn btn-custom2" style="width: 80%;" onclick="redirectTo('activosfijos')">
                             <div class="d-flex flex-column align-items-center justify-content-center">
                                 <i class="fas fa-desktop fa-5x mb-2"></i>
                                 <span class="h5 mb-0">ACTIVOS FIJOS</span>
@@ -45,11 +40,89 @@
         }
     }
 </script>
+<!-- Botón para abrir el modal -->
+<a type="button" class="btn float-right btn-outline-secondary btn-sm" data-toggle="modal" data-target="#crearProductoModal">
+    AGREGAR INVENTARIO
+</a>
 <h1>ADMINISTRACION DE INVENTARIO</h1>
 @stop
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/opcionesmultiples.css') }}">
+<style>
+    .table td {
+        padding: 5px 10px;
+    }
+    .btn-registrar {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 20px;
+        }
+    .btn-registrar:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-actualizar {
+        background-color:  #ffffff;
+        color: #e8932b;
+        border-color: #e8932b;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-actualizar:hover {
+        background-color: #e8932b;
+        color: #ffffff;
+        }
+    .truncar {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 180px;
+    }
+    .truncar2 {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+    .btn-verregistros {
+        background-color:  #ffffff;
+        color: #787878;
+        border-color: #787878;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-verregistros:hover {
+        background-color: #787878;
+        color: #ffffff;
+        }
+    .btn-custom2 {
+        background-color:  #ffffff;
+        color: #9d9d9d;
+        border-color: #9d9d9d;
+        border-radius: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+    }
+    .btn-custom2:hover {
+        background-color: #9d9d9d;
+        color: #ffffff;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        transform: scale(1.05);
+    }
+    .btn-custom2:disabled {
+        background-color: #d6d6d6;
+        color: #a0a0a0;
+        cursor: not-allowed;
+    }
+</style>
 @stop
 
 @section('content')
@@ -64,41 +137,28 @@
     </script>
 @endif
 <div class="card">
-    <nav class="navbar float-right">
+    <nav class="navbar float-right" style="margin-top: 10px;">
         <form class="form-inline">
             <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="Nombre del producto" aria-label="Search">
             <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Buscar</button>
         </form>
     </nav>
-        
 
-        <!-- Botones -->
-    {{-- <div id="buttons-container" class="text-center card-body card">
-        <h2 style="margin-top: 30px; margin-bottom: 30px; font-weight: 900; font-size:25px;">ELIGE UN TIPO DE BIENES</h2>
-        <div class="row">
-            <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
-                <button type="button" class="btn btn-custom" style="width: 80%;" onclick="showForm('almacen')">
-                    <div class="d-flex flex-column align-items-center justify-content-center">
-                        <i class="fas fa-warehouse fa-5x mb-2"></i> 
-                        <span class="h5 mb-0">ALMACEN</span>
-                    </div>
-                </button>
-            </div>
-            <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
-                <button type="button" class="btn btn-custom" style="width: 80%;" onclick="showForm('activosfijos')">
-                    <div class="d-flex flex-column align-items-center justify-content-center">
-                        <i class="fas fa-desktop fa-5x mb-2"></i>
-                        <span class="h5 mb-0">ACTIVOS FIJOS</span>
-                    </div>
-                </button>
-            </div>
-        </div>
-    </div> --}}
-
+    {{-- PESTAÑAS DE SECCIONES --}}
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" id="myTabs">
             <li class="nav-item">
-                <a class="nav-link active" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
+                <a class="nav-link active" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
+                    STOCK BAJO
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
+                    PENDIENTES POR INGRESAR
+                </a>
+            </li>   
+            <li class="nav-item">
+                <a class="nav-link" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
                     ALMACEN
                 </a>
             </li>     
@@ -111,60 +171,373 @@
     </div>
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
-            {{-- ALMACEN --}}
-            <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
+            {{-- PENDIENTES POR INGRESAR --}}
+            <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                {{-- <th>ID</th> --}}
-                                <th>Cod.Producto</th>
+                                <th>ID</th>
+                                <th>Cod.</th>
+                                <th>Detalle</th>
+                                <th>Proveedor</th>
+                                <th hidden>Proveedor ID</th>
+                                <th>Cantidad</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($detalleOrdenes as $detalles)
+                                @if($detalles->estado !== 'FINALIZADO' && $detalles->tipoorden === 'ORDEN DE COMPRA')
+                                    <tr>
+                                        <td>{{$detalles->id}}</td>
+                                        <td>{{$detalles->codigo}}</td>
+                                        <td>{{$detalles->detalle}}</td>
+                                        <td>{{$detalles->proveedorid}}</td>
+                                        <td>{{$detalles->proveedornombre}}</td>
+                                        <td>{{$detalles->cantidad}}</td>
+                                        @php
+                                            $productoEnInventario = \App\Models\Inventario::where('codigo', $detalles->codigo)->first();
+                                            $proveedor = \DB::table('proveedoresservicios')->where('id', $detalles->proveedorid)->first();
+                                        @endphp
+                                        <td>
+                                            @if($productoEnInventario)
+                                                <button class="btn btn-sm btn-actualizar" onclick="actualizarStock('{{$detalles->codigo}}', {{$detalles->cantidad}} , {{$detalles->id}})">
+                                                    REABASTECER
+                                                </button>
+                                            @else
+                                                <a class="btn btn-sm btn-registrar" data-toggle="modal" data-target="#registroProductoModal" 
+                                                    data-detalleordenid="{{$detalles->id}}" data-codigo="{{$detalles->codigo}}" data-nombreproducto="{{$detalles->detalle}}"
+                                                    data-cantidad="{{$detalles->cantidad}}" data-preciounitario="{{$detalles->preciounitario}}" data-proveedorid="{{$detalles->proveedorid}}" 
+                                                    data-proveedornombre="{{$detalles->proveedornombre}}" data-fechacomprar="{{$detalles->fechacomprar}}" data-totalunitario="{{$detalles->totalunitario}}"
+                                                    data-emision="{{ $proveedor ? $proveedor->emision : '' }}">
+                                                    AGREGAR
+                                                </a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- MODAL INGRESO NUEVO PRODUCTO -->
+            <div class="modal fade" id="registroProductoModal" tabindex="-1" role="dialog" aria-labelledby="registroProductoModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="registroProductoModalLabel" style="font-weight: 900">REGISTRAR PRODUCTO EN INVENTARIO</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{{ route('inventario.registrarProducto') }}" method="POST">
+                                @csrf
+                                <input type="hidden" id="detalleordenid" name="detalleordenid">
+                                <input type="hidden" id="proveedorid" name="proveedorid" onchange="toggleNroFactura()">
+                                <input type="hidden" id="proveedornombre" name="proveedornombre">
+                                
+                                <div class="row">
+                                    <div class="form-group col-lg-2">
+                                        <label for="codigo">Código:</label>
+                                        <input type="text" class="form-control" id="codigo" name="codigo" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-4">
+                                        <label for="nombreproducto">Producto:</label>
+                                        <input type="text" class="form-control" id="nombreproducto" name="nombreproducto" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="preciounitario">Precio Uni.:</label>
+                                        <input type="number" class="form-control" id="preciounitario" name="preciounitario" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="cantidad">Cantidad:</label>
+                                        <input type="number" class="form-control" id="cantidad" name="cantidad" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="totalunitario">Total:</label>
+                                        <input type="number" class="form-control" id="totalunitario" name="totalunitario" required readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="form-group col-lg-2">
+                                        <label for="tipoinventario">Tipo Inv.:</label>
+                                        <input type="text" class="form-control" id="tipoinventario" name="tipoinventario" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="seccion">Sección:</label>
+                                        <input type="text" class="form-control" id="seccion" name="seccion" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="materiaprima">Mat. Prima:</label>
+                                        <input type="text" class="form-control" id="materiaprima" name="materiaprima" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="especificacionmedida">Esp. Medida:</label>
+                                        <input type="text" class="form-control" id="especificacionmedida" name="especificacionmedida" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="color">Color:</label>
+                                        <input type="text" class="form-control" id="color" name="color" required readonly>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="form-group col-lg-3">
+                                        <label for="marca">Marca:</label>
+                                        <input type="text" class="form-control" id="marca" name="marca" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="unidadmedida">Unidad medida:</label>
+                                        <input type="text" class="form-control" id="unidadmedida" name="unidadmedida" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="presentacion">Present.:</label>
+                                        <input type="text" class="form-control" id="presentacion" name="presentacion" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="unidades">Unidades:</label>
+                                        <input type="text" class="form-control" id="unidades" name="unidades" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="precio">Precio:</label>
+                                        <input type="text" class="form-control" id="precio" name="precio" required readonly>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-lg-3">
+                                        <label for="fechacompra">Fecha Compra:</label>
+                                        <input type="date" class="form-control" id="fechacomprar" name="fechacompra" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="fecha">Fecha Entrada:</label>
+                                        <input type="date" class="form-control" id="fecha" name="fecha" required>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="inventario">Inventario:</label>
+                                        <select class="form-control" id="inventario" name="inventario" required>
+                                            <option value=""></option>
+                                            <option value="PRINCIPAL">PRINCIPAL</option>
+                                            <option value="ACTIVOS FIJOS">ACTIVOS FIJOS</option>
+                                            <option value="AGOTADO">AGOTADO</option>
+                                            <option value="ASIGNACION Y DEVOLUCION">ASIGNACION Y DEVOLUCION</option>
+                                            <option value="STOCK DEPURADO">STOCK DEPURADO</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="deposito">Depósito:</label>
+                                        <select class="form-control" id="deposito" name="deposito" required>
+                                            <option value=""></option>
+                                            <option value="PRINCIPAL">PRINCIPAL</option>
+                                            <option value="SECUNDARIO">SECUNDARIO</option>
+                                            <option value="N/A">N/A</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-lg-2" id="nrofactura-group" style="display: none;">
+                                        <label for="nrofactura">Nro. Factura:</label>
+                                        <input type="number" class="form-control" id="nrofactura" name="nrofactura">
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="nrorecibo">Nro. Recibo:</label>
+                                        <input type="number" class="form-control" id="nrorecibo" name="nrorecibo" required>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="modelo">Modelo:</label>
+                                        <input type="text" class="form-control" id="modelo" name="modelo">
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="serie">Serie:</label>
+                                        <input type="text" class="form-control" id="serie" name="serie">
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="minimacantidad">Cant. Min.:</label>
+                                        <input type="text" class="form-control" id="minimacantidad" name="minimacantidad" required>
+                                    </div>
+                                </div>
+                                <script>  
+                                    function toggleField(id) {
+                                        let campo = document.getElementById(id);
+                                        if (campo) {
+                                            if (campo.style.display === "none") {
+                                                campo.style.display = "block";
+                                            } else {
+                                                campo.style.display = "none";
+                                                campo.value = "";
+                                            }
+                                        }
+                                    }
+                                </script>
+                                
+                                <div class="row">
+                                    <div class="form-group col-lg-6">
+                                        <a class="btn btn-sm btn-outline-secondary mb-2" onclick="toggleField('fechavencimiento')">AÑADIR FECHA DE VENCIMIENTO</a>
+                                        <input type="date" id="fechavencimiento" name="fechavencimiento" class="form-control mb-2" style="display: none;">
+                                    </div>
+                                    <div class="form-group col-lg-6">
+                                        <a class="btn btn-sm btn-outline-secondary mb-2" onclick="toggleField('garantia')">AÑADIR FECHA DE GARANTIA</a>
+                                        <input type="date" id="garantia" name="garantia" class="form-control mb-2" style="display: none;">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-registrar">REGISTRAR PRODUCTO</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script> 
+                $(document).ready(function() {
+                    $('#registroProductoModal').on('show.bs.modal', function(event) {
+                        var button = $(event.relatedTarget);
+                        var detalleordenId = button.data('detalleordenid');
+                        var codigo = button.data('codigo');
+                        var proveedorid = button.data('proveedorid'); // Obtener el proveedorid
+                        var emision = button.data('emision');  // Obtener el valor de emision
+            
+                        var modal = $(this);
+                        modal.find('#detalleordenid').val(detalleordenId);
+                        modal.find('#codigo').val(codigo);
+                        modal.find('#proveedorid').val(proveedorid);
+            
+                        var urlTemplate = '{{ route("portfolioProveedores.getByCodigo", ":codigo") }}';
+                        var url = urlTemplate.replace(':codigo', codigo);
+                        
+                        $.ajax({
+                            url: url,
+                            method: 'GET',
+                            dataType: 'json',
+                            success: function(data) {
+                                modal.find('#tipoinventario').val(data.tipoinventario);
+                                modal.find('#materiaprima').val(data.materiaprima);
+                                modal.find('#especificacionmedida').val(data.especificacionmedida);
+                                modal.find('#color').val(data.color);
+                                modal.find('#marca').val(data.marca);
+                                modal.find('#unidadmedida').val(data.unidadmedida);
+                                modal.find('#presentacion').val(data.presentacion);
+                                modal.find('#unidades').val(data.unidades);
+                                modal.find('#precio').val(data.precio);
+                                modal.find('#seccion').val(data.seccion);
+                            },
+                            error: function(err) {
+                                console.error('Error al obtener los datos del portafolio:', err);
+                            }
+                        });
+            
+                        // Lógica para mostrar/ocultar el campo de Nro. Factura
+                        if (emision === 'FACTURA') {
+                            modal.find('#nrofactura-group').show();
+                            modal.find('#nrofactura').prop('required', true); // Hacer obligatorio el campo
+                        } else {
+                            modal.find('#nrofactura-group').hide();
+                            modal.find('#nrofactura').prop('required', false); // Quitar obligatoriedad
+                        }
+                    });
+                });
+            </script>
+
+            <script>
+                $(document).ready(function() {
+                    $('#registroProductoModal').on('show.bs.modal', function(event) {
+                        var button = $(event.relatedTarget);
+                        var detalleordenId = button.data('detalleordenid');
+                        var codigo = button.data('codigo');
+                        var nombreproducto = button.data('nombreproducto');
+                        var cantidad = button.data('cantidad');
+                        var preciounitario = button.data('preciounitario');
+                        var totalunitario = button.data('totalunitario');
+                        var proveedorid = button.data('proveedorid');
+                        var proveedornombre = button.data('proveedornombre');
+                        var fechacomprar = button.data('fechacomprar');
+                        var modal = $(this);
+                        modal.find('#detalleordenid').val(detalleordenId);
+                        modal.find('#codigo').val(codigo);
+                        modal.find('#nombreproducto').val(nombreproducto);
+                        modal.find('#cantidad').val(cantidad);
+                        modal.find('#preciounitario').val(preciounitario);
+                        modal.find('#totalunitario').val(totalunitario);
+                        modal.find('#proveedorid').val(proveedorid);
+                        modal.find('#proveedornombre').val(proveedornombre);
+                        modal.find('#fechacomprar').val(fechacomprar);
+                    });
+                });
+            </script>
+            
+            <script>
+                function actualizarStock(codigoProducto, cantidad) {
+                    $.ajax({
+                        url: '{{ route("inventario.actualizarStock") }}',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            codigo_producto: codigoProducto,
+                            cantidad: cantidad
+                        },
+                        success: function(response) {
+                            if(response.success) {
+                                location.reload(); // Recarga para mostrar el mensaje de sesión
+                            } else {
+                                alert(response.message);
+                            }
+                        }
+                    });
+                }
+            </script>
+            
+            {{-- STOCK BAJO --}}
+            <div class="tab-pane fade show active" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Cod.Prod.</th>
+                                <th>Tipo_Inv.</th>
                                 <th>Producto</th>
                                 <th>Mat.prima</th>
-                                <th>Esp.medida</th>
+                                <th>Especif_Medida</th>
                                 <th>Color</th>
                                 <th>Marca</th>
                                 <th>U.medida</th>
-                                <th>Stock_ini.</th>
-                                <th>Stock_act.</th>
+                                <th>Stock_Ini.</th>
+                                <th>Stock_Act.</th>
+                                <th>Cant.Min.</th>
+                                <th>Ciudad_Invent.</th>
                                 <th>Inventario</th>
                                 <th>Depósito</th>
                                 <th>Sección</th>
                                 <th>Precio</th>
-                                <th>Entrada</th>
                                 <th>Registros</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($bienesalmacen as $bienes)
+                            @foreach ($bienesalmacenstockbajo as $bienes)
                                 <tr>
-                                    {{-- <td>{{$bienes->id}}</td> --}}
                                     <td>{{$bienes->codigo}}</td>
-                                    <td>{{$bienes->nombreproducto}}</td>
-                                    <td>{{$bienes->materiaprima}}</td>
-                                    <td>{{$bienes->especificacionmedida}}</td>
+                                    <td>{{$bienes->tipoinventario}}</td>
+                                    <td title="{{ $bienes->nombreproducto }}" class="truncar">{{$bienes->nombreproducto}}</td>
+                                    <td title="{{ $bienes->materiaprima }}" class="truncar2">{{$bienes->materiaprima}}</td>
+                                    <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
                                     <td>{{$bienes->color}}</td>
-                                    <td>{{$bienes->marca}}</td>
+                                    <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
                                     <td>{{$bienes->unidadmedida}}</td>
                                     <td>{{$bienes->stockinicial}}</td>
                                     <td>{{$bienes->stockactual}}</td>
-                                    <td>{{$bienes->inventario}}</td>
-                                    <td>{{$bienes->deposito}}</td>
-                                    <td>{{$bienes->seccion}}</td>
+                                    <td>{{$bienes->minimocantidad}}</td>
+                                    <td>{{$bienes->ciudad}}</td>
+                                    <td title="{{ $bienes->inventario }}" class="truncar2">{{$bienes->inventario}}</td>
+                                    <td title="{{ $bienes->deposito }}" class="truncar">{{$bienes->deposito}}</td>
+                                    <td title="{{ $bienes->seccion }}" class="truncar2">{{$bienes->seccion}}</td>
                                     <td>{{$bienes->precio}}</td>
-                                    <td class="d-flex justify-content-start">
-                                        <button type="button" class="btn btn-outline-success mr-2 btn-sm" data-toggle="modal" data-target="#entradaModal" title="REGISTRAR ENTRADA" data-id="{{$bienes->id}}" data-codigo="{{$bienes->codigo}}" data-nombreproducto="{{$bienes->nombreproducto}}">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                        {{-- <button type="button" class="btn btn-outline-danger mr-2 btn-sm" data-toggle="modal" data-target="#salidaModal" title="REGISTRAR SALIDA" data-id="{{$bienes->id}}" data-codigo="{{$bienes->codigo}}" data-nombreproducto="{{$bienes->nombreproducto}}">
-                                            <i class="fas fa-minus"></i>
-                                        </button> --}}
-                                    </td>
                                     <td class="justify-content-start">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
+                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
                                             <i class="fas fa-arrow-down"></i>
                                         </button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
+                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
                                             <i class="fas fa-arrow-up"></i> 
                                         </button>
                                     </td>
@@ -175,60 +548,54 @@
                 </div>
             </div>
 
-            {{-- ACTIVOS FIJOS --}}
-            <div class="tab-pane fade" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
+            {{-- ALMACEN --}}
+            <div class="tab-pane fade" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
+                
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                {{-- <th>ID</th> --}}
-                                <th>Cod.Producto</th>
+                                <th>Cod.Prod.</th>
                                 <th>Producto</th>
                                 <th>Mat.prima</th>
-                                <th>Esp.medida</th>
+                                <th>Especif_Medida</th>
                                 <th>Color</th>
                                 <th>Marca</th>
-                                <th>Modelo</th>
-                                <th>Serie</th>
+                                <th>U.medida</th>
+                                <th>Stock_Ini.</th>
+                                <th>Stock_Act.</th>
+                                <th>Cant.Min.</th>
+                                <th>Ciudad_Invent.</th>
+                                <th>Inventario</th>
+                                <th>Depósito</th>
                                 <th>Sección</th>
-                                <th>Uni.medida</th>
-                                <th>Stock_ini.</th>
-                                <th>Stock_act.</th>
                                 <th>Precio</th>
-                                <th>Entrada</th>
                                 <th>Registros</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($bienesactivosfijos as $bienes)
+                            @foreach ($bienesalmacen as $bienes)
                                 <tr>
-                                    {{-- <td>{{$bienes->id}}</td> --}}
                                     <td>{{$bienes->codigo}}</td>
-                                    <td>{{$bienes->nombreproducto}}</td>
-                                    <td>{{$bienes->materiaprima}}</td>
-                                    <td>{{$bienes->especificacionmedida}}</td>
+                                    <td title="{{ $bienes->nombreproducto }}" class="truncar">{{$bienes->nombreproducto}}</td>
+                                    <td title="{{ $bienes->materiaprima }}" class="truncar2">{{$bienes->materiaprima}}</td>
+                                    <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
                                     <td>{{$bienes->color}}</td>
-                                    <td>{{$bienes->marca}}</td>
-                                    <td>{{$bienes->modelo}}</td>
-                                    <td>{{$bienes->serie}}</td>
-                                    <td>{{$bienes->seccion}}</td>
+                                    <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
                                     <td>{{$bienes->unidadmedida}}</td>
                                     <td>{{$bienes->stockinicial}}</td>
                                     <td>{{$bienes->stockactual}}</td>
+                                    <td>{{$bienes->minimocantidad}}</td>
+                                    <td>{{$bienes->ciudad}}</td>
+                                    <td title="{{ $bienes->inventario }}" class="truncar2">{{$bienes->inventario}}</td>
+                                    <td title="{{ $bienes->deposito }}" class="truncar">{{$bienes->deposito}}</td>
+                                    <td title="{{ $bienes->seccion }}" class="truncar2">{{$bienes->seccion}}</td>
                                     <td>{{$bienes->precio}}</td>
-                                    <td class="d-flex justify-content-start">
-                                        <button type="button" class="btn btn-outline-success mr-2 btn-sm" data-toggle="modal" data-target="#entradaModal" title="REGISTRAR ENTRADA" data-id="{{$bienes->id}}" data-codigo="{{$bienes->codigo}}" data-nombreproducto="{{$bienes->nombreproducto}}">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                        {{-- <button type="button" class="btn btn-outline-danger mr-2 btn-sm" data-toggle="modal" data-target="#salidaModal" title="REGISTRAR SALIDA" data-id="{{$bienes->id}}" data-codigo="{{$bienes->codigo}}" data-nombreproducto="{{$bienes->nombreproducto}}">
-                                            <i class="fas fa-minus"></i>
-                                        </button> --}}
-                                    </td>
                                     <td class="justify-content-start">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
+                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
                                             <i class="fas fa-arrow-down"></i>
                                         </button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
+                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
                                             <i class="fas fa-arrow-up"></i> 
                                         </button>
                                     </td>
@@ -237,10 +604,84 @@
                         </tbody> 
                     </table>
                 </div>
+                <div class="d-flex justify-content-center mt-3">
+                {{ $bienesalmacen->withQueryString()->fragment('tab-content-1')->links() }}
+                </div>
+            </div>
+
+            {{-- ACTIVOS FIJOS --}}
+            <div class="tab-pane fade" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
+                
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Cod.Prod.</th>
+                                <th>Producto</th>
+                                <th>Mat.prima</th>
+                                <th>Especif_Medida</th>
+                                <th>Color</th>
+                                <th>Marca</th>
+                                <th>Modelo</th>
+                                <th>Serie</th>
+                                <th>Sección</th>
+                                <th>Uni.medida</th>
+                                <th>Stock_ini.</th>
+                                <th>Stock_act.</th>
+                                <th>Ciudad_Invent.</th>
+                                <th>Precio</th>
+                                <th>Registros</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($bienesactivosfijos as $bienes)
+                                <tr>
+                                    <td>{{$bienes->codigo}}</td>
+                                    <td title="{{ $bienes->nombreproducto }}" class="truncar">{{$bienes->nombreproducto}}</td>
+                                    <td title="{{ $bienes->materiaprima }}" class="truncar2">{{$bienes->materiaprima}}</td>
+                                    <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
+                                    <td>{{$bienes->color}}</td>
+                                    <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
+                                    <td title="{{ $bienes->modelo }}" class="truncar">{{$bienes->modelo}}</td>
+                                    <td title="{{ $bienes->serie }}" class="truncar">{{$bienes->serie}}</td>
+                                    <td title="{{ $bienes->seccion }}" class="truncar2">{{$bienes->seccion}}</td>
+                                    <td>{{$bienes->unidadmedida}}</td>
+                                    <td>{{$bienes->stockinicial}}</td>
+                                    <td>{{$bienes->stockactual}}</td>
+                                    <td>{{$bienes->ciudad}}</td>
+                                    <td>{{$bienes->precio}}</td>
+                                    <td class="justify-content-start">
+                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
+                                            <i class="fas fa-arrow-down"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
+                                            <i class="fas fa-arrow-up"></i> 
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody> 
+                    </table>
+                </div>
+                <div class="d-flex justify-content-center mt-3">
+                {{ $bienesactivosfijos->withQueryString()->fragment('tab-content-2')->links() }}
+                </div>
+
             </div>
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const hash = window.location.hash;
+        if (hash) {
+            const trigger = document.querySelector(`a[href="${hash}"]`);
+            if (trigger) {
+                new bootstrap.Tab(trigger).show();
+            }
+        }
+    });
+</script>
 
 {{-- GUARDAR ENTRADAS --}}
 <form action="{{ route('guardar.entrada') }}" method="POST">
@@ -401,13 +842,13 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Fecha Entrada</th>
-                                        <th>Nro. Factura</th>
-                                        <th>Nro. Recibo</th>
+                                        <th>Fecha_Entrada</th>
+                                        <th>Nro_Factura</th>
+                                        <th>Nro_Recibo</th>
                                         <th>Precio</th>
                                         <th>Cantidad</th>
-                                        <th>Usuario Registro</th>
-                                        <th>Fecha Registro</th>
+                                        <th>Usuario_Registro</th>
+                                        {{-- <th>Fecha_Registro</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -421,10 +862,10 @@
                                                 <td>{{ $registro->fechamovimiento }}</td>
                                                 <td>{{ $registro->nrofactura }}</td>
                                                 <td>{{ $registro->nrorecibo }}</td>
-                                                <td>{{ $registro->precio }} Bs.</td>
+                                                <td>{{ $registro->precio }}</td>
                                                 <td>{{ $registro->cantidad }}</td>
                                                 <td>{{ $registro->usuarioregistronombre }}</td>
-                                                <td>{{ $registro->created_at }}</td>
+                                                {{-- <td>{{ \Carbon\Carbon::parse($registro->created_at)->format('Y-m-d') }}</td> --}}
                                             </tr>
                                         @endforeach
                                     @else
@@ -454,11 +895,12 @@
                             <table class="table table-bordered table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Fecha Salida</th>
+                                        <th>ID</th>
+                                        <th>Fecha_Salida</th>
                                         <th>Cantidad</th>
-                                        <th>Usuario Receptor</th>
-                                        <th>Usuario Registro</th>
-                                        <th>Fecha Registro</th>
+                                        <th>Usuario_Receptor</th>
+                                        <th>Usuario_Registro</th>
+                                        {{-- <th>Fecha_Registro</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -468,11 +910,12 @@
                                     @if ($historialProducto->count() > 0)
                                         @foreach ($historialProducto as $registro)
                                             <tr>
+                                                <td>{{ $registro->id }}</td>
                                                 <td>{{ $registro->fechamovimiento }}</td>
                                                 <td>{{ $registro->cantidad }}</td>
                                                 <td>{{ $registro->usuarioreceptor ?? '-' }}</td>
                                                 <td>{{ $registro->usuarioregistronombre }}</td>
-                                                <td>{{ $registro->created_at }}</td>
+                                                {{-- <td>{{ \Carbon\Carbon::parse($registro->created_at)->format('Y-m-d') }}</td> --}}
                                             </tr>
                                         @endforeach
                                     @else
@@ -494,77 +937,64 @@
 
 @section('js')
 <script>
-    // Al abrir el modal de entrada
     $('#entradaModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget); 
         var id = button.data('id');
         var codigo = button.data('codigo'); 
-
-        // Asignar los valores al modal
         var modal = $(this);
         modal.find('#idEntrada').val(id);
         modal.find('#codigoEntrada').val(codigo);
     });
 
     $('#entradaModal').on('show.bs.modal', function(event) {
-        var button = $(event.relatedTarget); // Botón que disparó el modal
-        var nombreproducto = button.data('nombreproducto'); // Extrae el nombre del producto
-        var codigo = button.data('codigo'); // Extrae el código del producto
+        var button = $(event.relatedTarget);
+        var nombreproducto = button.data('nombreproducto');
+        var codigo = button.data('codigo');
 
-        // Coloca los valores en los campos del modal
         $('#productoNombre').text(nombreproducto);
         $('#codigoProducto').text(codigo);
-        $('#codigoEntrada').val(codigo); // Asigna el código al campo oculto
-        $('#idEntrada').val(button.data('id')); // Asigna el id del producto
+        $('#codigoEntrada').val(codigo);
+        $('#idEntrada').val(button.data('id'));
     });
 
     $(document).ready(function () {
-        // Asegúrate de llenar el campo oculto cuando el modal se abre
         $('#entradaModal').on('show.bs.modal', function (event) {
-            let button = $(event.relatedTarget); // Botón que abrió el modal
-            let codigo = button.data('codigo'); // Obtiene el código del producto desde un atributo data
-            let nombre = button.data('nombre'); // Obtiene el nombre del producto
-
+            let button = $(event.relatedTarget);
+            let codigo = button.data('codigo');
+            let nombre = button.data('nombre');
             $('#codigoProducto').text(codigo);
             $('#productoNombre').text(nombre);
-            $('#codigoEntrada').val(codigo); // Guarda el código en el campo oculto
+            $('#codigoEntrada').val(codigo);
         });
     });
-    
-    // Al abrir el modal de salida
+
     $('#salidaModal').on('show.bs.modal', function (event) {
         var button = $(event.relatedTarget); 
         var id = button.data('id');
         var codigo = button.data('codigo'); 
-
-        // Asignar los valores al modal
         var modal = $(this);
         modal.find('#idSalida').val(id);
         modal.find('#codigoSalida').val(codigo);
     });
 
     $('#salidaModal').on('show.bs.modal', function(event) {
-        var button = $(event.relatedTarget); // Botón que disparó el modal
-        var nombreproducto = button.data('nombreproducto'); // Extrae el nombre del producto
-        var codigo = button.data('codigo'); // Extrae el código del producto
-
-        // Coloca los valores en los campos del modal
+        var button = $(event.relatedTarget);
+        var nombreproducto = button.data('nombreproducto');
+        var codigo = button.data('codigo');
         $('#productoNombre2').text(nombreproducto);
         $('#codigoProducto2').text(codigo);
-        $('#codigoSalida').val(codigo); // Asigna el código al campo oculto
-        $('#idSalida').val(button.data('id')); // Asigna el id del producto
+        $('#codigoSalida').val(codigo);
+        $('#idSalida').val(button.data('id'));
     });
 
     $(document).ready(function () {
-        // Asegúrate de llenar el campo oculto cuando el modal se abre
         $('#salidaModal').on('show.bs.modal', function (event) {
-            let button = $(event.relatedTarget); // Botón que abrió el modal
-            let codigo = button.data('codigo'); // Obtiene el código del producto desde un atributo data
-            let nombre = button.data('nombre'); // Obtiene el nombre del producto
-
+            let button = $(event.relatedTarget);
+            let codigo = button.data('codigo');
+            let nombre = button.data('nombre');
             $('#codigoProducto2').text(codigo);
             $('#productoNombre2').text(nombre);
-            $('#codigoSalida').val(codigo); // Guarda el código en el campo oculto
+            $('#codigoSalida').val(codigo);
         });
     });
 
@@ -582,7 +1012,6 @@
     @endif
 
 <script>
-
     $('.formulario-eliminar').submit(function(e){
         e.preventDefault();
 

@@ -34,6 +34,7 @@ class Informefinal extends Model
         'documentword' => '',
         'motivoanulacion' => '',
         'usuarioanulacion' => '',
+        'servicio' => '',
     ]; 
 
     protected $fillable = [
@@ -58,6 +59,7 @@ class Informefinal extends Model
         'documentword',
         'motivoanulacion',
         'usuarioanulacion',
+        'servicio',
     ];
 
 }

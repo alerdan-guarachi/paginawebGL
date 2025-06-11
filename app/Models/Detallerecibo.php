@@ -32,9 +32,18 @@ class Detallerecibo extends Model
         'provinfofinalid' => '',
         'tipomovimiento' => '',
         'cuentapagarid' => '',
+        'cuentacobrarid' => '',
         'bateriaid' => '',
         'clienteid' => '',
         'clientenombre' => '',
+        'ordenid' => '',
+        'tipotransaccion' => '',
+        'descuentoatc' => '',
+        'sucursalgasto' => '',
+        'comprobante' => '',
+        'factura' => '',
+        'created_at' => '',
+        'updated_at' => '',
     ]; 
 
     protected $fillable = [
@@ -58,8 +67,17 @@ class Detallerecibo extends Model
         'provinfofinalid',
         'tipomovimiento',
         'cuentapagarid',
+        'cuentacobrarid',
         'bateriaid',
         'clienteid',
         'clientenombre',
+        'ordenid',
+        'tipotransaccion',
+        'descuentoatc',
+        'sucursalgasto',
+        'comprobante',
+        'factura',
+        'created_at',
+        'updated_at',
     ];
 }

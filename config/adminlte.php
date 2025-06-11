@@ -63,7 +63,7 @@ return [
     |
     */
 
-    'logo' => '<b>Good Life</b> S.R.L.',
+    'logo' => '<b>GOOD LIFE</b> S.R.L.',
     'logo_img' => 'img/logo.png',
     'logo_img_class' => 'brand-image-xs',
     'logo_img_xl' => null,
@@ -196,8 +196,8 @@ return [
     'classes_content_wrapper' => '',
     'classes_content_header' => '',
     'classes_content' => '',
-    'classes_sidebar' => 'sidebar-dark-orange elevation-4',
-    'classes_sidebar_nav' => '',
+    'classes_sidebar' => 'sidebar-dark-olive elevation-4',
+    'classes_sidebar_nav' => 'nav-compact nav-flat',
     'classes_topnav' => 'navbar-white navbar-light',
     'classes_topnav_nav' => 'navbar-expand',
     'classes_topnav_container' => 'container',
@@ -215,7 +215,7 @@ return [
     */
 
     'sidebar_mini' => 'lg',
-    'sidebar_collapse' => false,
+    'sidebar_collapse' => true,
     'sidebar_collapse_auto_size' => false,
     'sidebar_collapse_remember' => false,
     'sidebar_collapse_remember_no_transition' => true,
@@ -324,6 +324,12 @@ return [
             'icon' => 'fas fa-fw fas fa-comment',
             'can'  => 'admin.mensajes.index',
         ],
+        /* [
+            'text' => 'EXCEL',
+            'route'  => 'upload.excel',
+            'icon' => 'fas fa-fw fas fa-comment',
+            'can'  => 'admin.mensajes.index',
+        ], */
         /*  [
             'text' => 'Caja Central',
             'icon' => 'fas fa-cash-register',
@@ -349,7 +355,7 @@ return [
             'can'  => 'admin.admprogramaciones.index',
             'submenu' => [
                 [
-                    'text' => 'Programaciones',
+                    'text' => 'Prog. por Fecha',
                     'route'  => 'admin.admprogramaciones.index',
                     'icon' => 'fas fa-fw fas fa-calendar-check',
                     'can'  => 'admin.admprogramaciones.programacionesdiarias',
@@ -373,12 +379,12 @@ return [
                     'icon' => 'fas fa-fw fas fa-swatchbook',
                     'can'  => 'admin.admprogramaciones.create',
                 ],
-                [
+                /* [
                     'text' => 'Pagos de programaciones',
                     'route'  => 'admin.admprogramaciones.pagosprogramaciones',
                     'icon' => 'fas fa-fw fas fa-calendar-check',
                     'can'  => 'admin.admprogramaciones.pagosprogramaciones',
-                ],
+                ], */
                 /* [
                     'text' => 'Doc. Activa',
                     'route'  => 'admin.admprogramaciones.documentacionactiva',
@@ -397,6 +403,11 @@ return [
                     'icon' => 'fas fa-fw fas fa-chart-bar',
                     'can'  => 'admin.admprogramaciones.graficosregistrosgenerales',
                 ],
+                /* [
+                    'text' => 'Unir Pdf',
+                    'route'  => 'admin.admprogramaciones.unirpdf',
+                    'icon' => 'fas fa-fw fas fa-chart-bar',
+                ], */
                 
             ],
         ],
@@ -413,11 +424,17 @@ return [
                     'can'  => 'admin.asociados.index',
                 ],
                 [
+                    'text' => 'Proveedores',
+                    'route'  => 'admin.proveedoresservicios.listaproveedoresservicios',
+                    'icon' => 'fas fa-fw fa-id-card-alt',
+                    'can'  => 'admin.proveedoresservicios.index',
+                ],
+                /* [
                     'text' => 'Proveedores Médicos',
                     'route'  => 'admin.proveedores.index',
                     'icon' => 'fas fa-fw fas fa-address-card',
                     'can'  => 'admin.proveedores.index',
-                ],
+                ], */
                 [
                     'text' => 'Empresas',
                     'route'  => 'admin.empresas.index',
@@ -495,18 +512,24 @@ return [
                     'icon' => 'fas fa-fw fa-user-friends',
                     'can'  => 'admin.users.index',
                 ],
-                [
-                    'text' => 'Proveedores de Servicios',
-                    'route'  => 'admin.proveedoresservicios.index',
-                    'icon' => 'fas fa-fw fa-user-friends',
+                /* [
+                    'text' => 'Proveedores',
+                    'route'  => 'admin.proveedoresservicios.listaproveedoresservicios',
+                    'icon' => 'fas fa-fw fa-id-card-alt',
                     'can'  => 'admin.proveedoresservicios.index',
-                ],
+                ], */
                 [
+                    'text' => 'Personal',
+                    'route'  => 'admin.proveedoresservicios.listapersonal',
+                    'icon' => 'fas fa-fw fas fa-users',
+                    'can'  => 'admin.proveedores.index',
+                ],
+                /* [
                     'text' => 'Secciones de Servicios',
                     'route'  => 'admin.proveedoresservicios.listasecciones',
                     'icon' => 'fas fa-fw fas fa-swatchbook',
                     'can'  => 'admin.proveedoresservicios.index',
-                ],
+                ], */
                 [
                     'text' => 'Roles',
                     'route' => 'admin.roles.index',
@@ -644,6 +667,12 @@ return [
             'can'  => 'admin.ingreso.index',
             'submenu' => [
                 [
+                    'text' => 'Nueva Cuenta Cobrar',
+                    'route'  => 'admin.caja.cuentascobrar.nuevacuentacobrar',
+                    'icon' => 'fas fa-bookmark',
+                    'can'  => 'admin.ingreso.index',
+                ],
+                [
                     'text' => 'Cobrar Hoy',
                     'route'  => 'admin.caja.cuentascobrar.cobrarhoy',
                     'icon' => 'fas fa-donate',
@@ -655,10 +684,23 @@ return [
                     'icon' => 'fas fa-money-bill-wave',
                     'can'  => 'admin.ingreso.index',
                 ],
+            ],
+        ],
+        [
+            'text' => 'Créditos',
+            'icon' => 'fas fa-hand-holding-usd',
+            'can'  => 'admin.ingreso.index',
+            'submenu' => [
                 [
                     'text' => 'Asignar Crédito',
                     'route'  => 'admin.caja.cuentascobrar.ccporcredito',
                     'icon' => 'fas fa-money-check-alt',
+                    'can'  => 'admin.ingreso.index',
+                ],
+                [
+                    'text' => 'Créditos Aprobados',
+                    'route'  => 'admin.caja.cuentascobrar.creditosaprobados',
+                    'icon' => 'fas fa-stamp',
                     'can'  => 'admin.ingreso.index',
                 ],
             ],
@@ -695,10 +737,36 @@ return [
                     'can'  => 'admin.cuentasPagar.index',
                 ],
                 [
+                    'text' => 'CxP Pendientes',
+                    'route'  => 'admin.caja.cuentaspagar.cpppendientes',
+                    'icon' => 'fas fa-coins',
+                    'can'  => 'admin.cuentasPagar.cpppendientes',
+                ],
+                [
+                    'text' => 'CxP Comprobantes',
+                    'route'  => 'admin.caja.cuentaspagar.cppcomprobantes',
+                    'icon' => 'fas fa-receipt',
+                    'can'  => 'admin.cuentasPagar.cxpcomprobantes',
+                ],
+                /* [
                     'text' => 'Pagos Pendientes',
                     'route'  => 'admin.caja.cuentaspagar.cppregistradas',
                     'icon' => 'fas fa-hourglass-half',
                     'can'  => 'admin.cuentasPagar.index',
+                ], */
+            ],
+        ],
+
+        [
+            'text' => 'Facturas',
+            'icon' => 'fas fa-receipt',
+            'can'  => 'admin.facturasegreso.index',
+            'submenu' => [
+                [
+                    'text' => 'Facturas Egreso',
+                    'route'  => 'admin.facturasegreso.index',
+                    'icon' => 'fas fa-file-invoice-dollar',
+                    'can'  => 'admin.facturasegreso.index',
                 ],
             ],
         ],
@@ -732,26 +800,71 @@ return [
         
         [
             'text' => 'Inventario',
-            'icon' => 'fas fa-tags',
-            'can'  => 'admin.inventario.index',
+            'icon' => 'fas fa-cubes',
+            'can'  => 'admin.inventario.verpestanainventario',
             'submenu' => [
                 [
-                    'text' => 'Adquisición de Inventario',
-                    'route'  => 'admin.inventario.adquisicioninventario',
-                    'icon' => 'fas fa-tag',
-                    'can'  => 'admin.inventario.index',
-                ],
-                [
-                    'text' => 'Gestión de Stock',
+                    'text' => 'Inventario Total',
                     'route'  => 'admin.inventario.index',
-                    'icon' => 'fas fa-tag',
+                    'icon' => 'fas fa-boxes',
                     'can'  => 'admin.inventario.index',
                 ],
                 [
                     'text' => 'Solicitud de Inventario',
-                    'route'  => 'admin.inventario.solicitarbienes',
-                    'icon' => 'fas fa-tag',
-                    'can'  => 'admin.inventario.solicitarbienes',
+                    'route'  => 'admin.inventario.solicitarproducto',
+                    'icon' => 'fas fa-file-signature',
+                    'can'  => 'admin.inventario.solicitarproducto',
+                ],
+            ],
+        ],
+        [
+            'text' => 'Pre-Órdenes y Órdenes',
+            'icon' => 'fas fa-window-restore',
+            'can'  => 'admin.inventario.index',
+            'submenu' => [
+                [
+                    'text' => 'Nueva Pre-Órden',
+                    'route'  => 'admin.inventario.crearordenes',
+                    'icon' => 'fas fa-file-code',
+                    'can'  => 'admin.inventario.index',
+                ],
+                [
+                    'text' => 'Órdenes Pend. y Aprob.',
+                    'route'  => 'admin.inventario.listaordenes',
+                    'icon' => 'fas fa-sim-card',
+                    'can'  => 'admin.inventario.index',
+                ],
+            ],
+        ],
+
+        [
+            'text' => 'Bancos',
+            'icon' => 'fas fa-piggy-bank',
+            'can'  => 'admin.banco.index',
+            'submenu' => [
+                [
+                    'text' => 'Consolidado General',
+                    'route'  => 'admin.banco.index',
+                    'icon' => 'fas fa-comments-dollar',
+                    'can'  => 'admin.banco.index',
+                ],
+                /* [
+                    'text' => 'Detalle Movimientos',
+                    'route'  => 'admin.banco.detallemovimientos',
+                    'icon' => 'fas fa-chart-pie',
+                    'can'  => 'admin.banco.index',
+                ], */
+                /* [
+                    'text' => 'Consolidado Órdenes',
+                    'route'  => 'admin.banco.consolidadoegresos',
+                    'icon' => 'fas fa-comments-dollar',
+                    'can'  => 'admin.banco.index',
+                ], */
+                [
+                    'text' => 'Cuentas Bancarias',
+                    'route'  => 'admin.banco.montototalbancos',
+                    'icon' => 'fas fa-landmark',
+                    'can'  => 'admin.banco.index',
                 ],
             ],
         ],

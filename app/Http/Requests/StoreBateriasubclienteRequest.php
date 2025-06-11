@@ -36,6 +36,9 @@ class StoreBateriasubclienteRequest extends FormRequest
             ];
         }else{
     
+        $rolusuario = strtolower(auth()->user()->getRoleNames()->first());
+        $esProveedorOMaestro = in_array($rolusuario, ['proveedor'/* , 'maestro' */]);
+
         $rules = [
             'id' => '',
             'clienteid' => '',
@@ -69,8 +72,19 @@ class StoreBateriasubclienteRequest extends FormRequest
             'comision' => '',
             'sesiones'=>'',
             'provinfofinalid' => '',
-            'motivoanulacion',
-        'usuarioanulacion',
+            'motivoanulacion' => '',
+            'usuarioanulacion' => '',
+            'medicoderivante' => '',
+            'orden' => /* $esProveedorOMaestro ? '' :  */'',
+            'tramite' => '',
+            'prioridad' => '',
+            'nrobancoorigen' => '',
+            'fechapago' => '',
+            'estadoaprobacion' => '',
+            'comprobante' => '',
+            'usuariocomprobante' => '',
+            'ordenid' => '',
+            'fechamora' => '',
         ]; 
         return $rules;
         }

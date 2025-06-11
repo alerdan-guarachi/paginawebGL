@@ -11,38 +11,70 @@ class CuentasPagar extends Model
     use HasFactory;
     use SoftDeletes;
     protected $table = 'cuentasporpagar';
+    public function getIdAttribute($value)
+    {
+        return $value;
+    }
     static $rules = [
         'id' => '',
         'proveedorid' => '',
         'proveedornombre' => '',
-        'tipoproveedor' => '',
-        'detalle' => '',
+        'tipoproveedorservicio' => '',
+        'detalleproducto' => '',
+        'fechaasignada' => '',
         'subtotal' => '',
-        'descuentosancion' => '',
-        'descuentoafp' => '',
+        'descuento' => '',
         'montototal' => '',
+        'preciocompra' => '',
+        'tipoorden' => '',
+        'ordenid' => '',
+        'estado' => '',
+        'ciudad' => '',
         'usuarioregistroid' => '',
         'usuarioregistronombre' => '',
-        'estado' => '',
-        'fechaasignada' => '',
-        'preciocompra' => '',
+        'fechacomprar' => '',
+        'cantidad' => '',
+        'detalleordenid' => '',
+        'sucursalgasto' => '',
+        'nrobancoorigen' => '',
+        'estadoaprobacion' => '',
+        'comprobante' => '',
+        'factura' => '',
+        'usuariocomprobante' => '',
+        'fechamora' => '',
     ]; 
 
     protected $fillable = [
         'id',
         'proveedorid',
         'proveedornombre',
-        'tipoproveedor',
-        'detalle',
+        'tipoproveedorservicio',
+        'detalleproducto',
+        'fechaasignada',
         'subtotal',
-        'descuentosancion',
-        'descuentoafp',
+        'descuento',
         'montototal',
+        'preciocompra',
+        'tipoorden',
+        'ordenid',
+        'estado',
+        'ciudad',
         'usuarioregistroid',
         'usuarioregistronombre',
-        'estado',
-        'fechaasignada',
-        'preciocompra',
+        'fechacomprar',
+        'cantidad',
+        'detalleordenid',
+        'sucursalgasto',
+        'nrobancoorigen',
+        'estadoaprobacion',
+        'comprobante',
+        'factura',
+        'usuariocomprobante',
+        'fechamora',
     ];
 
+    public function proveedorServicio()
+    {
+        return $this->hasOne(Proveedoresservicios::class, 'id', 'proveedorid');
+    }
 }

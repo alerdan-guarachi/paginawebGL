@@ -79,6 +79,12 @@ class Cajacentral extends Model
         'nrobancodestinoefectivo' => '',
         'nrofactura2' => '',
         'nrofactura3' => '',
+        'nrocuentadestinoatc' => '',
+        'fechabancarizacionatc' => '',
+        'created_at' => '',
+        'updated_at' => '',
+        'fecharegistroreal' => '',
+        'nrobancarizacioncheque' => '',
     ]; 
 
     protected $fillable = [
@@ -149,5 +155,11 @@ class Cajacentral extends Model
         'nrobancodestinoefectivo',
         'nrofactura2',
         'nrofactura3',
+        'nrocuentadestinoatc',
+        'fechabancarizacionatc',
+        'created_at',
+        'updated_at',
+        'fecharegistroreal',
+        'nrobancarizacioncheque',
     ];
 }

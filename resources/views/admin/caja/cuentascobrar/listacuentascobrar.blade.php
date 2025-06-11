@@ -174,6 +174,22 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/cuentascobrarpagar.css') }}">
+<style>
+    .table td {
+        padding: 5px 10px;;
+    }
+    .btn-botongris {
+        background-color: #ffffff;
+        color: #676767;
+        border-color: #676767;
+        border-radius: 5px;
+        padding: 2px 5px;
+    }
+    .btn-botongris:hover {
+        background-color: #676767;
+        color: #ffffff;
+        }
+</style>
 @stop
 
 @section('content')
@@ -202,142 +218,347 @@
             </div>
         </div>
     </nav>
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="myTabs">  
+            <li class="nav-item">
+                <a class="nav-link active" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
+                    CLIENTES
+                </a>
+            </li>     
+            <li class="nav-item">
+                <a class="nav-link" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
+                    PROVEEDORES MEDICOS
+                </a>
+            </li>    
+            <li class="nav-item">
+                <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
+                    PROVEEDORES DE SERVICIOS Y CLIENTES
+                </a>
+            </li> 
+        </ul>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('btn-mostrar-todo').addEventListener('click', function() {
                 window.location.href = "{{ route('buscarlistacuentascobrar') }}";
             });
-    
-            const activeTabId = localStorage.getItem('activeTab') || 'tab-1';
-            const tabLink = document.querySelector(`a[href="#${activeTabId}"]`);
-            if (tabLink) {
-                tabLink.click();
-            }
-            document.querySelectorAll('#myTabs .nav-link').forEach(function(link) {
-                link.addEventListener('click', function() {
-                    const href = this.getAttribute('href');
-                    const tabId = href.substring(1);
-                    localStorage.setItem('activeTab', tabId);
-                });
-            });
         });
     </script>
 
     <div class="card-body">
-        <div class="table-responsive" style="max-height: 75vh;">
-            <table class="table table-striped">
-                <thead style="position: sticky; top: 0; z-index: 1010; background-color: #ffffff;">
-                    <tr>
-                        <th style="width: 10%;">Tipo Cliente</th>
-                        <th style="width: 10%;">ID_Cli.</th>
-                        <th style="width: 35%;">Cliente Nombre</th>
-                        <th style="width: 15%;">Sucursal</th>
-                        <th style="width: 15%;">Fecha Batería - Servicio</th>
-                        <th style="width: 5%;">Baterias</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{-- CLIENTES ITA --}}
-                    @foreach ($result as $item)
-                        @php
-                            $pagoPendiente = false;
-                            foreach ($item['acciones'] as $accion) {
-                                if (is_null($accion['pagoservicioinforme']) && is_null($accion['pagoservicioinformefinal'])) {
-                                    $pagoPendiente = true;
-                                    break;
-                                }
-                            }
-                        @endphp
-                        @if ($pagoPendiente)
-                        <tr>
-                            <td>CLIENTE ITA</td>
-                            <td>{{ $item['clienteitaid'] }}</td>
-                            <td>{{ $item['clienteitanombre'] }}</td>
-                            <td>{{ $item['usuarioregistro'] }}</td>
-                            <td>
-                                @if (is_array($item['tramite']) && count($item['tramite']) > 0)
-                                    {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }}
-                                @else
-                                    {{ $item['fechabateria'] }} - SIN SERVICIO
+        <div class="tab-content" id="myTabContent">
+            {{-- CLIENTES --}}
+            <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
+                <div class="table-responsive" style="max-height: 75vh;">
+                    <table class="table table-striped">
+                        <thead style="position: sticky; top: 0; z-index: 1010; background-color: #ffffff;">
+                            <tr>
+                                <th style="width: 10%;">Tipo Cliente</th>
+                                <th style="width: 10%;">ID_Cli.</th>
+                                <th style="width: 35%;">Cliente Nombre</th>
+                                <th style="width: 15%;">Sucursal</th>
+                                <th style="width: 15%;">Fecha Batería - Servicio</th>
+                                <th style="width: 5%;">Baterias</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{-- CLIENTES ITA --}}
+                            @foreach ($result as $item)
+                                @php
+                                    $pagoPendiente = false;
+                                    foreach ($item['acciones'] as $accion) {
+                                        if (is_null($accion['pagoservicioinforme']) && is_null($accion['pagoservicioinformefinal'])) {
+                                            $pagoPendiente = true;
+                                            break;
+                                        }
+                                    }
+                                @endphp
+                                @if ($pagoPendiente)
+                                <tr>
+                                    <td>CLIENTE ITA</td>
+                                    <td>{{ $item['clienteitaid'] }}</td>
+                                    <td>{{ $item['clienteitanombre'] }}</td>
+                                    <td>{{ $item['usuarioregistro'] }}</td>
+                                    <td>
+                                        @if (is_array($item['tramite']) && count($item['tramite']) > 0)
+                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }}
+                                        @else
+                                            {{ $item['fechabateria'] }} - SIN SERVICIO
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <abbr title="VER BATERIA">
+                                            <a class="btn btn-sm btn-botongris" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                        </abbr>
+                                    </td>
+                                </tr>
                                 @endif
-                            </td>
-                            <td>
-                                <abbr title="VER BATERIA">
-                                    <a class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
-                                </abbr>
-                            </td>
-                        </tr>
-                        @endif
-                    @endforeach
+                            @endforeach
 
-                    {{-- CLIENTES AUDITORIA --}}
-                    @foreach ($result2 as $item)
-                    @php
-                            $pagoPendiente = false;
-                            foreach ($item['acciones'] as $accion) {
-                                if (is_null($accion['pagoservicioinforme']) && is_null($accion['pagoservicioinformefinal'])) {
-                                    $pagoPendiente = true;
-                                    break;
-                                }
-                            }
-                        @endphp
-                        @if ($pagoPendiente)
-                        <tr>
-                            <td>CLIENTE AUDITORIA</td>
-                            <td>{{ $item['clienteauditoriaid'] }}</td>
-                            <td>{{ $item['clienteauditorianombre'] }}</td>
-                            <td>{{ $item['usuarioregistro'] }}</td>
-                            <td>
-                                @if (is_array($item['tramite']) && count($item['tramite']) > 0)
-                                    {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }}
-                                @else
-                                    {{ $item['fechabateria'] }} - SIN SERVICIO
+                            {{-- CLIENTES AUDITORIA --}}
+                            @foreach ($result2 as $item)
+                            @php
+                                    $pagoPendiente = false;
+                                    foreach ($item['acciones'] as $accion) {
+                                        if (is_null($accion['pagoservicioinforme']) && is_null($accion['pagoservicioinformefinal'])) {
+                                            $pagoPendiente = true;
+                                            break;
+                                        }
+                                    }
+                                @endphp
+                                @if ($pagoPendiente)
+                                <tr>
+                                    <td>CLIENTE AUDITORIA</td>
+                                    <td>{{ $item['clienteauditoriaid'] }}</td>
+                                    <td>{{ $item['clienteauditorianombre'] }}</td>
+                                    <td>{{ $item['usuarioregistro'] }}</td>
+                                    <td>
+                                        @if (is_array($item['tramite']) && count($item['tramite']) > 0)
+                                            {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }}
+                                        @else
+                                            {{ $item['fechabateria'] }} - SIN SERVICIO
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <abbr title="VER BATERIA">
+                                            <a class="btn btn-sm btn-botongris" data-toggle="modal" data-target="#modalauditoria{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                        </abbr>
+                                    </td>
+                                </tr>
                                 @endif
-                            </td>
-                            <td>
-                                <abbr title="VER BATERIA">
-                                    <a class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modalauditoria{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
-                                </abbr>
-                            </td>
-                        </tr>
-                        @endif
-                    @endforeach
+                            @endforeach
 
-                    {{-- CLIENTES COMUNES --}}
-                    @foreach ($result3 as $item)
-                    @php
-                            $pagoPendiente = false;
-                            foreach ($item['acciones'] as $accion) {
-                                if (is_null($accion['pagoservicioinforme']) && is_null($accion['pagoservicioinformefinal'])) {
-                                    $pagoPendiente = true;
-                                    break;
-                                }
-                            }
-                        @endphp
-                        @if ($pagoPendiente)
-                        <tr>
-                            <td>CLIENTE COMUN</td>
-                            <td>{{ $item['clientecomunid'] }}</td>
-                            <td>{{ $item['clientecomunnombre'] }}</td>
-                            <td>{{ $item['usuarioregistro'] }}</td>
-                            <td>
-                                @if (is_array($item['tramite']) && count($item['tramite']) > 0)
-                                    {{ $item['fechabateria'] }}
-                                @else
-                                    {{ $item['fechabateria'] }}
+                            {{-- CLIENTES COMUNES --}}
+                            @foreach ($result3 as $item)
+                            @php
+                                    $pagoPendiente = false;
+                                    foreach ($item['acciones'] as $accion) {
+                                        if (is_null($accion['pagoservicioinforme']) && is_null($accion['pagoservicioinformefinal'])) {
+                                            $pagoPendiente = true;
+                                            break;
+                                        }
+                                    }
+                                @endphp
+                                @if ($pagoPendiente)
+                                <tr>
+                                    <td>CLIENTE COMUN</td>
+                                    <td>{{ $item['clientecomunid'] }}</td>
+                                    <td>{{ $item['clientecomunnombre'] }}</td>
+                                    <td>{{ $item['usuarioregistro'] }}</td>
+                                    <td>
+                                        @if (is_array($item['tramite']) && count($item['tramite']) > 0)
+                                            {{ $item['fechabateria'] }}
+                                        @else
+                                            {{ $item['fechabateria'] }}
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <abbr title="VER BATERIA">
+                                            <a class="btn btn-sm btn-botongris" data-toggle="modal" data-target="#modalcomun{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                        </abbr>
+                                    </td>
+                                </tr>
                                 @endif
-                            </td>
-                            <td>
-                                <abbr title="VER BATERIA">
-                                    <a class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#modalcomun{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
-                                </abbr>
-                            </td>
-                        </tr>
-                        @endif
-                    @endforeach
-                </tbody> 
-            </table>
-            
+                            @endforeach
+                        </tbody> 
+                    </table>
+                </div>
+            </div>
+
+            {{-- PROVEEDORES MEDICOS --}}
+            <div class="tab-pane fade" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
+                <div class="table-responsive" style="max-height: 70vh;">
+                    <table class="table table-striped">
+                        <thead style="position: sticky; top: 0; z-index: 1010; background-color: #ffffff;">
+                            <tr>
+                                <th style="width: 5%;"><i class="fas fa-check"></i></th>
+                                <th style="width: 85%;">Proveedor Médico</th>
+                                <th style="width: 10%;">C. Pagar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($result4 as $item)
+                                <tr>
+                                    <td><i class="fas fa-check"></i></td>
+                                    <td>{{ $item['proveedorasignado'] }}</td>
+                                    <td>
+                                        <abbr title="VER REGISTROS">
+                                            <a class="btn btn-sm btn-botongris" data-toggle="modal" data-target="#modalproveedores{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                        </abbr>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody> 
+                    </table>
+                </div>
+            </div>
+
+            {{-- PROVEEDORES DE SERVICIOS --}}
+            <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
+                <div class="table-responsive" style="max-height: 70vh;">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead style="position: sticky; top: 0; z-index: 1010; background-color: #ffffff;">
+                                <tr>
+                                    <th style="width: 5%;"><i class="fas fa-check"></i></th>
+                                    <th style="width: 85%;">Fecha de C. Cobrar</th>
+                                    <th style="width: 10%;">C. Cobrar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $estadosDeseados = ['PENDIENTE', 'PAGO PROCESADO', 'SALDO PENDIENTE'];
+
+                                    $proveedoresConPendientes = $cuentaspagar
+                                        ->groupBy('fechaasignada')
+                                        ->filter(function ($items) {
+                                            return $items->contains(function ($item) {
+                                                return $item->estado !== 'PAGO PROCESADO';
+                                            });
+                                        })
+                                        ->sortKeys();
+                                @endphp
+
+                                @foreach ($proveedoresConPendientes as $fechaasignada => $cuentas)
+                                    <tr>
+                                        <td><i class="fas fa-check"></i></td>
+                                        <td>{{ $fechaasignada }}</td>
+                                        <td>
+                                            <abbr title="VER REGISTROS">
+                                                <button type="button" class="btn btn-sm btn-botongris" data-toggle="modal" data-target="#modalProveedor{{ Str::slug($fechaasignada) }}">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </abbr>
+                                            <!-- Modal -->
+                                            <div class="modal fade" id="modalProveedor{{ Str::slug($fechaasignada) }}" tabindex="-1" role="dialog">
+                                                <div class="modal-dialog modal-xl" role="document">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header d-block text-center py-4" style="background: #efefef">
+                                                            <div class="mb-3">
+                                                                <h4 class="modal-title font-weight-bold">
+                                                                    <strong>CUENTAS POR COBRAR DEL: {{ $fechaasignada }}</strong>
+                                                                </h4>
+                                                                <button type="button" class="close position-absolute" style="top: 10px; right: 10px;" data-dismiss="modal" aria-label="Close">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="modal-body">
+                                                            <ul class="nav nav-tabs" id="tabsProveedor{{ Str::slug($fechaasignada) }}">
+                                                                <li class="nav-item">
+                                                                    <a class="nav-link active" data-toggle="tab" href="#pendientes{{ Str::slug($fechaasignada) }}">PAGOS PENDIENTES</a>
+                                                                </li>
+                                                                <li class="nav-item">
+                                                                    <a class="nav-link" data-toggle="tab" href="#finalizados{{ Str::slug($fechaasignada) }}">PAGOS PROCESADOS</a>
+                                                                </li>
+                                                            </ul>
+
+                                                            <!-- Contenido de las pestañas -->
+                                                            <div class="tab-content mt-3">
+                                                                <!-- Pestaña PENDIENTES -->
+                                                                <div id="pendientes{{ Str::slug($fechaasignada) }}" class="tab-pane fade show active">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-striped">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th style="background-color: white">ID Reg.</th>
+                                                                                    <th style="background-color: white">Proveedor/Cliente</th>
+                                                                                    <th style="background-color: white">Tipo</th>
+                                                                                    <th style="background-color: white">Detalle</th>
+                                                                                    <th style="background-color: white">Fecha_Cobrar</th>
+                                                                                    <th style="background-color: white">N.Cuenta_Destino</th>
+                                                                                    <th style="background-color: white">Subto.</th>
+                                                                                    <th style="background-color: white">Desc.</th>
+                                                                                    <th style="background-color: white">Total</th>
+                                                                                    <th style="background-color: white">Estado</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                @foreach ($cuentas->whereIn('estado', ['PENDIENTE', 'SALDO PENDIENTE']) as $pendiente)
+                                                                                    <tr>
+                                                                                        <td>{{ $pendiente->id }}</td>
+                                                                                        <td>{{ $pendiente->proveedornombre }}</td>
+                                                                                        <td>{{ $pendiente->tipoorden }}</td>
+                                                                                        <td>{{ $pendiente->detalleproducto }}</td>
+                                                                                        <td>{{ $pendiente->fechaasignada }}</td>
+                                                                                        <td>{{ $pendiente->nrobancodestino  ?? 0 }}</td>
+                                                                                        <td>{{ $pendiente->subtotal }}</td>
+                                                                                        <td>{{ $pendiente->descuento }}</td>
+                                                                                        <td>{{ $pendiente->montototal }}</td>
+                                                                                        <td>
+                                                                                            @if ($pendiente->estado == 'PENDIENTE')
+                                                                                                <span class="badge badge-danger">{{ $pendiente->estado }}</span>
+                                                                                            @else
+                                                                                                <span class="badge badge-warning">{{ $pendiente->estado }}</span>
+                                                                                            @endif
+                                                                                        </td>
+                                                                                    </tr>
+                                                                                @endforeach
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Pestaña FINALIZADOS -->
+                                                                <div id="finalizados{{ Str::slug($fechaasignada) }}" class="tab-pane fade">
+                                                                    <div class="table-responsive">
+                                                                        <table class="table table-striped">
+                                                                            <thead>
+                                                                                <tr>
+                                                                                    <th style="background-color: white">ID Reg.</th>
+                                                                                    <th style="background-color: white">Proveedor/Cliente</th>
+                                                                                    <th style="background-color: white">Tipo</th>
+                                                                                    <th style="background-color: white">Detalle</th>
+                                                                                    <th style="background-color: white">Fecha_Cobrar</th>
+                                                                                    <th style="background-color: white">N.Cuenta_Destino</th>
+                                                                                    <th style="background-color: white">Subto.</th>
+                                                                                    <th style="background-color: white">Desc.</th>
+                                                                                    <th style="background-color: white">Total</th>
+                                                                                    <th style="background-color: white">Estado</th>
+                                                                                </tr>
+                                                                            </thead>
+                                                                            <tbody>
+                                                                                @foreach ($cuentas->where('estado', 'PAGO PROCESADO') as $finalizado)
+                                                                                <tr>
+                                                                                    <td>{{ $finalizado->id }}</td>
+                                                                                    <td>{{ $finalizado->proveedornombre }}</td>
+                                                                                    <td>{{ $finalizado->tipoorden }}</td>
+                                                                                    <td>{{ $finalizado->detalleproducto }}</td>
+                                                                                    <td>{{ $finalizado->fechaasignada }}</td>
+                                                                                    <td>{{ $finalizado->nrobancodestino  ?? 0 }}</td>
+                                                                                    <td>{{ $finalizado->subtotal }}</td>
+                                                                                    <td>{{ $finalizado->descuento }}</td>
+                                                                                    <td>{{ $finalizado->montototal }}</td>
+                                                                                    <td>
+                                                                                        @if ($finalizado->estado == 'PAGO PROCESADO')
+                                                                                            <span class="badge badge-success">{{ $finalizado->estado }}</span>
+                                                                                        @else
+                                                                                            <span class="badge badge-danger">{{ $finalizado->estado }}</span>
+                                                                                        @endif
+                                                                                    </td>
+                                                                                </tr>
+                                                                                @endforeach
+                                                                            </tbody>
+                                                                        </table>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <a type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody> 
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -367,13 +588,6 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    {{-- <div class="mb-2 d-flex justify-content-between px-4">
-                        <div class="w-100 text-center zoom-badge">
-                            <span class="badge badge-success py-2 px-4 font-weight-bold">
-                                INGRESOS: <strong>{{ number_format($sumaPrecios, 2) }} Bs.</strong>
-                            </span>
-                        </div>
-                    </div> --}}
                 </div>
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs" id="tabs-{{ $loop->index }}">
@@ -399,105 +613,126 @@
                     <div class="tab-content" id="tabsContent-{{ $loop->index }}">
                         {{-- ATENCION PENDIENTE --}}
                         <div class="tab-pane fade show active" id="tab-content-completos-{{ $loop->index }}" role="tabpanel" aria-labelledby="tab-completos-{{ $loop->index }}">
-                            <div class="table-responsive" style="max-height: 65vh;">
-                                <table class="table table-striped">
-                                    <thead style="position: sticky; top: 0; z-index: 1010; background-color: #f8f9fa;">
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Est. / Esp.</th>
-                                            <th>Proveedor</th>
-                                            <th>Atención</th>
-                                            <th>Precio</th>
-                                            <th>Prog.</th>
-                                            <th>Informe</th>
-                                            <th>Fecha_Pago</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($item['acciones'] as $accion) 
-                                            @php
-                                                $hoy = \Carbon\Carbon::now();
-                                                $fechabateria = \Carbon\Carbon::parse($item['fechabateria']);
-                                                $diasDesdeBateria = $fechabateria->diffInDays($hoy);
-                                                $fechaprogramacion = $accion['fechaprogramacion'] ? \Carbon\Carbon::parse($accion['fechaprogramacion']) : null;
-                                                $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
-                                            @endphp
+                            <form method="POST" action="{{ route('actualizar.cantidadcuotas') }}">
+                                @csrf
+                                <div class="table-responsive" style="max-height: 65vh;">
+                                    <table class="table table-striped">
+                                        <thead style="position: sticky; top: 0; z-index: 1010; background-color: #f8f9fa;">
+                                            <tr>
+                                                <th>Cuot.</th>
+                                                <th>ID</th>
+                                                <th>Est. / Esp.</th>
+                                                <th>Proveedor</th>
+                                                <th>Atención</th>
+                                                <th>Precio</th>
+                                                <th>Prog.</th>
+                                                <th>Informe</th>
+                                                <th>Fecha_Pago</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($item['acciones'] as $accion) 
+                                                @php
+                                                    $hoy = \Carbon\Carbon::now();
+                                                    $fechabateria = \Carbon\Carbon::parse($item['fechabateria']);
+                                                    $diasDesdeBateria = $fechabateria->diffInDays($hoy);
+                                                    $fechaprogramacion = $accion['fechaprogramacion'] ? \Carbon\Carbon::parse($accion['fechaprogramacion']) : null;
+                                                    $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
+                                                @endphp
 
-                                            @if ($accion['accion'] !== 'INFORME FINAL')
-                                                @if (is_null($accion['fechaprogramacion']))
-                                                    <tr>
-                                                        <td>{{ $accion['id'] }}</td>
-                                                        <td>{{ $accion['accion'] }}</td>
-                                                        <td>{{ $accion['proveedorasignado'] }}</td>
-                                                        <td>{{ $accion['servicio'] }}</td>
-                                                        <td>{{ $accion['precio'] }}</td>
-                                                        <td>
-                                                            @if ($accion['fechaprogramacion'])
-                                                                {{ $accion['fechaprogramacion'] }}
-                                                            @else
-                                                                <div class="badge 
-                                                                    {{ $diasDesdeBateria >= 14 ? 'badge-danger' : 'badge-warning' }}">
-                                                                    PENDIENTE
+                                                @if ($accion['accion'] !== 'INFORME FINAL')
+                                                    @if (is_null($accion['fechaprogramacion']))
+                                                        <tr>
+                                                            <td>
+                                                                @if(is_null($accion['cantidadcuotas']) || $accion['cantidadcuotas'] == '')
+                                                                    <input type="checkbox" class="seleccionar-checkbox" name="seleccionados[]" value="{{ $accion['id'] }}">
+                                                                @else
+                                                                    <span class="badge badge-secondary fs-5 p-2">{{-- {{ $accion['cantidadcuotas'] }} --}}CON CRÉDITO</span>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $accion['id'] }}</td>
+                                                            <td>{{ $accion['accion'] }}</td>
+                                                            <td>{{ $accion['proveedorasignado'] }}</td>
+                                                            <td>{{ $accion['servicio'] }}</td>
+                                                            <td>{{ $accion['precio'] }}</td>
+                                                            <td>
+                                                                @if ($accion['fechaprogramacion'])
+                                                                    {{ $accion['fechaprogramacion'] }}
+                                                                @else
+                                                                    <div class="badge 
+                                                                        {{ $diasDesdeBateria >= 14 ? 'badge-danger' : 'badge-warning' }}">
+                                                                        PENDIENTE
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                            <td>
+                                                                @if ($accion['informedocumentacion'])
+                                                                    {{ $accion['informedocumentacion'] }}
+                                                                @else
+                                                                    <div class="badge 
+                                                                        {{ $fechaatencionprogramacion ? 'badge-danger' : 'badge-warning' }}">
+                                                                        PENDIENTE
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                            <td>
+                                                                @if ($accion['pagoservicioinforme'])
+                                                                <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                                    {{ $accion['pagoservicioinforme'] }}
                                                                 </div>
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            @if ($accion['informedocumentacion'])
-                                                                {{ $accion['informedocumentacion'] }}
-                                                            @else
-                                                                <div class="badge 
-                                                                    {{ $fechaatencionprogramacion ? 'badge-danger' : 'badge-warning' }}">
-                                                                    PENDIENTE
+                                                                @else
+                                                                    <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                        PENDIENTE
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endif
+                                                @else
+                                                    @if (is_null($accion['informedocumentacionfinal']))
+                                                        <tr>
+                                                            <td>
+                                                                @if(is_null($accion['cantidadcuotas']) || $accion['cantidadcuotas'] == '')
+                                                                    <input type="checkbox" class="seleccionar-checkbox" name="seleccionados[]" value="{{ $accion['id'] }}">
+                                                                @else
+                                                                    <span class="badge badge-secondary fs-5 p-2">{{-- {{ $accion['cantidadcuotas'] }} --}}CON CRÉDITO</span>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $accion['id'] }}</td>
+                                                            <td>{{ $accion['accion'] }}</td>
+                                                            <td>{{ $accion['proveedorasignado'] }}</td>
+                                                            <td>{{ $accion['servicio'] }}</td>
+                                                            <td>{{ $accion['precio'] }}</td>
+                                                            <td>-------------</td>
+                                                            <td>
+                                                                <span class="badge badge-warning">
+                                                                    {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                @if ($accion['pagoservicioinformefinal'])
+                                                                <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                                    {{ $accion['pagoservicioinformefinal'] }}
                                                                 </div>
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            @if ($accion['pagoservicioinforme'])
-                                                            <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
-                                                                {{ $accion['pagoservicioinforme'] }}
-                                                            </div>
-                                                            @else
-                                                                <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
-                                                                    PENDIENTE
-                                                                </div>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
+                                                                @else
+                                                                    <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                        PENDIENTE
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endif
                                                 @endif
-                                            @endif
-
-                                            @if ($accion['accion'] === 'INFORME FINAL')
-                                                @if (is_null($accion['informedocumentacionfinal']))
-                                                    <tr>
-                                                        <td>{{ $accion['id'] }}</td>
-                                                        <td>{{ $accion['accion'] }}</td>
-                                                        <td>{{ $accion['proveedorasignado'] }}</td>
-                                                        <td>{{ $accion['servicio'] }}</td>
-                                                        <td>{{ $accion['precio'] }}</td>
-                                                        <td>-------------</td>
-                                                        <td>
-                                                            <span class="badge badge-warning">
-                                                                {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            @if ($accion['pagoservicioinformefinal'])
-                                                            <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
-                                                                {{ $accion['pagoservicioinformefinal'] }}
-                                                            </div>
-                                                            @else
-                                                                <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
-                                                                    PENDIENTE
-                                                                </div>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endif
-                                            @endif
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    <div class="mb-3 d-flex align-items-center">
+                                        <input type="number" id="cuotasGlobal" name="cantidadcuotas" class="form-control form-control-sm me-2" min="2" max="5" style="width: 200px;" placeholder="NRO. CUOTAS" required>
+                                        <button type="submit" class="btn btn-sm btn-outline-success">ASIGNAR CUOTAS</button>
+                                    </div>
+                                    <small class="text-muted" style="font-style: italic; margin-top: -10px;">AL ASIGNAR CUOTAS TAMBIÉN SE GENERARÁ UNA CUENTA POR COBRAR POR LETRA DE CAMBIO</small>
+                                </div>
+                            </form>
                         </div>
 
                         {{-- ATENCION COMPLETA E INFORMES PENDIENTES --}}
@@ -570,32 +805,7 @@
                                         @endif
 
                                         @if ($accion['accion'] === 'INFORME FINAL')
-                                            {{-- @if (!is_null($accion['fechaprogramacion']) && is_null($accion['informedocumentacionfinal']))
-                                                <tr>
-                                                    <td>{{ $accion['id'] }}</td>
-                                                    <td>{{ $accion['accion'] }}</td>
-                                                    <td>{{ $accion['proveedorasignado'] }}</td>
-                                                    <td>{{ $accion['servicio'] }}</td>
-                                                    <td>{{ $accion['precio'] }}</td>
-                                                    <td>-------------</td>
-                                                    <td colspan="2" class="text-center">
-                                                        <span class="badge badge-warning">
-                                                            {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        @if ($accion['pagoservicioinformefinal'])
-                                                        <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
-                                                            {{ $accion['pagoservicioinformefinal'] }}
-                                                        </div>
-                                                        @else
-                                                            <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
-                                                                PENDIENTE
-                                                            </div>
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                            @endif --}}
+                                            
                                         @endif
                                         @endforeach
                                     </tbody>
@@ -700,7 +910,6 @@
                                                 @endif
                                             @endif
                                         @endforeach
-        
                                     </tbody>
                                 </table>
                             </div>
@@ -740,13 +949,6 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    {{-- <div class="mb-2 d-flex justify-content-between px-4">
-                        <div class="w-100 text-center zoom-badge">
-                            <span class="badge badge-success py-2 px-4 font-weight-bold">
-                                INGRESOS: <strong>{{ number_format($sumaPrecios, 2) }} Bs.</strong>
-                            </span>
-                        </div>
-                    </div> --}}
                 </div>
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs" id="tabs-{{ $loop->index }}">
@@ -772,105 +974,128 @@
                     <div class="tab-content" id="tabsContent-{{ $loop->index }}">
                         {{-- ATENCION PENDIENTE --}}
                         <div class="tab-pane fade show active" id="tab-content-completosauditoria-{{ $loop->index }}" role="tabpanel" aria-labelledby="tab-completosauditoria-{{ $loop->index }}">
-                            <div class="table-responsive" style="max-height: 65vh;">
-                                <table class="table table-striped">
-                                    <thead style="position: sticky; top: 0; z-index: 1010; background-color: #f8f9fa;">
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Est. / Esp.</th>
-                                            <th>Proveedor</th>
-                                            <th>Atención</th>
-                                            <th>Precio</th>
-                                            <th>Prog.</th>
-                                            <th>Informe</th>
-                                            <th>Fecha_Pago</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($item['acciones'] as $accion) 
-                                            @php
-                                                $hoy = \Carbon\Carbon::now();
-                                                $fechabateria = \Carbon\Carbon::parse($item['fechabateria']);
-                                                $diasDesdeBateria = $fechabateria->diffInDays($hoy);
-                                                $fechaprogramacion = $accion['fechaprogramacion'] ? \Carbon\Carbon::parse($accion['fechaprogramacion']) : null;
-                                                $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
-                                            @endphp
+                            <form method="POST" action="{{ route('actualizar.cantidadcuotas') }}">
+                                @csrf
+                                <div class="table-responsive" style="max-height: 65vh;">
+                                    <table class="table table-striped">
+                                        <thead style="position: sticky; top: 0; z-index: 1010; background-color: #f8f9fa;">
+                                            <tr>
+                                                <th>Cuot.</th>
+                                                <th>ID</th>
+                                                <th>Est. / Esp.</th>
+                                                <th>Proveedor</th>
+                                                <th>Atención</th>
+                                                <th>Precio</th>
+                                                <th>Prog.</th>
+                                                <th>Informe</th>
+                                                <th>Fecha_Pago</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($item['acciones'] as $accion) 
+                                                @php
+                                                    $hoy = \Carbon\Carbon::now();
+                                                    $fechabateria = \Carbon\Carbon::parse($item['fechabateria']);
+                                                    $diasDesdeBateria = $fechabateria->diffInDays($hoy);
+                                                    $fechaprogramacion = $accion['fechaprogramacion'] ? \Carbon\Carbon::parse($accion['fechaprogramacion']) : null;
+                                                    $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
+                                                @endphp
 
-                                            @if ($accion['accion'] !== 'INFORME FINAL')
-                                                @if (is_null($accion['fechaprogramacion']))
-                                                    <tr>
-                                                        <td>{{ $accion['id'] }}</td>
-                                                        <td>{{ $accion['accion'] }}</td>
-                                                        <td>{{ $accion['proveedorasignado'] }}</td>
-                                                        <td>{{ $accion['servicio'] }}</td>
-                                                        <td>{{ $accion['precio'] }}</td>
-                                                        <td>
-                                                            @if ($accion['fechaprogramacion'])
-                                                                {{ $accion['fechaprogramacion'] }}
-                                                            @else
-                                                                <div class="badge 
-                                                                    {{ $diasDesdeBateria >= 14 ? 'badge-danger' : 'badge-warning' }}">
-                                                                    PENDIENTE
+                                                @if ($accion['accion'] !== 'INFORME FINAL')
+                                                    @if (is_null($accion['fechaprogramacion']))
+                                                        <tr>
+                                                            <td>
+                                                                @if(is_null($accion['cantidadcuotas']) || $accion['cantidadcuotas'] == '')
+                                                                    <input type="checkbox" class="seleccionar-checkbox" name="seleccionados[]" value="{{ $accion['id'] }}">
+                                                                @else
+                                                                    <span class="badge badge-secondary fs-5 p-2">{{-- {{ $accion['cantidadcuotas'] }} --}}CON CRÉDITO</span>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $accion['id'] }}</td>
+                                                            <td>{{ $accion['accion'] }}</td>
+                                                            <td>{{ $accion['proveedorasignado'] }}</td>
+                                                            <td>{{ $accion['servicio'] }}</td>
+                                                            <td>{{ $accion['precio'] }}</td>
+                                                            <td>
+                                                                @if ($accion['fechaprogramacion'])
+                                                                    {{ $accion['fechaprogramacion'] }}
+                                                                @else
+                                                                    <div class="badge 
+                                                                        {{ $diasDesdeBateria >= 14 ? 'badge-danger' : 'badge-warning' }}">
+                                                                        PENDIENTE
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                            <td>
+                                                                @if ($accion['informedocumentacion'])
+                                                                    {{ $accion['informedocumentacion'] }}
+                                                                @else
+                                                                    <div class="badge 
+                                                                        {{ $fechaatencionprogramacion ? 'badge-danger' : 'badge-warning' }}">
+                                                                        PENDIENTE
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                            <td>
+                                                                @if ($accion['pagoservicioinforme'])
+                                                                <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                                    {{ $accion['pagoservicioinforme'] }}
                                                                 </div>
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            @if ($accion['informedocumentacion'])
-                                                                {{ $accion['informedocumentacion'] }}
-                                                            @else
-                                                                <div class="badge 
-                                                                    {{ $fechaatencionprogramacion ? 'badge-danger' : 'badge-warning' }}">
-                                                                    PENDIENTE
-                                                                </div>
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            @if ($accion['pagoservicioinforme'])
-                                                            <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
-                                                                {{ $accion['pagoservicioinforme'] }}
-                                                            </div>
-                                                            @else
-                                                                <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
-                                                                    PENDIENTE
-                                                                </div>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
+                                                                @else
+                                                                    <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                        PENDIENTE
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endif
                                                 @endif
-                                            @endif
 
-                                            @if ($accion['accion'] === 'INFORME FINAL')
-                                                @if (is_null($accion['informedocumentacionfinal']))
-                                                    <tr>
-                                                        <td>{{ $accion['id'] }}</td>
-                                                        <td>{{ $accion['accion'] }}</td>
-                                                        <td>{{ $accion['proveedorasignado'] }}</td>
-                                                        <td>{{ $accion['servicio'] }}</td>
-                                                        <td>{{ $accion['precio'] }}</td>
-                                                        <td>-------------</td>
-                                                        <td>
-                                                            <span class="badge badge-warning">
-                                                                {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
-                                                            </span>
-                                                        </td>
-                                                        <td>
-                                                            @if ($accion['pagoservicioinformefinal'])
-                                                            <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
-                                                                {{ $accion['pagoservicioinformefinal'] }}
-                                                            </div>
-                                                            @else
-                                                                <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
-                                                                    PENDIENTE
+                                                @if ($accion['accion'] === 'INFORME FINAL')
+                                                    @if (is_null($accion['informedocumentacionfinal']))
+                                                        <tr>
+                                                            <td>
+                                                                @if(is_null($accion['cantidadcuotas']) || $accion['cantidadcuotas'] == '')
+                                                                    <input type="checkbox" class="seleccionar-checkbox" name="seleccionados[]" value="{{ $accion['id'] }}">
+                                                                @else
+                                                                    <span class="badge badge-secondary fs-5 p-2">{{-- {{ $accion['cantidadcuotas'] }} --}}CON CRÉDITO</span>
+                                                                @endif
+                                                            </td>
+                                                            <td>{{ $accion['id'] }}</td>
+                                                            <td>{{ $accion['accion'] }}</td>
+                                                            <td>{{ $accion['proveedorasignado'] }}</td>
+                                                            <td>{{ $accion['servicio'] }}</td>
+                                                            <td>{{ $accion['precio'] }}</td>
+                                                            <td>-------------</td>
+                                                            <td>
+                                                                <span class="badge badge-warning">
+                                                                    {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
+                                                                </span>
+                                                            </td>
+                                                            <td>
+                                                                @if ($accion['pagoservicioinformefinal'])
+                                                                <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                                    {{ $accion['pagoservicioinformefinal'] }}
                                                                 </div>
-                                                            @endif
-                                                        </td>
-                                                    </tr>
+                                                                @else
+                                                                    <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                        PENDIENTE
+                                                                    </div>
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endif
                                                 @endif
-                                            @endif
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    <div class="mb-3 d-flex align-items-center">
+                                        <input type="number" id="cuotasGlobal" name="cantidadcuotas" class="form-control form-control-sm me-2" min="2" max="5" style="width: 200px;" placeholder="NRO. CUOTAS" required>
+                                        <button type="submit" class="btn btn-sm btn-outline-success">ASIGNAR CUOTAS</button>
+                                    </div>
+                                    <small class="text-muted" style="font-style: italic; margin-top: -10px;">AL ASIGNAR CUOTAS TAMBIÉN SE GENERARÁ UNA CUENTA POR COBRAR POR LETRA DE CAMBIO</small>
+                                </div>
+                            </form>
                         </div>
 
                         {{-- ATENCION COMPLETA E INFORMES PENDIENTES --}}
@@ -1000,32 +1225,15 @@
                                             $fechaprogramacion = $accion['fechaprogramacion'] ? \Carbon\Carbon::parse($accion['fechaprogramacion']) : null;
                                             $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
                                         @endphp
-                                        @if (!is_null($accion['fechaprogramacion']) && (!is_null($accion['informedocumentacion']) || !is_null($accion['informedocumentacionfinal'])) && (!is_null($accion['pagoservicioinforme']) || !is_null($accion['pagoservicioinformefinal'])))
-                                            <tr>
-                                                <td>{{ $accion['id'] }}</td>
-                                                <td>{{ $accion['accion'] }}</td>
-                                                <td>{{ $accion['proveedorasignado'] }}</td>
-                                                <td>{{ $accion['servicio'] }}</td>
-                                                <td>{{ $accion['precio'] }}</td>
-                                                @if ($accion['accion'] === 'INFORME FINAL')
-                                                    <td>-------------</td>
-                                                    <td colspan="2" class="text-center">
-                                                        <span class="badge badge-warning">
-                                                            {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        @if ($accion['pagoservicioinformefinal'])
-                                                        <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
-                                                            {{ $accion['pagoservicioinformefinal'] }}
-                                                        </div>
-                                                        @else
-                                                            <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
-                                                                PENDIENTE
-                                                            </div>
-                                                        @endif
-                                                    </td>
-                                                @else
+
+                                        @if ($accion['accion'] !== 'INFORME FINAL')
+                                            @if (!is_null($accion['fechaprogramacion']) && !is_null($accion['informedocumentacion'])/*  && !is_null($accion['pagoservicioinforme']) */)
+                                                <tr>
+                                                    <td>{{ $accion['id'] }}</td>
+                                                    <td>{{ $accion['accion'] }}</td>
+                                                    <td>{{ $accion['proveedorasignado'] }}</td>
+                                                    <td>{{ $accion['servicio'] }}</td>
+                                                    <td>{{ $accion['precio'] }}</td>
                                                     <td>
                                                         @if ($accion['fechaprogramacion'])
                                                             {{ $accion['fechaprogramacion'] }}
@@ -1057,11 +1265,39 @@
                                                             </div>
                                                         @endif
                                                     </td>
-                                                @endif
-                                            </tr>
+                                                </tr>
                                             @endif
-                                    @endforeach
-        
+                                        @endif
+
+                                        @if ($accion['accion'] === 'INFORME FINAL')
+                                            @if (!is_null($accion['informedocumentacionfinal']) && !is_null($accion['pagoservicioinformefinal']))
+                                                <tr>
+                                                    <td>{{ $accion['id'] }}</td>
+                                                    <td>{{ $accion['accion'] }}</td>
+                                                    <td>{{ $accion['proveedorasignado'] }}</td>
+                                                    <td>{{ $accion['servicio'] }}</td>
+                                                    <td>{{ $accion['precio'] }}</td>
+                                                    <td>-------------</td>
+                                                    <td colspan="2" class="text-center">
+                                                        <span class="badge badge-warning">
+                                                            {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        @if ($accion['pagoservicioinformefinal'])
+                                                        <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                            {{ $accion['pagoservicioinformefinal'] }}
+                                                        </div>
+                                                        @else
+                                                            <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                PENDIENTE
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                                @endif
+                                            @endif
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -1101,13 +1337,6 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    {{-- <div class="mb-2 d-flex justify-content-between px-4">
-                        <div class="w-100 text-center zoom-badge">
-                            <span class="badge badge-success py-2 px-4 font-weight-bold">
-                                INGRESOS: <strong>{{ number_format($sumaPrecios, 2) }} Bs.</strong>
-                            </span>
-                        </div>
-                    </div> --}}
                 </div>
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs" id="tabs-{{ $loop->index }}">
@@ -1143,7 +1372,6 @@
                                             <th>Atención</th>
                                             <th>Precio</th>
                                             <th>Prog.</th>
-                                            {{-- <th>Informe</th> --}}
                                             <th>Fecha_Pago</th>
                                         </tr>
                                     </thead>
@@ -1175,16 +1403,6 @@
                                                                 </div>
                                                             @endif
                                                         </td>
-                                                        {{-- <td>
-                                                            @if ($accion['informedocumentacion'])
-                                                                {{ $accion['informedocumentacion'] }}
-                                                            @else
-                                                                <div class="badge 
-                                                                    {{ $fechaatencionprogramacion ? 'badge-danger' : 'badge-warning' }}">
-                                                                    PENDIENTE
-                                                                </div>
-                                                            @endif
-                                                        </td> --}}
                                                         <td>
                                                             @if ($accion['pagoservicioinforme'])
                                                             <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
@@ -1209,11 +1427,6 @@
                                                         <td>{{ $accion['servicio'] }}</td>
                                                         <td>{{ $accion['precio'] }}</td>
                                                         <td>-------------</td>
-                                                        {{-- <td>
-                                                            <span class="badge badge-warning">
-                                                                {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
-                                                            </span>
-                                                        </td> --}}
                                                         <td>
                                                             @if ($accion['pagoservicioinformefinal'])
                                                             <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
@@ -1246,7 +1459,6 @@
                                             <th>Atención</th>
                                             <th>Precio</th>
                                             <th>Prog.</th>
-                                            {{-- <th>Informe</th> --}}
                                             <th>Fecha_Pago</th>
                                         </tr>
                                     </thead>
@@ -1260,7 +1472,7 @@
                                             $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
                                         @endphp
                                         @if ($accion['accion'] !== 'INFORME FINAL')
-                                            @if (!is_null($accion['fechaprogramacion']) && (is_null($accion['informedocumentacion'])))
+                                            @if (!is_null($accion['fechaprogramacion']) && is_null($accion['informedocumentacion']) && is_null($accion['pagoservicioinforme']))
                                                 <tr>
                                                     <td>{{ $accion['id'] }}</td>
                                                     <td>{{ $accion['accion'] }}</td>
@@ -1277,16 +1489,6 @@
                                                             </div>
                                                         @endif
                                                     </td>
-                                                    {{-- <td>
-                                                        @if ($accion['informedocumentacion'])
-                                                            {{ $accion['informedocumentacion'] }}
-                                                        @else
-                                                            <div class="badge 
-                                                                {{ $fechaatencionprogramacion ? 'badge-danger' : 'badge-warning' }}">
-                                                                PENDIENTE
-                                                            </div>
-                                                        @endif
-                                                    </td> --}}
                                                     <td>
                                                         @if ($accion['pagoservicioinforme'])
                                                         <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
@@ -1311,11 +1513,6 @@
                                                     <td>{{ $accion['servicio'] }}</td>
                                                     <td>{{ $accion['precio'] }}</td>
                                                     <td>-------------</td>
-                                                    {{-- <td colspan="2" class="text-center">
-                                                        <span class="badge badge-warning">
-                                                            {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
-                                                        </span>
-                                                    </td> --}}
                                                     <td>
                                                         @if ($accion['pagoservicioinformefinal'])
                                                         <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
@@ -1348,33 +1545,310 @@
                                             <th>Atención</th>
                                             <th>Precio</th>
                                             <th>Prog.</th>
-                                            {{-- <th>Informe</th> --}}
                                             <th>Fecha_Pago</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($item['acciones'] as $accion) 
-                                        @php
-                                            $hoy = \Carbon\Carbon::now();
-                                            $fechabateria = \Carbon\Carbon::parse($item['fechabateria']);
-                                            $diasDesdeBateria = $fechabateria->diffInDays($hoy);
-                                            $fechaprogramacion = $accion['fechaprogramacion'] ? \Carbon\Carbon::parse($accion['fechaprogramacion']) : null;
-                                            $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
-                                        @endphp
-                                        @if (!is_null($accion['fechaprogramacion']) && (!is_null($accion['informedocumentacion']) || !is_null($accion['informedocumentacionfinal'])) && (!is_null($accion['pagoservicioinforme']) || !is_null($accion['pagoservicioinformefinal'])))
+                                            @php
+                                                $hoy = \Carbon\Carbon::now();
+                                                $fechabateria = \Carbon\Carbon::parse($item['fechabateria']);
+                                                $diasDesdeBateria = $fechabateria->diffInDays($hoy);
+                                                $fechaprogramacion = $accion['fechaprogramacion'] ? \Carbon\Carbon::parse($accion['fechaprogramacion']) : null;
+                                                $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
+                                            @endphp
+                                            @if (/* !is_null($accion['fechaprogramacion']) && !is_null($accion['informedocumentacion']) &&  */!is_null($accion['pagoservicioinforme']))
+                                                <tr>
+                                                    <td>{{ $accion['id'] }}</td>
+                                                    <td>{{ $accion['accion'] }}</td>
+                                                    <td>{{ $accion['proveedorasignado'] }}</td>
+                                                    <td>{{ $accion['servicio'] }}</td>
+                                                    <td>{{ $accion['precio'] }}</td>
+                                                    @if ($accion['accion'] === 'INFORME FINAL')
+                                                        <td>-------------</td>
+                                                        <td>
+                                                            @if ($accion['pagoservicioinformefinal'])
+                                                            <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                                {{ $accion['pagoservicioinformefinal'] }}
+                                                            </div>
+                                                            @else
+                                                                <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                    PENDIENTE
+                                                                </div>
+                                                            @endif
+                                                        </td>
+                                                    @else
+                                                        <td>
+                                                            @if ($accion['fechaprogramacion'])
+                                                                {{ $accion['fechaprogramacion'] }}
+                                                            @else
+                                                                <div class="badge 
+                                                                    {{ $diasDesdeBateria >= 14 ? 'badge-danger' : 'badge-warning' }}">
+                                                                    PENDIENTE
+                                                                </div>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if ($accion['pagoservicioinforme'])
+                                                            <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                                {{ $accion['pagoservicioinforme'] }}
+                                                            </div>
+                                                            @else
+                                                                <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                    PENDIENTE
+                                                                </div>
+                                                            @endif
+                                                        </td>
+                                                    @endif
+                                                </tr>
+                                                @endif
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</a>
+                </div>
+            </div>
+        </div>
+    </div>
+@endforeach
+
+@foreach ($result4 as $item)
+    <div class="modal fade" id="modalproveedores{{ $loop->index }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ $loop->index }}" aria-hidden="true"> 
+        <div class="modal-dialog modal-xxl" role="document"> 
+            <div class="modal-content">
+                @php 
+                    $sumaPrecios = collect($item['acciones'])->sum(function ($accion) use ($item) {
+                        return (!is_null($accion['informedocumentacion']) || !is_null($accion['informedocumentacionfinal'])) 
+                            && is_numeric($accion['precio']) 
+                            ? $accion['precio'] : 0;
+                    });
+                @endphp
+                <div class="modal-header d-block text-center py-4" style="background: #efefef">
+                    <div class="mb-3">
+                        <h4 class="modal-title font-weight-bold" id="modalLabel{{ $loop->index }}">
+                            <strong>{{ $item['proveedorasignado'] }}</strong>
+                        </h4>
+                        <button type="button" class="close position-absolute" style="top: 10px; right: 10px;" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" id="tabs-{{ $loop->index }}">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="tab-completosproveedor-{{ $loop->index }}" data-toggle="tab" href="#tab-content-completosproveedor-{{ $loop->index }}" role="tab" aria-controls="tab-content-completosproveedor-{{ $loop->index }}" aria-selected="true">
+                                INFORMES COMPLETOS Y PAGOS PENDIENTES
+                            </a>
+                        </li> 
+                        <li class="nav-item">
+                            <a class="nav-link" id="tab-pendientesproveedor-{{ $loop->index }}" data-toggle="tab" href="#tab-content-pendientesproveedor-{{ $loop->index }}" role="tab" aria-controls="tab-content-pendientesproveedor-{{ $loop->index }}" aria-selected="false">
+                                INFORMES PENDIENTES
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="tab-completosprocesadosproveedor-{{ $loop->index }}" data-toggle="tab" href="#tab-content-completosprocesadosproveedor-{{ $loop->index }}" role="tab" aria-controls="tab-content-completosprocesadosproveedor-{{ $loop->index }}" aria-selected="false">
+                                INFORMES COMPLETOS Y PAGOS PROCESADOS
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="tabsContent-{{ $loop->index }}">
+                        {{-- INFORMES COMPLETOS Y PAGOS PENDIENTES --}}
+                        <div class="tab-pane fade show active" id="tab-content-completosproveedor-{{ $loop->index }}" role="tabpanel" aria-labelledby="tab-completosproveedor-{{ $loop->index }}">
+                            <form action="{{ route('actualizarFactura') }}" method="POST">
+                                @csrf
+                                <div class="table-responsive" style="max-height: 65vh;">
+                                    <table class="table table-striped">
+                                        <thead style="position: sticky; top: 0; z-index: 1010; background-color: #f8f9fa;">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Est./Esp.</th>
+                                                <th>Tipo Cli.</th>
+                                                <th>Cliente_ID</th>
+                                                <th>Cliente_Nombre</th>
+                                                <th>Fecha_Bateria</th>
+                                                <th>Pago</th>
+                                                <th>Prog.</th>
+                                                <th>Informe</th>
+                                                <th>Fecha_Pago</th>
+                                                <th hidden>ID Prog</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($item['acciones'] as $accion) 
+                                                @php
+                                                    $hoy = \Carbon\Carbon::now();
+                                                    $fechabateria = \Carbon\Carbon::parse($item['fechabateria']);
+                                                    $diasDesdeBateria = $fechabateria->diffInDays($hoy);
+                                                    $fechaprogramacion = $accion['fechaprogramacion'] ? \Carbon\Carbon::parse($accion['fechaprogramacion']) : null;
+                                                    $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
+                                                @endphp
+                                                
+                                                @if ($accion['accion'] !== 'INFORME FINAL')
+                                                    @if (!is_null($accion['informedocumentacion']) && is_null($accion['pagoservicioinforme']))
+                                                    <tr>
+                                                        <td>{{ $accion['id'] }}</td>
+                                                        <td title="{{ $accion['accion'] }}" class="truncar">{{ $accion['accion'] }}</td>
+                                                        <td>
+                                                            @if($accion['clienteitaid'] !== null)
+                                                                ITA
+                                                            @elseif($accion['clienteauditoriaid'] !== null)
+                                                                AUDITORIA
+                                                            @elseif($accion['clientecomunid'] !== null)
+                                                                COMUN
+                                                            @else
+                                                                NINGUNO
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ $accion['clienteitaid'] }}{{ $accion['clienteauditoriaid'] }}{{ $accion['clientecomunid'] }}</td>
+                                                        <td title="{{ $accion['clienteitanombre'] }}{{ $accion['clienteauditorianombre'] }}{{ $accion['clientecomunnombre'] }}" class="truncar">{{ $accion['clienteitanombre'] }}{{ $accion['clienteauditorianombre'] }}{{ $accion['clientecomunnombre'] }}</td>
+                                                        <td>{{ $accion['fechabateria'] }}</td>
+                                                        <td>{{ number_format($accion['precio'] - $accion['preciocompra'], 2) }}</td>
+                                                        <td>
+                                                            @if ($accion['fechaprogramacion'])
+                                                                {{ $accion['fechaprogramacion'] }}
+                                                            @else
+                                                                <div class="badge 
+                                                                    {{ $diasDesdeBateria >= 14 ? 'badge-danger' : 'badge-warning' }}">
+                                                                    PENDIENTE
+                                                                </div>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if ($accion['informedocumentacion'])
+                                                                {{ $accion['informedocumentacion'] }}
+                                                            @else
+                                                                <div class="badge 
+                                                                    {{ $fechaatencionprogramacion ? 'badge-danger' : 'badge-warning' }}">
+                                                                    PENDIENTE
+                                                                </div>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if ($accion['pagoservicioinforme'])
+                                                            <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                                {{ $accion['pagoservicioinforme'] }}
+                                                            </div>
+                                                            @else
+                                                                <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                    PENDIENTE
+                                                                </div>
+                                                            @endif
+                                                        </td>
+                                                        <td hidden>{{ $accion['idprogramacion'] }}</td>
+                                                    </tr>
+                                                    @endif
+                                                @endif
+
+                                                @if ($accion['accion'] === 'INFORME FINAL')
+                                                    @if (!is_null($accion['informedocumentacionfinal']) && is_null($accion['pagoservicioinformefinal']))
+                                                    <tr>
+                                                        <td>{{ $accion['id'] }}</td>
+                                                        <td title="{{ $accion['accion'] }}" class="truncar">{{ $accion['accion'] }}</td>
+                                                        <td>
+                                                            @if($accion['clienteitaid'] !== null)
+                                                                ITA
+                                                            @elseif($accion['clienteauditoriaid'] !== null)
+                                                                AUDITORIA
+                                                            @elseif($accion['clientecomunid'] !== null)
+                                                                COMUN
+                                                            @else
+                                                                NINGUNO
+                                                            @endif
+                                                        </td>
+                                                        <td>{{ $accion['clienteitaid'] }}{{ $accion['clienteauditoriaid'] }}{{ $accion['clientecomunid'] }}</td>
+                                                        <td title="{{ $accion['clienteitanombre'] }}{{ $accion['clienteauditorianombre'] }}{{ $accion['clientecomunnombre'] }}" class="truncar">{{ $accion['clienteitanombre'] }}{{ $accion['clienteauditorianombre'] }}{{ $accion['clientecomunnombre'] }}</td>
+                                                        <td>{{ $accion['fechabateria'] }}</td>
+                                                        <td>{{ number_format($accion['precio'] - $accion['preciocompra'], 2) }}</td>
+                                                        <td>
+                                                            {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
+                                                        </td>
+                                                        <td>
+                                                            {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
+                                                        </td>
+                                                        <td>
+                                                            @if ($accion['pagoservicioinformefinal'])
+                                                            <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                                {{ $accion['pagoservicioinformefinal'] }}
+                                                            </div>
+                                                            @else
+                                                                <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                    PENDIENTE
+                                                                </div>
+                                                            @endif
+                                                        </td>
+                                                        <td hidden>{{ $accion['provinfofinalid'] }}</td>
+                                                    </tr>
+                                                    @endif
+                                                @endif
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </form>
+                        </div>
+
+                        {{-- INFORMES PENDIENTES --}}
+                        <div class="tab-pane fade" id="tab-content-pendientesproveedor-{{ $loop->index }}" role="tabpanel" aria-labelledby="tab-pendientesproveedor-{{ $loop->index }}">
+                            <div class="table-responsive" style="max-height: 65vh;">
+                                <table class="table table-striped">
+                                    <thead style="position: sticky; top: 0; z-index: 1010; background-color: #f8f9fa;">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Est./Esp.</th>
+                                            <th>Tipo Cli.</th>
+                                            <th>Cliente_ID</th>
+                                            <th>Cliente_Nombre</th>
+                                            <th>Fecha_Bateria</th>
+                                            <th>Pago</th>
+                                            <th>Prog.</th>
+                                            <th>Informe</th>
+                                            <th>Fecha_Pago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($item['acciones'] as $accion) 
+                                            @php
+                                                $hoy = \Carbon\Carbon::now();
+                                                $fechabateria = \Carbon\Carbon::parse($item['fechabateria']);
+                                                $diasDesdeBateria = $fechabateria->diffInDays($hoy);
+                                                $fechaprogramacion = $accion['fechaprogramacion'] ? \Carbon\Carbon::parse($accion['fechaprogramacion']) : null;
+                                                $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
+                                            @endphp
+                                            @if (is_null($accion['informedocumentacion']) && is_null($accion['informedocumentacionfinal'])) 
                                             <tr>
                                                 <td>{{ $accion['id'] }}</td>
-                                                <td>{{ $accion['accion'] }}</td>
-                                                <td>{{ $accion['proveedorasignado'] }}</td>
-                                                <td>{{ $accion['servicio'] }}</td>
-                                                <td>{{ $accion['precio'] }}</td>
+                                                <td title="{{ $accion['accion'] }}" class="truncar">{{ $accion['accion'] }}</td>
+                                                <td>
+                                                    @if($accion['clienteitaid'] !== null)
+                                                        ITA
+                                                    @elseif($accion['clienteauditoriaid'] !== null)
+                                                        AUDITORIA
+                                                    @elseif($accion['clientecomunid'] !== null)
+                                                        COMUN
+                                                    @else
+                                                        NINGUNO
+                                                    @endif
+                                                </td>
+                                                <td>{{ $accion['clienteitaid'] }}{{ $accion['clienteauditoriaid'] }}{{ $accion['clientecomunid'] }}</td>
+                                                <td title="{{ $accion['clienteitanombre'] }}{{ $accion['clienteauditorianombre'] }}{{ $accion['clientecomunnombre'] }}" class="truncar">{{ $accion['clienteitanombre'] }}{{ $accion['clienteauditorianombre'] }}{{ $accion['clientecomunnombre'] }}</td>
+                                                <td>{{ $accion['fechabateria'] }}</td>
+                                                <td>{{ number_format((float) ($accion['precio'] ?? 0) - (float) ($accion['preciocompra'] ?? 0), 2) }}</td>
                                                 @if ($accion['accion'] === 'INFORME FINAL')
-                                                    <td>-------------</td>
-                                                    {{--< td colspan="2" class="text-center">
+                                                    <td>
+                                                        {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
+                                                    </td>
+                                                    <td>
                                                         <span class="badge badge-warning">
                                                             {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
                                                         </span>
-                                                    </td> --}}
+                                                    </td>
                                                     <td>
                                                         @if ($accion['pagoservicioinformefinal'])
                                                         <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
@@ -1397,7 +1871,7 @@
                                                             </div>
                                                         @endif
                                                     </td>
-                                                    {{-- <td>
+                                                    <td>
                                                         @if ($accion['informedocumentacion'])
                                                             {{ $accion['informedocumentacion'] }}
                                                         @else
@@ -1406,7 +1880,7 @@
                                                                 PENDIENTE
                                                             </div>
                                                         @endif
-                                                    </td> --}}
+                                                    </td>
                                                     <td>
                                                         @if ($accion['pagoservicioinforme'])
                                                         <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
@@ -1421,16 +1895,121 @@
                                                 @endif
                                             </tr>
                                             @endif
-                                    @endforeach
-        
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {{-- INFORMES COMPLETOS Y PAGOS PROCESADOS --}}
+                        <div class="tab-pane fade" id="tab-content-completosprocesadosproveedor-{{ $loop->index }}" role="tabpanel" aria-labelledby="tab-completosprocesadosproveedor-{{ $loop->index }}">
+                            <div class="table-responsive" style="max-height: 65vh;">
+                                <table class="table table-striped">
+                                    <thead style="position: sticky; top: 0; z-index: 1010; background-color: #f8f9fa;">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Est./Esp.</th>
+                                            <th>Tipo Cli.</th>
+                                            <th>Cliente_ID</th>
+                                            <th>Cliente_Nombre</th>
+                                            <th>Fecha_Bateria</th>
+                                            <th>Pago</th>
+                                            <th>Prog.</th>
+                                            <th>Informe</th>
+                                            <th>Fecha_Pago</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($item['acciones'] as $accion) 
+                                            @php
+                                                $hoy = \Carbon\Carbon::now();
+                                                $fechabateria = \Carbon\Carbon::parse($item['fechabateria']);
+                                                $diasDesdeBateria = $fechabateria->diffInDays($hoy);
+                                                $fechaprogramacion = $accion['fechaprogramacion'] ? \Carbon\Carbon::parse($accion['fechaprogramacion']) : null;
+                                                $fechaatencionprogramacion = $accion['fechaatencionprogramacion'] ? \Carbon\Carbon::parse($accion['fechaatencionprogramacion']) : null;
+                                            @endphp
+                                            @if ((!is_null($accion['informedocumentacion']) && !is_null($accion['pagoservicioinforme'])) || (!is_null($accion['informedocumentacionfinal']) && !is_null($accion['pagoservicioinformefinal'])))
+                                            <tr>
+                                                <td>{{ $accion['id'] }}</td>
+                                                <td title="{{ $accion['accion'] }}" class="truncar">{{ $accion['accion'] }}</td>
+                                                <td>
+                                                    @if($accion['clienteitaid'] !== null)
+                                                        ITA
+                                                    @elseif($accion['clienteauditoriaid'] !== null)
+                                                        AUDITORIA
+                                                    @elseif($accion['clientecomunid'] !== null)
+                                                        COMUN
+                                                    @else
+                                                        NINGUNO
+                                                    @endif
+                                                </td>
+                                                <td>{{ $accion['clienteitaid'] }}{{ $accion['clienteauditoriaid'] }}{{ $accion['clientecomunid'] }}</td>
+                                                <td title="{{ $accion['clienteitanombre'] }}{{ $accion['clienteauditorianombre'] }}{{ $accion['clientecomunnombre'] }}" class="truncar">{{ $accion['clienteitanombre'] }}{{ $accion['clienteauditorianombre'] }}{{ $accion['clientecomunnombre'] }}</td>
+                                                <td>{{ $accion['fechabateria'] }}</td>
+                                                <td>{{ number_format($accion['precio'] - $accion['preciocompra'], 2) }}</td>
+                                                
+                                                @if ($accion['accion'] === 'INFORME FINAL')
+                                                    <td>
+                                                        {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
+                                                    </td>
+                                                    <td>
+                                                        {{ $accion['informedocumentacionfinal'] ?? 'PENDIENTE' }}
+                                                    </td>
+                                                    <td>
+                                                        @if ($accion['pagoservicioinformefinal'])
+                                                        <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                            {{ $accion['pagoservicioinformefinal'] }}
+                                                        </div>
+                                                        @else
+                                                            <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                PENDIENTE
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                @else
+                                                    <td>
+                                                        @if ($accion['fechaprogramacion'])
+                                                            {{ $accion['fechaprogramacion'] }}
+                                                        @else
+                                                            <div class="badge 
+                                                                {{ $diasDesdeBateria >= 14 ? 'badge-danger' : 'badge-warning' }}">
+                                                                PENDIENTE
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($accion['informedocumentacion'])
+                                                            {{ $accion['informedocumentacion'] }}
+                                                        @else
+                                                            <div class="badge 
+                                                                {{ $fechaatencionprogramacion ? 'badge-danger' : 'badge-warning' }}">
+                                                                PENDIENTE
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($accion['pagoservicioinforme'])
+                                                        <div class="badge badge-success" style="font-size: 0.8rem; padding: 6px;">
+                                                            {{ $accion['pagoservicioinforme'] }}
+                                                        </div>
+                                                        @else
+                                                            <div class="badge badge-danger" style="font-size: 0.8rem; padding: 6px;">
+                                                                PENDIENTE
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                @endif
+                                            </tr>
+                                            @endif
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <a type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</a>
+                    <div class="modal-footer">
+                        <a type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1454,6 +2033,16 @@
       'success')
     </script>
     @endif
+    <script>
+        function validarCantidad(input) {
+            if (parseInt(input.value) < 2) {
+                input.value = 2;
+            }
+            if (parseInt(input.value) > 5) {
+                input.value = 5;
+            }
+        }
+    </script>
     <script>
         $(document).ready(function() {
             $('input[name="buscarporfecha"], input[name="buscarporarea"]').on('keyup change', function() {

@@ -1,0 +1,9 @@
+/* Establecer el color de fondo personalizado del sidebar */
+.main-sidebar {
+    background-color: #94c93b !important; /* Establece el fondo del sidebar a #94c93b */
+}
+
+/* Cambiar el color de los enlaces en el sidebar a blanco para mayor contraste */
+.main-sidebar .sidebar a {
+    color: #fff !important; /* Asegura que los enlaces sean visibles */
+}

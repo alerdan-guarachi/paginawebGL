@@ -2,8 +2,9 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.listadoclientecomun', ['asociado' => 3]) }}">REGRESAR</a>
+@can('admin.asociados.crearbateriaclientecomun')
 <a class="btn btn-sm float-right btn-acciones" data-toggle="modal" data-target="#ventanaModal">ACCIONES DEL CLIENTE</a>
-
+@endcan
 <h5>DATOS DE:</h5>
 <h3>{{$clientecomun->nombrecompleto}}</h3>
 @stop

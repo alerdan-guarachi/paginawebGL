@@ -25,7 +25,64 @@
         <div class="flex-grow-1">
             <h2 class="font-weight-bold">CAJA DE INGRESOS EXTERNOS</h2>
         </div>
-        <a class="btn btn-outline-secondary" href="{{ route('admin.caja.ingreso.index') }}">
+        <a class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#modalCodigo" style="margin-right: 10px;">
+            CODIGO CAMBIO FECHA
+        </a>
+        <div class="modal fade" id="modalCodigo" tabindex="-1" role="dialog" aria-labelledby="modalCodigoLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <form id="formCodigo">
+                    <div class="modal-header">
+                    <h3 class="modal-title" id="modalCodigoLabel" style="font-weight: 900;">INGRESAR CODIGO</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                    <input type="text" id="codigoInput" name="codigo" class="form-control" placeholder="Ingrese el código" required>
+                    <div id="codigoMensaje" class="mt-2 text-danger" style="display: none;"></div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">VALIDAR</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.getElementById('formCodigo').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const codigo = document.getElementById('codigoInput').value.trim();
+                const mensaje = document.getElementById('codigoMensaje');
+                mensaje.style.display = 'none';
+
+                fetch('{{ route("permisoscodigo.expirar") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({ codigo: codigo })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        $('#modalCodigo').modal('hide');
+                        alert('Código validado correctamente');
+                        location.reload(); // Recarga la página después de validar
+                    } else {
+                        mensaje.textContent = data.message;
+                        mensaje.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mensaje.textContent = 'Ocurrió un error al procesar la solicitud.';
+                    mensaje.style.display = 'block';
+                });
+            });
+        </script>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.caja.ingreso.index') }}">
             REGRESAR
         </a>
     </div>
@@ -54,7 +111,11 @@
         }, 3000);
     </script>
 @endif
-
+<style>
+    .table td {
+            padding: 5px 10px;;
+        }
+</style>
 @if (!$mostrarVista && $rolUsuario === 'CONTABLE')
 
 @else
@@ -68,10 +129,28 @@
                 <input type="text" class="form-control" name="ciudadregistro" value="{{ $sucursal }}" readonly>
             </div>
             <div class="row">
-                <div class="form-group col-lg-4">
+                {{-- <div class="form-group col-lg-4">
                     <label for="siguienteId">Recibo</label>
                     <input type="text" id="siguienteId" class="form-control" value="{{ $siguienteId }}" readonly>
+                </div> --}}
+                <div class="form-group col-lg-4">
+                    <label for="siguienteId">Recibo</label>
+                    <input type="text" id="siguienteId" class="form-control" readonly>
+
                 </div>
+                <script>
+                    function actualizarSiguienteId() {
+                        fetch("{{ url('/recibos/siguiente-id') }}")
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('siguienteId').value = data.siguienteId;
+                            })
+                            .catch(error => console.error('Error al obtener el siguiente ID:', error));
+                    }
+                
+                    setInterval(actualizarSiguienteId, 1000);
+                    actualizarSiguienteId();
+                </script>
 
                 <div class="form-group col-lg-8">
                     <label>Tipo de Proveedor</label>
@@ -96,6 +175,13 @@
                 
                 <div class="form-group col-lg-4 d-flex justify-content-between">
                     <a id="buscarProveedor" class="btn btn-secondary" disabled>BUSCAR</a>
+                </div>
+            </div>
+            <div id="campoFechas" style="display: none;">
+                <div class="form-group">
+                    <label>Registro</label>
+                    <input type="datetime-local" name="created_at" id="created_at" class="form-control">
+                    <input type="datetime-local" name="updated_at" id="updated_at" class="form-control" hidden>
                 </div>
             </div>
             
@@ -162,7 +248,7 @@
                         <option value=""></option>
                         <option value="3000189269">3000189269</option>
                         <option value="2505314878">2505314878</option>
-                        <option value="S/B">S/B</option>
+                        {{-- <option value="S/B">S/B</option> --}}
                     </select>
                 </div>
                 
@@ -176,7 +262,7 @@
                         <option value=""></option>
                         <option value="3000189269">3000189269</option>
                         <option value="2505314878">2505314878</option>
-                        <option value="S/B">S/B</option>
+                        {{-- <option value="S/B">S/B</option> --}}
                     </select>
                 </div>
 
@@ -192,7 +278,7 @@
                         <option value=""></option>
                         <option value="3000189269">3000189269</option>
                         <option value="2505314878">2505314878</option>
-                        <option value="S/B">S/B</option>
+                        {{-- <option value="S/B">S/B</option> --}}
                     </select>
                 </div>
 
@@ -235,7 +321,7 @@
                     <div class="table-responsive">
                         <table class="table table-bordered mt-3">
                             <thead>
-                                <tr>
+                                <tr style="background-color: #eff1f3">
                                     <th style="width: 5%;">ID</th>
                                     <th style="width: 30%;">Detalle</th>
                                     <th style="width: 10%;">Fecha Asig.</th>
@@ -245,9 +331,9 @@
                                     <th style="width: 10%;">Descuento</th>
                                     <th style="width: 10%;">Pago</th>  
                                     <th style="width: 5%;">
-                                        <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 5px;">
-                                            <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 35px;">
-                                            Selec.
+                                        <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 10px; margin-bottom: 0px;">
+                                            <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 20px;">
+                                            Sel.
                                         </label>
                                     </th>
                                 </tr>
@@ -288,7 +374,11 @@
                                     <input type="hidden" id="html_recibo" name="html_recibo">
                                 </div> --}}
                                 <label>Registrar</label>
-                                <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                    <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
+                                            onclick="imprimirReciboSeleccionados()">
+                                        GUARDAR REGISTRO
+                                    </button>
+                                {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
                                     <a id="actualizarId" class="btn btn-secondary btn-block" style="display: none;">
                                         INSERTAR DATOS
                                     </a>
@@ -296,50 +386,11 @@
                                             onclick="imprimirReciboSeleccionados()" disabled style="display: none;">
                                         GUARDAR REGISTRO
                                     </button>
-                                </div>
+                                </div> --}}
                                 <input type="hidden" id="html_recibo" name="html_recibo">
                                 <a class="btn btn-secondary" id="abrirModalBtn" data-toggle="modal" data-target="#modalArqueo" style="display: none;">
                                     ARQUEO DE CAJA
                                 </a>
-                                
-                                {{-- <script>
-                                    // Agregar un temporizador para ocultar el botón "Guardar" después de 1 segundo si no se presiona
-                                    let timer;
-                                
-                                    document.getElementById('actualizarId').addEventListener('click', function () {
-                                        fetch('{{ route('actualizar_id_externo') }}') // Cambia esta ruta según tu controlador
-                                            .then(response => response.json())
-                                            .then(data => {
-                                                if (data.siguienteId) {
-                                                    document.getElementById('siguienteId').value = data.siguienteId;
-                                                } else {
-                                                    alert('No se pudo obtener el siguiente ID.');
-                                                }
-                                            })
-                                            .catch(error => console.error('Error:', error));
-                                
-                                        // Ocultar "Generar Recibo" y mostrar "Guardar Registro"
-                                        document.getElementById('actualizarId').style.display = 'none';
-                                        document.getElementById('imprimirReciboBtn').style.display = 'inline-block';
-                                
-                                        // Iniciar un temporizador para ocultar el botón "Guardar Registro" después de 1 segundo
-                                        timer = setTimeout(function() {
-                                            console.log("No se presionó Guardar, ocultando el botón Guardar y mostrando Generar Recibo.");
-                                            document.getElementById('imprimirReciboBtn').style.display = 'none';
-                                            document.getElementById('actualizarId').style.display = 'inline-block';
-                                        }, 1500);  // 1000 ms = 1 segundo
-                                    });
-                                
-                                    // Manejar el clic del botón "Guardar"
-                                    document.getElementById('imprimirReciboBtn').addEventListener('click', function () {
-                                        // Cancelar el temporizador si se presiona el botón "Guardar"
-                                        clearTimeout(timer);
-                                        
-                                        // Después de presionar "Guardar", ocultar "Guardar" y mostrar "Generar Recibo"
-                                        document.getElementById('imprimirReciboBtn').style.display = 'none';
-                                        document.getElementById('actualizarId').style.display = 'inline-block';
-                                    });
-                                </script> --}}
                                 <script>
                                     let timer;
                                 
@@ -658,16 +709,67 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+
+                                            {{-- CAMBIO DE BOTON DE INSERTAR DATOS EN EFECTIVO --}}
+                                            <style>
+                                                .button-container {
+                                                    position: relative;
+                                                    margin-bottom: 20px;
+                                                    width: 100%;
+                                                    display: flex;
+                                                    justify-content: center;
+                                                }
                                             
-                                            <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
-                                                <a id="actualizarId" class="btn btn-secondary btn-block">
-                                                    INSERTAR DATOS
-                                                </a>
-                                                <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
-                                                        onclick="imprimirReciboSeleccionados()">
-                                                    GUARDAR REGISTRO
-                                                </button>
+                                                .boton-wrapper {
+                                                    position: relative;
+                                                    width: 200px;
+                                                    height: 45px;
+                                                }
+                                            
+                                                .btn-flotante {
+                                                    position: absolute;
+                                                    top: 0;
+                                                    left: 0;
+                                                    width: 100%;
+                                                }
+                                            
+                                                .btn-insertar {
+                                                    z-index: 2;
+                                                }
+                                            
+                                                .btn-guardar {
+                                                    z-index: 1;
+                                                    transition: z-index 0.3s ease;
+                                                }
+                                            </style>
+                                            <div class="button-container">
+                                                <div class="boton-wrapper">
+                                                    {{-- <a id="actualizarId" class="btn btn-secondary btn-flotante btn-insertar">
+                                                        INSERTAR DATOS
+                                                    </a> --}}
+                                                    <button class="btn btn-success btn-flotante btn-guardar"
+                                                        onclick="imprimirReciboSeleccionados()"
+                                                        {{-- disabled --}}>
+                                                        GUARDAR REGISTRO
+                                                    </button>
+                                                </div>
                                             </div>
+                                            <script>
+                                                document.querySelectorAll('.button-container').forEach(container => {
+                                                    const insertarBtn = container.querySelector('.btn-insertar');
+                                                    const guardarBtn = container.querySelector('.btn-guardar');
+                                            
+                                                    insertarBtn.addEventListener('click', function () {
+                                                        guardarBtn.disabled = false;
+                                                        guardarBtn.style.zIndex = 4;
+                                                        setTimeout(() => {
+                                                            guardarBtn.style.zIndex = 1;
+                                                        }, 1800);
+                                                    });
+                                                });
+                                            </script>
+                                            
 
                                            {{--  CALCULAR MONTOS TOTALES Y REDONDEO --}}
                                             <script>
@@ -983,6 +1085,27 @@
                     descuentoInput.value = '0.00';
                     totalInput.value = '0.00';
                 }
+                // 🔁 Permiso para mostrar fechas
+    const campoFechas = document.getElementById('campoFechas');
+    if (campoFechas) {
+        campoFechas.style.display = 'none'; // ocultar siempre primero
+    }
+
+    if (data.permisoExistefecha) {
+        if (campoFechas) {
+            campoFechas.style.display = 'block'; // mostrar si tiene permiso
+        }
+
+        // 🔄 Sincronizar created_at y updated_at
+        const createdAtInput = document.getElementById('created_at');
+        const updatedAtInput = document.getElementById('updated_at');
+        if (createdAtInput && updatedAtInput) {
+            createdAtInput.addEventListener('change', function () {
+                updatedAtInput.value = this.value;
+            });
+        }
+    }
+
                 const tabla = document.getElementById('tablaRegistros');
                 tabla.innerHTML = '';
                 if (data.registros.length > 0) {
@@ -1005,21 +1128,21 @@
                                 <td>${registro.tramite || ''} ${registro.detalle || ''}</td>
                                 <td>${preciocompra}</td>
                                 <td>
-                                    <input type="number" class="form-control registro-descuento" 
+                                    <input type="number" style="height: 25px;" class="form-control registro-descuento" 
                                         placeholder="0.00" 
                                         value="0.00" 
                                         data-preciocompra="${preciocompra}" 
                                         data-id="${registro.id}" step="0.01" />
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control registro-pago" 
+                                    <input type="number" style="height: 25px;" class="form-control registro-pago" 
                                         placeholder="0.00" 
                                         value="${preciocompra}" 
                                         data-preciocompra="${preciocompra}" 
                                         data-id="${registro.id}" step="0.01" />
                                 </td>
                                 <td>
-                                    <input type="checkbox" class="registro-checkbox" data-preciocompra="${preciocompra}" />
+                                    <input type="checkbox" style="height: 25px;" class="registro-checkbox" data-preciocompra="${preciocompra}" />
                                 </td>
                             </tr>
                         `;
@@ -1215,15 +1338,15 @@
         var imprimirReciboBtn = document.getElementById("imprimirReciboBtn");
         var actualizarId = document.getElementById("actualizarId");
 
-        if (tipoTransaccion1 === "EFECTIVO") {
+        /* if (tipoTransaccion1 === "EFECTIVO") {
             abrirModalBtn.style.display = "block"; // Mostrar botón para abrir modal
             imprimirReciboBtn.style.display = "none"; // Ocultar botón guardar registro
             actualizarId.style.display = "none"; // Ocultar botón insertar datos
         } else {
             abrirModalBtn.style.display = "none"; // Ocultar botón para abrir modal
-            /* imprimirReciboBtn.style.display = "block"; */
+            imprimirReciboBtn.style.display = "block";
             actualizarId.style.display = "block"; // Mostrar botón insertar datos
-        }
+        } */
 
 
         // Limpiar todos los campos de transacciones antes de mostrar los nuevos
@@ -1245,6 +1368,9 @@
             document.querySelector(".transferencia-fields").classList.remove("d-none");
         } else if (tipoTransaccion1 === "EFECTIVO") {
             document.querySelector(".efectivo-fields").classList.remove("d-none");
+            abrirModalBtn.style.display = "block"; // Mostrar botón para abrir modal
+            imprimirReciboBtn.style.display = "none"; // Ocultar botón guardar registro
+            actualizarId.style.display = "none"; // Ocultar botón insertar datos
         }
 
         // Habilitar o deshabilitar el segundo select
@@ -1379,7 +1505,11 @@
         const montoPagado = document.getElementById('montoPagado').value;
         const cambio = document.getElementById('cambio').value;
 
-        
+        const createdAt = document.getElementById('created_at').value;
+        const fechaHora = createdAt
+            ? new Date(createdAt).toLocaleString()
+            : new Date().toLocaleString();
+
 
         // Tipo de Transacción 2 (opcional)
         let tipoTransaccion2 = '';
@@ -1463,7 +1593,7 @@
                 <div class="recibo-container">
                     <div class="logo"><img src="${logoUrl}" alt="Logo de la empresa"></div>
                     <div class="recibo"><strong>RECIBO Nro.${idrecibo}</strong></div>
-                    <div class="fecha"><strong>Fecha y Hora:</strong> ${new Date().toLocaleString()}</div>
+                    <div class="fecha"><strong>Fecha y Hora:</strong> ${fechaHora}</div>
                     <div class="linea" style="margin-bottom: -1px;"></div>
                     <div class="info"><strong>Proveedor:</strong> ${nombreCliente}</div>
                     <div class="info" style="margin-top: -3px;"><strong>Emitido por:</strong> ${nombreUsuario}</div>

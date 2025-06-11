@@ -1,0 +1,212 @@
+th, td {
+    border-bottom: 1px solid #94c93b;
+}
+h1, th {
+    color:#94c93b; 
+    font-family: "Segoe UI";
+    font-weight: 900;
+    }
+h5 {
+    color:#94c93b; 
+    font-family: "Segoe UI";
+    font-weight: 500;
+    margin-bottom: 0%;
+    }
+h3 {
+    color:#94c93b; 
+    font-family: "Segoe UI";
+    font-weight: 1000;
+    }
+table {
+    border-collapse: separate;
+    border-spacing: 2px;
+}
+th, td {
+    padding: 10px;
+}
+td{
+    text-align: right;
+}
+.btn-regresar {
+    background-color: #ffffff;
+    color: #2926e2;
+    border-color: #2926e2;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+.btn-regresar:hover {
+    background-color: #2926e2;
+    color: #ffffff;
+}
+.btn-editar {
+    background-color:  #ffffff;
+    color: #faa625;
+    border-color: #faa625;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    }
+.btn-editar:hover {
+    background-color: #faa625;
+    color: #ffffff;
+    }
+
+    .btn-etapa1 {
+        width: 100px;
+        height: 90px;
+        font-size: 13px;
+        flex-direction: column;
+        text-align: center;
+        padding: 10px;
+        background-color: #ffffff;
+        color: #26a1c0;
+        border-color: #26a1c0;
+        border-radius: 5px;
+    }
+    .btn-etapa1:hover {
+        background-color: #26a1c0;
+        color: #ffffff;
+    }
+    .btn-etapa1 i {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .btn-etapa2 {
+        width: 100px;
+        height: 90px;
+        font-size: 13px;
+        flex-direction: column;
+        text-align: center;
+        padding: 10px;
+        background-color: #ffffff;
+        color: #148734;
+        border-color: #148734;
+        border-radius: 5px;
+    }
+    .btn-etapa2:hover {
+        background-color: #148734;
+        color: #ffffff;
+    }
+    .btn-etapa2 i {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .btn-icono i {
+        font-size: 4em;
+    }
+    .btn-rojopequeno {
+        background-color:  #ffffff;
+        color: #d61515;
+        border-color: #d61515;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-rojopequeno:hover {
+        background-color: #d61515;
+        color: #ffffff;
+        }
+    .btn-verdegrande {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-verdegrande:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-azulgrande {
+        background-color: #ffffff;
+        color: #2926e2;
+        border-color: #2926e2;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-left: 10px;
+        }
+    .btn-azulgrande:hover {
+        background-color: #2926e2;
+        color: #ffffff;
+        }
+    .btn-verdepequeno {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-verdepequeno:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+    h4 {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 900;
+        }
+    
+        .custom-document-table tbody tr {
+            height: 32px;
+        }
+    
+        .group-container {
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+    
+        .group-header {
+            background-color: #e8f4e6;
+            font-weight: bold;
+            color: #155724;
+            cursor: pointer;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 16px;
+        }
+    
+        .group-header i {
+            margin-right: 10px;
+            transition: transform 0.3s ease;
+        }
+    
+        .group-header.open i {
+            transform: rotate(90deg);
+        }
+    
+        .group-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.3s ease;
+            background-color: #f9f9f9;
+            padding: 0 15px;
+        }
+    
+        .group-content.show {
+            padding: 15px;
+            max-height: 1000px;
+        }
+    
+        .table-inner {
+            width: 100%;
+        }
+    
+        .table-inner th {
+            background-color: #f1f1f1;
+            color: black;
+            font-weight: 700;
+            text-align: left;
+            padding: 8px;
+        }
+    
+        .table-inner td {
+            padding: 6px 8px;
+            vertical-align: middle;
+            font-size: 14px;
+            text-align: left;
+        }

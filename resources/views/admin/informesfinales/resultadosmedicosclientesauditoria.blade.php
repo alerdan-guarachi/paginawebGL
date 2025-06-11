@@ -5,24 +5,16 @@
 @stop
 
 @section('css')
-<link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
+<link rel="stylesheet" href="{{ asset('css/resultadosmedicos.css') }}">
 <style>
-    .btn-verinformeword {
-    background-color:  #ffffff;
-    color: #162ab0;
-    border-color: #162ab0;
-    border-radius: 5px;
-}
-.btn-verinformeword:hover {
-    background-color: #162ab0;
-    color: #ffffff;
-}
-.btn-sinregistro {
-    background-color:  #ffffff;
-    color: #808080;
-    border-color: #808080;
-    border-radius: 5px;
-}
+    .table td {
+        padding: 2px 10px;
+        }
+        .td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 </style>
 @stop
 
@@ -111,34 +103,25 @@
                                 <th style="width: 5%;">ID</th>
                                 <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 20%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
+                                <th style="width: 20%;">Fecha_Batería-Servicio</th>
+                                <th style="width: 15%;">Result_médicos</th>
                                 <th style="width: 15%;">Documentación</th>
                                 <th style="width: 10%;">Diagnóstico</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Hist_médica</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($result as $item)
                             @if ($item['estado'] === 'COMPLETO' && $item['estadoGeneralauditoria'] === 'COMPLETO')
                                 <tr>
-                                    {{-- ID DEL CLIENTE --}}
                                     <td>{{ $item['clienteauditoriaid'] }}</td>
-
-                                    {{-- CLIENTE --}}
                                     <td>{{ $item['clienteauditorianombre'] }}</td>
-
-                                    {{-- USUARIO REGISTRO --}}
                                     <td>{{ $item['usuarioregistro'] }}</td>
-
-                                    {{-- CELULAR DE PROVEEDOR --}}
                                     <td hidden>
                                         @if ($item['proveedornombre'])
                                             {{ $item['celularproveedor'] }}
                                         @endif
                                     </td>
-
-                                    {{-- FECHA DE BATERIA --}}
                                     <td>
                                         @if (is_array($item['tramite']) && count($item['tramite']) > 0)
                                             {{ $item['fechabateria'] }} - {{ implode(', ', $item['tramite']) }}
@@ -146,16 +129,12 @@
                                             {{ $item['fechabateria'] }} - SIN SERVICIO
                                         @endif
                                     </td>
-
-                                    {{-- RESULTADOS MEDICOS --}}
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER RESULTADOS MÉDICOS">
                                             <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
                                         </abbr>
                                     </td>
-
-                                    {{-- DOCUMENTACION --}}
                                     <td>
                                         @if (in_array('AUDITORIA MEDICA', $item['tramite']))
                                         <p class="{{ $item['estadoGeneralauditoria'] === 'COMPLETO' ? 'text-completo' : ($item['estadoGeneralauditoria'] === 'PENDIENTE' ? 'text-incompleto' : 'text-noregistrado') }}">
@@ -173,8 +152,6 @@
                                             <p class="text-noregistrado">NO REGISTRADO</p>
                                         @endif
                                     </td>
-
-                                    {{-- DIAGNOSTICO --}}
                                     <td width="10px"> 
                                         @if($item['diagnosticoauditoria'])
                                             <div class="d-flex align-items-center justify-content-between">
@@ -184,7 +161,7 @@
                                                 </a>
                                             </div>
                                         @else
-                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'YELKA MORALES VELARDE')
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
@@ -224,8 +201,6 @@
                                             @endif
                                         @endif
                                     </td>
-
-                                    {{-- HISTORIA MEDICA --}}
                                     <td>
                                         @if ($item['historiamedica'])
                                         <p class="text-completo">VER
@@ -255,11 +230,11 @@
                                 <th style="width: 5%;">ID</th>
                                 <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 20%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
+                                <th style="width: 20%;">Fecha_Batería-Servicio</th>
+                                <th style="width: 15%;">Result_Médicos</th>
                                 <th style="width: 15%;">Documentación</th>
                                 <th style="width: 10%;">Diagnóstico</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Hist_médica</th>
                             </tr>                            
                         </thead>
                         <tbody>
@@ -341,7 +316,7 @@
                                                 </a>
                                             </div>
                                         @else
-                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'YELKA MORALES VELARDE')
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
@@ -412,11 +387,11 @@
                                 <th style="width: 5%;">ID</th>
                                 <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 20%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
+                                <th style="width: 20%;">Fecha_Batería-Servicio</th>
+                                <th style="width: 15%;">Result_médicos</th>
                                 <th style="width: 15%;">Documentación</th>
                                 <th style="width: 10%;">Diagnóstico</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Hist_médica</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -502,7 +477,7 @@
                                                 </a>
                                             </div>
                                         @else
-                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'YELKA MORALES VELARDE')
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
@@ -573,11 +548,11 @@
                                 <th style="width: 5%;">ID</th>
                                 <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 20%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
+                                <th style="width: 20%;">Fecha_Batería-Servicio</th>
+                                <th style="width: 15%;">Result_médicos</th>
                                 <th style="width: 15%;">Documentación</th>
                                 <th style="width: 10%;">Diagnóstico</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Hist_médica</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -648,7 +623,7 @@
                                                 </a>
                                             </div>
                                         @else
-                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'YELKA MORALES VELARDE')
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
@@ -711,7 +686,7 @@
             </div>
 
             {{-- ABANDONARON --}}
-            <div class="tab-pane fade" id="tab-content-6" role="tabpanel" aria-labelledby="tab-6">
+            {{-- <div class="tab-pane fade" id="tab-content-6" role="tabpanel" aria-labelledby="tab-6">
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -728,31 +703,20 @@
                             @foreach ($result as $item)
                             @if ($item['motivoabandono'])
                                 <tr>
-                                    {{-- ID DEL CLIENTE --}}
                                     <td>{{ $item['clienteitaid'] }}</td>
-
-                                    {{-- CLIENTE --}}
                                     <td>{{ $item['clienteitanombre'] }}</td>
-
-                                    {{-- CELULAR DE PROVEEDOR --}}
                                     <td hidden>
                                         @if ($item['proveedornombre'])
                                             {{ $item['celularproveedor'] }}
                                         @endif
                                     </td>
-
-                                    {{-- FECHA DE BATERIA --}}
                                     <td>{{ $item['fechabateria'] }}</td>
-
-                                    {{-- ESTADO DE DOCUMENTACION --}}
                                     <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
                                         {{ $item['estado'] }}
                                         <abbr title="VER DOCUMENTACIÓN">
                                             <a class="btn btn-veracciones2" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
                                         </abbr>
                                     </td>
-
-                                    {{-- HISTORIAS MEDICAS Y DOCUMENTACION --}}
                                     <td>
                                         <abbr title="VER DOCUMENTACIÓN">
                                             <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
@@ -777,7 +741,7 @@
                         
                     </table>
                 </div>
-            </div>
+            </div> --}}
             @endif
 
 
@@ -791,11 +755,11 @@
                                 <th style="width: 5%;">ID</th>
                                 <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 20%;">Fecha Batería - Servicio</th>
+                                <th style="width: 20%;">Fecha_Batería-Servicio</th>
                                 <th style="width: 15%;">Result. médicos</th>
                                 <th style="width: 15%;">Documentación</th>
                                 <th style="width: 10%;">Diagnóstico</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Hist_médica</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -935,11 +899,11 @@
                                 <th style="width: 5%;">ID</th>
                                 <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 20%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
+                                <th style="width: 20%;">Fecha_Batería-Servicio</th>
+                                <th style="width: 15%;">Result_médicos</th>
                                 <th style="width: 15%;">Documentación</th>
                                 <th style="width: 10%;">Diagnóstico</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Hist_médica</th>
                             </tr>                            
                         </thead>
                         <tbody>
@@ -1092,11 +1056,11 @@
                                 <th style="width: 5%;">ID</th>
                                 <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 20%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
+                                <th style="width: 20%;">Fecha_Batería-Servicio</th>
+                                <th style="width: 15%;">Result_médicos</th>
                                 <th style="width: 15%;">Documentación</th>
                                 <th style="width: 10%;">Diagnóstico</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Hist_médica</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1253,11 +1217,11 @@
                                 <th style="width: 5%;">ID</th>
                                 <th style="width: 15%;">Cliente</th>
                                 <th style="width: 10%;">Sucursal</th>
-                                <th style="width: 20%;">Fecha Batería - Servicio</th>
-                                <th style="width: 15%;">Result. médicos</th>
+                                <th style="width: 20%;">Fecha_Batería-Servicio</th>
+                                <th style="width: 15%;">Result_médicos</th>
                                 <th style="width: 15%;">Documentación</th>
                                 <th style="width: 10%;">Diagnóstico</th>
-                                <th style="width: 10%;">Hist. médica</th>
+                                <th style="width: 10%;">Hist_médica</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1489,87 +1453,22 @@
                         <span aria-hidden="true">&times;</span>
                     </a>
                 </div>
-                <div class="modal-body">
-                    <div class="table-responsive d-block d-md-none">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    {{-- <th>Fecha Bateria</th> --}}
-                                    <th>Acción</th>
-                                    <th>Proveedor</th>
-                                    <th>Programación</th>
-                                    <th>Atención</th>
-                                    <th>Result. Médico</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($item['acciones'] as $accion)
-                                    <tr>
-                                        {{-- <td>{{ $accion['creacionbateria']->format('Y-m-d') }}</td> --}}
-                                        <td>{{ $accion['accion'] }}</td>
-                                        <td>{{ $accion['proveedornombre'] }}</td>
-                                        <td>{{ $accion['fechaasignada'] }}</td>   
-                                        <td>
-                                            @if ($accion['fechaatencionprogramacion'])
-                                            {{ $accion['fechaatencionprogramacion'] }}
-                                            @else
-                                            <div class="pendiente">PENDIENTE</div>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if ($accion['estado'] === 'COMPLETO')
-                                                {{ $accion['fechadocumento']->format('Y-m-d') }}
-                                                
-                                                <!-- Contenedor para el botón y los documentos -->
-                                                <div class="dropdown-container">
-                                                    <a class="btn btn-dropdown" type="button">
-                                                        <i class="fas fa-sign-out-alt"></i>
-                                                    </a>
-                                                    <div class="dropdown-menu">
-                                                        @if (isset($accion['document']))
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['document']->document) }}" class="btn btn-verdocumentacion" target="_blank" title="VER RESULTADO MÉDICO">
-                                                                <i class="fas fa-folder-open"></i>
-                                                            </a>
-                                                        @endif
-                                        
-                                                        @if (isset($accion['image']) && $accion['image']->image)
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['image']->image) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 1">
-                                                                <i class="fas fa-images"></i>
-                                                            </a>
-                                                        @endif
-                                        
-                                                        @if (isset($accion['image2']) && $accion['image2']->image2)
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['image2']->image2) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
-                                                                <i class="far fa-images"></i>
-                                                            </a>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="modal-body table-responsive">
                     <div class="d-none d-md-block">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    {{-- <th>Fecha Bateria</th> --}}
-                                    <th>Acción</th>
+                                    <th>Estudio/Especialidad</th>
                                     <th>Proveedor</th>
-                                    <th>Programación</th>
+                                    <th>Prog.</th>
                                     <th>Atención</th>
-                                    <th>Result. Médico</th>
+                                    <th>Fecha_Sub.</th>
+                                    <th>Result_Médicos</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($item['acciones'] as $accion)
                                     <tr>
-                                        {{-- <td>{{ $accion['creacionbateria']->format('Y-m-d') }}</td> --}}
                                         <td>{{ $accion['accion'] }}</td>
                                         <td>{{ $accion['proveedornombre'] }}</td>
                                         <td>{{ $accion['fechaasignada'] }}</td>   
@@ -1580,59 +1479,45 @@
                                             <div class="pendiente">PENDIENTE</div>
                                             @endif
                                         </td>
-                                        <td>
-                                            @if ($accion['estado'] === 'COMPLETO')
-                                                {{ $accion['fechadocumento']->format('Y-m-d') }}
-                                                
+
+                                        @if ($accion['estado'] === 'COMPLETO')
+                                            <td>{{ $accion['fechadocumento']->format('Y-m-d') }}</td>
+                                        @else
+                                            <td class="pendiente">PENDIENTE</td>
+                                        @endif   
+
+                                        @if ($accion['estado'] === 'COMPLETO')
+                                            <td>
+                                                @if (isset($accion['document']))
+                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['document']->document) }}" class="btn btn-verdocumentacion" target="_blank" title="VER RESULTADO MÉDICO">
+                                                        <i class="fas fa-folder-open"></i>
+                                                    </a>
+                                                @endif
+                                                @if (isset($accion['image']) && $accion['image']->image)
+                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['image']->image) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 1">
+                                                        <i class="fas fa-images"></i>
+                                                    </a>
+                                                @endif
+            
+                                                @if (isset($accion['image2']) && $accion['image2']->image2)
+                                                    <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['image2']->image2) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
+                                                        <i class="far fa-images"></i>
+                                                    </a>
+                                                @endif
                                                 @if (isset($accion['documentfirmado']) && $accion['documentfirmado']->documentfirmado)
                                                     <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['documentfirmado']->documentfirmado) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME MÉDICO FIRMADO">
                                                         <i class="fas fa-file"></i>
                                                     </a>
-                                                @else
-                                                    {{-- <a href="" class="btn btn-sm btn-sinregistro disabled" target="_blank" title="VER INFORME MÉDICO FIRMADO" aria-disabled="true">
-                                                        <i class="fas fa-file"></i>
-                                                    </a> --}}
                                                 @endif
-
                                                 @if (isset($accion['documentword']) && $accion['documentword']->documentword)
                                                     <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['documentword']->documentword) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME MÉDICO WORD">
                                                         <i class="fas fa-file"></i>
                                                     </a>
-                                                @else
-                                                    {{-- <a href="" class="btn btn-sm btn-sinregistro disabled" target="_blank" title="VER INFORME MÉDICO FIRMADO" aria-disabled="true">
-                                                        <i class="fas fa-file"></i>
-                                                    </a> --}}
                                                 @endif
-
-                                                <!-- Contenedor para el botón y los documentos -->
-                                                <div class="dropdown-container">
-                                                    <a class="btn btn-dropdown" type="button">
-                                                        <i class="fas fa-sign-out-alt"></i>
-                                                    </a>
-                                                    <div class="dropdown-menu">
-                                                        @if (isset($accion['document']))
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['document']->document) }}" class="btn btn-verdocumentacion" target="_blank" title="VER RESULTADO MÉDICO">
-                                                                <i class="fas fa-folder-open"></i>
-                                                            </a>
-                                                        @endif
-                    
-                                                        @if (isset($accion['image']) && $accion['image']->image)
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['image']->image) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 1">
-                                                                <i class="fas fa-images"></i>
-                                                            </a>
-                                                        @endif
-                    
-                                                        @if (isset($accion['image2']) && $accion['image2']->image2)
-                                                            <a href="{{ asset('/documentacionclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['image2']->image2) }}" class="btn btn-verdocumentacion" target="_blank" title="VER IMAGEN 2">
-                                                                <i class="far fa-images"></i>
-                                                            </a>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                            @endif
-                                        </td>
+                                            </td>
+                                        @else
+                                            <td class="pendiente">PENDIENTE</td>
+                                        @endif
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -1673,19 +1558,19 @@
                                 $mostrarciaseguradoau = !empty($accion['ciaseguradoau']);
                                 $mostrarciaseguradopendienteau = $accion['ciaseguradoau'] === 'PENDIENTE';
                             @endphp
-                            @if ($nombreusuario != 'MARICELA COLQUE SANDOVAL' && $nombreusuario != 'MONICA MACOÑO FLORES')
-                            @if ($mostrarcnacaseguradoau || $mostrarcnacaseguradopendienteau)
-                                <tr>
-                                    <td>CERTIFICADO NACIMIENTO DE ASEGURADO</td>
-                                    <td>
-                                        @if ($mostrarcnacaseguradopendienteau)
-                                            <div class="pendiente">PENDIENTE</div>
-                                        @elseif ($mostrarcnacaseguradoau)
-                                            <a href="{{ asset('/requisitosclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['cnacaseguradoau']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endif
+                            @if ($nombreusuario != 'MARICELA COLQUE SANDOVAL' && $nombreusuario != 'MONICA MACOÑO FLORES' && $nombreusuario != 'SERRANO PORSTENDOERFER VIVIAN YANETH' && $nombreusuario != 'PROMED S.R.L.')
+                                @if ($mostrarcnacaseguradoau || $mostrarcnacaseguradopendienteau)
+                                    <tr>
+                                        <td>CERTIFICADO NACIMIENTO DE ASEGURADO</td>
+                                        <td>
+                                            @if ($mostrarcnacaseguradopendienteau)
+                                                <div class="pendiente">PENDIENTE</div>
+                                            @elseif ($mostrarcnacaseguradoau)
+                                                <a href="{{ asset('/requisitosclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $accion['cnacaseguradoau']) }}" class="btn btn-verdocumentacion" target="_blank"><i class="fas fa-eye"></i></a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endif
                             @endif
                             @if ($mostrarciaseguradoau || $mostrarciaseguradopendienteau)
                                 <tr>
@@ -1699,7 +1584,7 @@
                                     </td>
                                 </tr>
                             @endif
-                            @if ($nombreusuario != 'MARICELA COLQUE SANDOVAL' && $nombreusuario != 'MONICA MACOÑO FLORES')
+                            @if ($nombreusuario != 'MARICELA COLQUE SANDOVAL' && $nombreusuario != 'MONICA MACOÑO FLORES' && $nombreusuario != 'SERRANO PORSTENDOERFER VIVIAN YANETH' && $nombreusuario != 'PROMED S.R.L.')
                             <table class="table">
                                 <thead>
                                     <tr> 

@@ -26,7 +26,7 @@ class AceptaSolicitudNotification extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'mensaje' => "{$this->solicitud->usuarioactualizacion} ha aceptado tu solicitud de petición de: Producto: {$this->solicitud->productosolicitado} - Cantidad: {$this->solicitud->cantidad}. Dirígete hacia el área de Caja para recoger lo solicitado",
+            'mensaje' => "{$this->solicitud->usuarioactualizacion} ha aceptado tu solicitud de petición de: Producto: {$this->solicitud->productosolicitado}. Dirígete hacia el área de Caja para recoger lo solicitado",
             'registro_id' => $this->solicitud->id,
         ];
     }

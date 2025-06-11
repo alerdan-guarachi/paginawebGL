@@ -7,6 +7,10 @@
 <h3>{{$cliente->nombrecompleto}}</h3>
 @stop
 
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/requisitosgeneral.css') }}">
+@stop
+
 @section('content')
     <form id="pdfForm" action="{{ route('admin.asociados.descargarchecklistclienteitatercerasolicitud', $cliente) }}" method="POST" style="display: none;">
         @csrf
@@ -36,32 +40,32 @@
                     <input type="checkbox" name="poder" value="poder" id="poder" checked disabled>
                     <label for="poder">PODER</label>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-top: -10px;">
                     <input type="checkbox" name="avcci" value="avcci" id="avcci" checked disabled>
                     <label for="avcci">AVC/CARNET ASEGURADO</label>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-top: -10px;">
                     <input type="checkbox" name="cnacasegurado" value="cnacasegurado" id="cnacasegurado" checked disabled>
                     <label for="cnacasegurado" style="min-height: 20px;">CERTIFICADO NACIMIENTO ASEGURADO</label>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-top: -10px;">
                     <input type="checkbox" name="ciasegurado" value="ciasegurado" id="ciasegurado" checked disabled>
                     <label for="ciasegurado" style="min-height: 20px;">CARNET IDENTIDAD ASEGURADO</label>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-top: -10px;">
                     <input type="checkbox" name="crodomicilio" value="crodomicilio" id="crodomicilio" checked disabled>
                     <label for="crodomicilio" style="min-height: 20px;">CROQUIS DE DOMICILIO</label>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-top: -10px;">
                     <input type="checkbox" name="egestora" value="egestora" id="egestora">
                     <label for="egestora" style="min-height: 20px;">EXTRACTO DE GESTORA</label>
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="margin-top: -10px;">
                     <input type="checkbox" name="contrato" value="contrato" id="contrato" checked>
                     <label for="contrato" style="min-height: 20px;">CONTRATO</label>
                 </div>
             </div>
-            <div class="col-md-4" style="margin-top: 47px;">
+            <div class="col-md-4" style="margin-top: 55px;">
                 @if (strtolower($estadoCivil) === 'casad@')
                     <div class="form-group">
                         <input type="checkbox" name="cmatrimonio" value="cmatrimonio" id="cmatrimonio" checked>
@@ -69,55 +73,55 @@
                     </div>
                 @endif
                 @if (strtolower($estadoCivil) === 'casad@')
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cnacconyuge" value="cnacconyuge" id="cnacconyuge" checked>
                         <label for="cnacconyuge" style="min-height: 20px;">CERTIFICADO NACIMIENTO CONYUGE</label>
                     </div>
                 @endif
                 @if (strtolower($estadoCivil) === 'union libre')
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cunionlibre" value="cunionlibre" id="cunionlibre" checked>
                         <label for="cunionlibre" style="min-height: 20px;">CERTIFICADO DE UNIÓN LIBRE</label>
                     </div>
                 @endif
                 @if (strtolower($estadoCivil) === 'union libre')
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cnacimientounionlibre" value="cnacimientounionlibre" id="cnacimientounionlibre" checked>
                         <label for="cnacimientounionlibre" style="min-height: 20px;">CERTIFICADO NACIMIENTO DE UNIÓN LIBRE</label>
                     </div>
                 @endif
                 @if (strtolower($estadoCivil) === 'divorciad@')
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cdivorcio" value="cdivorcio" id="cdivorcio" checked>
                         <label for="cdivorcio" style="min-height: 20px;">CERTIFICADO DE DIVORCIO</label>
                     </div>
                 @endif
                 @if (strtolower($estadoCivil) === 'viud@')
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cdefuncion" value="cdefuncion" id="cdefuncion" checked>
                         <label for="cdefuncion" style="min-height: 20px;">CERTIFICADO DE DIFUNCIÓN</label>
                     </div>
                 @endif
                 @if (strtolower($estadoCivil) === 'casad@')
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="ciconyuge" value="ciconyuge" id="ciconyuge" checked>
                         <label for="ciconyuge" style="min-height: 20px;">CARNET IDENTIDAD CONYUGE</label>
                     </div>
                 @endif
                 @if (strtolower($estadoCivil) === 'union libre')
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="ciunionlibre" value="ciunionlibre" id="ciunionlibre" checked>
                         <label for="ciunionlibre" style="min-height: 20px;">CARNET IDENTIDAD DE UNIÓN LIBRE</label>
                     </div>
                 @endif
                 @if ($numHijosMenores > 0 || $numHijosMenores !== null)
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cnacjihos" value="cnacjihos" id="cnacjihos" checked>
                         <label for="cnacjihos" style="min-height: 20px;">CERTIFICADO NACIMIENTO HIJOS < 25</label>
                     </div>
                 @endif
                 @if ($numHijosMenores > 0 || $numHijosMenores !== null)
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cihijos" value="cihijos" id="cihijos" checked>
                         <label for="cihijos" style="min-height: 20px;">CARNET IDENTIDAD HIJOS < 25</label>
                     </div>
@@ -131,12 +135,12 @@
                     <label for="anteriordictamen" style="min-height: 20px;">ANTERIOR DICTAMEN O RESOLUCION</label>
                 </div>
 
-                <div class="form-group"> 
+                <div class="form-group" style="margin-top: -10px;"> 
                     <input type="checkbox" name="denfaccidente" value="denfaccidente" id="denfaccidente">
                     <label for="denfaccidente" class="color-toggle">DENUNCIA ENFERMEDAD ACCIDENTE</label>
                 </div>
                 @if ($numHijosMenores > 0 || $numHijosMenores !== null)
-                <div class="form-group">
+                <div class="form-group" style="margin-top: -10px;">
                     <input type="checkbox" name="resolinvhijos" value="resolinvhijos" id="resolinvhijos">
                     <label for="resolinvhijos" class="color-toggle">RESOLUCIÓN INVALIDEZ DE HIJOS < 25</label>
                 </div>
@@ -188,11 +192,10 @@
         <div class="row"> 
             <div class="col-lg-12">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px; margin-top: 20px;">ATENCIÓN MÉDICA</h4>
-                @if (!$registroExistente && !$registroaprobadoExistente)
+                @if (!$registroExistente && !$registroaprobadoExistente && !$registroaprobadoinformefinalExistente)
                 
                 <div class="row">
-                    <!-- Primera Card -->
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="card shadow-sm h-100" style="background-color: #fdf4e3;">
                             <div class="card-header text-center fw-bold text-white" style="background-color: #edab2e; font-weight:900; font-size:16px;">
                                 DERIVAR A MEDICINA LABORAL
@@ -206,7 +209,6 @@
                                     {!! Form::hidden('ci', $cliente->ci) !!}
                                     {!! Form::hidden('sucursal', $cliente->sucursal) !!}
                                     {!! Form::hidden('tramite', 'TERCERA SOLICITUD') !!}
-                                    
                                     <div class="form-group mb-3">
                                         <label for="proveedor_id" class="fw-bold d-flex justify-content-center w-100">Seleccionar Proveedor:</label>
                                         <select name="proveedorasignado" id="proveedor_id" class="form-control" required>
@@ -216,7 +218,6 @@
                                             @endforeach
                                         </select>
                                     </div>
-                
                                     <div class="d-flex justify-content-center w-100">
                                         <button type="submit" class="btn btn-derivar px-4" id="submit-btn" disabled>DERIVAR</button>
                                     </div>
@@ -225,8 +226,7 @@
                         </div>
                     </div>
                 
-                    <!-- Segunda Card -->
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="card shadow-sm h-100" style="background-color: #f2e8f5;">
                             <div class="card-header text-center fw-bold text-white" style="background-color: #b02eed; font-weight:900; font-size:16px;">
                                 GENERAR SOLO CONSENTIMIENTO
@@ -246,10 +246,10 @@
                     </div>
 
                     @if($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <div class="card shadow-sm h-100" style="background-color: #e0f4ff;">
                                 <div class="card-header text-center fw-bold text-white" style="background-color: #2ea4ed; font-weight:900; font-size:16px;">
-                                    APROBAR INICIAR BATERIA SIN CONSENTIMIENTO
+                                    INICIAR BATERIA SIN CONSENTIMIENTO
                                 </div>
                                 <div class="card-body d-flex align-items-center justify-content-center" style="display: flex; gap: 5px;">
                                     {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
@@ -261,6 +261,26 @@
                                         
                                         <div class="d-flex justify-content-center w-100">
                                             <button type="submit" class="btn btn-aprobarbateria px-4">APROBAR</button>
+                                        </div>
+                                    {!! Form::close() !!}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="card shadow-sm h-100" style="background-color: #eaffef;">
+                                <div class="card-header text-center fw-bold text-white" style="background-color: #27c451; font-weight:900; font-size:16px;">
+                                    INFORME FINAL DIRECTO
+                                </div>
+                                <div class="card-body d-flex align-items-center justify-content-center" style="display: flex; gap: 5px;">
+                                    {!! Form::open(['route' => 'aprobarinformefinaldirecto', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                        {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                        {!! Form::hidden('nombres', $cliente->nombres) !!}
+                                        {!! Form::hidden('apepaterno', $cliente->apepaterno) !!}
+                                        {!! Form::hidden('apematerno', $cliente->apematerno) !!}
+                                        {!! Form::hidden('tramite', 'TERCERA SOLICITUD') !!}
+                                        
+                                        <div class="d-flex justify-content-center w-100">
+                                            <button type="submit" class="btn btn-informefinal px-4">APROBAR</button>
                                         </div>
                                     {!! Form::close() !!}
                                 </div>
@@ -283,8 +303,14 @@
                     <p></p>
                 @elseif ($registroaprobadoExistente)
                 <div class="d-flex mt-3">
-                    <div class="p-3 border rounded shadow-sm" style="background-color: #edffef; width: fit-content;">
+                    <div class="p-3 border rounded shadow-sm" style="background-color: #e0f4ff; width: fit-content;">
                         <p class="m-0 fw-bold" style="font-weight: 900">APROBADO PARA CREAR BATERÍA</p>
+                    </div>
+                </div>
+                @elseif ($registroaprobadoinformefinalExistente)
+                <div class="d-flex mt-3">
+                    <div class="p-3 border rounded shadow-sm" style="background-color: #edffef; width: fit-content;">
+                        <p class="m-0 fw-bold" style="font-weight: 900">APROBADO PARA INFORME FINAL DIRECTO</p>
                     </div>
                 </div>
                 @endif
@@ -346,110 +372,4 @@
         @endif
     </div>
 </div>
-@stop
-@section('css')
-<style>
-    .btn-consen {
-        background-color: #ffffff;
-        color: #af25fa;
-        border-color: #af25fa;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-consen:hover {
-        background-color: #af25fa;
-        color: #ffffff;
-    }
-    .color-toggle {
-        min-height: 20px;
-        color: red; /* Color inicial del texto */
-        cursor: pointer; /* Cambia el cursor al pasar por encima para indicar que es clickeable */
-    }
-    .color-toggle.black {
-        color: black; /* Color del texto al hacer doble clic */
-    }
-    h5 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 500;
-        margin-bottom: 0%;
-        }
-    h3 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 1000;
-        }
-    input[type="checkbox"] {
-        transform: scale(1.5);
-        margin-right: 5px;
-        }
-    input[type="checkbox"]:checked {
-        background-color: green; /* Cambia el color de fondo a verde cuando el checkbox está marcado */
-    }
-    h1{
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-        }
-    .btn-crear {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 5px 15px;
-        }
-    
-    .btn-crear:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-        .btn-derivar {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 10px 15px;
-        }
-    
-    .btn-derivar:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-        .btn-aprobarbateria {
-        background-color:  #ffffff;
-        color: #25b6fa;
-        border-color: #25b6fa;
-        border-radius: 5px;
-        padding: 10px 15px;
-        }
-    
-    .btn-aprobarbateria:hover {
-        background-color: #25b6fa;
-        color: #ffffff;
-        }
-        .btn-regresar {
-        background-color: #ffffff;
-        color: #2926e2;
-        border-color: #2926e2;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-regresar:hover {
-        background-color: #2926e2;
-        color: #ffffff;
-    }
-    .btn-subirrequisitos {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 10px 10px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    .btn-subirrequisitos:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-</style>
 @stop

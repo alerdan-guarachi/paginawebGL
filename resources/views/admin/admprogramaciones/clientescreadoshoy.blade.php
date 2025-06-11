@@ -469,7 +469,7 @@
                                                 @endif
                                                 @if ($informes->documentword)
                                                 <a href="{{ asset('/documentacionclientesita/' . $informes->clienteitaid . '/' . $informes->documentword) }}" class="btn btn-verinformeword btn-sm" target="_blank" title="VER INFORME WORD">
-                                                    <i class="fas fa-flie"></i>
+                                                    <i class="fas fa-file"></i>
                                                 </a>
                                                 @endif
                                                 @if ($informes->image)
@@ -517,7 +517,7 @@
                                                 @endif
                                                 @if ($informes->documentword)
                                                 <a href="{{ asset('/documentacionclientesauditoria/' . $informes->clienteauditoriaid . '/' . $informes->documentword) }}" class="btn btn-verinformeword btn-sm" target="_blank" title="VER INFORME WORD">
-                                                    <i class="fas fa-flie"></i>
+                                                    <i class="fas fa-file"></i>
                                                 </a>
                                                 @endif
                                                 @if ($informes->image)
@@ -558,7 +558,7 @@
                                             @endif
                                             @if ($informes->documentword)
                                             <a href="{{ asset('/documentacionclientescomun/' . $informes->clientecomunid . '/' . $informes->documentword) }}" class="btn btn-verinformeword btn-sm" target="_blank" title="VER INFORME WORD">
-                                                <i class="fas fa-flie"></i>
+                                                <i class="fas fa-file"></i>
                                             </a>
                                             @endif
                                             @if ($informes->image)

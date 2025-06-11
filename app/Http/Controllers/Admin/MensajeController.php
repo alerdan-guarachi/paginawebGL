@@ -45,12 +45,15 @@ class MensajeController extends Controller
         $usuarioAutenticado = Auth::user()->name;
         
         // Obtén todos los usuarios
-    $todosPersonal = Proveedoresservicios::pluck('nombrecompleto', 'id')->toArray();
+        $todosPersonal = Proveedoresservicios::whereIn('categoria', ['PROVEEDOR INTERNO', 'PROVEEDOR EXTERNO'])->orderBy('razonsocial')
+    ->pluck('razonsocial', 'id')
+    ->toArray();
 
-    // Filtra el personal para excluir al usuario autenticado
-    $personal = array_filter($todosPersonal, function ($nombre) use ($usuarioAutenticado) {
-        return $nombre !== $usuarioAutenticado;
-    });
+
+        // Filtra el personal para excluir al usuario autenticado
+        $personal = array_filter($todosPersonal, function ($nombre) use ($usuarioAutenticado) {
+            return $nombre !== $usuarioAutenticado;
+        });
 
 
          // Obtén el nombre del usuario autenticado

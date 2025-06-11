@@ -1,0 +1,115 @@
+.icono-editar {
+    font-size: 1.2em;
+    color: #00008B;
+}
+.icono-guardar {
+    font-size: 1.2em;
+    color: #94c93b;
+}
+.btn-edit {
+    background-color: transparent;
+    border: none;
+}
+.btn-save {
+    background-color: transparent;
+    border: none;
+}
+.btn-edit:hover,
+.btn-save:hover {
+    cursor: pointer;
+}
+.input-proveedor,
+.input-fecha {
+    width: 100%;
+}
+.hidden-field {
+    display: none;
+}
+h1 {
+    color:#94c93b; 
+    font-family: "Segoe UI";
+    font-weight: 900;
+}
+h5 {
+    color:#94c93b; 
+    font-family: "Segoe UI";
+    font-weight: 500;
+    margin-bottom: 0%;
+}
+h3 {
+    color:#94c93b; 
+    font-family: "Segoe UI";
+    font-weight: 1000;
+}
+.btn-verdegrande {
+    background-color:  #ffffff;
+    color: #94c93b;
+    border-color: #94c93b;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.btn-verdegrande:hover {
+    background-color: #94c93b;
+    color: #ffffff;
+}
+.btn-lilagrande {
+    background-color:  #ffffff;
+    color: #af2dc9;
+    border-color: #af2dc9;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.btn-lilagrande:hover {
+    background-color: #af2dc9;
+    color: #ffffff;
+}
+.btn-naranjagrande {
+    background-color:  #ffffff;
+    color: #faa625;
+    border-color: #faa625;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+.btn-naranjagrande:hover {
+    background-color: #faa625;
+    color: #ffffff;
+}
+.btn-rojogrande {
+    background-color: #ffffff;
+    color: #e22f2f;
+    border-color: #e22f2f;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+.btn-rojogrande:hover {
+    background-color: #e22f2f;
+    color: #ffffff;
+    }
+.btn-azulgrande {
+    background-color: #ffffff;
+    color: #2926e2;
+    border-color: #2926e2;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+.btn-azulgrande:hover {
+    background-color: #2926e2;
+    color: #ffffff;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    line-height: 1;
+}
+th,
+td {
+    padding: 8px;
+    text-align: left;
+}
+tbody tr:nth-child(odd) {
+    background-color: #f7f7f7;
+}

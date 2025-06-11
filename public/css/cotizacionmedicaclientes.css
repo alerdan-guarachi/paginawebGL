@@ -1,0 +1,247 @@
+.btn-consentimientoinformado {
+    background-color: #ffffff;
+    color: #5db2cd;
+    border-color: #5db2cd;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-left: 10px;
+}
+.btn-consentimientoinformado:hover {
+    background-color: #5db2cd;
+    color: #ffffff;
+}
+.btn-aprobarcotizacion {
+    background-color: #ffffff;
+    color: #faa625;
+    border-color: #faa625;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-right: 10px;
+}
+.btn-aprobarcotizacion:hover {
+    background-color: #faa625;
+    color: #ffffff;
+}
+.btn-buscar { 
+    background-color:  #ffffff;
+    color: #faa625;
+    border-color: #faa625;
+    border-radius: 5px;
+}
+.btn-buscar:hover {
+    background-color: #faa625;
+    color: #ffffff;
+} 
+.total-row {
+    background-color: #94c93b;
+}
+.hidden-field {
+    display: none;
+}
+th {color:#94c93b; 
+    font-family: "Segoe UI";
+    font-weight: 900;
+    }
+h5 {
+    color:#94c93b; 
+    font-family: "Segoe UI";
+    font-weight: 500;
+    margin-bottom: 0%;
+    }
+h3 {
+    color:#94c93b; 
+    font-family: "Segoe UI";
+    font-weight: 1000;
+    }
+.btn-crear2 {
+    background-color:  #ffffff;
+    color: #94c93b;
+    border-color: #94c93b;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    }
+.btn-crear2:hover {
+    background-color: #94c93b;
+    color: #ffffff;
+    }
+.btn-crear {
+    background-color:  #ffffff;
+    color: #94c93b;
+    border-color: #94c93b;
+    border-radius: 5px;
+    padding: 5px 10px;
+    }
+.btn-crear:hover {
+    background-color: #94c93b;
+    color: #ffffff;
+    }
+.mensaje-error {
+    color: #e1172b;
+    font-family: "Times New Roman";
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    font-size: 12.5px;
+    font-weight: bold;
+    display: inline-block;
+    margin-left: -10px;
+}
+.custom-button {
+    background-color: #ffffff;
+    color: #faa625;
+    border-color: #faa625;
+    border-radius: 5px;
+    padding: 5px 50px;
+
+}
+.custom-button:hover {
+    background-color: #faa625;
+    color: #ffffff;
+}
+.custom2-button {
+    background-color: #ffffff;
+    color: #faa625;
+    border-color: #faa625;
+    border-radius: 5px;
+    padding: 5px 20px;
+    margin-top: 33px;
+}
+.custom2-button:hover {
+    background-color: #faa625;
+    color: #ffffff;
+}
+.btn-cerrar {
+    background-color: #ffffff;
+    color: #dc2c2c;
+    border-color: #dc2c2c;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+.btn-cerrar:hover {
+    background-color: #dc2c2c;
+    color: #ffffff;
+}
+.btn-regresar {
+    background-color: #ffffff;
+    color: #2926e2;
+    border-color: #2926e2;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+.btn-regresar:hover {
+    background-color: #2926e2;
+    color: #ffffff;
+}
+.table td {
+    padding: 5px 10px;
+}
+.btn-registrar {
+    background-color:  #ffffff;
+    color: #94c93b;
+    border-color: #94c93b;
+    border-radius: 5px;
+    padding: 2px 20px;
+    }
+.btn-registrar:hover {
+    background-color: #94c93b;
+    color: #ffffff;
+    }
+.btn-actualizar {
+    background-color:  #ffffff;
+    color: #e8932b;
+    border-color: #e8932b;
+    border-radius: 5px;
+    padding: 2px 6px;
+    }
+.btn-actualizar:hover {
+    background-color: #e8932b;
+    color: #ffffff;
+    }
+.truncar {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+.truncar2 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
+.btn-verregistros {
+    background-color:  #ffffff;
+    color: #787878;
+    border-color: #787878;
+    border-radius: 5px;
+    padding: 2px 6px;
+    }
+.btn-verregistros:hover {
+    background-color: #787878;
+    color: #ffffff;
+    }
+    .btn-entendido {
+        background-color: #6acf81; /* Verde */
+        color: white;
+    }
+
+    .btn-cancelar {
+        background-color: #f36573; /* Rojo */
+        color: white;
+    }
+    #select-area {
+        width: 200px; /* Ajusta el ancho aquí */
+        height: 100px; /* Ajusta la altura aquí */
+        overflow-y: auto; /* Agrega una barra de desplazamiento si es necesario */
+    }
+    .btn-nrofactura {
+        background-color: #ffffff;
+        color: #f04cc4;
+        border-color: #f04cc4;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    .btn-nrofactura:hover {
+        background-color: #f04cc4;
+        color: #ffffff;
+    }
+    .btn-vercotizacion {
+        background-color:  #ffffff;
+        color: #1294b8d1;
+        border-color: #1294b8d1;
+        border-radius: 5px;
+        font-weight: bold;
+        padding: 5px 10px;
+    }
+    .btn-vercotizacion:hover {
+        background-color: #1294b8d1;
+        color: #ffffff;
+    }
+    .btn-verconsentimiento {
+        background-color:  #ffffff;
+        color: #1294b8d1;
+        border-color: #1294b8d1;
+        border-radius: 5px;
+        font-weight: bold;
+        padding: 5px 10px;
+    }
+    .btn-verconsentimiento:hover {
+        background-color: #1294b8d1;
+        color: #ffffff;
+    }
+    .btn-editar {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        font-weight: bold;
+        padding: 5px 10px;
+    }
+    .btn-editar:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }

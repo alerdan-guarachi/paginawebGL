@@ -11,31 +11,68 @@ class Ordenes extends Model
 
     // Especificar el nombre de la tabla
     protected $table = 'ordenes';
+    protected $primaryKey = 'id'; // Especificar la clave primaria
+    public $incrementing = false; // Desactivar auto-incremento
+    protected $keyType = 'string'; // Asegurar que se trata como string
     public static $rules = [
+        'id' => '',
         'detalle' => '',
-        'cantidad' => '',
+        'montototal' => '',
+        'subtotal' => '',
+        'descuento' => '',
         'fechacomprar' => '',
         'proveedorid' => '',
         'proveedornombre' => '',
         'tipotransaccion' => '',
         'estado' => '',
         'orden' => '',
-        'usuarioregitroid' => '',
-        'usuarioregistronomre' => '',
+        'documentoorden' => '',
+        'usuarioregistroid' => '',
+        'tipoorden' => '',
+        'usuarioregistronombre' => '',
+        'observacion' => '',
+        'formapago' => '',
+        'fechapagar' => '',
+        'usuariopreorden' => '',
+        'sucursal' => '',
+        'sucursalgasto' => '',
     ];
 
     // Asignación de atributos
     protected $fillable = [
+        'id',
         'detalle',
-        'cantidad',
+        'montototal',
+        'subtotal',
+        'descuento',
         'fechacomprar',
         'proveedorid',
         'proveedornombre',
         'tipotransaccion',
         'estado',
         'orden',
-        'usuarioregitroid',
-        'usuarioregistronomre',
+        'documentoorden',
+        'usuarioregistroid',
+        'tipoorden',
+        'usuarioregistronombre',
+        'observacion',
+        'formapago',
+        'fechapagar',
+        'usuariopreorden',
+        'sucursal',
+        'sucursalgasto',
     ];
 
+    public function detalles()
+    {
+        return $this->hasMany(DetalleOrdenes::class, 'ordenid', 'id');
+    }
+    public function detallesrecibos()
+    {
+        return $this->hasMany(Detallerecibo::class, 'ordenid', 'id');
+    }
+    public function inventario()
+    {
+        return $this->belongsTo(Inventario::class, 'codigo', 'id');
+    }
 }

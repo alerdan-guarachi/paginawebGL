@@ -6,11 +6,15 @@
 @php
     $rolUsuario = auth()->user()->getRoleNames()->first();
 @endphp
+@php
+    $tieneRolContable = auth()->user()->getRoleNames()->contains('CONTABLE');
+@endphp
 
-@if (!$mostrarVista && $rolUsuario === 'CONTABLE')
+{{-- @if (!$mostrarVista && $rolUsuario === 'CONTABLE') --}}
+@if (!$mostrarVista && $tieneRolContable)
     <div class="alert alert-danger text-center py-4" style="border-radius: 10px; background-color: #f8d7da; color: #842029; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
         <h4 class="font-weight-bold mb-3" style="text-transform: uppercase; letter-spacing: 1px;">Vista Bloqueada</h4>
-        <p class="mb-4" style="font-size: 1.1rem;">NO HAS CERRADO TU CAJA EL DIA DE AYER. SOLICITA UN CÓDIGO DE DESBLOQUEO A ADMINISTRACIÓN.</p>
+        <p class="mb-4" style="font-size: 1.1rem;">TU CAJA ESTA BLOQUEADA, SOLICITA UN CÓDIGO DE DESBLOQUEO A ADMINISTRACIÓN.</p>
         <form action="{{ route('verificar.codigo') }}" method="POST" style="max-width: 500px; margin: 0 auto;">
             @csrf
             <div class="form-group mb-3">
@@ -28,7 +32,11 @@
         {{-- <a class="btn btn-outline-secondary" data-toggle="modal" data-target="#consolidadosModal">
             CONSOLIDADOS
         </a> --}}
+        <a class="btn btn-outline-primary" href="{{ route('admin.caja.egreso.cajaegresoscomprobantes') }}">
+            EGRESOS COMPROBANTES
+        </a>
     </div>
+    
 @endif
     <!-- Modal -->
     <div class="modal fade" id="consolidadosModal" tabindex="-1" aria-labelledby="consolidadosModalLabel" aria-hidden="true">
@@ -104,6 +112,9 @@
 
         .fw-bold {
             font-weight: bold !important;
+        }
+        .table td {
+            padding: 5px 10px;;
         }
     </style>
 @stop
@@ -272,8 +283,8 @@
     });
 </script>
 
-@if (!$mostrarVista && $rolUsuario === 'CONTABLE')
-
+{{-- @if (!$mostrarVista && $rolUsuario === 'CONTABLE') --}}
+@if (!$mostrarVista && $tieneRolContable)
 @else
 <form action="{{ route('guardar.cajacentral.egreso') }}" method="POST" id="guardarFormulario">
     @csrf
@@ -285,24 +296,57 @@
                 <input type="text" class="form-control" name="ciudadregistro" value="{{ $sucursal }}" readonly>
             </div>
             <div class="row">
-                <div class="form-group col-lg-4">
+                {{-- <div class="form-group col-lg-4">
                     <label for="siguienteId">Recibo</label>
                     <input type="text" id="siguienteId" class="form-control" value="{{ $siguienteId }}" readonly>
+                </div> --}}
+                <div class="form-group col-lg-4">
+                    <label for="siguienteId">Recibo</label>
+                    <input type="text" id="siguienteId" class="form-control" readonly>
+
                 </div>
+                <script>
+                    function actualizarSiguienteId() {
+                        fetch("{{ url('/recibos/siguiente-id') }}")
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('siguienteId').value = data.siguienteId;
+                            })
+                            .catch(error => console.error('Error al obtener el siguiente ID:', error));
+                    }
+                
+                    setInterval(actualizarSiguienteId, 1000);
+                    actualizarSiguienteId();
+                </script>
 
                 <div class="form-group col-lg-8">
                     <label>Tipo de Proveedor</label>
-                    <select id="tipocliente" class="form-control" name="tipocliente">
+                    <select id="tipocliente" class="form-control" name="tipocliente" onchange="cambiarArea()">
                         <option value="" selected disabled></option>
                         <option value="medico">MEDICO</option>
+                        <option value="proveedor">PROVEEDOR</option>
                     </select>
-                    <input type="hidden" class="form-control" name="area" value="MEDICA">
+                    <input type="hidden" id="area" class="form-control" name="area" value="MEDICA">
                 </div>
+                
+                <script>
+                function cambiarArea() {
+                    var tipoCliente = document.getElementById('tipocliente').value;
+                    var areaInput = document.getElementById('area');
+                    
+                    if (tipoCliente === 'medico') {
+                        areaInput.value = 'MEDICA';
+                    } else if (tipoCliente === 'proveedor') {
+                        areaInput.value = 'CUENTA POR PAGAR';
+                    }
+                }
+                </script>
+                
             </div>
 
             <label for="proveedorid">Nombre de Proveedor</label>
             <div class="row">
-                <div class="form-group col-lg-12"> 
+                {{-- <div class="form-group col-lg-12"> 
                     <select id="proveedorid" name="proveedorid" class="form-control">
                         <option value=""  selected disabled></option>
                         @foreach($proveedores as $proveedor)
@@ -310,6 +354,52 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="form-group col-lg-12"> 
+                    <select id="proveedorid" name="proveedorid" class="form-control">
+                        <option value=""  selected disabled></option>
+                        @foreach($proveedoresservicios as $proveedor)
+                            <option value="{{ $proveedor->razonsocial }}">{{ $proveedor->razonsocial }}</option>
+                        @endforeach
+                    </select>
+                </div> --}}
+
+                <div class="form-group col-lg-12"> 
+                    <select id="proveedorid" name="proveedorid" class="form-control">
+                        <option value="" selected disabled></option>
+                    </select>
+                </div>
+
+                <script>
+                    // Asume que los datos de proveedores están disponibles como variables JS
+                    var proveedores = @json($proveedores);
+                    var proveedoresServicios = @json($proveedoresservicios);
+
+                    // Función para cargar los proveedores según el tipo
+                    function cargarProveedores(tipo) {
+                        var selectProveedor = document.getElementById('proveedorid');
+                        selectProveedor.innerHTML = '<option value="" selected disabled></option>'; // Limpiar opciones existentes
+
+                        var opciones = [];
+                        if (tipo === 'medico') {
+                            opciones = proveedores.map(function(proveedor) {
+                                return `<option value="${proveedor.proveedor}">${proveedor.proveedor}</option>`;
+                            });
+                        } else if (tipo === 'proveedor') {
+                            opciones = proveedoresServicios.map(function(proveedor) {
+                                return `<option value="${proveedor.razonsocial}">${proveedor.razonsocial}</option>`;
+                            });
+                        }
+
+                        selectProveedor.innerHTML += opciones.join('');
+                    }
+
+                    // Agregar un evento para cuando cambie el tipo de proveedor
+                    document.getElementById('tipocliente').addEventListener('change', function() {
+                        cargarProveedores(this.value);
+                    });
+                </script>
+                
+                
                 <div class="form-group col-lg-12">
                     <label>N. Factura 1</label>
                     <input type="text" id="nrofactura" name="nrofactura" class="form-control">
@@ -337,6 +427,7 @@
                         <option value="DEPOSITO_BANCARIO" hidden>DEPÓSITO BANCARIO</option>
                         <option value="EFECTIVO" hidden>EFECTIVO</option>
                         <option value="TRANSFERENCIA_BANCARIA">TRANSFERENCIA BANCARIA</option>
+                        {{-- <option value="RETIRO_BANCARIO">RETIRO BANCARIO</option> --}}
                     </select>
                     <div class="form-check mt-2" hidden>
                         <input type="checkbox" class="form-check-input" id="dobleTransaccion" onchange="validarTipoTransaccion()">
@@ -374,6 +465,9 @@
                 <label>Nro. Cheque</label>
                 <input type="text" id="nrocheque" name="nrocheque" class="form-control">
 
+                <label>Bancarización</label>
+                <input type="text" id="nrobancarizacioncheque" name="nrobancarizacioncheque" class="form-control">
+
                 <div class="form-group mb-3">
                     <label for="tipobancocheque">Tipo Banco</label>
                     <select name="tipobancocheque" id="tipobancocheque" class="form-control">
@@ -388,9 +482,9 @@
                     <label for="bancoDestino">Nro. Banco Origen</label>
                     <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control">
                         <option value=""></option>
-                        <option value="3000189269">3000189269</option>
-                        <option value="2505314878">2505314878</option>
-                        <option value="S/B">S/B</option>
+                        @foreach ($cuentas as $cuenta)
+                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                        @endforeach
                     </select>
                 </div>
                 
@@ -402,9 +496,9 @@
                     <label for="bancoDestino">Nro. Banco Origen</label>
                     <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control">
                         <option value=""></option>
-                        <option value="3000189269">3000189269</option>
-                        <option value="2505314878">2505314878</option>
-                        <option value="S/B">S/B</option>
+                        @foreach ($cuentas as $cuenta)
+                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -418,9 +512,9 @@
                     <label for="bancoDestino">Nro. Banco Origen</label>
                     <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control">
                         <option value=""></option>
-                        <option value="3000189269">3000189269</option>
-                        <option value="2505314878">2505314878</option>
-                        <option value="S/B">S/B</option>
+                        @foreach ($cuentas as $cuenta)
+                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -463,20 +557,20 @@
                     <div class="table-responsive">
                         <table class="table table-bordered mt-3">
                             <thead>
-                                <tr>
+                                <tr style="background-color: #eff1f3">
                                     <th style="width: 5%;">ID</th>
                                     <th style="width: 30%;">Detalle</th>
                                     <th style="width: 10%;">Fecha Asig.</th>
                                     <th hidden style="width: 0%;">Fecha de Batería</th>
                                     <th style="width: 20%;">Servicio</th>
-                                    <th style="width: 10%;">Precio</th>
+                                    <th style="width: 10%;">Subtotal</th>
                                     <th style="width: 10%;">Descuento</th>
-                                    <th style="width: 10%;">Pago</th>  
+                                    <th style="width: 10%;">Total</th>  
                                     {{-- <th style="width: 5%;">Selec.</th> --}}
                                     <th style="width: 5%;">
-                                        <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 5px;">
-                                            <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 35px;">
-                                            Selec.
+                                        <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 10px; margin-bottom: 0px;">
+                                            <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 20px;">
+                                            Sel.
                                         </label>
                                     </th>
                                 </tr>
@@ -506,18 +600,21 @@
                             </div>
                             <div class="form-group col-lg-3">
                                 <label>Registrar</label>
-                                <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
-                                    <!-- Botón de Actualizar ID -->
+                                    <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
+                                            onclick="imprimirReciboSeleccionados()">
+                                        GUARDAR REGISTRO
+                                    </button>
+                                    <input type="hidden" id="html_recibo" name="html_recibo">
+                                {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
                                     <a id="actualizarId" class="btn btn-secondary btn-block">
                                         INSERTAR DATOS
                                     </a>
-                                    <!-- Botón de Guardar -->
                                     <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
                                             onclick="imprimirReciboSeleccionados()" disabled style="display: none;">
                                         GUARDAR REGISTRO
                                     </button>
                                     <input type="hidden" id="html_recibo" name="html_recibo">
-                                </div>
+                                </div> --}}
                                 
                                 <script>
                                     // Agregar un temporizador para ocultar el botón "Guardar" después de 1 segundo si no se presiona
@@ -572,7 +669,15 @@
 @endif
 @stop
 
-
+{{-- <td>${preciocompra}</td> --}}
+{{-- <td>
+    <input type="number" style="height: 25px;" class="form-control registro-descuento" 
+        placeholder="0.00" 
+        value="0.00" 
+        data-preciocompra="${preciocompra}" 
+        data-id="${registro.id}" step="0.01" />
+</td> --}}
+{{-- ${registro.id && registro.id.toString().endsWith('CP') ? 'disabled' : ''} --}}
 @section('js')
 {{-- BUSCAR REGISTROS DE PROGRAMACIONES DE CLIENTES --}}
 <script>
@@ -620,7 +725,7 @@
                 const totalInput = document.querySelector('input[placeholder="Total"]');
 
                 if (data.proveedor) {
-                    nombreInput.value = data.proveedor.proveedor || data.proveedor.nombrecompleto;
+                    nombreInput.value = data.proveedor.proveedor || data.proveedor.nombrecompleto || data.proveedor.razonsocial;
                     idnombreInput.value = data.proveedor.id;
                     nitInput.value = data.proveedor.nit || data.proveedor.ci;
                 } else {
@@ -640,31 +745,34 @@
                         const fila = `
                             <tr>
                                 <td>${registro.id}</td>
-                                <td>${registro.accionnombre || ''} ${registro.tipoproveedor || ''}
+                                <td>${registro.accionnombre || ''} ${registro.tipoproveedor || ''} ${registro.cantidad > 0 ? registro.cantidad : ''} ${registro.detalleproducto || ''}
                                     ${registro.clienteitanombre ? ' - '  + registro.clienteitanombre : ''}
                                     ${registro.clientenombre ? ' - ' + registro.clientenombre : ''}
                                     ${registro.clienteauditorianombre ? ' - ' + registro.clienteauditorianombre : ''}
                                     ${registro.clientecomunnombre ? ' - ' + registro.clientecomunnombre : ''}</td>
                                 <td hidden>${registro.fechabateria}</td>
                                 <td>${registro.fechaasignada ? registro.fechaasignada : ''}</td>
-                                <td>${registro.tramite || ''} ${registro.detalle || ''}</td>
-                                <td>${preciocompra}</td>
+                                <td>${registro.tramite || ''} ${registro.detalle || ''}  ${registro.tipoorden || ''} ${registro.ordenid || ''}</td>
+                                <td>${(!preciocompra || parseFloat(preciocompra) === 0.00) ? registro.subtotal : preciocompra}</td>
+
                                 <td>
-                                    <input type="number" class="form-control registro-descuento" 
+                                    <input type="number" style="height: 25px;" class="form-control registro-descuento" 
                                         placeholder="0.00" 
-                                        value="0.00" 
+                                        value="${(registro.descuento !== null && registro.descuento !== undefined && registro.descuento !== '') ? registro.descuento : '0.00'}" 
                                         data-preciocompra="${preciocompra}" 
                                         data-id="${registro.id}" step="0.01" />
                                 </td>
+
                                 <td>
-                                    <input type="number" class="form-control registro-pago" 
+                                    <input type="number" style="height: 25px;" class="form-control registro-pago" 
                                         placeholder="0.00" 
-                                        value="${preciocompra}" 
+                                        value="${(!preciocompra || parseFloat(preciocompra) === 0.00) ? registro.montototal : preciocompra}" 
                                         data-preciocompra="${preciocompra}" 
                                         data-id="${registro.id}" step="0.01" />
                                 </td>
+
                                 <td>
-                                    <input type="checkbox" class="registro-checkbox" data-preciocompra="${preciocompra}" />
+                                    <input type="checkbox" style="height: 25px;" class="registro-checkbox" data-preciocompra="${(!preciocompra || parseFloat(preciocompra) === 0.00) ? registro.subtotal : preciocompra}" />
                                 </td>
                             </tr>
                         `;
@@ -969,6 +1077,7 @@
         const nrocheque = document.getElementById('nrocheque').value;
         const tipobancocheque = document.getElementById('tipobancocheque').value;
         const nrocuentadestinocheque = document.getElementById('nrocuentadestinocheque').value;
+        const nrobancarizacioncheque = document.getElementById('nrobancarizacioncheque').value;
 
         /* DEPOSITO BANCARIO */
         const nrocuentadestinodeposito = document.getElementById('nrocuentadestinodeposito').value;
@@ -1091,12 +1200,13 @@
                 <div class="info" style="margin-top: -1px; margin-bottom: -1px;"><strong>Nro. Cheque:</strong> ${nrocheque}</div>
                 <div class="info" style="margin-top: -1px; margin-bottom: -1px;"><strong>Tipo Banco:</strong> ${tipobancocheque}</div>
                 <div class="info" style="margin-bottom: -1px;"><strong>Nro. Cuenta Origen:</strong> ${nrocuentadestinocheque}</div>
+                <div class="info" style="margin-top: -1px;"><strong>Bancarizacion:</strong> ${nrobancarizacioncheque}</div>
                 <div class="linea" style="margin-top: -1px; margin-bottom: -1px;"></div>
             `;
         } else if (tipoTransaccion1 === 'DEPOSITO_BANCARIO') {
             reciboHTML += `
                 <div class="info" style="margin-top: -1px; margin-bottom: -1px;"><strong>Nro Cuenta Origen:</strong> ${nrocuentadestinodeposito}</div>
-                <div class="info" style="margin-top: -1px;"><strong>Bancarización:</strong> ${nrobancarizaciondeposito}</div>
+                <div class="info" style="margin-top: -1px;"><strong>Bancarizacion:</strong> ${nrobancarizaciondeposito}</div>
                 <div class="linea" style="margin-top: -1px; margin-bottom: -1px;"></div>
             `;
         } else if (tipoTransaccion1 === 'TRANSFERENCIA_BANCARIA') {
@@ -1122,7 +1232,7 @@
         let subtotal = 0;
         reciboHTML += `<table class="tabla"><thead>
                             <tr>
-                                <th style="text-align: left;">Est./Esp.</th>
+                                <th style="text-align: left;">Detalle</th>
                                 <th style="text-align: right;">Precio</th>
                             </tr>
                         </thead>
@@ -1143,7 +1253,9 @@
         reciboHTML += `</tbody></table>`;
 
         const descuento = parseFloat(document.querySelector('input[placeholder="Descuento"]').value || 0);
-        const total = subtotal - descuento;
+        /* const total = subtotal - descuento; */
+        const totales = parseFloat(document.querySelector('input[placeholder="Total"]').value || 0);
+        const total = totales;
         const totalTextual = convertirNumeroATexto(total);
         reciboHTML += `
              <div class="linea"></div>

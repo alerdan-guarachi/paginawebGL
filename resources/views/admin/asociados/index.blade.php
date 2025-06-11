@@ -4,7 +4,7 @@
 
 @section('content_header')
 @can('admin.asociados.crearasociados')
-<a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.create')}}">CREAR ASOCIADO</a>
+<a class="btn btn-sm float-right btn-crearasociado" href="{{route('admin.asociados.create')}}">CREAR ASOCIADO</a>
 @endcan
 <h1>ASOCIADOS</h1>
 @stop
@@ -12,6 +12,17 @@
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
 <style>
+    .btn-crearasociado {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-crearasociado:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
     .btn-listaclientes {
         background-color:  #ffffff;
         color: #2821f3d1;

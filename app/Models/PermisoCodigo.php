@@ -16,7 +16,7 @@ class PermisoCodigo extends Model
     protected $primaryKey = 'id';
 
     // Deshabilitar timestamps si no se utilizan en la tabla
-    public $timestamps = false;
+    public $timestamps = true;
 
     // Atributos asignables en masa
     protected $fillable = [
@@ -26,10 +26,7 @@ class PermisoCodigo extends Model
         'fechaSolicitada',
         'tiempoLimite',
         'permisoSolicitado',
-        'clienteitanombre',
-        'clienteitaid',
-        'clienteauditorianombre',
-        'clienteauditoriaid',
+        'clienteid',
         'horaActivacion',
         'estado',
     ];
@@ -44,8 +41,5 @@ class PermisoCodigo extends Model
         'fechaSolicitada' => 'date',
         'horaActivacion' => 'datetime',
         'tiempoLimite' => 'integer',
-        'clienteitaid' => 'integer',
-        'clienteauditoriaid' => 'integer',
-
     ];
 }

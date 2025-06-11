@@ -64,8 +64,10 @@ class StoreProgramacionsubclienteRequest extends FormRequest
         'comision' => '',
         'nrosesion' => '',
         'nrofactura' => '',
-        'motivoanulacion',
-        'usuarioanulacion',
+        'motivoanulacion' => '',
+        'usuarioanulacion' => '',
+        'medicoderivante' => '',
+        'usuariocomprobante' => '',
         
     ]; 
     return $rules;

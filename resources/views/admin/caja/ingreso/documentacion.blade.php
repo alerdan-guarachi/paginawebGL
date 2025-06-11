@@ -63,7 +63,7 @@
             <form id="documentacionForm" method="POST" enctype="multipart/form-data" action="{{ route('guardar.respaldo') }}">
                 @csrf
                 <table class="table table-bordered table-striped">
-                    <thead class="table-dark">
+                    <thead class="table-secondary">
                         <tr>
                             <th>ID</th>
                             <th>Cliente</th>
@@ -71,14 +71,14 @@
                             <th>Transac.</th>
                             <th>Subtotal</th>
                             <th>Desc.</th>
-                            <th>Monto Total</th>
+                            <th>Total</th>
                             <th>Saldo</th>
-                            <th>Estado Pago</th>
-                            <th>Nro. Recibo</th>
-                            <th>Nro. Banc.</th>
+                            <th>Estado_Pago</th>
+                            <th>N.Rec.</th>
+                            <th>N.Banc.</th>
                             <th>Recibo</th>
                             <th>Factura</th>
-                            <th>Comprob.</th>
+                            <th>Comp.</th>
                             <th>Selec.</th>
                         </tr>
                     </thead>
@@ -137,7 +137,7 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    @if ($rolUsuario === 'CONTABLE' || $rolUsuario === 'OPERATIVO')
+                                    @if ($rolUsuario === 'ADMINISTRADOR' || $rolUsuario === 'CONTABLE' || $rolUsuario === 'OPERATIVO' || $rolUsuario === 'ASISTENTE ADMINISTRATIVO')
                                         @if (!$registro->documentorespaldo || !$registro->docfactura || !$registro->doccomprobante)
                                             <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox">
                                         @endif

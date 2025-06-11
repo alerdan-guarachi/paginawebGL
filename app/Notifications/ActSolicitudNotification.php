@@ -26,7 +26,7 @@ class ActSolicitudNotification extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'mensaje' => "{$this->solicitud->usuarioactualizacion} te ha ofertado: {$this->solicitud->productoofertado} para tu solicitud de inventario.",
+            'mensaje' => "{$this->solicitud->usuarioactualizacion} te ha ofertado: {$this->solicitud->productoofertado}, cantidad: {$this->solicitud->cantidadofertado}, para tu solicitud de inventario.",
             'registro_id' => $this->solicitud->id,
         ];
     }

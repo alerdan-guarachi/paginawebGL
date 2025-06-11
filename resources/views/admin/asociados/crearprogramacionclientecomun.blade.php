@@ -302,22 +302,24 @@
                 </select>
                 <div id="acciones-container" class="mt-3">
                     <strong>Acciones programadas:</strong>
-                    <table class="table mt-3" id="acciones-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Estudio / Especialidad</th>
-                                <th>Proveedor</th>
-                                <th>Fecha Asignada</th>
-                                <th>Hora Asignada</th>
-                                @if (!$esProveedor)
-                                    <th>Precio</th>
-                                @endif
-                                <th>Actualizar</th>
-                            </tr>
-                        </thead>
-                        <tbody id="acciones-lista"></tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table mt-3" id="acciones-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Estudio / Especialidad</th>
+                                    <th>Proveedor</th>
+                                    <th>Fecha Asignada</th>
+                                    <th>Hora Asignada</th>
+                                    @if (!$esProveedor)
+                                        <th>Precio</th>
+                                    @endif
+                                    <th>Actualizar</th>
+                                </tr>
+                            </thead>
+                            <tbody id="acciones-lista"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <script>

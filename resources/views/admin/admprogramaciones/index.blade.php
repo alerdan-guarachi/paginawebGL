@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<h1>PROGRAMACIONES DE CLIENTES</h1>
+<h1>PROGRAMACIONES POR FECHA</h1>
 @stop
 
 @section('content')
@@ -35,12 +35,12 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Tipo Cliente</th>
+                        <th>Tipo_Cli.</th>
                         <th>Cliente</th>
-                        <th>Acciones</th>
+                        <th>Estudio/Especialidad</th>
                         <th>Proveedor</th>
-                        <th>Fecha asignada</th>
-                        <th>Hora asignada</th>
+                        <th>Fecha_Asignada</th>
+                        <th>Hora_Asignada</th>
                         <th>Celular</th>
                         {{-- <th>Estado</th> --}}
                     </tr>
@@ -61,7 +61,7 @@
                         ?>
                         <tr>
                             <td>{{ $programacionclienteauditoria->id }}</td>
-                            <td>CLIENTE AUDITORIA</td>
+                            <td>AUDITORIA</td>
                             <td>{{ $programacionclienteauditoria->clienteauditorianombre }}</td>
                             <td>{{ $programacionclienteauditoria->accionnombre }}</td>
                             <td>{{ $programacionclienteauditoria->proveedornombre }}</td>
@@ -105,7 +105,7 @@
                         ?>
                         <tr>
                             <td>{{ $programacionclientecomun->id }}</td>
-                            <td>CLIENTE COMUN</td>
+                            <td>COMUN</td>
                             <td>{{ $programacionclientecomun->clientecomunnombre}}</td>
                             <td>{{ $programacionclientecomun->accionnombre }}</td>
                             <td>{{ $programacionclientecomun->proveedornombre }}</td>
@@ -148,7 +148,7 @@
                         ?>
                         <tr>
                             <td>{{ $programacionclienteita->id }}</td>
-                            <td>CLIENTE ITA</td>
+                            <td>ITA</td>
                             <td>{{ $programacionclienteita->clienteitanombre}}</td>
                             <td>{{ $programacionclienteita->accionnombre }}</td>
                             <td>{{ $programacionclienteita->proveedornombre }}</td>
@@ -191,7 +191,7 @@
                         ?>
                         <tr>
                             <td>{{ $programacionclientebanco->id }}</td>
-                            <td>CLIENTE BANCO</td>
+                            <td>BANCO</td>
                             <td>{{ $programacionclientebanco->clientenombre}}</td>
                             <td>{{ $programacionclientebanco->accionnombre }}</td>
                             <td>{{ $programacionclientebanco->proveedornombre }}</td>
@@ -235,6 +235,9 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .table td {
+            padding: 5px 10px;;
+        }
     h1, th {color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 900;

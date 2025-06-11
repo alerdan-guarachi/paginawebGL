@@ -11,11 +11,11 @@ class StockBajoNotification extends Notification
 {
     use Queueable;
 
-    protected $bien;
+    protected $solicitud;
 
-    public function __construct($bien)
+    public function __construct($solicitud)
     {
-        $this->bien = $bien;
+        $this->solicitud = $solicitud;
     }
 
     public function via($notifiable)
@@ -26,8 +26,8 @@ class StockBajoNotification extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'mensaje' => "El producto {$this->bien->nombreproducto} - {$this->bien->marca} tiene un stock bajo: {$this->bien->stockactual}",
-            'producto_id' => $this->bien->id,
+            'mensaje' => "El producto {$this->solicitud->productoofertado} tiene un stock bajo.",
+            'producto_id' => $this->solicitud->id,
         ];
     }
 }

@@ -422,18 +422,54 @@
                                         <span class="badge badge-danger">VACIO</span>
                                     @endif
                                 </td>
-                                <td>
+                                {{-- <td>
                                     @if ($registro->docfactura)
                                         <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura) }}" class="btn btn-sm btn-outline-success" target="_blank" title="VER FACTURA"><i class="fas fa-eye"></i></a>
                                     @else
                                         <span class="badge badge-danger">VACIO</span>
                                     @endif
-                                </td>
+                                </td> --}}
+                                @php
+                                    $ruta1 = public_path('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura);
+                                    $ruta2 = public_path('comprobantescuentaspagar/' . $registro->docfactura);
+                                @endphp
+
                                 <td>
+                                    @if (!empty($registro->docfactura) && file_exists($ruta1))
+                                        <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura) }}" class="btn btn-sm btn-outline-success" target="_blank" title="VER FACTURA">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    @elseif (!empty($registro->docfactura) && file_exists($ruta2))
+                                        <a href="{{ asset('comprobantescuentaspagar/' . $registro->docfactura) }}" class="btn btn-sm btn-outline-success" target="_blank" title="VER FACTURA">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    @else
+                                        <span class="badge badge-danger">VACÍO</span>
+                                    @endif
+                                </td>
+                                {{-- <td>
                                     @if ($registro->doccomprobante)
                                     <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante) }}" class="btn btn-sm btn-outline-success" target="_blank" title="VER COMPROBANTE"><i class="fas fa-eye"></i></a>
                                     @else
                                         <span class="badge badge-danger">VACIO</span>
+                                    @endif
+                                </td> --}}
+                                @php
+                                    $ruta1 = public_path('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante);
+                                    $ruta2 = public_path('comprobantescuentaspagar/' . $registro->doccomprobante);
+                                @endphp
+
+                                <td>
+                                    @if (!empty($registro->doccomprobante) && file_exists($ruta1))
+                                        <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante) }}" class="btn btn-sm btn-outline-success" target="_blank" title="VER COMPROBANTE">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    @elseif (!empty($registro->doccomprobante) && file_exists($ruta2))
+                                        <a href="{{ asset('comprobantescuentaspagar/' . $registro->doccomprobante) }}" class="btn btn-sm btn-outline-success" target="_blank" title="VER COMPROBANTE">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    @else
+                                        <span class="badge badge-danger">VACÍO</span>
                                     @endif
                                 </td>
                                 <td class="text-center">

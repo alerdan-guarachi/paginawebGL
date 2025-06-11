@@ -26,7 +26,7 @@ class SolicitudProductoNotification extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'mensaje' => "{$this->producto->usuariosolicitante} ha solicitado: {$this->producto->productosolicitado} - Cantidad: {$this->producto->cantidad}",
+            'mensaje' => "{$this->producto->usuariosolicitante} ha solicitado: {$this->producto->productosolicitado}, cantidad: {$this->producto->cantidad}",
             'registro_id' => $this->producto->id,
         ];
     }

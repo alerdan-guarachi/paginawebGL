@@ -1,0 +1,230 @@
+/* PESTAÑAS DE NAVEGACION */
+    .nav-tabs {
+        display: flex;
+        justify-content: space-between;
+    }
+    .nav-tabs .nav-item {
+        flex: 1;
+    }
+    .nav-tabs .nav-link {
+        display: block;
+        text-align: center;
+        width: 100%;
+        font-weight: bold;
+        font-size: 14px;
+        color: #faa625;
+        background-color: #fef4e7;
+    }
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+        font-size: 14px;
+        color: #94c93b;
+        background-color: #ffffff;
+    }
+    .circle {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+    .nav-link.active .circle {
+        background-color: #94c93b;
+        color: #fff;
+    }
+    .nav-link .circle {
+        background-color: #faa625;
+        color: #fff;
+    }
+    
+/* TEXTOS */
+    h1, th {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 900;
+        }
+    h4 {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 900;
+        }
+    h5 {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 500;
+        margin-bottom: 0%;
+        }
+
+/* BOTONES */
+    .btn-verdepequeno {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-verdepequeno:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-rojopequeno {
+        background-color:  #ffffff;
+        color: #d61515;
+        border-color: #d61515;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-rojopequeno:hover {
+        background-color: #d61515;
+        color: #ffffff;
+        }
+    .btn-amarillopequeno {
+        background-color:  #ffffff;
+        color: #dce000;
+        border-color: #dce000;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-amarillopequeno:hover {
+        background-color: #dce000;
+        color: #ffffff;
+        }
+    .btn-naranjapequeno {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-naranjapequeno:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
+    .btn-verdegrande {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-verdegrande:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-naranjagrande {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-naranjagrande:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
+    .btn-azulgrande {
+        background-color: #ffffff;
+        color: #2926e2;
+        border-color: #2926e2;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-left: 10px;
+        }
+    .btn-azulgrande:hover {
+        background-color: #2926e2;
+        color: #ffffff;
+        }
+
+/* TABLAS */
+    table {
+        white-space: nowrap;
+    }
+    .table td {
+        padding: 5px 10px;;
+    }
+
+/* BOTONES ETAPAS */
+    .btn-etapa1 {
+        width: 100px;
+        height: 90px;
+        font-size: 13px;
+        flex-direction: column;
+        text-align: center;
+        padding: 10px;
+        background-color: #ffffff;
+        color: #26a1c0;
+        border-color: #26a1c0;
+        border-radius: 5px;
+    }
+    .btn-etapa1:hover {
+        background-color: #26a1c0;
+        color: #ffffff;
+    }
+    .btn-etapa1 i {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .btn-etapa2 {
+        width: 100px;
+        height: 90px;
+        font-size: 13px;
+        flex-direction: column;
+        text-align: center;
+        padding: 10px;
+        background-color: #ffffff;
+        color: #148734;
+        border-color: #148734;
+        border-radius: 5px;
+    }
+    .btn-etapa2:hover {
+        background-color: #148734;
+        color: #ffffff;
+    }
+    .btn-etapa2 i {
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .btn-icono i {
+        font-size: 4em;
+    }
+
+/* DROPIFY */
+    .dropify-wrapper {
+        border-radius: 0.25rem;
+    }
+    .dropify-wrapper {
+        height: 120px !important;
+    }
+    .dropify-message p {
+        font-size: 14px;
+    }
+
+/* ESTILO MODAL ACCIONES */
+    .bordeetapa1 {
+        border-top: 2px solid #26a1c0;
+        border-bottom: 2px solid #26a1c0;
+        border-right: 2px solid #26a1c0;
+        border-left: 2px solid #26a1c0;
+    }
+    .bordeetapa2 {
+        border-top: 2px solid #409c3e;
+        border-bottom: 2px solid #409c3e;
+        border-right: 2px solid #409c3e;
+        border-left: 2px solid #409c3e;
+    }
+    .bordeetapa3 {
+        border-top: 2px solid #a3bc35;
+        border-bottom: 2px solid #a3bc35;
+        border-right: 2px solid #a3bc35;
+        border-left: 2px solid #a3bc35;
+    }
+    .otros {
+        border-top: 2px solid #c47a35;
+        border-bottom: 2px solid #c47a35;
+        border-right: 2px solid #c47a35;
+        border-left: 2px solid #c47a35;
+    }

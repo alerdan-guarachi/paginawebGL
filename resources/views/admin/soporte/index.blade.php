@@ -3,7 +3,6 @@
 <link href="assets/img/logo.png" rel="icon">
 
 @section('content_header')
-    {{-- <a class="btn btn-sm float-right btn-regresar" href="#">REGRESAR</a> --}}
     <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaHistorial">HISTORIAL DE SOLICITUDES</a>
     <h1>REGISTRO DE SOLICITUDES</h1>
 @stop
@@ -20,14 +19,23 @@
             color: #faa625;
             border-color: #faa625;
             border-radius: 5px;
-            padding: 10px 20px;
+            padding: 5px 10px;
         }
-
         .custom2-button:hover {
             background-color: #faa625;
             color: #ffffff;
         }
-
+        .btn-crear2 {
+            background-color:  #ffffff;
+            color: #94c93b;
+            border-color: #94c93b;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+        .btn-crear2:hover {
+            background-color: #94c93b;
+            color: #ffffff;
+        }
         .img-preview {
             width: 100%;
             height: auto;
@@ -37,11 +45,9 @@
             border-radius: 4px;
             padding: 5px;
         }
-
         #motivoSolicitud {
             height: 280px;
         }
-
         .priority-examples {
             margin-top: 10px;
             font-size: 14px;
@@ -50,7 +56,6 @@
             border-left: 5px solid #faa625;
             border-radius: 5px;
         }
-
         .fas.fa-file-image {
             font-size: 1.5rem;
             color: #007bff;
@@ -58,19 +63,31 @@
             margin-right: 5px;
             cursor: pointer;
         }
-
         .fas.fa-file-image:hover {
             color: #0056b3;
         }
-
         .badge-warning {
             color: #ffffff !important;
         }
-
-        #ventanaHistorial .table-striped th,
-        #ventanaHistorial .table-striped td {
-            vertical-align: middle;
-            text-align: left;
+        .table td {
+            padding: 5px 10px;
+        }
+        td {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .truncar {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+        .truncar2 {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
         }
     </style>
 @stop
@@ -84,7 +101,7 @@
         <script>
             setTimeout(function() {
                 $('#alert-success').fadeOut('fast');
-            }, 5000); // Ocultar después de 5 segundos
+            }, 3000);
         </script>
     @endif
 
@@ -99,7 +116,7 @@
         <script>
             setTimeout(function() {
                 $('#alert-error').fadeOut('fast');
-            }, 5000); // Ocultar después de 5 segundos
+            }, 3000);
         </script>
     @endif
 
@@ -110,7 +127,7 @@
                 <div class="row">
                     <style>
                         .soporte-card {
-                            background-color: #f8f9fa; /* Color de fondo suave */
+                            background-color: #f8f9fa;
                             padding: 10px;
                             border-radius: 8px;
                             text-align: center;
@@ -126,7 +143,6 @@
                             100% { border-color: #b88818; box-shadow: 0 0 15px #b88818; }
                         }
                     </style>
-                    
                     <div class="col-lg-12" style="margin-bottom: 20px;"> 
                         <div class="soporte-card">
                             📅 <strong>Horarios de Soporte:</strong>
@@ -134,7 +150,6 @@
                             🕒 <span>Sábados: 12:00 - 12:30</span>
                         </div>
                     </div>                    
-                    
                     <div class="col-lg-6">
                         <div class="form-group">
                             <label for="motivoSolicitud">Motivo de Solicitud:</label>
@@ -154,7 +169,6 @@
                             
                             <div class="card mt-3 shadow-sm">
                                 <div class="card-body" style="background-color: #f9f9f9">
-                                    {{-- <h6 class="text-dark font-weight-bold">Ejemplos de Prioridad</h6> --}}
                                     <ul class="list-unstyled">
                                         <li><span class="text-success font-weight-bold">🟢 BAJA:</span> Ajustes visuales o mejoras opcionales que no afectan la funcionalidad, como cambios en colores, fuentes o disposición de elementos en la interfaz.</li>  
                                         <li><span class="text-warning font-weight-bold">🟡 MEDIA:</span> Errores que afectan parcialmente la experiencia del usuario, como botones que no responden en ciertos escenarios, menús desplegables que no funcionan correctamente o funciones secundarias con fallos intermitentes.</li>  
@@ -165,7 +179,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="form-group">
@@ -184,7 +197,7 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-crear">REGISTRAR SOLICITUD</button>
+                <button type="submit" class="btn btn-crear2">REGISTRAR SOLICITUD</button>
             </form>
         </div>
     </div>
@@ -192,7 +205,7 @@
     <!-- Modal Historial -->
     <div class="modal fade" id="ventanaHistorial" tabindex="-1" role="dialog" aria-labelledby="historialModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-xxl" role="document">
+        <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">HISTORIAL DE SOLICITUDES</h5>
@@ -205,70 +218,19 @@
                     <!-- Pestañas -->
                     <ul class="nav nav-tabs" id="tabHistorial" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link active" id="atendidos-tab" data-toggle="tab" href="#atendidos" role="tab"
-                                aria-controls="atendidos" aria-selected="true">ATENDIDOS</a>
+                            <a class="nav-link active" id="pendientes-tab" data-toggle="tab" href="#pendientes" role="tab"
+                                aria-controls="pendientes" aria-selected="false">PENDIENTES</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="pendientes-tab" data-toggle="tab" href="#pendientes" role="tab"
-                                aria-controls="pendientes" aria-selected="false">PENDIENTES</a>
+                            <a class="nav-link" id="atendidos-tab" data-toggle="tab" href="#atendidos" role="tab"
+                                aria-controls="atendidos" aria-selected="true">ATENDIDOS</a>
                         </li>
                     </ul>
 
                     <div class="tab-content" id="tabHistorialContent">
-                        <!-- Atendidos -->
-                        <div class="tab-pane fade show active" id="atendidos" role="tabpanel"
-                            aria-labelledby="atendidos-tab">
-                            <div class="table-responsive mt-3">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Motivo</th>
-                                            <th>Prioridad</th>
-                                            <th>Solicitado</th>
-                                            <th>Desc. Atención</th>
-                                            <th>Atendido</th>
-                                            <th>Img. Atención</th>
-                                            <th>Estado</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($solicitudesAtendidos as $solicitud)
-                                            <tr>
-                                                <td>{{ $solicitud->id }}</td>
-                                                <td>{{ $solicitud->motivosolicitud }}</td>
-                                                <td>
-                                                    <span
-                                                        class="badge 
-                                                @if ($solicitud->nivelprioridad == 'ALTA') badge-danger 
-                                                @elseif($solicitud->nivelprioridad == 'MEDIA') badge-warning 
-                                                @else badge-success @endif">
-                                                        {{ ucfirst($solicitud->nivelprioridad) }}
-                                                    </span>
-                                                </td>
-                                                <td>{{ $solicitud->created_at->format('Y-m-d - H:i:s') }}</td>
-                                                <td>{{ $solicitud->descripcionatendida }}</td>
-                                                <td>{{ $solicitud->updated_at->format('Y-m-d - H:i:s') }}</td>
-                                                <td>
-                                                    <a class="btn btn-sm btn-outline-primary ver-detalles"
-                                                        data-usuariosoporte="{{ $solicitud->usuariosoporte }}"
-                                                        data-descripcionatendida="{{ $solicitud->descripcionatendida }}"
-                                                        data-imagen1="{{ $solicitud->soporteimagen1 ? asset($solicitud->soporteimagen1) : '' }}"
-                                                        data-imagen2="{{ $solicitud->soporteimagen2 ? asset($solicitud->soporteimagen2) : '' }}"
-                                                        {{-- style="font-size: 1.2rem;" --}}>
-                                                        <i class="fas fa-eye" style="cursor:pointer;"></i>
-                                                </a>
-                                                </td>
-                                                <td><span class="badge badge-success">SOLUCIONADO</span></td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
 
                         <!-- Pendientes -->
-                        <div class="tab-pane fade" id="pendientes" role="tabpanel" aria-labelledby="pendientes-tab">
+                        <div class="tab-pane fade show active" id="pendientes" role="tabpanel" aria-labelledby="pendientes-tab">
                             <div class="table-responsive mt-3">
                                 <table class="table table-striped">
                                     <thead>
@@ -276,9 +238,9 @@
                                             <th>ID</th>
                                             <th>Motivo</th>
                                             <th>Prioridad</th>
-                                            <th>Img. 1</th>
-                                            <th>Img. 2</th>
-                                            <th>Fecha y Hora</th>
+                                            <th>Img_1</th>
+                                            <th>Img_2</th>
+                                            <th>Fecha/Hora</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -300,7 +262,7 @@
                                                         <a href="#" class="mostrar-imagen btn btn-sm btn-outline-secondary"
                                                             data-imagen="{{ asset($solicitud->motivoimagen1) }}"
                                                             title="Ver Imagen 1">
-                                                            <i class="fas fa-eye"></i>
+                                                            <i class="fas fa-file"></i>
                                                         </a>
                                                     @else
                                                         N/A
@@ -311,13 +273,65 @@
                                                         <a href="#" class="mostrar-imagen btn btn-sm btn-outline-secondary"
                                                             data-imagen="{{ asset($solicitud->motivoimagen2) }}"
                                                             title="Ver Imagen 2">
-                                                            <i class="fas fa-eye"></i>
+                                                            <i class="fas fa-file"></i>
                                                         </a>
                                                     @else
                                                         N/A
                                                     @endif
                                                 </td>
                                                 <td>{{ $solicitud->created_at->format('Y-m-d - H:i:s') }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Atendidos -->
+                        <div class="tab-pane fade" id="atendidos" role="tabpanel"
+                            aria-labelledby="atendidos-tab">
+                            <div class="table-responsive mt-3">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Motivo</th>
+                                            <th>Prioridad</th>
+                                            <th>Solicitado</th>
+                                            <th>Desc_Atención</th>
+                                            <th>Atendido</th>
+                                            <th>Estado</th>
+                                            <th>Respaldo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($solicitudesAtendidos as $solicitud)
+                                            <tr>
+                                                <td>{{ $solicitud->id }}</td>
+                                                <td>{{ $solicitud->motivosolicitud }}</td>
+                                                <td>
+                                                    <span
+                                                        class="badge 
+                                                @if ($solicitud->nivelprioridad == 'ALTA') badge-danger 
+                                                @elseif($solicitud->nivelprioridad == 'MEDIA') badge-warning 
+                                                @else badge-success @endif">
+                                                        {{ ucfirst($solicitud->nivelprioridad) }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ $solicitud->created_at->format('Y-m-d - H:i:s') }}</td>
+                                                <td>{{ $solicitud->descripcionatendida }}</td>
+                                                <td>{{ $solicitud->updated_at->format('Y-m-d - H:i:s') }}</td>
+                                                <td><span class="badge badge-success">SOLUCIONADO</span></td>
+                                                <td>
+                                                    <a class="btn btn-sm btn-outline-primary ver-detalles"
+                                                        data-usuariosoporte="{{ $solicitud->usuariosoporte }}"
+                                                        data-descripcionatendida="{{ $solicitud->descripcionatendida }}"
+                                                        data-imagen1="{{ $solicitud->soporteimagen1 ? asset($solicitud->soporteimagen1) : '' }}"
+                                                        data-imagen2="{{ $solicitud->soporteimagen2 ? asset($solicitud->soporteimagen2) : '' }}"
+                                                        {{-- style="font-size: 1.2rem;" --}}>
+                                                        <i class="fas fa-file" style="cursor:pointer;"></i>
+                                                    </a>
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>

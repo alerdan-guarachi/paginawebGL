@@ -7,6 +7,10 @@
 <h3>{{$cliente->nombrecompleto}}</h3>
 @stop
 
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/requisitosauditoria.css') }}">
+@stop
+
 @section('content') 
 @if (!$tieneRequisitos)
 <form id="pdfForm" action="{{ route('admin.asociados.descargarchecklistclienteitaaudi', $cliente) }}" method="POST">
@@ -24,7 +28,7 @@
                         <input type="checkbox" name="ciasegurado" value="ciasegurado" id="ciasegurado" checked>
                         <label for="ciasegurado">CARNET IDENTIDAD</label>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cnacasegurado" value="cnacasegurado" id="cnacasegurado" checked>
                         <label for="cnacasegurado" style="min-height: 20px;">CERTIFICADO NACIMIENTO ASEGURADO</label>
                     </div>
@@ -47,9 +51,7 @@
                 </div>
                 @endif
             </div>
-            
             <button type="button" onclick="generatePDF()" class="btn-crear">GENERAR CHECK LIST</button>
-            
         </div>
     </div>
 </form>
@@ -58,7 +60,7 @@
     function generarFormulario() {
         var cantidad = document.getElementById('numPolizas').value;
         var contenedor = document.getElementById('formContainer');
-        contenedor.innerHTML = ''; // Limpiar contenedor
+        contenedor.innerHTML = '';
 
         for (var i = 1; i <= cantidad; i++) {
             var group = document.createElement('div');
@@ -159,11 +161,10 @@
         <div class="row"> 
             <div class="col-lg-12">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px; margin-top: 20px;">ATENCIÓN MÉDICA</h4>
-                @if (!$registroExistente && !$registroaprobadoExistente)
+                @if (!$registroExistente && !$registroaprobadoExistente && !$registroaprobadoinformefinalExistente)
                 
                 <div class="row">
-                    <!-- Primera Card -->
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="card shadow-sm h-100" style="background-color: #fdf4e3;">
                             <div class="card-header text-center fw-bold text-white" style="background-color: #edab2e; font-weight:900; font-size:16px;">
                                 DERIVAR A MEDICINA LABORAL
@@ -177,7 +178,6 @@
                                     {!! Form::hidden('ci', $cliente->ci) !!}
                                     {!! Form::hidden('sucursal', $cliente->sucursal) !!}
                                     {!! Form::hidden('tramite', 'AUDITORIA MEDICA') !!}
-                                    
                                     <div class="form-group mb-3">
                                         <label for="proveedor_id" class="fw-bold d-flex justify-content-center w-100">Seleccionar Proveedor:</label>
                                         <select name="proveedorasignado" id="proveedor_id" class="form-control" required>
@@ -187,7 +187,6 @@
                                             @endforeach
                                         </select>
                                     </div>
-                
                                     <div class="d-flex justify-content-center w-100">
                                         <button type="submit" class="btn btn-derivar px-4" id="submit-btn" disabled>DERIVAR</button>
                                     </div>
@@ -196,8 +195,7 @@
                         </div>
                     </div>
                 
-                    <!-- Segunda Card -->
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="card shadow-sm h-100" style="background-color: #f2e8f5;">
                             <div class="card-header text-center fw-bold text-white" style="background-color: #b02eed; font-weight:900; font-size:16px;">
                                 GENERAR SOLO CONSENTIMIENTO
@@ -217,10 +215,10 @@
                     </div>
 
                     @if($rolusuario === 'MAESTRO' || $rolusuario === 'ADMINISTRADOR')
-                        <div class="col-lg-4">
+                        <div class="col-lg-3">
                             <div class="card shadow-sm h-100" style="background-color: #e0f4ff;">
                                 <div class="card-header text-center fw-bold text-white" style="background-color: #2ea4ed; font-weight:900; font-size:16px;">
-                                    APROBAR INICIAR BATERIA SIN CONSENTIMIENTO
+                                    INICIAR BATERIA SIN CONSENTIMIENTO
                                 </div>
                                 <div class="card-body d-flex align-items-center justify-content-center" style="display: flex; gap: 5px;">
                                     {!! Form::open(['route' => 'aprobariniciarcrearbateria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
@@ -232,6 +230,26 @@
                                         
                                         <div class="d-flex justify-content-center w-100">
                                             <button type="submit" class="btn btn-aprobarbateria px-4">APROBAR</button>
+                                        </div>
+                                    {!! Form::close() !!}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3">
+                            <div class="card shadow-sm h-100" style="background-color: #eaffef;">
+                                <div class="card-header text-center fw-bold text-white" style="background-color: #27c451; font-weight:900; font-size:16px;">
+                                    INFORME FINAL DIRECTO
+                                </div>
+                                <div class="card-body d-flex align-items-center justify-content-center" style="display: flex; gap: 5px;">
+                                    {!! Form::open(['route' => 'aprobarinformefinaldirecto', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
+                                        {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                        {!! Form::hidden('nombres', $cliente->nombres) !!}
+                                        {!! Form::hidden('apepaterno', $cliente->apepaterno) !!}
+                                        {!! Form::hidden('apematerno', $cliente->apematerno) !!}
+                                        {!! Form::hidden('tramite', 'AUDITORIA MEDICA') !!}
+                                        
+                                        <div class="d-flex justify-content-center w-100">
+                                            <button type="submit" class="btn btn-informefinal px-4">APROBAR</button>
                                         </div>
                                     {!! Form::close() !!}
                                 </div>
@@ -254,8 +272,14 @@
                     <p></p>
                 @elseif ($registroaprobadoExistente)
                 <div class="d-flex mt-3">
-                    <div class="p-3 border rounded shadow-sm" style="background-color: #edffef; width: fit-content;">
+                    <div class="p-3 border rounded shadow-sm" style="background-color: #e0f4ff; width: fit-content;">
                         <p class="m-0 fw-bold" style="font-weight: 900">APROBADO PARA CREAR BATERÍA</p>
+                    </div>
+                </div>
+                @elseif ($registroaprobadoinformefinalExistente)
+                <div class="d-flex mt-3">
+                    <div class="p-3 border rounded shadow-sm" style="background-color: #edffef; width: fit-content;">
+                        <p class="m-0 fw-bold" style="font-weight: 900">APROBADO PARA INFORME FINAL DIRECTO</p>
                     </div>
                 </div>
                 @endif
@@ -318,151 +342,4 @@
     </div>
 </div>
 
-@stop
-
-
-@section('css')
-<style>
-    .btn-consen {
-        background-color: #ffffff;
-        color: #af25fa;
-        border-color: #af25fa;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-consen:hover {
-        background-color: #af25fa;
-        color: #ffffff;
-    }
-    /* Estilos para alinear horizontalmente los elementos */
-    .poliza-group {
-        display: flex;
-        justify-content: center;
-        gap: 20px; /* Separación entre grupos de elementos */
-        margin-bottom: 20px;
-        width: 100%;
-    }
-
-    /* Para centrar el título sobre cada input o checkbox */
-    .form-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .form-item label {
-        margin-bottom: 5px;
-        font-weight: bold;
-        text-align: center;
-    }
-
-    .form-item select,
-    .form-item input[type="text"],
-    .form-item input[type="checkbox"] {
-        width: 150px;
-    }
-
-    form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    button {
-        margin-top: 20px;
-    }
-</style>
-<style>
-    .color-toggle {
-        min-height: 20px;
-        color: red;
-        cursor: pointer;
-    }
-    .color-toggle.black {
-        color: black;
-    }
-    h5 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 500;
-        margin-bottom: 0%;
-        }
-    h3 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 1000;
-        }
-    input[type="checkbox"] {
-        transform: scale(1.5);
-        margin-right: 5px;
-        }
-    input[type="checkbox"]:checked {
-        background-color: green;
-    }
-    h1{
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-        }
-    .btn-crear {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 5px 15px;
-        }
-    
-    .btn-crear:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-        .btn-derivar {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 10px 15px;
-        }
-    
-    .btn-derivar:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-        .btn-aprobarbateria {
-        background-color:  #ffffff;
-        color: #25b6fa;
-        border-color: #25b6fa;
-        border-radius: 5px;
-        padding: 10px 15px;
-        }
-    
-    .btn-aprobarbateria:hover {
-        background-color: #25b6fa;
-        color: #ffffff;
-        }
-        .btn-regresar {
-        background-color: #ffffff;
-        color: #2926e2;
-        border-color: #2926e2;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-regresar:hover {
-        background-color: #2926e2;
-        color: #ffffff;
-    }
-    .btn-subirrequisitos {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 10px 10px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    .btn-subirrequisitos:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-</style>
 @stop

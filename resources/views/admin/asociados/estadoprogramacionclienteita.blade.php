@@ -22,7 +22,7 @@
 
 <div class="card">
     <div class="card-body">
-        <nav class="navbar navbar-expand-lg float-right">
+        <nav class="navbar navbar-expand-lg float-right" style="margin-right: -10px;">
             <div class="container-fluid">
                 <div class="d-flex flex-wrap align-items-center">
                     <form action="{{ route('buscarprogramacionclientesita', $cliente) }}" method="get" class="form-inline">
@@ -34,7 +34,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit">Buscar</button>
+                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit"><i class="fas fa-search"></i></button>
                     </form>
                 </div>
             </div>
@@ -47,89 +47,155 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Acciones</th>
+                        <th>Estudio/Especialidad</th>
                         <th>Proveedor</th>
-                        <th>Fecha bateria</th>
-                        <th>Fecha asignada</th>
-                        <th>Hora asignada</th>
+                        <th>Fecha_Bateria</th>
+                        <th>Fecha_Asignada</th>
+                        <th>Hora_Asignada</th>
                         <th>Estado</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($accionesDisponibles as $accion)
-                    <?php 
-                    // Mensaje principal sin las direcciones aún
-                    $mensaje = "Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: " .
-                                $accion->proveedornombre . ", para realizarse: " .
-                                $accion->areanombre . ", para la fecha: " .
-                                $accion->fechaasignada . ", a la hora: " . 
-                                $accion->horadesde . ". Que tenga un excelente día.";
+                        <?php 
+                            $mensaje = "Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: " .
+                                        $accion->proveedornombre . ", para realizarse: " .
+                                        $accion->areanombre . ", para la fecha: " .
+                                        $accion->fechaasignada . ", a la hora: " . 
+                                        $accion->horadesde . ". Que tenga un excelente día.";
 
-                    // Agregar direcciones y enlaces al final, si están disponibles
-                    $direcciones = "";
-                    if (!empty($accion->direccion)) {
-                        $direcciones .= "\n\nDirección: " . $accion->direccion;
-                        if (!empty($accion->linkubicacion)) {
-                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion . ")";
+                            $direcciones = "";
+                            if (!empty($accion->direccion)) {
+                                $direcciones .= "\n\nDirección: " . $accion->direccion;
+                                if (!empty($accion->linkubicacion)) {
+                                    $direcciones .= " (Ver Ubicación: " . $accion->linkubicacion . ")";
+                                }
+                            }
+                            if (!empty($accion->direccion2)) {
+                                $direcciones .= "\n\nDirección: " . $accion->direccion2;
+                                if (!empty($accion->linkubicacion2)) {
+                                    $direcciones .= " (Ver Ubicación 2: " . $accion->linkubicacion2 . ")";
+                                }
+                            }
+                            if (!empty($accion->direccion3)) {
+                                $direcciones .= "\n\nDirección: " . $accion->direccion3;
+                                if (!empty($accion->linkubicacion3)) {
+                                    $direcciones .= " (Ver Ubicación 3: " . $accion->linkubicacion3 . ")";
+                                }
+                            }
+                            $mensaje .= $direcciones;
+                            $mensajeCodificado = urlencode($mensaje);
+                        ?>
+
+                        <tr>
+                            <td class="align-middle">{{ $accion->id }}</td>
+                            <td class="align-middle">{{ $accion->accionnombre }}</td>
+                            <td class="align-middle">{{ $accion->proveedornombre }}</td>
+                            <td class="align-middle">{{ $accion->fechabateria }}</td>
+                            <td class="align-middle">{{ $accion->fechaasignada }}</td>
+                            <td class="align-middle">{{ $accion->horadesde }} - {{ $accion->horahasta }}</td>
+                            <td width="10px">
+                                @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria]))
+                                    <i class="fas fa-check-circle fa-2x checkverde"></i>
+                                @else
+                                    <i class="fas fa-times-circle fa-2x text-danger"></i>
+                                @endif
+                            </td>                  
+                            <td width="10px">
+                                @php
+                                    $cantidadDirecciones = 0;
+                                    if (!empty($accion->direccion)) $cantidadDirecciones++;
+                                    if (!empty($accion->direccion2)) $cantidadDirecciones++;
+                                    if (!empty($accion->direccion3)) $cantidadDirecciones++;
+                                @endphp
+
+                                <abbr title="Recordar">
+                                    @if($cantidadDirecciones <= 1)
+                                        <a class="btn btn-sm btn-whatsapp 
+                                            @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria])) disabled @endif" 
+                                            @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria])) 
+                                                onclick="return false;" 
+                                            @else 
+                                                href="https://wa.me/{{ $cliente->celular }}?text={{ $mensajeCodificado }}" 
+                                            @endif>
+                                            <i class="fas fa-sms"></i>
+                                        </a>
+                                    @else
+                                        <a class="btn btn-sm btn-whatsapp" data-toggle="modal" data-target="#modalDireccion{{ $accion->id }}">
+                                            <i class="fas fa-sms"></i>
+                                        </a>
+                                    @endif
+                                </abbr>
+                            </td>
+
+                            <!-- Modal -->
+                            <div class="modal fade" id="modalDireccion{{ $accion->id }}" tabindex="-1" role="dialog">
+                                <div class="modal-dialog" role="document">
+                                    <form target="_blank" method="GET" id="formDireccion{{ $accion->id }}">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">ELEGIR DIRECCION PARA ENVIAR</h5>
+                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            </div>
+                                            <div class="modal-body">
+                                                @if(!empty($accion->direccion))
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="direccion{{ $accion->id }}" id="dir1-{{ $accion->id }}" value="{{ $accion->direccion }} {{ $accion->linkubicacion ? '(Ver Ubicación: ' . $accion->linkubicacion . ')' : '' }}" checked>
+                                                    <label class="form-check-label" for="dir1-{{ $accion->id }}">
+                                                    <strong>{{ $accion->ciudad }}</strong> - {{ $accion->direccion }}
+                                                    </label>
+                                                </div>
+                                                @endif
+                                                @if(!empty($accion->direccion2))
+                                                <div class="form-check" style="margin-top: 20px;">
+                                                    <input class="form-check-input" type="radio" name="direccion{{ $accion->id }}" id="dir2-{{ $accion->id }}" value="{{ $accion->direccion2 }} {{ $accion->linkubicacion2 ? '(Ver Ubicación: ' . $accion->linkubicacion2 . ')' : '' }}">
+                                                    <label class="form-check-label" for="dir2-{{ $accion->id }}">
+                                                    <strong>{{ $accion->ciudad2 }}</strong> - {{ $accion->direccion2 }}
+                                                    </label>
+                                                </div>
+                                                @endif
+                                                @if(!empty($accion->direccion3))
+                                                <div class="form-check" style="margin-top: 20px;">
+                                                    <input class="form-check-input" type="radio" name="direccion{{ $accion->id }}" id="dir3-{{ $accion->id }}" value="{{ $accion->direccion3 }} {{ $accion->linkubicacion3 ? '(Ver Ubicación: ' . $accion->linkubicacion3 . ')' : '' }}">
+                                                    <label class="form-check-label" for="dir3-{{ $accion->id }}">
+                                                    <strong>{{ $accion->ciudad3 }}</strong> - {{ $accion->direccion3 }}
+                                                    </label>
+                                                </div>
+                                                @endif
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-sm btn-outline-danger" data-dismiss="modal">Cancelar</button>
+                                                <button type="button" class="btn btn-sm btn-outline-success" onclick="enviarMensajeWhatsApp({{ $accion->id }}, '{{ $cliente->celular }}', '{{ addslashes($accion->proveedornombre) }}', '{{ addslashes($accion->areanombre) }}', '{{ $accion->fechaasignada }}', '{{ $accion->horadesde }}')"><i class="fab fa-whatsapp mr-1"></i> Enviar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </tr>
+                    @endforeach
+                    <script>
+                        function enviarMensajeWhatsApp(id, celular, proveedor, area, fecha, hora) {
+                            const selector = `input[name="direccion${id}"]:checked`;
+                            const direccionRadio = document.querySelector(selector);
+
+                            if (!direccionRadio) {
+                                alert('Seleccione una dirección antes de enviar.');
+                                return;
+                            }
+
+                            const direccion = direccionRadio.value;
+
+                            const mensaje = `Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: ${proveedor}, para realizarse: ${area}, para la fecha: ${fecha}, a la hora: ${hora}. Que tenga un excelente día.\n\nDirección: ${direccion}`;
+
+                            const mensajeCodificado = encodeURIComponent(mensaje);
+                            const url = `https://wa.me/${celular}?text=${mensajeCodificado}`;
+
+                            window.open(url, '_blank');
                         }
-                    }
-                    if (!empty($accion->direccion2)) {
-                        $direcciones .= "\n\nDirección 2: " . $accion->direccion2;
-                        if (!empty($accion->linkubicacion2)) {
-                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion2 . ")";
-                        }
-                    }
-                    if (!empty($accion->direccion3)) {
-                        $direcciones .= "\n\nDirección 3: " . $accion->direccion3;
-                        if (!empty($accion->linkubicacion3)) {
-                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion3 . ")";
-                        }
-                    }
-
-                    // Añadir las direcciones al mensaje principal
-                    $mensaje .= $direcciones;
-
-                    $mensajeCodificado = urlencode($mensaje);
-                    ?>
-
-                    <tr>
-                        <td class="align-middle">{{ $accion->id }}</td>
-                        <td class="align-middle">{{ $accion->accionnombre }}</td>
-                        <td class="align-middle">{{ $accion->proveedornombre }}</td>
-                        <td class="align-middle">{{ $accion->fechabateria }}</td>
-                        <td class="align-middle">{{ $accion->fechaasignada }}</td>
-                        <td class="align-middle">{{ $accion->horadesde }} - {{ $accion->horahasta }}</td>
-                        <td width="10px">
-                            @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria]))
-                                <i class="fas fa-check-circle fa-2x checkverde"></i>
-                            @else
-                                <i class="fas fa-times-circle fa-2x text-danger"></i>
-                            @endif
-                        </td>
-                        
-                        <td width="10px"> 
-                            <abbr title="Recordar">
-                                <a class="btn btn-sm btn-whatsapp 
-                                    @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria])) disabled @endif" 
-                                    @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria])) 
-                                        onclick="return false;" 
-                                    @else 
-                                        href="https://wa.me/{{ $cliente->celular }}?text={{ $mensajeCodificado }}" 
-                                    @endif>
-                                    <i class="fas fa-sms"></i>
-                                </a>
-                            </abbr>
-                        </td>                        
-                    </tr>
-                @endforeach
+                    </script>
                 </tbody>
-                
             </table>
-            @error('accion')
-                <small class="text-danger fas fa-exclamation-circle">
-                    {{$message}}
-                </small>
-            @enderror
         </div>
     </div>
 </div>
@@ -177,8 +243,6 @@
                 <div class="form-group"> 
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         {!! Form::label('', 'Acciones disponibles:') !!}
-
-                        <!-- Checkbox "Seleccionar Todo" -->
                         <div id="select-all-container" style="display: none;">
                             <label style="font-weight: bold; font-size: 14px; margin-bottom: 0;">
                                 <input type="checkbox" id="select-all" style="margin-right: 5px;">
@@ -213,25 +277,15 @@
                     document.getElementById('fecha_bateria').addEventListener('change', function() {
                         const selectedFecha = this.value;
                         const accionesDivs = document.querySelectorAll('.acciones-' + selectedFecha);
-
-                        // Oculta todas las acciones
                         document.querySelectorAll('[class^="acciones-"]').forEach(div => {
                             div.style.display = 'none';
                         });
-
-                        // Reinicia el estado del checkbox "Seleccionar Todo"
                         document.getElementById('select-all').checked = false;
-
-                        // Muestra las acciones para la fecha seleccionada
                         accionesDivs.forEach(div => {
                             div.style.display = 'block';
                         });
-
-                        // Obtener todos los checkboxes de acciones visibles
                         const accionesCheckboxes = document.querySelectorAll('.acciones-' + selectedFecha +
                             ' .accion-checkbox');
-
-                        // Muestra el checkbox "Seleccionar Todo" si hay acciones disponibles
                         if (accionesCheckboxes.length > 0) {
                             document.getElementById('select-all-container').style.display = 'block';
                         } else {
@@ -239,7 +293,6 @@
                         }
                     });
 
-                    // Función para manejar el "Seleccionar Todo"
                     document.getElementById('select-all').addEventListener('change', function() {
                         const isChecked = this.checked;
                         const selectedFecha = document.getElementById('fecha_bateria').value;
@@ -252,8 +305,6 @@
                             });
                         }
                     });
-
-                    // Opcional: Actualizar el estado del checkbox "Seleccionar Todo" si se desmarca algún checkbox individual
                     document.addEventListener('change', function(e) {
                         if (e.target.classList.contains('accion-checkbox')) {
                             const selectedFecha = document.getElementById('fecha_bateria').value;
@@ -263,10 +314,7 @@
                             document.getElementById('select-all').checked = allChecked;
                         }
                     });
-                    </script>
-
-                
-                                 
+                </script>               
                 <div class="form-group" hidden>
                     {!! Form::label('nombrecompleto', 'Nombre del Cliente:') !!}
                     {!! Form::text('nombrecompleto', $cliente->nombrecompleto, ['id' => 'modalNombreCompleto', 'class' => 'form-control', 'readonly']) !!}
@@ -296,278 +344,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/js/dropify.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-{{-- <script>
-                    $(document).ready(function(){
-                        $('#fecha_bateria').on('change', function(){
-                            $('#accion').val('');
-                            $('#accionnombre').val('');
-                            actualizarAcciones();
-                        });
-                
-                        $('#accion').on('change', function(){
-                            var selectedOption = $(this).val();
-                            $('#accionnombre').val(selectedOption);
-                        });
-                    });
-                
-                    function actualizarAcciones() {
-                        var fechaSeleccionada = $('#fecha_bateria').val();
-                        var accionesDisponibles = $('#accion');
-                        accionesDisponibles.empty();
-                
-                        var accionesPorFecha = @json($accionesPorFecha);
-                        var accionesRegistradas = @json($estadoMapeado);
-                
-                        accionesDisponibles.append(new Option('', '', false, true));
-                
-                        var accionesFechaSeleccionada = accionesPorFecha[fechaSeleccionada] || [];
-                
-                        var accionesNoRegistradas = accionesFechaSeleccionada.filter(function(accion) {
-                            return !accionesRegistradas[accion] || !accionesRegistradas[accion][fechaSeleccionada];
-                        });
-                
-                        accionesNoRegistradas.forEach(function(accion) {
-                            accionesDisponibles.append(new Option(accion, accion));
-                        });
-                
-                        document.getElementById('acciones_select').style.display = accionesNoRegistradas.length > 0 ? 'block' : 'none';
-                        
-                    }
-                </script> --}}
-{{-- <script>
-    $(document).ready(function(){
-        $('#fecha_bateria').on('change', function(){
-            $('#accion').val('');
-            $('#accionnombre').val('');
-            actualizarAcciones();
-        });
-
-        $('#accion').on('change', function(){
-            var selectedOption = $(this).val();
-            $('#accionnombre').val(selectedOption);
-        });
-    });
-
-    function actualizarAcciones() {
-        var fechaSeleccionada = $('#fecha_bateria').val();
-        var accionesDisponibles = $('#accion');
-        accionesDisponibles.empty(); // Limpiar opciones anteriores
-
-        var accionesPorFecha = @json($accionesPorFecha);
-        var accionesRegistradas = @json($accionesRegistradas);
-
-        // Opción vacía
-        accionesDisponibles.append(new Option('', '', false, true));
-
-        // Obtener las acciones para la fecha seleccionada
-        var accionesFechaSeleccionada = accionesPorFecha[fechaSeleccionada] || [];
-
-        // Filtrar las acciones que no están registradas para esta fecha
-        var accionesNoRegistradas = accionesFechaSeleccionada.filter(function(accion) {
-            return !accionesRegistradas.some(function(item) {
-                return item === accion;
-            });
-        });
-
-        // Añadir las acciones no registradas al select
-        accionesNoRegistradas.forEach(function(accion) {
-            accionesDisponibles.append(new Option(accion, accion));
-        });
-
-        // Mostrar el select de acciones si hay opciones disponibles
-        document.getElementById('acciones_select').style.display = accionesNoRegistradas.length > 0 ? 'block' : 'none';
-
-        // Mensaje si no hay acciones disponibles
-        if (accionesNoRegistradas.length === 0) {
-            alert('No hay acciones disponibles para la fecha seleccionada.');
-        }
-    }
-</script> --}}
-
-{{-- <script>
-    $(document).ready(function(){
-        $('#fecha_bateria').on('change', function(){
-            $('#accion').val('');
-            $('#accionnombre').val('');
-            actualizarAcciones();
-        });
-
-        $('#accion').on('change', function(){
-            var selectedOption = $(this).val();
-            $('#accionnombre').val(selectedOption);
-        });
-    });
-
-    function actualizarAcciones() {
-        var fechaSeleccionada = $('#fecha_bateria').val();
-        var accionesDisponibles = $('#accion');
-        accionesDisponibles.empty();
-
-        var accionesPorFecha = @json($accionesPorFecha);
-        var accionesRegistradas = @json($estadoMapeado);
-
-        accionesDisponibles.append(new Option('', '', false, true));
-
-        var accionesFechaSeleccionada = accionesPorFecha[fechaSeleccionada] || [];
-
-        var accionesNoRegistradas = accionesFechaSeleccionada.filter(function(accion) {
-            return !accionesRegistradas[accion] || !accionesRegistradas[accion][fechaSeleccionada];
-        });
-
-        accionesNoRegistradas.forEach(function(accion) {
-            accionesDisponibles.append(new Option(accion, accion));
-        });
-
-        document.getElementById('acciones_select').style.display = accionesNoRegistradas.length > 0 ? 'block' : 'none';
-        
-    }
-</script> --}}
-
-{{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#fechabateria').change(function() {
-            var selectedOption = $(this).children("option:selected").text();
-            $('#fechaSeleccionada').val(selectedOption);
-        });
-    });
-
-    document.getElementById('fecha_bateria').addEventListener('change', function() {
-        var selectedDate = this.value;
-        document.getElementById('fechabateria').value = selectedDate;
-    });
-
-    $(document).ready(function() {
-        $('.dropify').dropify({
-            messages: {
-                'default': 'Arrastre y suelte un archivo o haga clic aquí',
-                'replace': 'Arrastre y suelte o haga clic para reemplazar',
-                'remove': 'Eliminar',
-                'error': 'Ooops, algo salió mal.'
-            }
-        });
-    
-        $('.dropify').on('dropify.error.fileSize', function(event, element) {
-            var maxSize = element.input.files[0].size / (1024 * 1024);
-            var errorMessage = 'El archivo es demasiado grande (' + maxSize.toFixed(2) + ' MB máx.).';
-            $(element.input).siblings('.dropify-error').text(errorMessage);
-        });
-    });
-
-    $(document).ready(function() {
-        $('#area').change(function() {
-            var areaId = $(this).val();
-            $('.acciones').hide();
-            $('#acciones_' + areaId).show();
-        });
-    });
-
-    document.getElementById('archivo').addEventListener('change', function(event) {
-        var file = event.target.files[0];
-        if (file) {
-            var fileURL = URL.createObjectURL(file);
-            var previewCard = document.getElementById('preview-card');
-            var documentPreview = document.getElementById('document-preview');
-    
-            previewCard.style.display = 'block';
-            documentPreview.src = fileURL;
-        } else {
-            var previewCard = document.getElementById('preview-card');
-            previewCard.style.display = 'none';
-            documentPreview.src = '';
-        }
-    });
-
-//CANCELAR FUNCION DE LA TECLA ENTER
-    document.addEventListener('DOMContentLoaded', function() {
-        document.addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-            }
-        });
-    });
-
-    document.getElementById('area_select').addEventListener('change', function() {
-        var select = document.getElementById('area_select');
-        var selectedOption = select.options[select.selectedIndex];
-        if (selectedOption.value !== '') {
-            // Oculta el campo select
-            select.style.display = 'none';
-            // Oculta el label
-            document.getElementById('area_label').style.display = 'none';
-            // Muestra el nombre del área seleccionada como título para acciones correspondientes
-            var areaName = selectedOption.text;
-            var accionesDiv = document.getElementById('acciones_' + selectedOption.value);
-            accionesDiv.style.display = 'block'; // Muestra las acciones correspondientes al área seleccionada
-            // Añade el nombre del área seleccionada como título para acciones correspondientes si no existe ya
-            if (!document.getElementById('acciones_label_' + selectedOption.value)) {
-                var accionesLabel = document.createElement('label');
-                accionesLabel.innerHTML = 'Acciones para: ' + areaName;
-                accionesLabel.id = 'acciones_label_' + selectedOption.value;
-                accionesDiv.prepend(accionesLabel);
-            }
-            // Muestra el botón solo si no está visible
-            var resetButton = document.getElementById('reset_button');
-            if (!resetButton) {
-                var button = document.createElement('button');
-                button.type = 'button';
-                button.innerHTML = 'Elegir otra area';
-                button.classList.add('custom-button');
-
-                button.id = 'reset_button';
-                button.onclick = resetSelectAndCheckboxes;
-                document.getElementById('reset_button_container').appendChild(button);
-            }
-        }
-    });
-
-    function resetSelectAndCheckboxes() {
-        var select = document.getElementById('area_select');
-        select.style.display = 'block'; // Mostrar el select nuevamente
-        select.value = ''; // Restablecer el valor del select
-
-        // Mostrar el label nuevamente
-        document.getElementById('area_label').style.display = 'block';
-
-        // Desmarcar todos los checkboxes de acciones
-        var checkboxes = document.querySelectorAll('[id^="accionnombre_"]');
-        checkboxes.forEach(function(checkbox) {
-            checkbox.checked = false;
-        });
-
-        // Ocultar todas las secciones de acciones y etiquetas de "Acciones para"
-        var accionesDivs = document.querySelectorAll('[id^="acciones_"]');
-        accionesDivs.forEach(function(div) {
-            div.style.display = 'none';
-            var label = document.getElementById('acciones_label_' + div.id.split('_')[1]);
-            if (label) {
-                label.remove();
-            }
-        });
-
-        // Ocultar el botón de restablecimiento
-        var resetButton = document.getElementById('reset_button');
-        if (resetButton) {
-            resetButton.remove();
-        }
-    }
-    $(document).ready(function() {
-        $('input[name="buscarpor"]').on('keyup', function() {
-            var query = $(this).val();
-            var botonBuscar = $('#btn-buscar');
-            if (query.trim() === '') {
-                botonBuscar.prop('disabled', true);
-            } else {
-                botonBuscar.prop('disabled', false);
-            }
-        });
-    });
-</script> --}}
 @endsection
 
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .table td {
+        padding: 5px 10px;
+    }
+    td {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
     .btn-crear {
         background-color:  #ffffff;
         color: #94c93b;
@@ -589,12 +378,6 @@
         background-color: #faa625;
         color: #ffffff;
     } 
-    .dropify-wrapper {
-        height: 125px !important;
-    }
-    .dropify-message p {
-        font-size: 14px;
-    }
     .checkverde {
         color:#94c93b; 
         }
@@ -624,7 +407,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
         }
@@ -632,68 +415,24 @@
         background-color: #faa625;
         color: #ffffff;
         }
-        .btn-generarpdf {
+    .btn-generarpdf {
         background-color:  #ffffff;
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
 
         }
     .btn-generarpdf:hover {
         background-color: #94c93b;
         color: #ffffff;
         }
-    .mensaje-error {
-        color: #e1172b;
-        font-family: "Times New Roman";
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 5px;
-        font-size: 12.5px;
-        font-weight: bold;
-        display: inline-block;
-        margin-left: -10px;
-    }
-    .custom-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 5px 40px;
-    }
-    .custom-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .custom2-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 5px 20px;
-    }
-    .custom2-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-cerrar {
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 5px 10px;
-    }
-    .btn-cerrar:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
     .btn-whatsapp {
         background-color: #ffffff;
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 5px 10px;
+        padding: 4px 8px;
     }
     .btn-whatsapp:hover {
         background-color: #94c93b;
@@ -704,7 +443,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;

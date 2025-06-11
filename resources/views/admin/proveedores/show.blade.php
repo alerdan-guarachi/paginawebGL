@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.proveedores.index') }}">REGRESAR</a>
+<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.proveedoresservicios.listaproveedoresservicios') }}">REGRESAR</a>
 @can('admin.proveedores.create')
 <a class="btn btn-sm float-right btn-editar" href="{{route('admin.proveedores.edit', $proveedor)}}">EDITAR  PROVEEDOR</a>
 @endcan
@@ -36,10 +36,26 @@
                                                 <th>ID</th>
                                                 <td>{{$proveedor->id}}</td>
                                             </tr>
+                                            <tr>
+                                                <th>NIT</th>
+                                                <td>{{$proveedor->nit}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>CI</th>
+                                                <td>{{$proveedor->ci}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Celular</th>
+                                                <td>{{$proveedor->celular}}</td>
+                                            </tr> 
+                                            <tr>
+                                                <th>Telefono</th>
+                                                <td>{{$proveedor->telefono ?? 0}}</td>
+                                            </tr>     
                                             <tr> 
-                                                <th>Dirección Atención</th>
+                                                <th>Ciudad y Dirección Atención 1</th>
                                                 <td>
-                                                    {{$proveedor->direccion}}
+                                                    {{$proveedor->ciudad}} - {{$proveedor->direccion}}
                                                     @if(!empty($proveedor->linkubicacion))
                                                         <a href="{{ $proveedor->linkubicacion }}" target="_blank" style="margin-left: 8px; color: orange;">
                                                             <i class="fas fa-map-marker-alt"></i>
@@ -47,11 +63,11 @@
                                                     @endif
                                                 </td>
                                             </tr>
-                                            @if(!empty($proveedor->direccion2))
+                                            @if(!empty($proveedor->ciudad2))
                                             <tr> 
-                                                <th>Dirección Atención 2</th>
+                                                <th>Ciudad y Dirección Atención 2</th>
                                                 <td>
-                                                    {{$proveedor->direccion2}}
+                                                    {{$proveedor->ciudad2}} - {{$proveedor->direccion2}}
                                                     @if(!empty($proveedor->linkubicacion2))
                                                         <a href="{{ $proveedor->linkubicacion2 }}" target="_blank" style="margin-left: 8px; color: orange;">
                                                             <i class="fas fa-map-marker-alt"></i>
@@ -65,7 +81,7 @@
                                             <tr> 
                                                 <th>Dirección Atención 3</th>
                                                 <td>
-                                                    {{$proveedor->direccion3}}
+                                                    {{$proveedor->ciudad3}} - {{$proveedor->direccion3}}
                                                     @if(!empty($proveedor->linkubicacion3))
                                                         <a href="{{ $proveedor->linkubicacion3 }}" target="_blank" style="margin-left: 8px; color: orange;">
                                                             <i class="fas fa-map-marker-alt"></i>
@@ -73,23 +89,7 @@
                                                     @endif
                                                 </td>
                                             </tr>
-                                            @endif
-                                            
-                                            <tr>
-                                                <th>Celular</th>
-                                                <td>{{$proveedor->celular}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>NIT</th>
-                                                <td>{{$proveedor->nit}}</td>
-                                            </tr>
-                                            <tr> 
-                                                <th>Ciudad Atención</th>
-                                                <td>
-                                                    {{$proveedor->ciudad}} 
-                                                    @if(!empty($proveedor->ciudad2)) - {{$proveedor->ciudad2}} @endif
-                                                </td>
-                                            </tr>                                            
+                                            @endif                                  
                                             <tr>
                                                 <th>Estado</th>
                                                 <td>{{$proveedor->estadoproveedor}}</td>
@@ -112,7 +112,7 @@
                                     <table style="width: 100%;">
                                         <tbody>
                                             <tr>
-                                                <th>Modo de pago</th>
+                                                <th>Modo_de_pago</th>
                                                 <td>{{$proveedor->mododepago}}</td>
                                             </tr>
                                             <tr>
@@ -124,8 +124,22 @@
                                                 <td>{{$proveedor->cuenta}}</td>
                                             </tr>
                                             <tr>
-                                                <th>Tipo de cuenta</th>
+                                                <th>Tipo_de_cuenta</th>
                                                 <td>{{$proveedor->tipocuenta}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Banco_Origen</th>
+                                                <td>{{$proveedor->bancoorigen}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <br>
+                                    <strong>TIPO DE PLANILLA</strong><br>
+                                    <table style="width: 100%;">
+                                        <tbody>
+                                            <tr>
+                                                <th>Planilla</th>
+                                                <td>{{$proveedor->tipoplanilla}}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -154,7 +168,7 @@
                                             </tr>
                                             <tr>
                                                 <th>Teléfono</th>
-                                                <td>{{$proveedor->telefonoreferencia}}</td>
+                                                <td>{{$proveedor->telefonoreferencia ?? 0}}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -213,7 +227,7 @@ $('.dropify').dropify();
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -224,7 +238,7 @@ $('.dropify').dropify();
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
         }

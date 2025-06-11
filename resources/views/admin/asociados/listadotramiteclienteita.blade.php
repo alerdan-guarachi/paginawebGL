@@ -27,26 +27,24 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th>ID Reg.</th>
                             <th>Servicio</th>
-                            {{-- <th>Fecha de Bateria</th> --}}
-                            {{-- <th>Apoderado</th> --}}
                             <th>Ciudad</th>
                             <th>Observaciones</th>
                             <th>Estado</th>
+                            <th>Usuario Reg.</th>
                             <th class="text-center">Fecha de Batería:</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($tramitesubclientes as $tramitesubcliente)
                             <tr>
-                                <td>
-                                    {{ $tramitesubcliente->tramite }} <br>
-                                </td>
-
+                                <td>{{ $tramitesubcliente->id }}</td>
+                                <td>{{ $tramitesubcliente->tramite }}</td>
                                 <td>{{ $tramitesubcliente->ciudad }}</td>
                                 <td>{{ $tramitesubcliente->observaciones }}</td>
                                 <td>{{ $tramitesubcliente->estado }}</td>
-
+                                <td>{{ $tramitesubcliente->usuarioregistro }}</td>
                                 <td class="text-center">
                                     @if ($tramitesubcliente->fechabateria)
                                         {{ $tramitesubcliente->fechabateria }}
@@ -57,7 +55,6 @@
                                                 ASIGNAR FECHA
                                             </a>
 
-                                            <!-- Modal de asignar fecha para cada trámite sin fecha asignada -->
                                             <div class="modal fade" id="modalasignarfecha-{{ $tramitesubcliente->id }}"
                                                 tabindex="-1" role="dialog"
                                                 aria-labelledby="modalasignarfechaLabel-{{ $tramitesubcliente->id }}"
@@ -98,7 +95,7 @@
                                                                     </div>
                                                                 </div>
                                                                 <button type="submit"
-                                                                    class="btn btn-info d-block mx-auto mb-3"
+                                                                    class="btn btn-asignartramite d-block mx-auto mb-3"
                                                                     style="width: fit-content;">ASIGNAR FECHA</button>
                                                             </form>
                                                         </div>
@@ -108,62 +105,6 @@
                                         @endif
                                     @endif
                                 </td>
-
-                                <!-- Mostrar el botón "ASIGNAR FECHA" solo si no hay fecha asignada -->
-                                {{-- <td>
-                                    @if (!$tramitesubcliente->fechabateria)
-                                        <a class="btn btn-sm btn-asignartramite" data-toggle="modal"
-                                            data-target="#modalasignarfecha-{{ $tramitesubcliente->id }}">
-                                            ASIGNAR FECHA
-                                        </a>
-
-                                        <!-- Modal de asignar fecha para cada trámite sin fecha asignada -->
-                                        <div class="modal fade" id="modalasignarfecha-{{ $tramitesubcliente->id }}"
-                                            tabindex="-1" role="dialog"
-                                            aria-labelledby="modalasignarfechaLabel-{{ $tramitesubcliente->id }}"
-                                            aria-hidden="true">
-                                            <div class="modal-dialog" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title titulomodal"
-                                                            id="modalasignarfechaLabel-{{ $tramitesubcliente->id }}">
-                                                            ASIGNAR FECHA</h5>
-                                                        <button type="button" class="close" data-dismiss="modal"
-                                                            aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <form
-                                                            action="{{ route('admin.asociados.asignarFecha_ITA', $tramitesubcliente->id) }}"
-                                                            method="POST">
-                                                            @csrf
-                                                            <div class="col-lg-12">
-                                                                <div class="form-group text-left">
-                                                                    {!! Form::label('fechabateria', 'Fecha de batería') !!}
-                                                                    <select id="select-fechas" name="fechabateria"
-                                                                        class="form-control @error('fechabateria') is-invalid @enderror">
-                                                                        <option value="" disabled selected></option>
-                                                                        @foreach ($accionesPorFecha as $fecha => $acciones)
-                                                                            <option value="{{ $fecha }}"
-                                                                                {{ old('fechabateria') == $fecha ? 'selected' : '' }}>
-                                                                                {{ $fecha }}</option>
-                                                                        @endforeach
-                                                                    </select>
-                                                                    @error('fechabateria')
-                                                                        <small class="text-danger">{{ $message }}</small>
-                                                                    @enderror
-                                                                </div>
-                                                            </div>
-                                                            <button type="submit" class="btn btn-info d-block mx-auto mb-3"
-                                                                style="width: fit-content;">ASIGNAR FECHA</button>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endif
-                                </td> --}}
                             </tr>
                         @endforeach
                     </tbody>
@@ -207,32 +148,6 @@
                                 @enderror
                             </div>
                         </div>
-
-                        {{-- <div class="col-lg-12">
-                            <div class="form-group">
-                                {!! Form::label('fechabateria', 'Fecha de bateria') !!}
-                                <select id="select-fechas" name="fechabateria" class="form-control">
-                                    <option value="" disabled selected></option>
-                                    @foreach ($accionesPorFecha as $fecha => $acciones)
-                                        <option value="{{ $fecha }}">{{ $fecha }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div> --}}
-
-
-                        {{-- <div class="col-lg-12"> 
-                        <div class="form-group">
-                            {!! Form::label('usuarioasignado', 'Apoderado') !!}
-                            {!! Form::select('usuarioasignado', $apoderados, $apoderadoSiguiente, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90']) !!}
-                            @error('usuarioasignado')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    </div> --}}
-
                         <div class="col-lg-12">
                             <div class="form-group">
                                 {!! Form::label('ciudad', 'Ciudad') !!}
@@ -261,7 +176,7 @@
                         </div>
                         <input type="text" class="form-control" id="estado" name="estado" value="PENDIENTE" hidden>
 
-                        <button type="submit" class="btn btn-info d-block mx-auto mb-3" target="_blank"
+                        <button type="submit" class="btn btn-asignartramite d-block mx-auto mb-3" target="_blank"
                             style="width: fit-content;">ASIGNAR SERVICIO</button>
                     </form>
                 </div>
@@ -292,7 +207,7 @@
             color: #2926e2;
             border-color: #2926e2;
             border-radius: 5px;
-            padding: 10px 10px;
+            padding: 5px 10px;
         }
 
         .btn-regresar:hover {
@@ -305,7 +220,7 @@
             color: #94c93b;
             border-color: #94c93b;
             border-radius: 5px;
-            padding: 10px 20px;
+            padding: 5px 10px;
             margin-left: 10px;
             margin-right: 10px;
         }
@@ -322,18 +237,6 @@
             font-weight: 900;
         }
 
-        .btn-editar {
-            background-color: #ffffff;
-            color: #0400ff;
-            border-color: #0400ff;
-            border-radius: 5px;
-        }
-
-        .btn-editar:hover {
-            background-color: #0400ff;
-            color: #ffffff;
-        }
-
         .btn-eliminar {
             background-color: #ffffff;
             color: #ff0000;
@@ -346,63 +249,7 @@
             color: #ffffff;
         }
 
-        .btn-crear {
-            background-color: #ffffff;
-            color: #94c93b;
-            border-color: #94c93b;
-            border-radius: 5px;
-            padding: 10px 20px;
-            margin-left: 10px;
-            margin-right: 10px;
-        }
-
-        .btn-crear:hover {
-            background-color: #94c93b;
-            color: #ffffff;
-        }
-
-        .btn-buscar {
-            background-color: #ffffff;
-            color: #faa625;
-            border-color: #faa625;
-            border-radius: 5px;
-        }
-
-        .btn-buscar:hover {
-            background-color: #faa625;
-            color: #ffffff;
-        }
-
-        .btn-info {
-            background-color: #ffffff;
-            /* Fondo blanco */
-            color: #17a2b8;
-            /* Texto azul */
-            border-color: #17a2b8;
-            /* Borde azul */
-            border-radius: 5px;
-            /* Redondeo de bordes */
-            padding: 10px 20px;
-            /* Espaciado interno */
-            transition: background-color 0.3s ease, color 0.3s ease;
-            /* Transición suave */
-        }
-
-        .btn-info:hover {
-            background-color: #17a2b8;
-            /* Fondo azul cuando el mouse está encima */
-            color: #ffffff;
-            /* Texto blanco */
-            border-color: #17a2b8;
-            /* Borde azul */
-        }
-
-        /* Agrega este estilo adicional si deseas ajustar el formato de la fecha */
-        .text-muted {
-            font-size: 12px;
-            color: #6c757d;
-            /* Color gris tenue */
-        }
+       
     </style>
 @stop
 
@@ -456,7 +303,7 @@
                 form.addEventListener("submit", function(event) {
                     const select = form.querySelector("select[name='fechabateria']");
                     if (select.value === "") {
-                        event.preventDefault(); // Evita que el formulario se envíe
+                        event.preventDefault();
                         alert("Por favor, seleccione una fecha antes de continuar.");
                     }
                 });
@@ -464,50 +311,42 @@
         });
 
         $(document).ready(function() {
-            // Interceptar el envío del formulario por AJAX
             $('#form-asignar-tramite').on('submit', function(e) {
-                e.preventDefault(); // Evitar que el formulario se envíe de la manera tradicional
+                e.preventDefault();
 
-                // Enviar el formulario mediante AJAX
                 $.ajax({
-                    url: $(this).attr('action'), // Obtener la URL del action del formulario
+                    url: $(this).attr('action'),
                     type: 'POST',
-                    data: $(this).serialize(), // Serializar los datos del formulario
+                    data: $(this).serialize(),
                     success: function(response) {
-                        // Si la respuesta incluye el PDF y la URL de redirección
                         if (response.pdf_url && response.redirect_url) {
-                            // Cerrar el modal
                             $('#modalasignartramite').modal('hide');
 
-                            // Mostrar mensaje de éxito con SweetAlert
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Servicio guardado y Etiqueta descargada',
                                 text: 'El servicio se ha guardado correctamente.',
-                                timer: 3000, // Mostrar el mensaje durante 3 segundos
+                                timer: 3000,
                                 showConfirmButton: false
                             });
 
-                            // Descargar el PDF automáticamente
                             var link = document.createElement('a');
                             link.href = response.pdf_url;
                             link.download =
-                            ''; // Dejar en blanco si no deseas especificar el nombre
+                            '';
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
 
-                            // Redirigir a la URL después de un tiempo de espera
                             setTimeout(function() {
                                 window.location.href = response.redirect_url;
-                            }, 3000); // Ajustar el tiempo de espera si es necesario
+                            }, 3000);
                         } else {
                             alert(
-                            'Error al generar el PDF.'); // Mostrar alerta en caso de error
+                            'Error al generar el PDF.');
                         }
                     },
                     error: function(xhr, status, error) {
-                        // Mostrar un mensaje de error en caso de fallo
                         alert(
                             'Ocurrió un error al procesar el trámite. Por favor, intenta de nuevo.');
                     }

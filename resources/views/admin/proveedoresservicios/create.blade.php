@@ -1,20 +1,12 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.proveedoresservicios.index') }}">REGRESAR</a>
+<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.proveedoresservicios.listaproveedoresservicios') }}">REGRESAR</a>
 <h1>NUEVO PROVEEDOR GENERAL</h1>
 @stop
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/proveedoresservicios.css') }}">
-<style>
-    #vista-previa {
-    width: 300px;
-    height: 300px;
-    object-fit: cover;
-}
-
-</style>
 @stop
 
 @section('content')
@@ -31,41 +23,23 @@
 <div class="card">
     <div class="card-body">
         <div class="row ">
-            <div class="col-lg-9">
-                {!! Form::open(['route' => 'admin.proveedoresservicios.store', 'method'=>'POST', 'files' => true]) !!}
+            <div class="col-lg-12">
+                {!! Form::open(['route' => 'admin.proveedoresservicios.guardarproveedor', 'method'=>'POST', 'files' => true]) !!}
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                 
-                <div class="row">
-                    <div class="form-group col-lg-8"> 
-                        {!! Form::label('nombrecompleto', 'Nombre Completo:') !!}
-                        {!! Form::text('nombrecompleto', null, ['class' => 'form-control', 'id' => 'nombrecompleto']) !!}
+                <input type="hidden" class="form-control" id="categoria" name="categoria" value="PROVEEDOR GENERAL">
 
-                        {!! Form::hidden('proveedor', null, ['class' => 'form-control', 'id' => 'proveedor']) !!}
-                    
-                        @error('nombrecompleto')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
-                    </div>
-                    <script>
-                        document.getElementById('nombrecompleto').addEventListener('input', function() {
-                            document.getElementById('proveedor').value = this.value;
-                        });
-                    </script>
-                    
-                    <div class="form-group col-lg-4">
-                        {!! Form::label('sucursal', 'Sucursal:') !!}
-                        {!! Form::select('sucursal', $sucursal, null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
-                        @error('sucursal')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
-                    </div>
-                </div>
                 <div class="row">
+                    <div class="form-group col-lg-4"> 
+                        {!! Form::label('razonsocial', 'Razón Social:') !!}
+                        {!! Form::text('razonsocial', null, ['class' => 'form-control', 'id' => 'razonsocial']) !!}
+                        @error('razonsocial')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
                     <div class="form-group col-lg-2">
                         {!! Form::label('ci', 'CI:') !!}
                         {!! Form::text('ci', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
@@ -76,24 +50,57 @@
                         @enderror
                     </div>
                     <div class="form-group col-lg-2">
-                        {!! Form::label('ciexp', 'CI exp.:') !!}
-                        {!! Form::select('ciexp', $ciudadexp, null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
-                        @error('ciexp')
+                        {!! Form::label('nit', 'NIT:') !!}
+                        {!! Form::text('nit', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('nit')
                             <small class="text-danger fas fa-exclamation-circle">
                                 {{$message}}
                             </small>
                         @enderror
                     </div>
-                    <div class="form-group col-lg-5">
-                        {!! Form::label('direccion', 'Dirección:') !!}
-                        {!! Form::text('direccion', null, ['class' => 'form-control', 'maxlength' => '255']) !!}
-                        @error('direccion')
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('celular', 'Celular:') !!}
+                        {!! Form::text('celular', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('celular')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('telefono', 'Teléfono:') !!}
+                        {!! Form::text('telefono', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('telefono')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('correo', 'Correo:') !!}
+                        {!! Form::text('correo', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('correo')
                             <small class="text-danger fas fa-exclamation-circle">
                                 {{$message}}
                             </small>
                         @enderror
                     </div>
                     <div class="form-group col-lg-3">
+                        {!! Form::label('tipotransaccion', 'Tipo transacción:') !!}
+                        {!! Form::select('tipotransaccion', [
+                            'TRANSFERENCIA BANCARIA' => 'TRANSFERENCIA BANCARIA', 
+                            'DEPOSITO BANCARIO' => 'DEPOSITO BANCARIO',
+                            'CHEQUE' => 'CHEQUE',
+                        ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('tipotransaccion')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-2">
                         {!! Form::label('emision', 'Emisión:') !!}
                         {!! Form::select('emision', [
                             'RECIBO' => 'RECIBO', 
@@ -105,54 +112,73 @@
                             </small>
                         @enderror
                     </div>
-                </div>
-                <div class="row">
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('tipoproveedor', 'Tipo Proveedor:') !!}
-                        {!! Form::select('tipoproveedor', [
-                            'PERSONAL INTERNO' => 'PERSONAL INTERNO', 
-                            'PERSONAL EXTERNO' => 'PERSONAL EXTERNO',
-                            'PROVEEDOR DE SERVICIOS' => 'PROVEEDOR DE SERVICIOS',
-                            'PASANTE' => 'PASANTE'
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('tipoplanilla', 'Tipo planilla:') !!}
+                        {!! Form::select('tipoplanilla', [
+                            'PAGO A TERCERO' => 'PAGO A TERCERO', 
+                            'PAGO INTERBANCARIO' => 'PAGO INTERBANCARIO',
+                            'PAGO EN LINEA' => 'PAGO EN LINEA',
+                            'PAGO QR' => 'PAGO QR',
                         ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
-                        @error('tipoproveedor')
+                        @error('tipoplanilla')
                             <small class="text-danger fas fa-exclamation-circle">
                                 {{$message}}
                             </small>
                         @enderror
                     </div>
-                    
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('nit', 'NIT:') !!}
-                        {!! Form::text('nit', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
-                        @error('nit')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
-                    </div>
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('celular', 'Celular:') !!}
-                        {!! Form::text('celular', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
-                        @error('celular')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
-                    </div>
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('email', 'Email:') !!}
-                        {!! Form::text('email', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
-                        @error('email')
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('estado', 'Estado:') !!}
+                        {!! Form::select('estado', $estado, null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('estado')
                             <small class="text-danger fas fa-exclamation-circle">
                                 {{$message}}
                             </small>
                         @enderror
                     </div>
                 </div>
+
                 <div class="row">
-                    <div class="form-group col-lg-6">
-                        {!! Form::label('banco', 'Nombre de Banco:') !!}
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('ciudad', 'Ciudad 1:') !!}
+                        {!! Form::select('ciudad', $sucursal, null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('ciudad')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('direccion', 'Dirección 1:') !!}
+                        {!! Form::text('direccion', null, ['class' => 'form-control', 'maxlength' => '255']) !!}
+                        @error('direccion')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('ciudad2', 'Ciudad 2:') !!}
+                        {!! Form::select('ciudad2', $sucursal, null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('ciudad')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('direccion2', 'Dirección 2:') !!}
+                        {!! Form::text('direccion2', null, ['class' => 'form-control', 'maxlength' => '255']) !!}
+                        @error('direccion')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('banco', 'Nombre de Banco 1:') !!}
                         {!! Form::select('banco', $bancos, null, ['class' => 'form-control', 'maxlength' => '255', 'placeholder' => '']) !!}
                         @error('banco')
                             <small class="text-danger fas fa-exclamation-circle">
@@ -160,8 +186,27 @@
                             </small>
                         @enderror
                     </div>
-                    <div class="form-group col-lg-6">
-                        {!! Form::label('numcuenta', 'Nro. de Cuenta:') !!}
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('tipocuenta', 'Tipo Cuenta 1:') !!}
+                        {!! Form::select('tipocuenta', [
+                            'CUENTA CORRIENTE' => 'CUENTA CORRIENTE',
+                            'CAJA DE AHORRO' => 'CUENTA DE AHORRO',
+                            'CUENTA INFANTIL' => 'CUENTA INFANTIL',
+                            'CUENTA JOVEN' => 'CUENTA JOVEN',
+                            'CUENTA MANCOMUNADA' => 'CUENTA MANCOMUNADA',
+                            'CUENTA NÓMINA' => 'CUENTA NÓMINA',
+                            'CUENTA NO NÓMINA' => 'CUENTA NO NÓMINA',
+                            'CUENTA ONLINE' => 'CUENTA ONLINE',
+                            'CUENTA REMUNERADA' => 'CUENTA REMUNERADA', 
+                        ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('tipocuenta')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('numcuenta', 'Nro. de Cuenta 1:') !!}
                         {!! Form::text('numcuenta', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
                         @error('numcuenta')
                             <small class="text-danger fas fa-exclamation-circle">
@@ -169,7 +214,20 @@
                             </small>
                         @enderror
                     </div>
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('bancoorigen', 'Cuenta Origen:') !!}
+                        {!! Form::select('bancoorigen', [
+                            'CUENTA FACTURADA' => 'CUENTA FACTURADA', 
+                            'CUENTA NO FACTURADA' => 'CUENTA NO FACTURADA',
+                        ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('bancoorigen')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
                 </div>
+
                 <div class="row">
                     <div class="form-group col-lg-6">
                         {!! Form::label('contacto', 'Nombre de Contacto:') !!}
@@ -190,56 +248,177 @@
                         @enderror
                     </div>
                 </div>
+
                 <div class="row">
-                    <div class="form-group col-lg-6">
-                        {!! Form::label('fechaingreso', 'Fecha de ingreso (Solo Personal):') !!}
-                        {!! Form::date('fechaingreso', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
-                        @error('fechaingreso')
+                    <div class="form-group col-lg-4">
+                        {!! Form::label('tipoorden1', 'Tipo Orden 1:') !!}
+                        {!! Form::select('tipoorden1', [
+                            'ORDEN DE COMPRA' => 'ORDEN DE COMPRA',
+                            'ORDEN DE SERVICIO' => 'ORDEN DE SERVICIO',
+                            'ORDEN DE PERSONAL' => 'ORDEN DE PERSONAL',
+                        ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('parentesco')
                             <small class="text-danger fas fa-exclamation-circle">
                                 {{$message}}
                             </small>
                         @enderror
                     </div>
-                    {{-- <div class="form-group col-lg-4">
-                        {!! Form::label('fechasalida', 'Fecha de salida:') !!}
-                        {!! Form::date('fechasalida', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
-                        @error('fechasalida')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
-                    </div> --}}
-                    <div class="form-group col-lg-6">
-                        {!! Form::label('estado', 'Estado:') !!}
-                        {!! Form::select('estado', $estado, null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
-                        @error('estado')
+                    <div class="form-group col-lg-4">
+                        {!! Form::label('tipoorden2', 'Tipo Orden 2:') !!}
+                        {!! Form::select('tipoorden2', [
+                            'ORDEN DE COMPRA' => 'ORDEN DE COMPRA',
+                            'ORDEN DE SERVICIO' => 'ORDEN DE SERVICIO',
+                            'ORDEN DE PERSONAL' => 'ORDEN DE PERSONAL',
+                        ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('parentesco')
                             <small class="text-danger fas fa-exclamation-circle">
                                 {{$message}}
                             </small>
                         @enderror
                     </div>
-                    
-                </div>
-            </div>
-            <div class="col-lg-3"> 
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="form-group">
-                            <label for="file">Foto de perfil:</label>
-                            <input type="file" class="form-control-file" id="picture" name="picture" accept=".jpg, .jpeg, .png">
-                            
-                            <img id="vista-previa" src="#" alt="Vista previa de la imagen" style="display: none; max-width: 100%; height: auto;">
-                            
-                            @error('picture')
+                    <div class="form-group col-lg-4">
+                        {!! Form::label('tipoorden3', 'Tipo Orden 3:') !!}
+                        {!! Form::select('tipoorden3', [
+                            'ORDEN DE COMPRA' => 'ORDEN DE COMPRA',
+                            'ORDEN DE SERVICIO' => 'ORDEN DE SERVICIO',
+                            'ORDEN DE PERSONAL' => 'ORDEN DE PERSONAL',
+                        ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('parentesco')
                             <small class="text-danger fas fa-exclamation-circle">
                                 {{$message}}
                             </small>
-                            @enderror
-                        </div>
+                        @enderror
                     </div>
                 </div>
+                {{-- <div class="row">
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('sigla', 'Sigla 1:') !!}
+                        {!! Form::text('sigla', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('sigla')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-3">
+                        {!! Form::label('sigla2', 'Sigla 2:') !!}
+                        {!! Form::text('sigla2', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('sigla2')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('tipobusqueda', 'Tipo de busqueda 1:') !!}
+                        {!! Form::text('tipobusqueda', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('tipobusqueda')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('tipobusqueda2', 'Tipo de busqueda 2:') !!}
+                        {!! Form::text('tipobusqueda2', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('tipobusqueda2')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('tipobusqueda3', 'Tipo de busqueda 3:') !!}
+                        {!! Form::text('tipobusqueda3', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('tipobusqueda3')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-lg-4">
+                        {!! Form::label('imagenqr', 'Imagen QR:') !!}
+                        {!! Form::file('imagenqr', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('imagenqr')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-4">
+                        {!! Form::label('fechavencqr', 'Fecha venc. QR:') !!}
+                        {!! Form::text('fechavencqr', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('fechavencqr')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-4">
+                        {!! Form::label('esquemapago', 'Esquema de pago:') !!}
+                        {!! Form::text('esquemapago', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('esquemapago')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('representantelegal', 'Representante legal:') !!}
+                        {!! Form::text('representantelegal', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('representantelegal')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('nombrebancotercero', 'Nombre de Banco Tercero:') !!}
+                        {!! Form::select('nombrebancotercero', $bancos, null, ['class' => 'form-control', 'maxlength' => '255', 'placeholder' => '']) !!}
+                        @error('nombrebancotercero')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('nrocuentatercero', 'Nro. Cuenta Tercero:') !!}
+                        {!! Form::text('nrocuentatercero', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('nrocuentatercero')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('tipocuentatercero', 'Tipo Cuenta Tercero:') !!}
+                        {!! Form::select('tipocuentatercero', [
+                            'CAJA DE AHORROS' => 'CAJA DE AHORROS', 
+                            'CUENTA CORRIENTE' => 'CUENTA CORRIENTE',
+                        ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('tipocuentatercero')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="form-group col-lg-4">
+                        {!! Form::label('documentorespaldo', 'Documento Tercero:') !!}
+                        {!! Form::file('documentorespaldo', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
+                        @error('documentorespaldo')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                </div> --}}
             </div>
-            
         </div>
         {!! Form::submit('CREAR PROVEEDOR', ['class' => 'btn btn-crear']) !!}
         {!! Form::close() !!}

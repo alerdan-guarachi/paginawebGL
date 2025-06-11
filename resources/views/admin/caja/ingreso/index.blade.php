@@ -7,11 +7,15 @@
 @php
     $rolUsuario = auth()->user()->getRoleNames()->first();
 @endphp
+@php
+    $tieneRolContable = auth()->user()->getRoleNames()->contains('CONTABLE');
+@endphp
 
-@if (!$mostrarVista && $rolUsuario === 'CONTABLE')
+{{-- @if (!$mostrarVista && $rolUsuario === 'CONTABLE') --}}
+@if (!$mostrarVista && $tieneRolContable)
     <div class="alert alert-danger text-center py-4" style="border-radius: 10px; background-color: #f8d7da; color: #842029; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
         <h4 class="font-weight-bold mb-3" style="text-transform: uppercase; letter-spacing: 1px;">Vista Bloqueada</h4>
-        <p class="mb-4" style="font-size: 1.1rem;">NO HAS CERRADO TU CAJA EL DIA DE AYER. SOLICITA UN CÓDIGO DE DESBLOQUEO A ADMINISTRACIÓN.</p>
+        <p class="mb-4" style="font-size: 1.1rem;">TU CAJA ESTA BLOQUEADA, SOLICITA UN CÓDIGO DE DESBLOQUEO A ADMINISTRACIÓN.</p>
         <form action="{{ route('verificar.codigo') }}" method="POST" style="max-width: 500px; margin: 0 auto;">
             @csrf
             <div class="form-group mb-3">
@@ -26,36 +30,157 @@
         <div class="flex-grow-1">
             <h2 class="font-weight-bold">CAJA DE INGRESOS INTERNOS</h2>
         </div>
-
-        <a class="btn btn-outline-primary" href="{{ route('admin.caja.ingreso.ingresosexternos') }}" style="margin-right: 10px;">
-            INGRESOS EXTERNOS
+        <a class="btn btn-outline-success btn-sm" id="btnVerCreditos" 
+            data-toggle="modal" data-target="#modalCreditos" 
+            style="display: {{ $tieneCredito->isEmpty() ? 'none' : 'block' }}; margin-right: 10px;">
+            VER CRÉDITOS
+        </a>
+        <style>
+            @keyframes pulsate {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+            #btnVerCreditos {
+                animation: pulsate 1.5s infinite;
+            }
+        </style>
+        <a class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#modalCodigo" style="margin-right: 10px;">
+            CODIGO DESC. O CAMBIO FECHA
         </a>
 
-        @if ($rolUsuario !== 'CONTABLE' || $rolUsuario !== 'OPERATIVO')
-        <a class="btn btn-outline-secondary" data-toggle="modal" data-target="#aperturacaja2" style="margin-right: 10px;">
+        <div class="modal fade" id="modalCodigo" tabindex="-1" role="dialog" aria-labelledby="modalCodigoLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <form id="formCodigo">
+                    <div class="modal-header">
+                    <h3 class="modal-title" id="modalCodigoLabel" style="font-weight: 900;">Ingresar Código</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                    <input type="text" id="codigoInput" name="codigo" class="form-control" placeholder="Ingrese el código" required>
+                    <div id="codigoMensaje" class="mt-2 text-danger" style="display: none;"></div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">VALIDAR</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+        <script>
+            document.getElementById('formCodigo').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const codigo = document.getElementById('codigoInput').value.trim();
+                const mensaje = document.getElementById('codigoMensaje');
+                mensaje.style.display = 'none';
+
+                fetch('{{ route("permisoscodigo.expirar") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({ codigo: codigo })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        $('#modalCodigo').modal('hide');
+                        alert('Código validado correctamente');
+                        location.reload(); // Recarga la página después de validar
+                    } else {
+                        mensaje.textContent = data.message;
+                        mensaje.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mensaje.textContent = 'Ocurrió un error al procesar la solicitud.';
+                    mensaje.style.display = 'block';
+                });
+            });
+        </script>
+
+        <a class="btn btn-outline-primary btn-sm" href="{{ route('admin.caja.ingreso.ingresosexternos') }}" style="margin-right: 10px;">
+            INGRESOS EXTERNOS
+        </a>
+        {{-- @if ($rolUsuario !== 'CONTABLE' || $rolUsuario !== 'OPERATIVO') --}}
+        @if (!$tieneRolContable)
+        <a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#aperturacaja2" style="margin-right: 10px;">
             APERTURAS DE CAJA
         </a>
         @endif
-
-        @if ($rolUsuario === 'CONTABLE' || $rolUsuario === 'OPERATIVO')
-        <a class="btn btn-outline-secondary" data-toggle="modal" data-target="#aperturacaja" style="margin-right: 10px;">
+        {{-- @if ($rolUsuario === 'CONTABLE' || $rolUsuario === 'OPERATIVO') --}}
+        @if ($tieneRolContable)
+        <a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#aperturacaja" style="margin-right: 10px;">
             APERTURAR CAJA
         </a>
         @endif
-
-        @if ($rolUsuario !== 'CONTABLE' || $rolUsuario !== 'OPERATIVO')
-        <a class="btn btn-outline-secondary" data-toggle="modal" data-target="#consolidadosModal">
+        {{-- @if ($rolUsuario !== 'CONTABLE' || $rolUsuario !== 'OPERATIVO') --}}
+        @if (!$tieneRolContable)
+        <a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#consolidadosModal">
             CONSOLIDADOS GENERAL
         </a>
         @endif
-        @if ($rolUsuario === 'CONTABLE' || $rolUsuario === 'OPERATIVO')
-        <a class="btn btn-outline-secondary" data-toggle="modal" data-target="#consolidadosporusuarioModal">
+        {{-- @if ($rolUsuario === 'CONTABLE' || $rolUsuario === 'OPERATIVO') --}}
+        @if ($tieneRolContable)
+        <a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#consolidadosporusuarioModal">
             CONSOLIDADO
         </a>
         @endif
-        <a class="btn btn-outline-secondary" data-toggle="modal" data-target="#arqueoModal" style="margin-left: 10px;">
+        <a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#arqueoModal" style="margin-left: 10px;">
             ARQUEO
         </a>
+        <!-- Modal con los créditos del cliente -->
+        <div class="modal fade" id="modalCreditos" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="aperturacajaLabel">CRÉDITOS DEL CLIENTE</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {{-- @if($tieneCredito->isEmpty())
+                        <p>No hay créditos disponibles.</p>
+                    @else
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID_Cli.</th>
+                                    <th>Cliente</th>
+                                    <th>Detalle</th>
+                                    <th>Monto_Cuota</th>
+                                    <th>Fecha_Crédito</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($creditos as $credito)
+                                    <tr>
+                                        <td>{{ $credito->clienteid }}</td>
+                                        <td>{{ $credito->clientenombre }}</td>
+                                        <td>{{ $credito->detalle }}</td>
+                                        <td>{{ $credito->montocuota }}</td>
+                                        <td>{{ $credito->fechacredito }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @endif --}}
+                </div>
+            </div>
+            </div>
+        </div>
     </div>
 @endif
     <!-- Modal Consolidado General-->
@@ -70,7 +195,7 @@
                         <table class="table table-striped table-hover align-middle">
                             <thead>
                                 <tr class="border-bottom">
-                                    <th class="text-start">Usuario</th>  <!-- Alineado a la izquierda -->
+                                    <th class="text-start">Usuario</th>
                                     <th class="text-center">Efectivo</th>
                                     <th class="text-center">Depósito</th>
                                     <th class="text-center">Transf.</th>
@@ -105,7 +230,7 @@
                             </tbody>
                             <tfoot>
                                 <tr class="border-top">
-                                    <th colspan="6" class="text-end">Gran Total:</th>  <!-- Alineado a la derecha -->
+                                    <th colspan="6" class="text-end">Gran Total:</th>
                                     <th class="fw-bold text-center">{{ number_format($granTotal, 2) }}</th>
                                 </tr>
                             </tfoot>
@@ -118,7 +243,6 @@
             </div>
         </div>
     </div>
-
     <!-- Modal Consolidado por Usuario-->
     <div class="modal fade" id="consolidadosporusuarioModal" tabindex="-1" aria-labelledby="consolidadosporusuarioModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -172,7 +296,6 @@
             </div>
         </div>
     </div>
-
     <style>
         .modal-title {
             font-size: 1.6rem;
@@ -192,8 +315,10 @@
         .fw-bold {
             font-weight: bold !important;
         }
+        .table td {
+            padding: 5px 10px;;
+        }
     </style>
-
     <!-- Modal Arqueo Total-->
     <div class="modal fade" id="arqueoModal" tabindex="-1" aria-labelledby="arqueoModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -293,7 +418,6 @@
             </div>
         </div>
     </div>
-
     {{-- APERTURA DE CAJA POR USUARIO --}}
     <div class="modal fade" id="aperturacaja" tabindex="-1" role="dialog" aria-labelledby="aperturacajaLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -326,7 +450,6 @@
             </div>
         </div>
     </div>
-
     <div class="modal fade" id="aperturacaja2" tabindex="-1" aria-labelledby="aperturacaja2Label" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 shadow-sm">
@@ -388,8 +511,8 @@
     </script>
 @endif
 
-
-@if (!$mostrarVista && $rolUsuario === 'CONTABLE')
+{{-- @if (!$mostrarVista && $rolUsuario === 'CONTABLE') --}}
+@if (!$mostrarVista && $tieneRolContable)
 
 @else
 <form action="{{ route('guardar.cajacentral') }}" method="POST" id="guardarFormulario">
@@ -403,30 +526,128 @@
             </div>
 
             <div class="row">
-                <div class="form-group col-lg-4">
+                {{-- <div class="form-group col-lg-4">
                     <label for="siguienteId">Recibo</label>
                     <input type="text" id="siguienteId" class="form-control" value="{{ $siguienteId }}" readonly>
+                </div> --}}
+                <div class="form-group col-lg-4">
+                    <label for="siguienteId">Recibo</label>
+                    <input type="text" id="siguienteId" class="form-control" readonly>
+
                 </div>
+                <script>
+                    function actualizarSiguienteId() {
+                        fetch("{{ url('/recibos/siguiente-id') }}")
+                            .then(response => response.json())
+                            .then(data => {
+                                document.getElementById('siguienteId').value = data.siguienteId;
+                            })
+                            .catch(error => console.error('Error al obtener el siguiente ID:', error));
+                    }
+                
+                    setInterval(actualizarSiguienteId, 1000);
+                    actualizarSiguienteId();
+                </script>
 
                 <div class="form-group col-lg-8">
                     <label>Tipo de Cliente</label>
-                    <select id="tipoCliente" class="form-control" name="tipocliente">
+                    <select id="tipoCliente" class="form-control" name="tipocliente" onchange="cambiarArea()">
                         <option value="" selected disabled>Seleccione un tipo</option>
                         <option value="clienteitaid">Cliente ITA</option>
                         <option value="clienteauditoriaid">Cliente Auditoría</option>
                         <option value="clientecomunid">Cliente Común</option>
-                        <option value="clientebancoid" hidden>Cliente Banco</option>
+                        <option value="clientebancoid">Proveedor</option>
+                        <option value="clienteproveedor" hidden>Cliente Banco</option>
                     </select>
-                    <input type="hidden" class="form-control" name="area" value="MEDICA">
+                    <input type="hidden" id="area" class="form-control" name="area" value="MEDICA">
                 </div>
+                {{-- <script>
+                    function cambiarArea() {
+                        var tipoCliente = document.getElementById('tipoCliente').value;
+                        var areaInput = document.getElementById('area');
+                        
+                        if (tipoCliente === 'clienteitaid' || tipoCliente === 'clienteauditoriaid' || tipoCliente === 'clientecomunid') {
+                            areaInput.value = 'MEDICA';
+                        } else if (tipoCliente === 'clientebancoid') {
+                            areaInput.value = 'CUENTA POR COBRAR';
+                        }
+                    }
+                </script> --}}
             </div>
-            <label for="clienteid">ID / CI del Cliente</label>
+            
+            {{-- <label for="clienteid">ID / CI del Cliente</label>
             <div class="row mb-3">
                 <div class="form-group col-lg-12">
                     <input type="text" id="clienteid" name="clienteid" class="form-control" placeholder="">
                 </div>
+            </div> --}}
+            <label for="clienteid">Nombre del Cliente</label>
+            <div class="row mb-3">
+                <div class="form-group col-lg-12">
+                    <input list="clientes" id="clienteSearch" class="form-control" placeholder="Buscar cliente..." oninput="actualizarID()">
+                    <datalist id="clientes"></datalist>
+                    <!-- Campo oculto para almacenar el id del cliente seleccionado -->
+                    <input type="hidden" id="clienteid" name="clienteid">
+                </div>
             </div>
 
+            <script>
+                const clientesIta = @json($clientesIta);
+                const clientesAuditoria = @json($clientesAuditoria);
+                const clientesComunes = @json($clientesComunes);
+                const proveedores = @json($proveedores);
+
+                function cambiarArea() {
+                    const tipoCliente = document.getElementById("tipoCliente").value;
+                    const datalist = document.getElementById("clientes");
+                    const clienteSearch = document.getElementById("clienteSearch");
+                    var areaInput = document.getElementById('area');
+                        
+                        if (tipoCliente === 'clienteitaid' || tipoCliente === 'clienteauditoriaid' || tipoCliente === 'clientecomunid') {
+                            areaInput.value = 'MEDICA';
+                        } else if (tipoCliente === 'clientebancoid') {
+                            areaInput.value = 'CUENTA POR COBRAR';
+                        }
+
+                    // Limpiar las opciones anteriores
+                    datalist.innerHTML = '';
+
+                    let clientes = [];
+
+                    // Obtener los clientes adecuados según el tipo
+                    if (tipoCliente === 'clienteitaid') {
+                        clientes = clientesIta;
+                    } else if (tipoCliente === 'clienteauditoriaid') {
+                        clientes = clientesAuditoria;
+                    } else if (tipoCliente === 'clientecomunid') {
+                        clientes = clientesComunes;
+                    } else if (tipoCliente === 'clientebancoid') {
+                        clientes = proveedores;
+                    }
+
+                    // Agregar las nuevas opciones al datalist
+                    clientes.forEach(cliente => {
+                        const option = document.createElement("option");
+                        option.value = cliente.nombrecompleto || cliente.razonsocial;
+                        option.dataset.id = cliente.id; // Guardamos el id como un atributo de datos
+                        datalist.appendChild(option);
+                    });
+                }
+
+                // Actualizar el campo oculto con el id del cliente seleccionado
+                function actualizarID() {
+                    const clienteSearch = document.getElementById("clienteSearch");
+                    const datalist = document.getElementById("clientes");
+                    const options = datalist.querySelectorAll("option");
+
+                    options.forEach(option => {
+                        if (option.value === clienteSearch.value) {
+                            // Al encontrar una opción que coincida, asignamos su id al campo oculto
+                            document.getElementById("clienteid").value = option.dataset.id;
+                        }
+                    });
+                }
+            </script>
             <div class="row mb-3" style="margin-top: -25px;">
                 <div class="form-group col-lg-6">
                     <a id="buscarCliente" class="btn btn-sm btn-secondary w-100" disabled>Buscar Hoy</a>
@@ -435,7 +656,6 @@
                     <a id="buscarClienteTodo" class="btn btn-sm btn-secondary w-100" disabled>Mostrar Todo</a>
                 </div>
             </div>
-
             <div class="row mb-3" style="margin-top: -20px;">
                 <div class="form-group col-lg-6">
                     <input type="date" id="fechaInicio" class="form-control" placeholder="Fecha de inicio">
@@ -444,12 +664,20 @@
                     <input type="date" id="fechaFinal" class="form-control" placeholder="Fecha final">
                 </div>
             </div>
-
             <div class="row mb-3" style="margin-top: -25px;">
                 <div class="form-group col-lg-12">
                     <a id="buscarPorFecha" class="btn btn-sm btn-secondary w-100" disabled>Buscar por Fechas</a>
                 </div>
             </div>
+            <div id="campoFechas" style="display: none;">
+                <div class="form-group">
+                    <label>Registro</label>
+                    <input type="datetime-local" name="created_at" id="created_at" class="form-control">
+                    <input type="datetime-local" name="updated_at" id="updated_at" class="form-control" hidden>
+                </div>
+            </div>
+
+
             
             {{-- TIPO TRANSACCION --}}
             <div class="form-group">
@@ -489,25 +717,20 @@
                 <label>Nro. Tarjeta</label>
                 <input type="text" id="nrotarjeta" name="nrotarjeta" class="form-control" maxlength="16" oninput="formatearTarjeta(this)">
                 <script>
-                function formatearTarjeta(input) {
-                    let valor = input.value.replace(/\D/g, ''); // Solo permite números
+                    function formatearTarjeta(input) {
+                        let valor = input.value.replace(/\D/g, '');
+                        if (valor.length === 6) {
+                            valor += 'XXXXXX';
+                        } else if (valor.length > 6 && !valor.includes('XXXXXX')) {
+                            valor = valor.substring(0, 6) + 'XXXXXX' + valor.substring(6);
+                        }
+                        if (valor.length > 12) {
+                            valor = valor.substring(0, 12) + valor.substring(12, 16);
+                        }
 
-                    // Si el usuario ha ingresado al menos 6 números y aún no se han insertado las "X"
-                    if (valor.length === 6) {
-                        valor += 'XXXXXX';
-                    } else if (valor.length > 6 && !valor.includes('XXXXXX')) {
-                        valor = valor.substring(0, 6) + 'XXXXXX' + valor.substring(6);
+                        input.value = valor;
                     }
-
-                    // Garantizar que después de las "X" solo se puedan escribir 4 números más
-                    if (valor.length > 12) {
-                        valor = valor.substring(0, 12) + valor.substring(12, 16);
-                    }
-
-                    input.value = valor;
-                }
                 </script>
-
                 <label>AP.</label>
                 <input type="text" id="nroap" name="nroap" class="form-control">
                 <label>REF.</label>
@@ -518,7 +741,6 @@
             <div class="form-group cheque-fields d-none">
                 <label>Nro. Cheque</label>
                 <input type="text" id="nrocheque" name="nrocheque" class="form-control">
-
                 <div class="form-group mb-3">
                     <label for="tipobancocheque">Tipo Banco</label>
                     <select name="tipobancocheque" id="tipobancocheque" class="form-control">
@@ -533,11 +755,11 @@
                     <label for="bancoDestino">Nro. Banco Destino</label>
                     <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control">
                         <option value=""></option>
-                        <option value="3000189269">3000189269</option>
-                        <option value="2505314878">2505314878</option>
+                        @foreach ($cuentas as $cuenta)
+                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                        @endforeach
                     </select>
                 </div>
-                
             </div>
             
             <!-- DEPOSITO BANCARIO -->
@@ -546,11 +768,11 @@
                     <label for="bancoDestino">Nro. Banco Origen</label>
                     <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control">
                         <option value=""></option>
-                        <option value="3000189269">3000189269</option>
-                        <option value="2505314878">2505314878</option>
+                        @foreach ($cuentas as $cuenta)
+                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                        @endforeach
                     </select>
                 </div>
-
                 <label>Bancarización</label>
                 <input type="text" id="nrobancarizaciondeposito" name="nrobancarizaciondeposito" class="form-control">
             </div>
@@ -561,11 +783,11 @@
                     <label for="bancoDestino">Nro. Banco Origen</label>
                     <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control">
                         <option value=""></option>
-                        <option value="3000189269">3000189269</option>
-                        <option value="2505314878">2505314878</option>
+                        @foreach ($cuentas as $cuenta)
+                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                        @endforeach
                     </select>
                 </div>
-
                 <label>Bancarización</label>
                 <input type="text" id="nrobancarizaciontransferencia" name="nrobancarizaciontransferencia" class="form-control">
             </div>
@@ -605,19 +827,19 @@
                     <div class="table-responsive">
                         <table class="table table-bordered mt-3">
                             <thead>
-                                <tr>
+                                <tr style="background-color: #eff1f3">
                                     <th style="width: 5%; text-align: center;">ID</th>
-                                    <th style="width: 28%; text-align: center;">Est. / Esp.</th>
+                                    <th style="width: 28%; text-align: center;">Detalle</th>
                                     <th style="width: 12%; text-align: center;">Prog.</th>
                                     <th hidden style="width: 0%;">Fecha de Batería</th>
-                                    <th style="width: 20%; text-align: center;">Trámite</th>
+                                    <th style="width: 20%; text-align: center;">Servicio</th>
                                     <th style="width: 10%; text-align: center;">Precio</th>
                                     <th style="width: 10%; text-align: center;">Descuento</th>
                                     <th style="width: 10%; text-align: center;">Pago</th>  
                                     <th style="width: 5%;">
-                                        <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 5px;">
-                                            <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 35px;">
-                                            Selec.
+                                        <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 10px; margin-bottom: 0px;">
+                                            <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 20px;">
+                                            Sel.
                                         </label>
                                     </th>
                                 </tr>
@@ -645,7 +867,11 @@
                             </div>
                             <div class="form-group col-lg-3">
                                 <label>Registrar</label>
-                                <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                    <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
+                                            onclick="imprimirReciboSeleccionados()">
+                                        GUARDAR REGISTRO
+                                    </button>
+                                {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
                                     <a id="actualizarId" class="btn btn-secondary btn-block" style="display: none;">
                                         INSERTAR DATOS
                                     </a>
@@ -653,50 +879,14 @@
                                             onclick="imprimirReciboSeleccionados()" disabled style="display: none;">
                                         GUARDAR REGISTRO
                                     </button>
-                                </div>
+                                </div> --}}
                                 <a class="btn btn-secondary" id="abrirModalBtn" data-toggle="modal" data-target="#modalArqueo" style="display: none;">
                                     ARQUEO DE CAJA
                                 </a>
 
-                                {{-- <script>
-                                    let timer;
-                                
-                                    document.getElementById('actualizarId').addEventListener('click', function () {
-                                        fetch('{{ route('actualizar_id') }}')
-                                            .then(response => response.json())
-                                            .then(data => {
-                                                if (data.siguienteId) {
-                                                    document.getElementById('siguienteId').value = data.siguienteId;
-                                                } else {
-                                                    alert('No se pudo obtener el siguiente ID.');
-                                                }
-                                            })
-                                            .catch(error => console.error('Error:', error));
-                                
-                                        document.getElementById('actualizarId').style.display = 'none';
-                                        document.getElementById('imprimirReciboBtn').style.display = 'inline-block';
-                                
-                                        timer = setTimeout(function() {
-                                            console.log("No se presionó Guardar, ocultando el botón Guardar y mostrando Generar Recibo.");
-                                            document.getElementById('imprimirReciboBtn').style.display = 'none';
-                                            document.getElementById('actualizarId').style.display = 'inline-block';
-                                        }, 2000);
-                                    });
-
-                                    document.getElementById('imprimirReciboBtn').addEventListener('click', function () {
-                                        clearTimeout(timer);
-
-                                        document.getElementById('imprimirReciboBtn').style.display = 'none';
-                                        document.getElementById('actualizarId').style.display = 'inline-block';
-                                    });
-                                </script> --}}
-
                                 <script>
                                     let timer;
-                                
-                                    // Delegación de eventos para el botón 'actualizarId'
                                     document.addEventListener('click', function (event) {
-                                        // Si el click se realizó sobre el botón con id 'actualizarId'
                                         if (event.target && event.target.id === 'actualizarId') {
                                             fetch('{{ route('actualizar_id') }}')
                                                 .then(response => response.json())
@@ -718,8 +908,6 @@
                                                 document.getElementById('actualizarId').style.display = 'inline-block';
                                             }, 2000);
                                         }
-                                
-                                        // Si el click se realizó sobre el botón 'imprimirReciboBtn'
                                         if (event.target && event.target.id === 'imprimirReciboBtn') {
                                             clearTimeout(timer);
                                 
@@ -728,8 +916,7 @@
                                         }
                                     });
                                 </script>
-                                
-                                
+                    
                                 <div class="modal fade" id="modalArqueo" tabindex="-1" aria-labelledby="modalArqueoLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-lg">
                                         <div class="modal-content">
@@ -1010,7 +1197,7 @@
                                                 </div>
                                             </div>
                                             
-                                            <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                            {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
                                                 <a id="actualizarId" class="btn btn-secondary btn-block">
                                                     INSERTAR DATOS
                                                 </a>
@@ -1018,7 +1205,66 @@
                                                         onclick="imprimirReciboSeleccionados()">
                                                     GUARDAR REGISTRO
                                                 </button>
+                                            </div> --}}
+
+                                            {{-- CAMBIO DE BOTON DE INSERTAR DATOS EN EFECTIVO --}}
+                                            <style>
+                                                .button-container {
+                                                    position: relative;
+                                                    margin-bottom: 20px;
+                                                    width: 100%;
+                                                    display: flex;
+                                                    justify-content: center;
+                                                }
+                                            
+                                                .boton-wrapper {
+                                                    position: relative;
+                                                    width: 200px;
+                                                    height: 45px;
+                                                }
+                                            
+                                                .btn-flotante {
+                                                    position: absolute;
+                                                    top: 0;
+                                                    left: 0;
+                                                    width: 100%;
+                                                }
+                                            
+                                                .btn-insertar {
+                                                    z-index: 2;
+                                                }
+                                            
+                                                .btn-guardar {
+                                                    z-index: 1;
+                                                    transition: z-index 0.3s ease;
+                                                }
+                                            </style>
+                                            <div class="button-container">
+                                                <div class="boton-wrapper">
+                                                    {{-- <a id="actualizarId" class="btn btn-secondary btn-flotante btn-insertar">
+                                                        INSERTAR DATOS
+                                                    </a> --}}
+                                                    <button class="btn btn-success btn-flotante btn-guardar"
+                                                        onclick="imprimirReciboSeleccionados()"
+                                                        {{-- disabled --}}>
+                                                        GUARDAR REGISTRO
+                                                    </button>
+                                                </div>
                                             </div>
+                                            <script>
+                                                document.querySelectorAll('.button-container').forEach(container => {
+                                                    const insertarBtn = container.querySelector('.btn-insertar');
+                                                    const guardarBtn = container.querySelector('.btn-guardar');
+                                            
+                                                    insertarBtn.addEventListener('click', function () {
+                                                        guardarBtn.disabled = false;
+                                                        guardarBtn.style.zIndex = 4;
+                                                        setTimeout(() => {
+                                                            guardarBtn.style.zIndex = 1;
+                                                        }, 1800);
+                                                    });
+                                                });
+                                            </script>
 
                                            {{--  CALCULAR MONTOS TOTALES Y REDONDEO --}}
                                             <script>
@@ -1303,103 +1549,16 @@
 @endif
 @stop
 
-
+{{-- <td>
+                                <input type="number" style="height: 25px;" class="form-control registro-descuento" 
+                                    placeholder="0.00" 
+                                    value="0.00" 
+                                    data-precio="${precio}" 
+                                    data-id="${registro.id}" step="0.01" />
+                            </td> --}}
 @section('js')
 {{-- BUSCAR REGISTROS DE PROGRAMACIONES DE CLIENTES --}}
 <script>
-    /* document.addEventListener('DOMContentLoaded', function () {  
-        const tipoClienteSelect = document.getElementById('tipoCliente');
-        const clienteIdInput = document.getElementById('clienteid');
-        const buscarClienteBtn = document.getElementById('buscarCliente');
-
-        function toggleBuscarButton() {
-            const tipoClienteSeleccionado = tipoClienteSelect.value.trim();
-            buscarClienteBtn.disabled = !tipoClienteSeleccionado || !clienteIdInput.value.trim();
-        }
-
-        tipoClienteSelect.addEventListener('change', toggleBuscarButton);
-        clienteIdInput.addEventListener('input', toggleBuscarButton);
-
-        buscarClienteBtn.addEventListener('click', function () {
-            const tipoCliente = tipoClienteSelect.value;
-            const clienteId = clienteIdInput.value;
-
-            fetch('{{ route("buscar.cliente") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                },
-                body: JSON.stringify({ tipoCliente, clienteid: clienteId }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                const nombreInput = document.querySelector('input[placeholder="Nombre del cliente"]');
-                const idnombreInput = document.querySelector('input[placeholder="ID del cliente"]');
-                const ciInput = document.querySelector('input[placeholder="CI del cliente"]');
-                const subtotalInput = document.querySelector('input[placeholder="Subtotal"]');
-                const descuentoInput = document.querySelector('input[placeholder="Descuento"]');
-                const totalInput = document.querySelector('input[placeholder="Total"]');
-
-                if (data.cliente) {
-                    nombreInput.value = data.cliente.nombrecompleto;
-                    idnombreInput.value = data.cliente.id;
-                    ciInput.value = data.cliente.ci;
-                } else {
-                    alert('Cliente no encontrado');
-                    nombreInput.value = '';
-                    idnombreInput.value = '';
-                    ciInput.value = '';
-                    subtotalInput.value = '0.00';
-                    descuentoInput.value = '0.00';
-                    totalInput.value = '0.00';
-                }
-                const tabla = document.getElementById('tablaRegistros');
-                tabla.innerHTML = '';
-                if (data.registros.length > 0) {
-                    data.registros.forEach((registro) => {
-                        let precio = parseFloat(registro.precio.replace(',', '.')).toFixed(2);
-                        const fila = `
-                            <tr>
-                                <td>${registro.id}</td>
-                                <td>${registro.accionnombre}</td>
-                                <td hidden>${registro.fechabateria}</td>
-                                <td>
-                                    ${registro.fechaasignada ? registro.fechaasignada : ''}
-                                    ${registro.fechacredito ? `(${registro.fechacredito})` : ''}
-                                </td>
-
-                                <td>${registro.tramite || 'Sin Trámite'}</td>
-                                <td>${precio}</td>
-                                <td>
-                                    <input type="number" class="form-control registro-descuento" 
-                                        placeholder="0.00" 
-                                        value="0.00" 
-                                        data-precio="${precio}" 
-                                        data-id="${registro.id}" step="0.01" />
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control registro-pago" 
-                                        placeholder="0.00" 
-                                        value="${precio}" 
-                                        data-precio="${precio}" 
-                                        data-id="${registro.id}" step="0.01" />
-                                </td>
-                                <td>
-                                    <input type="checkbox" class="registro-checkbox" data-precio="${precio}" />
-                                </td>
-                            </tr>
-                        `;
-                        tabla.innerHTML += fila;
-                    });
-                    actualizarEventosRegistro();
-                } else {
-                    tabla.innerHTML = '<tr><td colspan="6">NO SE ENCONTRARON REGISTROS</td></tr>';
-                }
-            })
-            .catch(error => console.error('Error:', error));
-    }); */
-
     document.addEventListener('DOMContentLoaded', function () {   
         const tipoClienteSelect = document.getElementById('tipoCliente');
         const clienteIdInput = document.getElementById('clienteid');
@@ -1455,11 +1614,90 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 },
                 body: JSON.stringify({ tipoCliente, clienteid: clienteId, buscarHoy: false })
+
             })
             .then(response => response.json())
             .then(data => {
-                actualizarTabla(data);
+                actualizarTabla(data, data.permitirDescuento, data.permisoExistefecha);
+                const campoFechas = document.getElementById('campoFechas');
+                if (campoFechas) {
+                    // 🔴 Ocultar siempre primero
+                    campoFechas.style.display = 'none';
+                }
+
+                // ✅ Mostrar solo si el permiso lo permite
+                if (data.permisoExistefecha) {
+                    if (campoFechas) {
+                        campoFechas.style.display = 'block';
+                    }
+
+                    // Sincronizar updated_at con created_at
+                    const createdAtInput = document.getElementById('created_at');
+                    const updatedAtInput = document.getElementById('updated_at');
+                    if (createdAtInput && updatedAtInput) {
+                        createdAtInput.addEventListener('change', function () {
+                            updatedAtInput.value = this.value;
+                        });
+                    }
+                }
+
+            // CREDITOS
+                let modalBody = document.querySelector('#modalCreditos .modal-body'); 
+                if (data.tieneCredito && data.creditos.length > 0) {
+                    // Inicializamos variables para agrupar los detalles y el monto total
+                    let detallesUnicos = [];
+                    let montoTotal = 0;
+
+                    // Recorrer los créditos y agrupar detalles, y calcular el total de las cuotas
+                    data.creditos.forEach(credito => {
+                        // Evitar detalles repetidos
+                        if (!detallesUnicos.includes(credito.detalle)) {
+                            detallesUnicos.push(credito.detalle);
+                        }
+                        // Sumar el monto de la cuota
+                        montoTotal += parseFloat(credito.montocuota);
+                    });
+
+                    // Crear el HTML para los detalles y monto total
+                    let html = `
+                        <div>
+                            <strong>Detalles:</strong> ${detallesUnicos.join(', ')} <br>
+                            <strong>Total Monto Crédito:</strong> ${montoTotal.toFixed(2)}
+                        </div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID_Cli.</th>
+                                    <th>Cliente</th>
+                                    <th>Cuota</th>
+                                    <th>Fecha_Crédito</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                    // Agregar filas para los créditos
+                    data.creditos.forEach(credito => {
+                        html += `<tr>
+                                    <td>${credito.clienteid}</td>
+                                    <td>${credito.clientenombre}</td>
+                                    <td>${credito.montocuota}</td>
+                                    <td>${credito.fechacredito}</td>
+                                </tr>`;
+                    });
+
+                    html += `   </tbody>
+                            </table>`;
+                    
+                    modalBody.innerHTML = html;
+                } else {
+                    modalBody.innerHTML = `<p>No hay créditos disponibles.</p>`;
+                }
+
+                document.getElementById('btnVerCreditos').style.display = data.tieneCredito ? 'block' : 'none';
+
+            //
             })
+
             .catch(error => console.error('Error:', error));
         });
 
@@ -1486,7 +1724,9 @@
         });
 
         // Función para actualizar la tabla con los resultados
-        /* function actualizarTabla(data) {
+        /* function actualizarTabla(data) { */
+        function actualizarTabla(data, permitirDescuento = false) {
+
             const nombreInput = document.querySelector('input[placeholder="Nombre del cliente"]');
             const idnombreInput = document.querySelector('input[placeholder="ID del cliente"]');
             const ciInput = document.querySelector('input[placeholder="CI del cliente"]');
@@ -1495,7 +1735,7 @@
             const totalInput = document.querySelector('input[placeholder="Total"]');
 
             if (data.cliente) {
-                nombreInput.value = data.cliente.nombrecompleto;
+                nombreInput.value = data.cliente.nombrecompleto || data.cliente.razonsocial;
                 idnombreInput.value = data.cliente.id;
                 ciInput.value = data.cliente.ci;
             } else {
@@ -1516,94 +1756,31 @@
                     const fila = `
                         <tr>
                             <td>${registro.id}</td>
-                            <td>${registro.accionnombre}</td>
+                            <td>${registro.accionnombre || ''} ${registro.nrosesion ? registro.nrosesion : ''} ${registro.cantidad > 0 ? registro.cantidad : ''} ${registro.detalleproducto || ''}</td>
                             <td hidden>${registro.fechabateria}</td>
                             <td>
                                 ${registro.fechaasignada ? registro.fechaasignada : ''}
                                 ${registro.fechacredito ? `(${registro.fechacredito})` : ''}
                             </td>
-                            <td>${registro.tramite || 'Sin Trámite'}</td>
+                            <td>${registro.tramite || ''} ${registro.detalle || ''}  ${registro.tipoorden || ''}</td>
                             <td>${precio}</td>
                             <td>
-                                <input type="number" class="form-control registro-descuento" 
+                                <input type="number" style="height: 25px;" class="form-control registro-descuento" 
                                     placeholder="0.00" 
                                     value="0.00" 
                                     data-precio="${precio}" 
-                                    data-id="${registro.id}" step="0.01" />
+                                    data-id="${registro.id}" step="0.01"
+                                    ${permitirDescuento ? '' : 'disabled'} />
                             </td>
                             <td>
-                                <input type="number" class="form-control registro-pago" 
+                                <input type="number" style="height: 25px;" class="form-control registro-pago" 
                                     placeholder="0.00" 
                                     value="${precio}" 
                                     data-precio="${precio}" 
                                     data-id="${registro.id}" step="0.01" />
                             </td>
                             <td>
-                                <input type="checkbox" class="registro-checkbox" data-precio="${precio}" />
-                            </td>
-                        </tr>
-                    `;
-                    tabla.innerHTML += fila;
-                });
-                actualizarEventosRegistro();
-            } else {
-                tabla.innerHTML = '<tr><td colspan="6">NO SE ENCONTRARON REGISTROS</td></tr>';
-            }
-        } */
-        function actualizarTabla(data) {
-            const nombreInput = document.querySelector('input[placeholder="Nombre del cliente"]');
-            const idnombreInput = document.querySelector('input[placeholder="ID del cliente"]');
-            const ciInput = document.querySelector('input[placeholder="CI del cliente"]');
-            const subtotalInput = document.querySelector('input[placeholder="Subtotal"]');
-            const descuentoInput = document.querySelector('input[placeholder="Descuento"]');
-            const totalInput = document.querySelector('input[placeholder="Total"]');
-
-            if (data.cliente) {
-                nombreInput.value = data.cliente.nombrecompleto;
-                idnombreInput.value = data.cliente.id;
-                ciInput.value = data.cliente.ci;
-            } else {
-                alert('Cliente no encontrado');
-                nombreInput.value = '';
-                idnombreInput.value = '';
-                ciInput.value = '';
-                subtotalInput.value = '0.00';
-                descuentoInput.value = '0.00';
-                totalInput.value = '0.00';
-            }
-
-            const tabla = document.getElementById('tablaRegistros');
-            tabla.innerHTML = '';
-            if (data.registros.length > 0) {
-                data.registros.forEach((registro) => {
-                    let precio = parseFloat(registro.precio.replace(',', '.')).toFixed(2);
-                    const fila = `
-                        <tr>
-                            <td>${registro.id}</td>
-                            <td>${registro.accionnombre} ${registro.nrosesion ? registro.nrosesion : ''}</td>
-                            <td hidden>${registro.fechabateria}</td>
-                            <td>
-                                ${registro.fechaasignada ? registro.fechaasignada : ''}
-                                ${registro.fechacredito ? `(${registro.fechacredito})` : ''}
-                            </td>
-                            <td>${registro.tramite || 'Sin Trámite'}</td>
-                            <td>${precio}</td>
-                            <td>
-                                <input type="number" class="form-control registro-descuento" 
-                                    placeholder="0.00" 
-                                    value="0.00" 
-                                    data-precio="${precio}" 
-                                    data-id="${registro.id}" step="0.01" />
-                            </td>
-                            <td>
-                                <input type="number" class="form-control registro-pago" 
-                                    placeholder="0.00" 
-                                    value="${precio}" 
-                                    data-precio="${precio}" 
-                                    data-id="${registro.id}" step="0.01" />
-                            </td>
-                            <td>
-                                <input type="checkbox" class="registro-checkbox" data-precio="${precio}" />
+                                <input type="checkbox" style="height: 25px;" class="registro-checkbox" data-precio="${precio}" />
                             </td>
                         </tr>
                     `;
@@ -1712,16 +1889,6 @@
         });
     });
 
-    /* function actualizarEventosRegistro() { 
-        const descuentos = document.querySelectorAll('.registro-descuento');
-        const pagos = document.querySelectorAll('.registro-pago');
-        const checkboxes = document.querySelectorAll('.registro-checkbox');
-
-        // Asegúrate de que todos los eventos estén correctamente escuchados
-        descuentos.forEach(input => input.addEventListener('input', calcularTotal));
-        pagos.forEach(input => input.addEventListener('input', calcularTotal));
-        checkboxes.forEach(checkbox => checkbox.addEventListener('change', calcularTotal));
-    } */
     function actualizarEventosRegistro() {  
         const descuentos = document.querySelectorAll('.registro-descuento');
         const pagos = document.querySelectorAll('.registro-pago');
@@ -1733,40 +1900,6 @@
         checkboxes.forEach(checkbox => checkbox.addEventListener('change', calcularTotal));
     }
 
-    /* function calcularTotal() {
-        const checkboxes = document.querySelectorAll('.registro-checkbox:checked');
-        
-        let subtotal = 0;  // Sumar los precios (sin descuento)
-        let descuentoTotal = 0;  // Sumar los descuentos
-        let totalPagoGeneral = 0;  // Sumar los pagos seleccionados
-
-        // Iterar sobre los registros seleccionados
-        checkboxes.forEach(checkbox => {
-            const row = checkbox.closest('tr');
-            const precio = parseFloat(checkbox.dataset.precio);  // Precio original del registro
-            const descuento = parseFloat(row.querySelector('.registro-descuento').value || 0);  // Descuento
-            const pago = parseFloat(row.querySelector('.registro-pago').value || 0);  // Pago
-
-            // Solo sumar los precios, descuentos y pagos si el checkbox está marcado
-            subtotal += precio;  // Sumar solo el precio
-            descuentoTotal += descuento;  // Sumar solo el descuento
-            totalPagoGeneral += pago;  // Sumar solo el pago
-        });
-
-        // El total es la suma de los pagos (no afectado por el descuento)
-        const total = totalPagoGeneral;
-
-        // Actualizar los campos del formulario con los valores calculados
-        document.querySelector('input[placeholder="Subtotal"]').value = subtotal.toFixed(2);  // Suma de los precios
-        document.querySelector('input[placeholder="Descuento"]').value = descuentoTotal.toFixed(2);  // Suma de los descuentos
-        document.querySelector('input[placeholder="Total"]').value = total.toFixed(2);  // Total general (solo pagos)
-        document.getElementById('montoreal').value = subtotal.toFixed(2);  // Total de los precios originales
-        }
-
-        // Asegúrate de llamar a actualizarEventosRegistro cuando se cargue el DOM
-        document.addEventListener('DOMContentLoaded', function () {
-            actualizarEventosRegistro();  // Inicializar los eventos
-    }); */
     function calcularTotal() {
         const checkboxes = document.querySelectorAll('.registro-checkbox:checked');
         
@@ -1797,13 +1930,6 @@
         document.getElementById('montoreal').value = subtotal.toFixed(2);
     }
 
-        /* document.getElementById('selectAll').addEventListener('change', function() {
-            const checkboxes = document.querySelectorAll('.registro-checkbox');
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = this.checked; 
-            });
-            calcularTotal();
-        }); */
         document.addEventListener('change', function(event) {
             if (event.target.classList.contains('registro-checkbox')) {
                 calcularTotal();  // Llama a la función cada vez que cambia un checkbox individual
@@ -1833,15 +1959,15 @@
         var imprimirReciboBtn = document.getElementById("imprimirReciboBtn");
         var actualizarId = document.getElementById("actualizarId");
 
-        if (tipoTransaccion1 === "EFECTIVO") {
+        /* if (tipoTransaccion1 === "EFECTIVO") {
             abrirModalBtn.style.display = "block"; // Mostrar botón para abrir modal
             imprimirReciboBtn.style.display = "none"; // Ocultar botón guardar registro
             actualizarId.style.display = "none"; // Ocultar botón insertar datos
         } else {
             abrirModalBtn.style.display = "none"; // Ocultar botón para abrir modal
-            /* imprimirReciboBtn.style.display = "block"; */
+            imprimirReciboBtn.style.display = "block";
             actualizarId.style.display = "block"; // Mostrar botón insertar datos
-        }
+        } */
 
 
         // Limpiar todos los campos de transacciones antes de mostrar los nuevos
@@ -1863,6 +1989,9 @@
             document.querySelector(".transferencia-fields").classList.remove("d-none");
         } else if (tipoTransaccion1 === "EFECTIVO") {
             document.querySelector(".efectivo-fields").classList.remove("d-none");
+            abrirModalBtn.style.display = "block"; // Mostrar botón para abrir modal
+            imprimirReciboBtn.style.display = "none"; // Ocultar botón guardar registro
+            actualizarId.style.display = "none"; // Ocultar botón insertar datos
         }
 
         // Habilitar o deshabilitar el segundo select
@@ -1997,6 +2126,12 @@
         const montoPagado = document.getElementById('montoPagado').value;
         const cambio = document.getElementById('cambio').value;
 
+        const createdAt = document.getElementById('created_at').value;
+        const fechaHora = createdAt
+            ? new Date(createdAt).toLocaleString()
+            : new Date().toLocaleString();
+
+
         // Tipo de Transacción 2 (opcional)
         let tipoTransaccion2 = '';
         if (document.getElementById('dobleTransaccion').checked) {
@@ -2079,7 +2214,7 @@
                 <div class="recibo-container">
                     <div class="logo"><img src="${logoUrl}" alt="Logo de la empresa"></div>
                     <div class="recibo"><strong>RECIBO Nro.${idrecibo}</strong></div>
-                    <div class="fecha"><strong>Fecha y Hora:</strong> ${new Date().toLocaleString()}</div>
+                    <div class="fecha"><strong>Fecha y Hora:</strong> ${fechaHora}</div>
                     <div class="linea" style="margin-bottom: -1px;"></div>
                     <div class="info"><strong>Cliente:</strong> ${nombreCliente}</div>
                     <div class="info" style="margin-top: -3px;"><strong>Emitido por:</strong> ${nombreUsuario}</div>
@@ -2133,7 +2268,7 @@
         let subtotal = 0;
         reciboHTML += `<table class="tabla"><thead>
                             <tr>
-                                <th style="text-align: left;">Est./Esp.</th>
+                                <th style="text-align: left;">Detalle</th>
                                 <th style="text-align: right;">Precio</th>
                             </tr>
                         </thead>

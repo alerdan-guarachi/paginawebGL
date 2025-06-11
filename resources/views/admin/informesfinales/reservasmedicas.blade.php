@@ -6,6 +6,11 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/reservasmedicas.css') }}">
+<style>
+    .table td {
+        padding: 5px 10px;;
+    }
+</style>
 @stop
 
 @section('content')
@@ -91,87 +96,110 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Tipo Cliente</th>
-                            <th>ID Cliente</th>
+                            <th>Tipo_Cli.</th>
+                            <th>ID_Cli.</th>
                             <th>Cliente</th>
-                            <th>Fecha Bateria</th>
+                            <th hidden>Fecha Bateria</th>
                             @if ($rolusuario !== 'PROVEEDOR')
-                            <th>Proveedor Asignado</th>
+                            <th>Proveedor_Asignado</th>
                             @endif
-                            <th>Acción</th>
-                            <th>Fecha asignada</th>
-                            <th>Hora asignada</th>
-                            <th colspan="3">Atención</th>
+                            <th>Estudio/Especialidad</th>
+                            <th>Fecha_Asignada</th>
+                            <th>Hora_Asignada</th>
+                            <th>Atención</th>
+                            @can('admin.informesfinales.ordenesproveedores')
+                            <th>Acciones</th>
+                            @endcan
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($reservasmedicas as $reservasmedica)
                             @if(!$reservasmedica->documentacionDisponible && !$reservasmedica->informeDisponible)
                                 <tr>
-                                    <td>CLIENTE ITA</td>
+                                    <td>ITA</td>
                                     <td>{{$reservasmedica->clienteitaid}}</td>
                                     <td>{{$reservasmedica->clienteitanombre}}</td>
-                                    <td>{{$reservasmedica->fechabateria}}</td>
+                                    <td hidden>{{$reservasmedica->fechabateria}}</td>
                                     @if ($rolusuario !== 'PROVEEDOR')
                                     <td>{{$reservasmedica->proveedornombre}}</td>
                                     @endif
                                     <td>{{$reservasmedica->accionnombre}}</td>
                                     <td>{{$reservasmedica->fechaasignada}}</td>
-                                    <td>{{$reservasmedica->horadesde}} - {{$reservasmedica->horahasta}}</td>
+                                    <td>{{ \Carbon\Carbon::parse($reservasmedica->horadesde)->format('H:i') }} - {{ \Carbon\Carbon::parse($reservasmedica->horahasta)->format('H:i') }}</td>
+                                    <td>
+                                        <p><span class="badge bg-danger">PENDIENTE</span></p>
+                                    </td>
+                                    @can('admin.informesfinales.ordenesproveedores')
+                                    <td>
+                                        <a href="{{ route('generar.pdf.orden', [
+                                            'clienteitaid' => $reservasmedica->clienteitaid,
+                                            'fechabateria' => $reservasmedica->fechabateria,
+                                            'proveedornombre' => $reservasmedica->proveedornombre ?? 'N/A',
+                                            'clienteitanombre' => urlencode($reservasmedica->clienteitanombre)
+                                        ]) }}" class="btn btn-sm btn-crearproveedor" title="GENERAR ORDEN">
+                                           <i class="fas fa-file"></i>
+                                        </a>
 
-                                    <td width="10px">
-                                        @if($reservasmedica->informeDisponible)
-                                            <abbr title="SUBIR INFORME">
-                                                <button type="button" class="btn btn-subirinforme" 
-                                                        data-toggle="modal" 
-                                                        data-target="#subirinformeModal"
-                                                        data-id="{{ $reservasmedica->id }}"
-                                                        data-clienteitaid="{{ $reservasmedica->clienteitaid }}"
-                                                        data-clienteitanombre="{{ $reservasmedica->clienteitanombre }}"
-                                                        data-fechabateria="{{ $reservasmedica->fechabateria }}"
-                                                        data-accion="{{ $reservasmedica->accionnombre }}">
-                                                    <i class="fas fa-upload"></i>
-                                                </button>
-                                            </abbr>
+                                        @if($reservasmedica->ciasegurado && $reservasmedica->ciasegurado !== 'PENDIENTE')
+                                            <a href="{{ asset('/requisitosclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->ciasegurado) }}" 
+                                                class="btn btn-sm btn-subirinformeproveedor" target="_blank" title="VER CARNET DE IDENTIDAD">
+                                                <i class="fas fa-address-book"></i>
+                                            </a>
                                         @else
-                                            <p class="text-incompleto">PENDIENTE</p>
+                                            <a href="#" 
+                                                class="btn btn-sm btn-subirinformeproveedor disabled" 
+                                                title="VER CARNET DE IDENTIDAD"
+                                                onclick="return false;">
+                                                <i class="fas fa-address-book"></i>
+                                            </a>
                                         @endif
                                     </td>
+                                    @endcan                                    
                                 </tr>
                             @endif
                         @endforeach
                         @foreach ($reservasmedicasauditorias as $reservasmedicaauditoria)
                             @if(!$reservasmedicaauditoria->documentacionDisponibleauditoria && !$reservasmedicaauditoria->informeDisponibleauditoria)
                                 <tr>
-                                    <td>CLIENTE AUDITORIA</td>
+                                    <td>AUDITORIA</td>
                                     <td>{{$reservasmedicaauditoria->clienteauditoriaid}}</td>
                                     <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
-                                    <td>{{$reservasmedicaauditoria->fechabateria}}</td>
+                                    <td hidden>{{$reservasmedicaauditoria->fechabateria}}</td>
                                     @if ($rolusuario !== 'PROVEEDOR')
                                     <td>{{$reservasmedicaauditoria->proveedornombre}}</td>
                                     @endif
                                     <td>{{$reservasmedicaauditoria->accionnombre}}</td>
                                     <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
-                                    <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
+                                    <td>{{ \Carbon\Carbon::parse($reservasmedicaauditoria->horadesde)->format('H:i') }} - {{ \Carbon\Carbon::parse($reservasmedicaauditoria->horahasta)->format('H:i') }}</td>
+                                    <td>
+                                        <p><span class="badge bg-danger">PENDIENTE</span></p>
+                                    </td>
+                                    @can('admin.informesfinales.ordenesproveedores')
+                                    <td>
+                                        <a href="{{ route('generar.pdf.ordenauditoria', [
+                                            'clienteauditoriaid' => $reservasmedicaauditoria->clienteauditoriaid,
+                                            'fechabateria' => $reservasmedicaauditoria->fechabateria,
+                                            'proveedornombre' => $reservasmedicaauditoria->proveedornombre ?? 'N/A',
+                                            'clienteauditorianombre' => urlencode($reservasmedicaauditoria->clienteauditorianombre)
+                                        ]) }}" class="btn btn-sm btn-crearproveedor" title="GENERAR ORDEN">
+                                           <i class="fas fa-file"></i>
+                                        </a>
 
-                                    <td width="10px">
-                                        @if($reservasmedicaauditoria->informeDisponible)
-                                            <abbr title="SUBIR INFORME">
-                                                <button type="button" class="btn btn-subirinforme" 
-                                                        data-toggle="modal" 
-                                                        data-target="#subirinformeModal"
-                                                        data-id="{{ $reservasmedicaauditoria->id }}"
-                                                        data-clienteauditoriaid="{{ $reservasmedicaauditoria->clienteitaid }}"
-                                                        data-clienteauditorianombre="{{ $reservasmedicaauditoria->clienteitanombre }}"
-                                                        data-fechabateria="{{ $reservasmedicaauditoria->fechabateria }}"
-                                                        data-accion="{{ $reservasmedicaauditoria->accionnombre }}">
-                                                    <i class="fas fa-upload"></i>
-                                                </button>
-                                            </abbr>
+                                        @if($reservasmedicaauditoria->ciasegurado && $reservasmedicaauditoria->ciasegurado !== 'PENDIENTE')
+                                            <a href="{{ asset('/requisitosclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->ciasegurado) }}" 
+                                                class="btn btn-sm btn-subirinformeproveedor" target="_blank" title="VER CARNET DE IDENTIDAD">
+                                                <i class="fas fa-address-book"></i>
+                                            </a>
                                         @else
-                                            <p class="text-incompleto">PENDIENTE</p>
+                                            <a href="#" 
+                                                class="btn btn-sm btn-subirinformeproveedor disabled" 
+                                                title="VER CARNET DE IDENTIDAD"
+                                                onclick="return false;">
+                                                <i class="fas fa-address-book"></i>
+                                            </a>
                                         @endif
                                     </td>
+                                    @endcan
                                 </tr>
                             @endif
                         @endforeach
@@ -186,18 +214,18 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>ID Prog.</th>
-                            <th>Tipo Cliente</th>
-                            <th>ID Cliente</th>
+                            <th>ID_Prog.</th>
+                            <th>Tipo_Cli.</th>
+                            <th>ID_Cli.</th>
                             <th>Cliente</th>
-                            <th>Fecha Bateria</th>
+                            <th hidden>Fecha_Bateria</th>
                             @if ($rolusuario !== 'PROVEEDOR')
-                            <th>Proveedor Asignado</th>
+                            <th>Proveedor_Asignado</th>
                             @endif
-                            <th>Acción</th>
-                            <th>Fecha asignada</th>
-                            <th>Hora asignada</th>
-                            <th colspan="3">Acciones</th>
+                            <th>Estudio/Especialidad</th>
+                            <th>Fecha_Asignada</th>
+                            <th>Hora_Asignada</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -205,37 +233,34 @@
                             @if(!$reservasmedica->documentacionDisponible && $reservasmedica->informeDisponible)
                                 <tr>
                                     <td>{{$reservasmedica->id}}</td>
-                                    <td>CLIENTE ITA</td>
+                                    <td>ITA</td>
                                     <td>{{$reservasmedica->clienteitaid}}</td>
                                     <td>{{$reservasmedica->clienteitanombre}}</td>
-                                    <td>{{$reservasmedica->fechabateria}}</td>
+                                    <td hidden>{{$reservasmedica->fechabateria}}</td>
                                     @if ($rolusuario !== 'PROVEEDOR')
                                     <td>{{$reservasmedica->proveedornombre}}</td>
                                     @endif
                                     <td>{{$reservasmedica->accionnombre}}</td>
                                     <td>{{$reservasmedica->fechaasignada}}</td>
-                                    <td>{{$reservasmedica->horadesde}} - {{$reservasmedica->horahasta}}</td>
-                                    
+                                    <td>{{ \Carbon\Carbon::parse($reservasmedica->horadesde)->format('H:i') }} - {{ \Carbon\Carbon::parse($reservasmedica->horahasta)->format('H:i') }}</td>
                                     {{-- FICHA MEDICA --}}
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE')
-                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'YELKA MORALES VELARDE')
+                                        <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                             @if($reservasmedica->fichamedicaita)
                                                 <a href="{{ asset('/fichamedicaclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->fichamedicaita) }}" class="btn btn-sm btn-subirinf" target="_blank" title="VER FICHA MEDICA">
                                                     <i class="fas fa-file-signature"></i>
                                                 </a>
                                             @else
-                                            <abbr title="CREAR FICHA MÉDICA">
-                                                <a class="btn btn-sm btn-fichamedica" href="{{route('admin.asociados.crearformularioclienteita', $reservasmedica->clienteitaid)}}">
+                                                <a class="btn btn-sm btn-fichamedica" href="{{route('admin.asociados.crearformularioclienteita', $reservasmedica->clienteitaid)}}" title="CREAR FICHA MÉDICA">
                                                     <i class="fas fa-file-signature"></i>
                                                 </a>
-                                            </abbr>
                                             @endif
                                         </td>
                                     @endif
 
                                     {{-- DIAGNOSTICO MEDICO --}}
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'MARICELA COLQUE SANDOVAL' || $nombreusuario === 'MONICA MACOÑO FLORES')
-                                        <td width="10px">
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'MARICELA COLQUE SANDOVAL' || $nombreusuario === 'MONICA MACOÑO FLORES' || $nombreusuario === 'YELKA MORALES VELARDE')
+                                        <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                             @if($reservasmedica->diagnosticomedicoita)
                                                 <a href="{{ asset('/diagnosticos/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->diagnosticomedicoita) }}" class="btn btn-sm btn-subirdiagnostico" target="_blank" title="VER DIAGNÓSTICO">
                                                     <i class="fas fa-laptop-medical"></i>
@@ -319,12 +344,11 @@
                                                 </div>
                                             </div>
                                         </div>
-
                                     @endif
 
                                     {{-- CREAR BATERIA --}}
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE')
-                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'YELKA MORALES VELARDE')
+                                        <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                             <abbr title="CREAR BATERIA">
                                                 <a class="btn btn-sm btn-crearproveedor" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
                                                     <i class="fas fa-charging-station"></i>
@@ -334,7 +358,7 @@
                                     @endif
 
                                     {{-- SUBIR INFORME ITA --}}
-                                    <td>
+                                    <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                         @if($reservasmedica->informeDisponible)
                                             <abbr title="SUBIR INFORME">
                                                 <button type="button" class="btn btn-sm btn-subirinformeproveedor" 
@@ -352,6 +376,7 @@
                                             <p class="text-incompleto">FECHA DE ATENCIÓN PENDIENTE</p>
                                         @endif
                                     </td>
+
                                     {{-- MODAL SUBIR INFORMES ITA --}}
                                     <div class="modal fade" id="subirinformeitaModal" tabindex="-1" role="dialog" aria-labelledby="subirinformeitaModalLabel" aria-hidden="true">
                                         <div class="modal-dialog modal-lg" role="document">
@@ -564,7 +589,7 @@
 
                                     {{-- SUBIR INFORMES MULTIPLES ITA --}}
                                     @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'PROMED S.R.L.' || $nombreusuario === 'SERRANO PORSTENDOERFER VIVIAN YANETH')
-                                        <td width="10px" style="padding-left: 1px; justify-content: center;">
+                                        <td width="10px" style="padding-left: 2px; padding-right: 4px; justify-content: center;">
                                             @if($reservasmedica->informeDisponible)
                                                 <abbr title="SUBIR INFORME MULTIPLE">
                                                     <button type="button" class="btn btn-sm btn-subirinformeproveedor" 
@@ -582,7 +607,7 @@
                                                 <p class="text-incompleto">FECHA DE ATENCIÓN PENDIENTE</p>
                                             @endif
                                         </td>
-                                        <!-- Modal -->
+                                        <!-- MODAL SUBIR INFORME MULTIPLE ITA -->
                                         <div class="modal fade" id="subirinformeitaModal2" tabindex="-1" role="dialog" aria-labelledby="subirinformeitaModal2Label" aria-hidden="true">
                                             <div class="modal-dialog modal-lg" role="document">
                                                 <div class="modal-content">
@@ -831,6 +856,7 @@
                                             </div>
                                         </div>
                                     @endif
+
                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                     <script>
                                         $(document).ready(function() {
@@ -861,37 +887,35 @@
                             @if(!$reservasmedicaauditoria->documentacionDisponibleauditoria && $reservasmedicaauditoria->informeDisponibleauditoria)
                                 <tr>
                                     <td>{{$reservasmedicaauditoria->id}}</td>
-                                    <td>CLIENTE AUDITORIA</td>
+                                    <td>AUDITORIA</td>
                                     <td>{{$reservasmedicaauditoria->clienteauditoriaid}}</td>
                                     <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
-                                    <td>{{$reservasmedicaauditoria->fechabateria}}</td>
+                                    <td hidden>{{$reservasmedicaauditoria->fechabateria}}</td>
                                     @if ($rolusuario !== 'PROVEEDOR')
                                     <td>{{$reservasmedicaauditoria->proveedornombre}}</td>
                                     @endif
                                     <td>{{$reservasmedicaauditoria->accionnombre}}</td>
                                     <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
-                                    <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
+                                    <td>{{ \Carbon\Carbon::parse($reservasmedicaauditoria->horadesde)->format('H:i') }} - {{ \Carbon\Carbon::parse($reservasmedicaauditoria->horahasta)->format('H:i') }}</td>
 
                                     {{-- FICHA MEDICA AUDITORIA --}}
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE')
-                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'YELKA MORALES VELARDE')
+                                        <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                             @if($reservasmedicaauditoria->fichamedicaauditoria)
                                                 <a href="{{ asset('/fichamedicaclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->fichamedicaauditoria) }}" class="btn btn-sm btn-subirinf" target="_blank" title="VER FICHA MEDICA">
                                                     <i class="fas fa-file-signature"></i>
                                                 </a>
                                             @else
-                                                <abbr title="CREAR FICHA MÉDICA">
-                                                    <a class="btn btn-sm btn-fichamedica" href="{{ route('admin.asociados.crearformularioclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid) }}">
-                                                        <i class="fas fa-file-signature"></i>
-                                                    </a>
-                                                </abbr>
+                                                <a class="btn btn-sm btn-fichamedica" href="{{ route('admin.asociados.crearformularioclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid) }}" title="CREAR FICHA MÉDICA">
+                                                    <i class="fas fa-file-signature"></i>
+                                                </a>
                                             @endif
                                         </td>
                                     @endif
                                     
                                     {{-- DIAGNOSTICO AUDITORIA --}}
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'MARICELA COLQUE SANDOVAL' || $nombreusuario === 'MONICA MACOÑO FLORES')
-                                        <td width="10px">
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'MARICELA COLQUE SANDOVAL' || $nombreusuario === 'MONICA MACOÑO FLORES' || $nombreusuario === 'YELKA MORALES VELARDE')
+                                        <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                             @if($reservasmedicaauditoria->diagnosticomedicoauditoria)
                                                 <a href="{{ asset('/diagnosticosauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->diagnosticomedicoauditoria) }}" class="btn btn-sm btn-subirdiagnostico" target="_blank" title="VER DIAGNÓSTICO">
                                                     <i class="fas fa-laptop-medical"></i>
@@ -915,7 +939,7 @@
 
                                             @endif
                                         </td>
-                                        <!-- DIAGNOSTICO -->
+                                        <!-- MODAL SUBIR DIAGNOSTICO -->
                                         <div class="modal fade" id="subirdiagnosticoModal2" tabindex="-1" role="dialog" aria-labelledby="subirdiagnosticoModal2Label" aria-hidden="true">
                                             <div class="modal-dialog modal-lg" role="document">
                                                 <div class="modal-content">
@@ -978,8 +1002,8 @@
                                     @endif
                                     
                                     {{-- CREAR BATERIA AUDITORIA --}}
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE')
-                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'YELKA MORALES VELARDE')
+                                        <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                             <abbr title="CREAR BATERIA">
                                                 <a class="btn btn-sm btn-crearproveedor" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
                                                     <i class="fas fa-charging-station"></i>
@@ -989,7 +1013,7 @@
                                     @endif
 
                                     {{-- SUBIR INFORME AUDITORIA --}}
-                                    <td>
+                                    <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                         @if($reservasmedicaauditoria->informeDisponibleauditoria)
                                             <abbr title="SUBIR INFORME">
                                                 <button type="button" class="btn btn-sm btn-subirinformeproveedor" 
@@ -1007,6 +1031,7 @@
                                             <p class="text-incompleto">FECHA DE ATENCIÓN PENDIENTE</p>
                                         @endif
                                     </td>
+
                                     <!-- MODAL SUBIR INFORME -->
                                     <div class="modal fade" id="subirinformeModal5" tabindex="-1" role="dialog" aria-labelledby="subirinformeModal5Label" aria-hidden="true">
                                         <div class="modal-dialog modal-lg" role="document">
@@ -1188,10 +1213,9 @@
                                         </div>
                                     </div>
 
-
                                     {{-- SUBIR INFORME MULTIPLE AUDITORIA --}}
                                     @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'PROMED S.R.L.' || $nombreusuario === 'SERRANO PORSTENDOERFER VIVIAN YANETH')
-                                        <td width="10px" style="padding-left: 1px; justify-content: center;">
+                                        <td width="10px" style="padding-left: padding-right: 4px; justify-content: center;">
                                             @if($reservasmedicaauditoria->informeDisponibleauditoria)
                                                 <abbr title="SUBIR INFORME MULTIPLE">
                                                     <button type="button" class="btn btn-sm btn-subirinformeproveedor3" 
@@ -1458,7 +1482,6 @@
                                             </div>
                                         </div>
                                     @endif
-
                                     
                                     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                                     <script>
@@ -1497,53 +1520,53 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Tipo Cliente</th>
-                            <th>ID Cliente</th>
+                            <th>Tipo_Cli.</th>
+                            <th>ID_Cli.</th>
                             <th>Cliente</th>
-                            <th>Fecha Bateria</th>
+                            <th hidden>Fecha_Bateria</th>
                             @if ($rolusuario !== 'PROVEEDOR')
-                            <th>Proveedor Asignado</th>
+                            <th>Proveedor_Asignado</th>
                             @endif
-                            <th>Acción</th>
-                            <th>Fecha asignada</th>
-                            <th>Hora asignada</th>
-                            <th>Fecha registro</th>
-                            <th colspan="3">Informe</th>
+                            <th>Estudio/Especialidad</th>
+                            <th>Fecha_Asignada</th>
+                            <th>Hora_Asignada</th>
+                            <th>Fecha_Registro</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($reservasmedicas as $reservasmedica)
                             @if($reservasmedica->documentacionDisponible)
                                 <tr>
-                                    <td>CLIENTE ITA</td>
+                                    <td>ITA</td>
                                     <td>{{$reservasmedica->clienteitaid}}</td>
                                     <td>{{$reservasmedica->clienteitanombre}}</td>
-                                    <td>{{$reservasmedica->fechabateria}}</td>
+                                    <td hidden>{{$reservasmedica->fechabateria}}</td>
                                     @if ($rolusuario !== 'PROVEEDOR')
                                     <td>{{$reservasmedica->proveedornombre}}</td>
                                     @endif
                                     <td>{{$reservasmedica->accionnombre}}</td>
                                     <td>{{$reservasmedica->fechaasignada}}</td>
-                                    <td>{{$reservasmedica->horadesde}} - {{$reservasmedica->horahasta}}</td>
+                                    <td>{{ \Carbon\Carbon::parse($reservasmedica->horadesde)->format('H:i') }} - {{ \Carbon\Carbon::parse($reservasmedica->horahasta)->format('H:i') }}</td>
                                     <td>{{$reservasmedica->fechainforme}}</td>
                                     
-                                    <td width="10px">
-                                                <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionDisponible) }}" class="btn btn-sm btn-verdocumentacion2" target="_blank" title="VER INFORME MÉDICO">
-                                                    <i class="fas fa-folder-open"></i>
-                                                </a>
-                                                    @if($reservasmedica->imagen1Disponible)
-                                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->imagen1Disponible) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 1">
-                                                            <i class="fas fa-images"></i>
-                                                        </a>
-                                                    @endif
-                                                    @if($reservasmedica->imagen2Disponible)
-                                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->imagen2Disponible) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 2">
-                                                            <i class="far fa-images"></i>
-                                                        </a>
-                                                    @endif
+                                    <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
+                                        <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionDisponible) }}" class="btn btn-sm btn-verdocumentacion2" target="_blank" title="VER INFORME MÉDICO">
+                                            <i class="fas fa-file-alt"></i>
+                                        </a>
+                                        @if($reservasmedica->imagen1Disponible)
+                                            <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->imagen1Disponible) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 1">
+                                                <i class="fas fa-images"></i>
+                                            </a>
+                                        @endif
+                                        @if($reservasmedica->imagen2Disponible)
+                                            <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->imagen2Disponible) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 2">
+                                                <i class="far fa-images"></i>
+                                            </a>
+                                        @endif
                                     </td>  
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'YELKA MORALES VELARDE')
+                                        <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                             <abbr title="CREAR BATERIA">
                                                 <a class="btn btn-sm btn-crear2" href="{{route('admin.asociados.crearbateriaclienteita', $reservasmedica->clienteitaid)}}">
                                                     <i class="fas fa-charging-station"></i>
@@ -1552,23 +1575,21 @@
                                         </td>
                                     @endif
 
-                                    <td width="10px">
+                                    <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                         @if ($reservasmedica->documentacionfirmadaDisponible)
                                             <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionfirmadaDisponible) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME MÉDICO FIRMADO">
                                                 <i class="fas fa-file"></i>
                                             </a>
                                         @else
-
                                         @endif
                                     </td>
 
-                                    <td width="10px" style="padding-left: 1px; justify-content: center;">
+                                    <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                         @if($reservasmedica->documentacionworditaDisponible)
                                             <a href="{{ asset('/documentacionclientesita/' . $reservasmedica->clienteitaid . '/' . $reservasmedica->documentacionworditaDisponible) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME MÉDICO WORD">
                                                 <i class="fas fa-file"></i>
                                             </a>
                                         @else
-
                                         @endif
                                     </td>
                                 </tr>
@@ -1577,35 +1598,35 @@
                         @foreach ($reservasmedicasauditorias as $reservasmedicaauditoria)
                             @if($reservasmedicaauditoria->documentacionDisponibleauditoria)
                                 <tr>
-                                    <td>CLIENTE AUDITORIA</td>
+                                    <td>AUDITORIA</td>
                                     <td>{{$reservasmedicaauditoria->clienteauditoriaid}}</td>
                                     <td>{{$reservasmedicaauditoria->clienteauditorianombre}}</td>
-                                    <td>{{$reservasmedicaauditoria->fechabateria}}</td>
+                                    <td hidden>{{$reservasmedicaauditoria->fechabateria}}</td>
                                     @if ($rolusuario !== 'PROVEEDOR')
                                     <td>{{$reservasmedicaauditoria->proveedornombre}}</td>
                                     @endif
                                     <td>{{$reservasmedicaauditoria->accionnombre}}</td>
                                     <td>{{$reservasmedicaauditoria->fechaasignada}}</td>
-                                    <td>{{$reservasmedicaauditoria->horadesde}} - {{$reservasmedicaauditoria->horahasta}}</td>
+                                    <td>{{ \Carbon\Carbon::parse($reservasmedicaauditoria->horadesde)->format('H:i') }} - {{ \Carbon\Carbon::parse($reservasmedicaauditoria->horahasta)->format('H:i') }}</td>
                                     <td>{{$reservasmedicaauditoria->fechainformeauditoria}}</td>
                                     
-                                    <td width="10px">
-                                                <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionDisponibleauditoria) }}" class="btn btn-sm btn-verdocumentacion2" target="_blank" title="VER INFORME MÉDICO">
-                                                    <i class="fas fa-folder-open"></i>
-                                                </a>
-                                                    @if($reservasmedicaauditoria->imagen1Disponibleauditoria)
-                                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen1Disponibleauditoria) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 1">
-                                                            <i class="fas fa-images"></i>
-                                                        </a>
-                                                    @endif
-                                                    @if($reservasmedicaauditoria->imagen2Disponibleauditoria)
-                                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen2Disponibleauditoria) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 2">
-                                                            <i class="far fa-images"></i>
-                                                        </a>
-                                                    @endif 
+                                    <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
+                                        <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionDisponibleauditoria) }}" class="btn btn-sm btn-verdocumentacion2" target="_blank" title="VER INFORME MÉDICO">
+                                            <i class="fas fa-file-alt"></i>
+                                        </a>
+                                        @if($reservasmedicaauditoria->imagen1Disponibleauditoria)
+                                            <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen1Disponibleauditoria) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 1">
+                                                <i class="fas fa-images"></i>
+                                            </a>
+                                        @endif
+                                        @if($reservasmedicaauditoria->imagen2Disponibleauditoria)
+                                            <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->imagen2Disponibleauditoria) }}" class="btn btn-verdocumentacion2" target="_blank" title="VER IMAGEN 2">
+                                                <i class="far fa-images"></i>
+                                            </a>
+                                        @endif 
                                     </td> 
-                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                        <td width="10px" style="padding-left: 1px; padding-right: 1px; justify-content: center;">
+                                    @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'YELKA MORALES VELARDE')
+                                    <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                             <abbr title="CREAR BATERIA">
                                                 <a class="btn btn-sm btn-crear2" href="{{route('admin.asociados.crearbateriaclienteauditoria', $reservasmedicaauditoria->clienteauditoriaid)}}">
                                                     <i class="fas fa-charging-station"></i>
@@ -1614,23 +1635,21 @@
                                         </td>
                                     @endif  
 
-                                    <td width="10px">
+                                    <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                         @if ($reservasmedicaauditoria->documentacionfirmadaauditoriaDisponible)
                                             <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionfirmadaauditoriaDisponible) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME MÉDICO FIRMADO">
                                                 <i class="fas fa-file"></i>
                                             </a>
                                         @else
-
                                         @endif
                                     </td>
 
-                                    <td width="10px" style="padding-left: 1px; justify-content: center;">
+                                    <td width="10px" style="padding-left: 2px; padding-right: 2px; justify-content: center;">
                                         @if($reservasmedicaauditoria->documentacionwordauditoriaDisponible)
                                             <a href="{{ asset('/documentacionclientesauditoria/' . $reservasmedicaauditoria->clienteauditoriaid . '/' . $reservasmedicaauditoria->documentacionwordauditoriaDisponible) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME MÉDICO WORD">
                                                 <i class="fas fa-file"></i>
                                             </a>
                                         @else
-
                                         @endif
                                     </td>
                                 </tr>

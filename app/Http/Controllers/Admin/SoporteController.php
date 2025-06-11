@@ -133,8 +133,8 @@ class SoporteController extends Controller
     {
         $request->validate([
             'descripcionatendida' => 'required|string|max:512',
-            'soporteimagen1' => 'required|image|mimes:jpeg,png,jpg,gif|max:8192', // Imagen 1 obligatoria
-            'soporteimagen2' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:8192', // Imagen 2 opcional
+            'soporteimagen1' => 'required|image|mimes:jpeg,png,jpg,gif|max:8192',
+            'soporteimagen2' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:8192',
         ]);
 
         $soporte = SoporteTecnico::findOrFail($id);
@@ -166,7 +166,7 @@ class SoporteController extends Controller
         $soporte->save();
         
         if ($soporte) {
-            $usuariosNotificar = User::whereIn('name', $soporte->usuariosolicitante)->get();
+            $usuariosNotificar = User::where('name', $soporte->usuariosolicitante)->get();
             foreach ($usuariosNotificar as $usuarioDestino) {
                 $usuarioDestino->notify(new SoportetecnicorespuestaNotification($soporte));
             }

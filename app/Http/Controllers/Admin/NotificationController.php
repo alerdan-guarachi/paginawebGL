@@ -26,7 +26,7 @@ class NotificationController extends Controller
      // app/Http/Controllers/NotificationController.php
 
 
-     public function markAsRead($id)
+    public function markAsRead($id)
     {
         $notification = auth()->user()->notifications()->findOrFail($id);
 

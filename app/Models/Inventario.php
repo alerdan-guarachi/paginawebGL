@@ -32,7 +32,13 @@ class Inventario extends Model
         'serie' => '',
         'usuarioregistroid' => '',
         'usuarioregistronombre' => '',
-
+        'presentacion' => '',
+        'unidades' => '',
+        'cantidad' => '',
+        'minimocantidad' => '',
+        'preciounitario' => '',
+        'proveedorid' => '',
+        'proveedornombre' => '',
     ]; 
 
     protected $fillable = [
@@ -56,6 +62,13 @@ class Inventario extends Model
         'serie',
         'usuarioregistroid',
         'usuarioregistronombre',
+        'presentacion',
+        'unidades',
+        'cantidad',
+        'minimocantidad',
+        'preciounitario',
+        'proveedorid',
+        'proveedornombre',
     ];
 
 }

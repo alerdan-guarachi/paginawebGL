@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orden de Venta</title>
+    <title>ORDEN DE COMPRA</title>
     <style>
         @page {
             size: 8.5in 11in;
@@ -147,7 +147,7 @@
             justify-content: space-between;
             align-items: flex-start;
             margin-top: 12px; /* Alinea los elementos en la parte superior */
-            margin-bottom: 0px; /* Quita el margen inferior */
+            margin-bottom: -20px; /* Quita el margen inferior */
             padding-bottom: 35px; /* Mantiene el espaciado en la parte inferior */
         }
 
@@ -183,7 +183,7 @@
     <div class="container">
         <header style="margin-top: -25px;">
             <img src="{{ public_path('membrete/logogl.png') }}" alt="Logo">
-            <h1 style="margin-top: -40px; text-align: right;">ORDEN DE VENTA</h1>
+            <h1 style="margin-top: -40px; text-align: right;">ORDEN DE COMPRA N° {{ $ordenId }}</h1>
         </header>
 
         <div class="info-container"
@@ -196,9 +196,7 @@
             </div>
 
             <div class="header-right" style="text-align: right; flex: 1;">
-                <p style="margin: 0; padding-bottom: 0;">NRO ORDEN DE VENTA:<span
-                    style="border: 0.5px solid lightgray; border-bottom: 2px solid lightgray; padding: 2px; display: inline-block; min-width: 100px; margin-left: 20px; vertical-align: bottom;">{{ $idordenventa ?? 'N/A' }}</span>
-            </p>
+                
                 <p style="margin: 0; padding-bottom: 0;">TIPO DE TRANSACCIÓN:<span
                         style="border: 0.5px solid lightgray; border-bottom: 2px solid lightgray; padding: 2px; display: inline-block; min-width: 100px; margin-left: 20px; vertical-align: bottom;">{{ $tipotransaccion ?? 'No especificado' }}</span>
                 </p>
@@ -206,56 +204,62 @@
                 <p style="margin: 0; padding-bottom: 0;">FORMA DE PAGO:<span
                         style="border: 0.5px solid lightgray; border-bottom: 2px solid lightgray; padding: 2px; display: inline-block; min-width: 100px; margin-left: 20px; vertical-align: bottom;">{{ $formapago ?? 'No especificado' }}</span>
                 </p>
+                <p style="margin: 0; padding-bottom: 0;">FECHA DE COMPRA:<span
+                    style="border: 0.5px solid lightgray; border-bottom: 2px solid lightgray; padding: 2px; display: inline-block; min-width: 100px; margin-left: 20px; vertical-align: bottom;">{{ $fechacomprar ?? 'No especificado' }}</span>
+                </p>
                 <p style="margin: 0; padding-bottom: 0;">FECHA DE PAGO:<span
-                        style="border: 0.5px solid lightgray; border-bottom: 2px solid lightgray; padding: 2px; display: inline-block; min-width: 100px; margin-left: 20px; vertical-align: bottom;">{{ $fechapago ?? 'No especificado' }}</span>
+                        style="border: 0.5px solid lightgray; border-bottom: 2px solid lightgray; padding: 2px; display: inline-block; min-width: 100px; margin-left: 20px; vertical-align: bottom;">{{ $fechapagar ?? 'No especificado' }}</span>
                 </p>
             </div>
         </div>
 
         <div class="client-personal">
             <span style="margin-right: 520px;">PROVEEDOR</span>
-            <span>GOOD LIFE S.R.L.</span>
         </div>
 
         <div class="custom-info-container">
             <div class="custom-company-info">
                 <p>PROVEEDOR: {{ $proveedor->razonsocial ?? 'No disponible' }}</p>
                 <p>TELÉFONO: {{ $proveedor->celular ?? 'No disponible' }}</p>
-                <p>CIUDAD: {{ $proveedor->ciudad ?? 'No disponible' }}</p>
+                <p>
+                    CIUDAD: 
+                    @if (!empty($proveedor->ciudad))
+                        {{ $proveedor->ciudad }}@if (!empty($proveedor->ciudad2)), {{ $proveedor->ciudad2 }}@endif
+                    @elseif (!empty($proveedor->ciudad2))
+                        {{ $proveedor->ciudad2 }}
+                    @else
+                        No disponible
+                    @endif
+                </p>
                 <p>BANCO: {{ $proveedor->banco ?? 'No disponible' }}</p>
                 <p>NIT: {{ $proveedor->nit ?? 'No disponible' }}</p>
-            </div>
-
-            <div class="custom-header-right">
-                <p>ENTIDAD FINANCIERA: BANCO NACIONAL DE BOLIVIA</p>
-                <p>NRO DE CUENTA: 3000-189269</p>
-                <p>TITULAR: FABRICIO PRADO PARRADO</p>
             </div>
         </div>
         <table class="table">
             <thead>
                 <tr>
+                    {{-- <th>NRO.BANCO_ORIGEN</th> --}}
                     <th>DETALLE</th>
                     <th>CANTIDAD</th>
-                    <th>PRECIO UNITARIO</th>
-                    <th>DESCUENTO</th>
-                    <th>SUBTOTAL</th>
+                    <th>PRECIO/UNID.</th>
+                    <th>DESCUENTO/UNID.</th>
+                    <th style="text-align: center;">TOTAL/UNID.</th>
                 </tr>
             </thead>
             <tbody>
-                @if (!empty($ordenesCompra) && is_array($ordenesCompra))
+                @if (!empty($ordenesCompra) && $ordenesCompra->count())
                     @foreach ($ordenesCompra as $orden)
                         <tr>
-                            <td>{{ $orden['detalle'] }}</td>
-                            <td>{{ $orden['cantidad'] }}</td>
-                            <td>{{ $orden['precio_unitario'] }}</td>
-                            <td>{{ $orden['descuento'] }}</td>
-                            <td>{{ $orden['subtotal'] }}</td>
+                            <td>{{ $orden->detalle }}</td>
+                            <td>{{ $orden->cantidad }}</td>
+                            <td>{{ $orden->preciounitario }}</td>
+                            <td>{{ $orden->descuentounitario }}</td>
+                            <td>{{ $orden->totalunitario }}</td>
                         </tr>
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="6">No hay registros disponibles</td>
+                        <td colspan="6">NO HAY REGISTROS DISPONIBLES</td>
                     </tr>
                 @endif
             </tbody>
@@ -282,14 +286,18 @@
                 <p style="margin: 0; padding-bottom: 0;"><strong>TOTAL:</strong><span
                         style="border: 0.5px solid lightgray; border-bottom: 2px solid lightgray; padding: 2px; display: inline-block; min-width: 100px; margin-left: 20px; vertical-align: bottom;">{{ $montototal ?? 0 }}</span>
                 </p>
+                @if (!empty($saldo) && $saldo != 0)
+                    <p style="margin: 0; padding-bottom: 0;">
+                        <strong>SALDO:</strong>
+                        <span style="border: 0.5px solid lightgray; border-bottom: 2px solid lightgray; padding: 2px; display: inline-block; min-width: 100px; margin-left: 20px; vertical-align: bottom;">
+                            {{ number_format($saldo, 2) }}
+                        </span>
+                    </p>
+                @endif
             </div>
         </div>
-
-        <p style="margin-top: 40px;"><strong>Encargado:</strong> {{ $usuarioAutenticado }}</p>
-        {{-- <p style="margin-top: 5px;">Tipo de transacción entregada: Transferencias Bancarias</p> --}}
-
+        <p style="margin-top: 40px;"><strong>Encargado:</strong> {{ $usuarioregistro }}</p>
+        <p><strong>Aprobado por:</strong> {{ $usuarioAutenticadonombre }}</p>
     </div>
-
 </body>
-
 </html>

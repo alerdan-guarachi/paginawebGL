@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Comprobante de Inventario</title>
+  <style>
+    @page {
+      size: 80mm;
+      margin: 2mm;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      font-size: 10px;
+      width: 80mm;
+      margin: 0 auto;
+      color: #000;
+    }
+
+    .container {
+      width: 100%;
+      padding: 0;
+      margin-top: 5mm; /* Bajamos todo el contenido */
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 5mm;
+    }
+
+    .header img {
+      max-width: 40mm;
+      height: auto;
+      margin-bottom: 2mm;
+    }
+
+    .header h3 {
+      font-size: 12px;
+      margin: 2mm 0 1mm;
+      font-weight: bold;
+    }
+
+    .header p {
+      font-size: 9px;
+      margin: 1mm 0;
+    }
+
+    .details {
+      text-align: left;
+      font-size: 10px;
+      border-top: 1px dashed #000;
+      border-bottom: 1px dashed #000;
+      padding: 4mm 0;
+      margin: 8mm 0;
+    }
+
+    .details p {
+      margin: 2mm 0;
+      padding-left: 5mm; /* margen interno izquierdo bonito */
+    }
+
+    .details .label {
+      font-weight: bold;
+    }
+
+    .signature {
+      margin-top: 15mm; /* más espacio para la firma */
+      text-align: center;
+    }
+
+    .signature p {
+      margin: 6mm 0 2mm;
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .signature .line {
+      border-top: 1px solid #000;
+      width: 50mm;
+      margin: 0 auto;
+      padding-top: 2mm;
+      margin-bottom: 2mm;
+    }
+
+    .print-button {
+      display: none;
+    }
+
+    @media print {
+      .print-button {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="http://localhost/pwgoodlife/public/img/logo3.png" alt="Logo">
+      <h3>COMPROBANTE N° 22</h3>
+      <p><span class="label">Ciudad:</span> SANTA CRUZ</p>
+      <p><span class="label">Fecha:</span> 2025-04-26</p>
+    </div>
+
+    <div class="details">
+      <p><span class="label">Entregado por:</span> CARLOS ALEJANDRO GUARACHI SANDOVAL</p>
+      <p><span class="label">Solicitante:</span> CARLOS ALEJANDRO GUARACHI SANDOVAL</p>
+      <p><span class="label">Código de Producto:</span> ESAL-34</p>
+      <p><span class="label">Producto Entregado:</span> HOJAS - REPROFRAC</p>
+      <p><span class="label">Cantidad Entregada:</span> 100 PAQUETE</p>
+    </div>
+
+    <div class="signature">
+      <div class="line"></div>
+      <p style="margin-top: -10px;">FIRMA RECEPTOR</p>
+    </div>
+
+    <button class="print-button" onclick="window.print()">Imprimir Comprobante</button>
+  </div>
+</body>
+</html>

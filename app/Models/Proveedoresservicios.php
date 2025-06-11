@@ -11,42 +11,75 @@ class Proveedoresservicios extends Model
     use HasFactory;
     use SoftDeletes;
     protected $table = 'proveedoresservicios';
+    public function getIdAttribute($value)
+    {
+        return $value;
+    }
     static $rules = [
             'id' => '',
             'razonsocial' => '',
-            'direccion' => '',
-            'direcccion2' => '',
-            'ciudad' => '',
-            'ciudad2' => '',
+            'nombrecompleto' => '',
             'ci' => '',
             'nit' => '',
             'celular' => '',
+            'celularcorporativo' => '',
+            'telefono' => '',
             'correo' => '',
-            'estado' => '',
+            'ciudad' => '',
+            'ciudad2' => '',
+            'direccion' => '',
+            'direcccion2' => '',
             'contacto' => '',
             'celcontacto' => '',
+            'categoria' => '',
+            'estado' => '',
             'emision' => '',
             'banco' => '',
+            'banco2' => '',
+            'banco3' => '',
             'numcuenta' => '',
-            'fechavencqr' => '',
-            'imagenqr' => '',
+            'numcuenta2' => '',
+            'numcuenta3' => '',
+            'sigla' => '',
+            'sigla2' => '',
+            'tipobusqueda' => '',
+            'tipobusqueda2' => '',
+            'tipobusqueda3' => '',
+            'tipotransaccion' => '',
             'tipocuenta' => '',
+            'tipocuenta2' => '',
             'cuentaorigen' => '',
-            'sucursal' => '',
+            'imagenqr' => '',
+            'fechavencqr' => '',
+            'esquemapago' => '',
             'representantelegal' => '',
             'nombrebancotercero' => '',
             'nrocuentatercero' => '',
             'tipocuentatercero' => '',
             'documentorespaldo' => '',
-            'tipotransaccion' => '',
-            'categoria' => '',
             'usuarioregistroid' => '',
             'usuarioregistronombre' => '',
+            'parentesco' => '',
+            'contacto2' => '',
+            'celcontacto2' => '',
+            'parentesco2' => '',
+            'cargo' => '',
+            'fechanacimiento' => '',
+            'sexo' => '',
+            'fechaingreso' => '',
+            'fechasalida' => '',
+            'nacionalidad' => '',
+            'bancoorigen' => '',
+            'tipoorden1' => '',
+            'tipoorden2' => '',
+            'tipoorden3' => '',
+            'tipoplanilla' => '',
     ]; 
 
     protected $fillable = [
             'id',
             'razonsocial',
+            'nombrecompleto',
             'direccion',
             'direcccion2',
             'ciudad',
@@ -54,6 +87,8 @@ class Proveedoresservicios extends Model
             'ci',
             'nit',
             'celular',
+            'celularcorporativo',
+            'telefono',
             'correo',
             'estado',
             'contacto',
@@ -64,8 +99,8 @@ class Proveedoresservicios extends Model
             'fechavencqr',
             'imagenqr',
             'tipocuenta',
+            'tipocuenta2',
             'cuentaorigen',
-            'sucursal',
             'representantelegal',
             'nombrebancotercero',
             'nrocuentatercero',
@@ -75,10 +110,42 @@ class Proveedoresservicios extends Model
             'categoria',
             'usuarioregistroid',
             'usuarioregistronombre',
+            'esquemapago',
+            'sigla',
+            'sigla2',
+            'tipobusqueda',
+            'tipobusqueda2',
+            'tipobusqueda3',
+            'numcuenta2',
+            'numcuenta3',
+            'parentesco',
+            'contacto2',
+            'celcontacto2',
+            'parentesco2',
+            'cargo',
+            'fechanacimiento',
+            'sexo',
+            'fechaingreso',
+            'fechasalida',
+            'nacionalidad',
+            'bancoorigen',
+            'tipoorden1',
+            'tipoorden2',
+            'tipoorden3',
+            'tipoplanilla',
     ];
 
     public function user(){
         return $this->belongsTo('App\Models\User');
+    }
+    public function planesServicios()
+    {
+        return $this->hasMany(PlanesServiciosProv::class, 'proveedorid', 'id');
+    }
+
+    public function inventarios()
+    {
+        return $this->hasMany(PortafolioProveedores::class, 'proveedorid');
     }
 
 }

@@ -3,6 +3,9 @@
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.listadoclienteauditoria', ['asociado' => 3]) }}">REGRESAR</a>
 <a class="btn btn-sm float-right btn-acciones" data-toggle="modal" data-target="#ventanaModal">ACCIONES DEL CLIENTE</a>
+@can('admin.asociados.subirdocumentacionextra')
+<a class="btn btn-sm float-right btn-cartas" data-toggle="modal" data-target="#cartasclientes">DOCUMENTACIÓN</a>
+@endcan
 
 <h5>DATOS DE:</h5>
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>
@@ -253,47 +256,41 @@
                         <div class="row text-center">
                             @can('admin.asociados.vercontactoclienteauditoria')
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.vercontactoclienteauditoria', $clienteauditoria) }}" class="btn btn-contactos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CONTACTOS">
+                                <a href="{{ route('admin.asociados.vercontactoclienteauditoria', $clienteauditoria) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CONTACTOS">
                                     <i class="fas fa-users"></i>
                                     <strong>CONTACTOS</strong>
                                 </a>
                             </div>
                             @endcan
+                            @can('admin.asociados.crearbateriaclienteauditoria')
+
                             @if ($tieneContactos)
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.listadotramiteclienteauditoria', $clienteauditoria) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO">
+                                    <a href="{{ route('admin.asociados.listadotramiteclienteauditoria', $clienteauditoria) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO">
                                         <i class="fas fa-atlas"></i>
                                         <strong>SERVICIOS</strong>
                                     </a>
                                 </div>
                             @else
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="#" class="btn btn-asignartramite btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO" aria-disabled="true">
+                                    <a href="#" class="btn btn-etapa1 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO" aria-disabled="true">
                                         <i class="fas fa-atlas"></i>
                                         <strong>SERVICIOS</strong>
                                     </a>
                                 </div>
                             @endif
+                            @endcan
                             @can('admin.asociados.generarchecklistclienteauditoria')
                                 @if ($tieneTramites)
-                                    {{-- @if (!$tienerequisitosauditoria) --}}
                                     <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                        <a href="{{ route('admin.asociados.generarchecklistclienteauditoria', $clienteauditoria) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                        <a href="{{ route('admin.asociados.generarchecklistclienteauditoria', $clienteauditoria) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                             <i class="fas fa-tasks"></i>
                                             <strong>REQUISITOS</strong>
                                         </a>
                                     </div>
-                                    {{-- @else
-                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                        <a href="{{ route('admin.asociados.subirdocrequisitosauditoria', $clienteauditoria) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="REQUISITOS" aria-disabled="true">
-                                            <i class="fas fa-tasks"></i>
-                                            <strong>REQUISITOS</strong>
-                                        </a>
-                                    </div>
-                                    @endif --}}
                                 @else
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
+                                    <a href="#" class="btn btn-etapa1 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
                                         <i class="fas fa-tasks"></i>
                                         <strong>REQUISITOS</strong>
                                     </a>
@@ -302,6 +299,7 @@
                             @endcan
                         </div>
                     </div>
+                    @can('admin.asociados.crearbateriaclienteauditoria')
                     <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
                         <div style="text-align: center; padding: 1.5px;">
                             <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
@@ -310,14 +308,14 @@
                             @can('admin.asociados.crearbateriaclienteauditoria')
                                     @if ($tieneRequisitos)
                                     <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                        <a href="{{ route('admin.asociados.crearbateriaclienteauditoria', $clienteauditoria) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
+                                        <a href="{{ route('admin.asociados.crearbateriaclienteauditoria', $clienteauditoria) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
                                             <i class="fas fa-charging-station"></i>
                                             <strong>BATERIA</strong>
                                         </a>
                                     </div>
                                     @else
                                     <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                        <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
+                                        <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
                                             <i class="fas fa-charging-station"></i>
                                             <strong>BATERIA</strong>
                                         </a>
@@ -327,14 +325,14 @@
                             @can('admin.asociados.aprobacioncotizacionclienteauditoria')
                                 @if ($tieneBateria)
                                     <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                        <a href="{{ route('admin.asociados.aprobacioncotizacionclienteauditoria', $clienteauditoria) }}" class="btn btn-cotizacion btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
+                                        <a href="{{ route('admin.asociados.aprobacioncotizacionclienteauditoria', $clienteauditoria) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
                                             <i class="fas fa-donate"></i>
                                             <strong>COTIZACIÓN</strong>
                                         </a>
                                     </div>
                                     @else
                                     <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                        <a href="#" class="btn btn-cotizacion btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
+                                        <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
                                             <i class="fas fa-donate"></i>
                                             <strong>COTIZACIÓN</strong>
                                         </a>
@@ -342,7 +340,6 @@
                                 @endif
                             @endcan
                         </div>
-                        
                     </div>
 
                     <div style="margin-top: 10px; background-color: #fbffe7;  border-radius: 40px;">
@@ -353,14 +350,14 @@
                             @can('admin.asociados.crearprogramacionclienteauditoria')
                                 @if ($tieneCotizacionaprobada)
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.crearprogramacionclienteauditoria', $clienteauditoria) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
+                                    <a href="{{ route('admin.asociados.crearprogramacionclienteauditoria', $clienteauditoria) }}" class="btn btn-etapa3 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
                                         <i class="fas fa-calendar-alt"></i>
                                         <strong>PROG.</strong>
                                     </a>
                                 </div>
                                 @else
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                    <a href="#" class="btn btn-etapa3 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
                                         <i class="fas fa-calendar-alt"></i>
                                         <strong>PROG.</strong>
                                     </a>
@@ -370,14 +367,14 @@
                             @can('admin.asociados.estadoprogramacionclienteauditoria')
                                 @if ($tieneProgramacion)
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.estadoprogramacionclienteauditoria', $clienteauditoria) }}" class="btn btn-estado btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ESTADO DE PROGRAMACIÓN">
+                                    <a href="{{ route('admin.asociados.estadoprogramacionclienteauditoria', $clienteauditoria) }}" class="btn btn-etapa3 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ESTADO DE PROGRAMACIÓN">
                                         <i class="fas fa-calendar-check"></i>
                                         <strong>ESTADO P.</strong>
                                     </a>
                                 </div>
                                 @else
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="#" class="btn btn-estado btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                    <a href="#" class="btn btn-etapa3 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
                                         <i class="fas fa-calendar-check"></i>
                                         <strong>ESTADO P.</strong>
                                     </a>
@@ -387,14 +384,14 @@
                             @can('admin.asociados.creardocumentacionclienteauditoria')
                                 @if ($tieneProgramacionatentido)
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.creardocumentacionclienteauditoria', $clienteauditoria) }}" class="btn btn-subirdocumento btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                    <a href="{{ route('admin.asociados.creardocumentacionclienteauditoria', $clienteauditoria) }}" class="btn btn-etapa3 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
                                         <i class="fas fa-list-alt"></i>
                                         <strong>INFORMES</strong>
                                     </a>
                                 </div>
                                 @else
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="#" class="btn btn-subirdocumento btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                    <a href="#" class="btn btn-etapa3 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
                                         <i class="fas fa-list-alt"></i>
                                         <strong>INFORMES</strong>
                                     </a>
@@ -410,19 +407,19 @@
                         </div>
                         <div class="row text-center">
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <button type="button" class="btn btn-proveedorinforme btn-icono btn-block" data-toggle="modal" data-target="#dictamenModal" data-placement="top" title="DICTAMEN">
+                                <button type="button" class="btn btn-otros btn-icono btn-block" data-toggle="modal" data-target="#dictamenModal" data-placement="top" title="DICTAMEN">
                                     <i class="fas fa-file-archive"></i>
                                     <strong>DICTAMEN</strong>
                                 </button>
                             </div>
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <button type="button" class="btn btn-proveedorinforme btn-icono btn-block" data-toggle="modal" data-target="#proveedorinformeModal" data-placement="top" title="PROVEEDOR INFORME FINAL">
+                                <button type="button" class="btn btn-otros btn-icono btn-block" data-toggle="modal" data-target="#proveedorinformeModal" data-placement="top" title="PROVEEDOR INFORME FINAL">
                                     <i class="fas fa-user-md"></i>
                                     <strong>PROV. INF.</strong>
                                 </button>
                             </div>
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <button type="button" class="btn btn-historiamedica btn-icono btn-block" data-toggle="modal" data-target="#historialMedicoModal" data-placement="top" title="HISTORIA MÉDICA">
+                                <button type="button" class="btn btn-otros btn-icono btn-block" data-toggle="modal" data-target="#historialMedicoModal" data-placement="top" title="HISTORIA MÉDICA">
                                     <i class="fas fa-archive"></i>
                                     <strong>HIST. MED.</strong>
                                 </button>
@@ -431,7 +428,7 @@
                         <div class="row text-center">
                             @can('admin.cartaspolizas.index')
                             <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.cartasdesgravamen.cartasactdesgravamen', $clienteauditoria) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CARTAS DE ACTIVACIÓN DE DESGRAVAMEN">
+                                <a href="{{ route('admin.asociados.cartasdesgravamen.cartasactdesgravamen', $clienteauditoria) }}" class="btn btn-otros btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CARTAS DE ACTIVACIÓN DE DESGRAVAMEN">
                                     <i class="fas fa-file"></i>
                                     <strong>CARTAS ACT.</strong>
                                 </a>
@@ -439,7 +436,7 @@
                             @endcan
                             @can('admin.asociados.editarclienteauditoria')
                             <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.editarclienteauditoria', $clienteauditoria) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
+                                <a href="{{ route('admin.asociados.editarclienteauditoria', $clienteauditoria) }}" class="btn btn-otros btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
                                     <i class="fas fa-edit"></i>
                                     <strong>EDITAR</strong>
                                 </a>
@@ -447,9 +444,104 @@
                             @endcan
                         </div>
                     </div>
+                    @endcan
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-sm btn-no" data-dismiss="modal">CERRAR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARTAS -->
+    <div class="modal fade" id="cartasclientes" tabindex="-1" role="dialog" aria-labelledby="cartasclientesLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <strong style="text-align: center; font-size:20px; margin-top: 20px;">DOCUMENTOS DE {{ $clienteauditoria->nombrecompleto }} </strong>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardarcartaclienteauditoria', $clienteauditoria], 'method' => 'POST', 'files' => true]) !!}
+                                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                    {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id) !!}
+                                    {!! Form::hidden('clienteauditorianombre', $clienteauditoria->nombrecompleto) !!}
+
+                                    <strong style="color: #94c93b">SUBIR DOCUMENTOS</strong>
+                                    <div class="form-group">
+                                        {!! Form::label('detalle', 'Detalle:') !!}
+                                        {!! Form::text('detalle', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                                        @error('detalle')
+                                            <small class="text-danger fas fa-exclamation-circle">
+                                                {{ $message }}
+                                            </small>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        {!! Form::label('fecha', 'Fecha_Reg:') !!}
+                                        {!! Form::date('fecha', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                                        @error('fecha')
+                                            <small class="text-danger fas fa-exclamation-circle">
+                                                {{ $message }}
+                                            </small>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="mb-3">
+                                            {!! Form::label('carta', 'Documento:', ['class' => 'form-label']) !!}
+                                            <input type="file" name="carta" id="carta" class="dropify" accept=".pdf"/>
+                                            @error('carta')
+                                                <small class="text-danger fas fa-exclamation-circle">
+                                                    {{ $message }}
+                                                </small>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-sm btn-si">GUARDAR</button>
+                                        <button type="button" class="btn btn-sm btn-no" data-dismiss="modal">CERRAR</button>
+                                    </div>
+                                    {!! Form::close() !!}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <strong style="color: #94c93b">LISTADO DE DOCUMENTOS</strong>
+                                    <div class="table-responsive"></div>
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th style="color: black; padding: 5px;">ID</th>
+                                                    <th style="color: black; padding: 5px;">Detalle</th>
+                                                    <th style="color: black; padding: 5px;">Fecha</th>
+                                                    <th style="color: black; padding: 5px;">Doc.</th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($cartasclientes as $cartascliente)
+                                                    <tr>
+                                                        <td style="text-align: left; padding: 5px;">{{ $cartascliente->id }}</td>
+                                                        <td style="text-align: left; padding: 5px;">{{ $cartascliente->detalle }}</td>
+                                                        <td style="text-align: left; padding: 5px;">{{ $cartascliente->fecha }}</td>
+                                                        <td style="text-align: left; padding: 5px;">
+                                                            <a href="{{ asset('/cartasclientes/' . $clienteauditoria->id . '/' . $cartascliente->documento) }}" class="btn btn-vercarta" target="_blank" title="VER DOCUMENTO">
+                                                                <i class="fas fa-file-alt"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -921,63 +1013,33 @@ $('.dropify').dropify();
 @stop
 
 @section('css')
-
 <style>
-    /* Estilo para el botón deshabilitado */
-    .btn.disabled, .btn.disabled:hover, .btn.disabled:focus, .btn.disabled:active {
-        pointer-events: none; /* Evita la interacción con el botón */
-        opacity: 0.6; /* Da un aspecto visual de deshabilitado */
-        cursor: not-allowed; /* Cambia el cursor para mostrar que está deshabilitado */
-    }
-</style>
-<style>
+    .btn-vercarta {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-vercarta:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
     .btn-no {
-    color: #fd1d1d;
-    border-color: #fd1d1d;
+        color: #fd1d1d;
+        border-color: #fd1d1d;
     }
     .btn-no:hover {
-    background-color: #fd1d1d;
-    color: #ffffff;
+        background-color: #fd1d1d;
+        color: #ffffff;
     }
     .btn-si {
-    color: #94c93b;
-    border-color: #94c93b;
+        color: #94c93b;
+        border-color: #94c93b;
     }
     .btn-si:hover {
-    background-color: #94c93b;
-    color: #ffffff;
-    }
-    .custom-dropdown {
-        position: relative;
-        display: inline-block;
-    }
-    .custom-select-wrapper {
-        border: 1px solid black;
-        background-color: #fceacf;
-        padding: 1px;
-        text-align: center;
-        border-radius: 5px;
-        width: 140px; 
-    }
-    .custom-dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #f9f9f9;
-        width: 200px;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
-    .custom-dropdown-content a {
-        color: black;
-        padding: 0px 5px;
-        text-decoration: none;
-        display: block;
-    }
-    .custom-dropdown-content a:hover {
-        background-color: #eefed3;
-    }
-    .custom-dropdown:hover .custom-dropdown-content {
-        display: block;
+        background-color: #94c93b;
+        color: #ffffff;
     }
     th, td {
         border-bottom: 1px solid #94c93b;
@@ -1010,7 +1072,7 @@ $('.dropify').dropify();
         border-spacing: 2px;
     }
     th, td {
-        padding: 15px;
+        padding: 3px;
     }
     td{
         text-align: right;
@@ -1020,7 +1082,7 @@ $('.dropify').dropify();
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -1031,7 +1093,7 @@ $('.dropify').dropify();
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -1039,13 +1101,23 @@ $('.dropify').dropify();
         background-color: #94c93b;
         color: #ffffff;
     }
+    .btn-cartas {
+        background-color: #ffffff;
+        color: #9c3bc9;
+        border-color: #9c3bc9;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-cartas:hover {
+        background-color: #9c3bc9;
+        color: #ffffff;
+    }
     .btn-auditoriamedica {
         background-color: #ffffff;
         color: #e0752e;
         border-color: #e0752e;
         border-radius: 5px;
-        padding: 10px 10px;
-
+        padding: 5px 10px;
     }
     .btn-auditoriamedica:hover {
         background-color: #e0752e;
@@ -1073,7 +1145,7 @@ $('.dropify').dropify();
         background-color: #94c93b;
         color: #ffffff;
     }
-    .btn-contactos {
+    .btn-etapa1 {
         width: 100px;
         height: 90px;
         font-size: 13px;
@@ -1085,14 +1157,14 @@ $('.dropify').dropify();
         border-radius: 5px;
         flex-direction: column;
     }
-    .btn-contactos:hover {
+    .btn-etapa1:hover {
         background-color: #26a1c0;
         color: #ffffff;
     }
     .btn-icono i {
         font-size: 4em;
     }
-    .btn-editar {
+    .btn-otros {
         width: 100px;
         height: 90px;
         font-size: 13px;
@@ -1104,15 +1176,15 @@ $('.dropify').dropify();
         border-color: #e05f28;
         border-radius: 5px;
     }
-    .btn-editar:hover {
+    .btn-otros:hover {
         background-color: #e05f28;
         color: #ffffff;
     }
-    .btn-editar i {
+    .btn-otros i {
         display: inline-block;
         vertical-align: middle;
     }
-    .btn-bateria {
+    .btn-etapa2 {
         width: 100px;
         height: 90px;
         font-size: 13px;
@@ -1124,55 +1196,15 @@ $('.dropify').dropify();
         border-color: #148734;
         border-radius: 5px;
     }
-    .btn-bateria:hover {
+    .btn-etapa2:hover {
         background-color: #148734;
         color: #ffffff;
     }
-    .btn-bateria i {
+    .btn-etapa2 i {
         display: inline-block;
         vertical-align: middle;
     }
-    .btn-cotizacion {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #148734;
-        border-color: #148734;
-        border-radius: 5px;
-    }
-    .btn-cotizacion:hover {
-        background-color: #148734;
-        color: #ffffff;
-    }
-    .btn-cotizacion i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-aprobacion {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #000000;
-        border-color: #000000;
-        border-radius: 5px;
-    }
-    .btn-aprobacion:hover {
-        background-color: #000000;
-        color: #ffffff;
-    }
-    .btn-aprobacion i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-programar {
+    .btn-etapa3 {
         width: 100px;
         height: 90px;
         font-size: 13px;
@@ -1184,15 +1216,15 @@ $('.dropify').dropify();
         border-color: #aeae2b;
         border-radius: 5px;
     }
-    .btn-programar:hover {
+    .btn-etapa3:hover {
         background-color: #aeae2b;
         color: #ffffff;
     }
-    .btn-programar i {
+    .btn-etapa3 i {
         display: inline-block;
         vertical-align: middle;
     }
-    .btn-estado {
+    .btn-tercerasolicitud {
         width: 100px;
         height: 90px;
         font-size: 13px;
@@ -1200,221 +1232,57 @@ $('.dropify').dropify();
         text-align: center;
         padding: 10px;
         background-color: #ffffff;
-        color: #aeae2b;
-        border-color: #aeae2b;
+        color: #ac2bae;
+        border-color: #ac2bae;
         border-radius: 5px;
     }
-    .btn-estado:hover {
-        background-color: #aeae2b;
+    .btn-tercerasolicitud:hover {
+        background-color: #ac2bae;
         color: #ffffff;
     }
-    .btn-estado i {
+    .btn-tercerasolicitud i {
         display: inline-block;
         vertical-align: middle;
     }
-    .btn-subirdocumento {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #aeae2b;
-        border-color: #aeae2b;
+    .btn-verhistoriamedica {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
         border-radius: 5px;
+        padding: 2px 10px;
+        margin-top: 20px;
     }
-    .btn-subirdocumento:hover {
-        background-color: #aeae2b;
+    .btn-verhistoriamedica:hover {
+        background-color: #94c93b;
         color: #ffffff;
     }
-    .btn-proveedorinforme {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
+    .pdf-preview {
+        width: 100%;
+        height: 430px;
+        border: none;
+    }
+    .titulo {
+        margin-top: 50px;
+        margin-left: 20px;
+    }
+    .modal-custom-height .modal-dialog {
+        height: 93.5vh;
+    }
+    .modal-custom-height .modal-content {
+        height: 100%;
+        display: flex;
         flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #e05f28;
-        border-color: #e05f28;
-        border-radius: 5px;
     }
-    .btn-proveedorinforme:hover {
-        background-color: #e05f28;
-        color: #ffffff;
+    .modal-custom-height .modal-body {
+        overflow-y: auto;
+        flex: 1;
+        padding: 2rem;
     }
-    .btn-historiamedica {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #e05f28;
-        border-color: #e05f28;
-        border-radius: 5px;
+    .modal-footer {
+        justify-content: center;
     }
-    .btn-historiamedica:hover {
-        background-color: #e05f28;
-        color: #ffffff;
-    }
-    .btn-asignartramite {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #26a1c0;
-        border-color: #26a1c0;
-        border-radius: 5px;
-    }
-    .btn-asignartramite:hover {
-        background-color: #26a1c0;
-        color: #ffffff;
-    }
-    .btn-subirdocumento i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-listadodocumentos {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #e05f28;
-        border-color: #e05f28;
-        border-radius: 5px;
-    }
-    .btn-listadodocumentos:hover {
-        background-color: #e05f28;
-        color: #ffffff;
-    }
-    .btn-listadodocumentos i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-formulario {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #e05f28;
-        border-color: #e05f28;
-        border-radius: 5px;
-    }
-    .btn-formulario:hover {
-        background-color: #e05f28;
-        color: #ffffff;
-    }
-    .btn-formulario i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-etiqueta {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #e05f28;
-        border-color: #e05f28;
-        border-radius: 5px;
-    }
-    .btn-etiqueta:hover {
-        background-color: #e05f28;
-        color: #ffffff;
-    }
-    .btn-etiqueta2 {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #26a1c0;
-        border-color: #26a1c0;
-        border-radius: 5px;
-    }
-    .btn-etiqueta2:hover {
-        background-color: #26a1c0;
-        color: #ffffff;
-    }
-    .btn-etiqueta2 i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-subirdocumento2 {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #26a1c0;
-        border-color: #26a1c0;
-        border-radius: 5px;
-    }
-    .btn-subirdocumento2:hover {
-        background-color: #26a1c0;
-        color: #ffffff;
-    }
-    .btn-requisitos {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #26a1c0;
-        border-color: #26a1c0;
-        border-radius: 5px;
-    }
-    .btn-requisitos:hover {
-        background-color: #26a1c0;
-        color: #ffffff;
-    }
-    .btn-requisitos i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-subirrequisitos {
-        width: 100px;
-        height: 90px;
-        font-size: 13px;
-        flex-direction: column;
-        text-align: center;
-        padding: 10px;
-        background-color: #ffffff;
-        color: #000000;
-        border-color: #000000;
-        border-radius: 5px;
-    }
-    .btn-subirrequisitos:hover {
-        background-color: #000000;
-        color: #ffffff;
-    }
-    .btn-subirrequisitos i {
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .btn-contactos i {
-        display: inline-block;
-        vertical-align: middle;
+    .dropify-wrapper {
+        border-radius: 0.25rem;
     }
 </style>
 @stop

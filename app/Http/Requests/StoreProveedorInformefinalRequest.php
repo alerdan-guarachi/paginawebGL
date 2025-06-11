@@ -54,6 +54,8 @@ class StoreProveedorInformefinalRequest extends FormRequest
         'atencionservicio' => '',
         'documentolcambio' => '',
         'nrofactura' => '',
+        'factura' => '',
+        'usuariocomprobante' => '',
     ]; 
     return $rules;
 }

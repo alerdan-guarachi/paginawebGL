@@ -3,8 +3,7 @@
 <link href="assets/img/logo.png" rel="icon">
 
 @section('content_header')
-    {{-- <a class="btn btn-sm float-right btn-regresar" href="#">REGRESAR</a> --}}
-    <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaSolicitudes">VER SOLICITUDES</a>
+    <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaSolicitudes">VER HISTORIAL</a>
     <h1>REVISIÓN DE SOLICITUDES</h1>
 @stop
 
@@ -16,43 +15,28 @@
             color: #faa625;
             border-color: #faa625;
             border-radius: 5px;
-            padding: 10px 20px;
+            padding: 5px 10px;
         }
-
         .custom2-button:hover {
             background-color: #faa625;
             color: #ffffff;
         }
-
-        .table-responsive {
-            margin-top: 20px;
-        }
-
-        .badge {
-            font-size: 14px;
-            padding: 5px 10px;
-        }
-
         .badge-priority-baja {
             background-color: #28a745;
             color: #ffffff;
         }
-
         .badge-priority-media {
             background-color: #ffc107;
             color: #ffffff;
         }
-
         .badge-priority-alta {
             background-color: #dc3545;
             color: #ffffff;
         }
-
         .img-thumbnail {
             max-width: 100px;
             height: auto;
         }
-
         .img-preview {
             display: none;
             max-width: 100px;
@@ -61,18 +45,6 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             padding: 5px;
-        }
-
-        .modal-lg {
-            max-width: 600px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .modal-xxl {
-            max-width: 90%;
-            width: 90%;
         }
         .img-preview {
             display: none;
@@ -84,37 +56,25 @@
             border-radius: 4px;
             padding: 2px;
         }
-
-        .badge-priority-alta {
-            background-color: #dc3545;
-            color: #ffffff;
-            animation: pulseRedShadow 2s infinite alternate;
+        .table td {
+            padding: 5px 10px;
         }
-
-        @keyframes pulseRedShadow {
-            0% {
-                box-shadow: 0 0 0px #dc3545;
-            }
-
-            100% {
-                box-shadow: 0 0 10px #dc3545;
-            }
-        }
-
-        .fecha-nowrap {
+        td {
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-
-        .usuario-nowrap {
+        .truncar {
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
         }
-
-        .prioridad-nowrap {
+        .truncar2 {
             white-space: nowrap;
-        }
-
-        .descripcionAtencion-nowrap {
-            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
         }
     </style>
 @stop
@@ -143,18 +103,17 @@
     @endif
     <div class="card">
         <div class="card-body">
-            <h5><strong>Solicitudes Pendientes</strong></h5>
             <div class="table-responsive">
                 <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th class="usuario-nowrap">Solicitante</th>
+                            <th>Solicitante</th>
                             <th>Motivo</th>
                             <th>Prioridad</th>
-                            <th class="fecha-nowrap">Fecha</th>
-                            <th>Acciones</th>
+                            <th>Fecha</th>
                             <th>Detalles</th>
+                            <th>Atender</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -173,16 +132,17 @@
                                     </span>
                                 </td>
                                 <td class="fecha-nowrap">{{ $solicitud->created_at->format('Y-m-d') }}</td>
+                                
                                 <td>
-                                    <a class="btn btn-outline-success btn-sm" data-toggle="modal"
-                                        data-target="#modalAtender-{{ $solicitud->id }}">ATENDER</a>
-                                </td>
-                                <td>
-                                    <button class="btn ver-detalles btn-outline-primary btn-sm" style="font-size: 1.2rem;"
+                                    <button class="btn ver-detalles btn-outline-primary btn-sm"
                                         data-imagen1="{{ $solicitud->motivoimagen1 ? asset($solicitud->motivoimagen1) : '' }}"
                                         data-imagen2="{{ $solicitud->motivoimagen2 ? asset($solicitud->motivoimagen2) : '' }}">
-                                        <i class="fas fa-eye" style="cursor:pointer;"></i>
+                                        <i class="fas fa-file" style="cursor:pointer;"></i>
                                     </button>
+                                </td>
+                                <td>
+                                    <a class="btn btn-outline-success btn-sm" data-toggle="modal"
+                                        data-target="#modalAtender-{{ $solicitud->id }}"><i class="fas fa-user-nurse"></i></a>
                                 </td>
                             </tr>
 
@@ -195,8 +155,7 @@
                                             enctype="multipart/form-data">
                                             @csrf
                                             <div class="modal-header">
-                                                <h5 class="modal-title" id="atenderModalLabel-{{ $solicitud->id }}">Atender
-                                                    Solicitud</h5>
+                                                <h5 class="modal-title" id="atenderModalLabel-{{ $solicitud->id }}">ATENDER SOLICITUD</h5>
                                                 <button type="button" class="close" data-dismiss="modal"
                                                     aria-label="Close">
                                                     <span aria-hidden="true">&times;</span>
@@ -258,7 +217,7 @@
     <!-- Modal Solicitudes (Atendidos y Pendientes) -->
     <div class="modal fade" id="ventanaSolicitudes" tabindex="-1" role="dialog" aria-labelledby="solicitudesModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-xxl" role="document">
+        <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="solicitudesModalLabel">SOLICITUDES</h5>
@@ -268,7 +227,7 @@
                 </div>
                 <div class="modal-body">
                     <!-- Pestañas -->
-                    <ul class="nav nav-tabs" id="tabSolicitudes" role="tablist">
+                    {{-- <ul class="nav nav-tabs" id="tabSolicitudes" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="pendientes-tab" data-toggle="tab" href="#pendientes" role="tab"
                                 aria-controls="pendientes" aria-selected="false">PENDIENTES</a>
@@ -278,25 +237,25 @@
                                 role="tab" aria-controls="atendidos" aria-selected="true">ATENDIDOS</a>
                         </li>
                         
-                    </ul>
+                    </ul> --}}
 
                     <!-- Contenido de las pestañas -->
-                    <div class="tab-content" id="tabSolicitudesContent">
+                    {{-- <div class="tab-content" id="tabSolicitudesContent"> --}}
                         <!-- Atendidos -->
-                        <div class="tab-pane fade" id="atendidos" role="tabpanel"
-                            aria-labelledby="atendidos-tab">
+                        {{-- <div class="tab-pane fade" id="atendidos" role="tabpanel"
+                            aria-labelledby="atendidos-tab"> --}}
                             <div class="table-responsive mt-3">
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
                                             <th>ID</th>
                                             <th>Solicitante</th>
-                                            <th>Desc. de la Atención</th>
+                                            <th>Desc_Atención</th>
                                             <th>Prioridad</th>
-                                            <th>Fecha Atención</th>
-                                            <th>Hora Atención</th>
-                                            <th>Atendió</th>
+                                            <th>Fecha_Atención</th>
+                                            <th>Hora_Atención</th>
                                             <th>Detalles</th>
+                                            <th>Atendió</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -316,23 +275,24 @@
                                                 </td>
                                                 <td>{{ $solicitud->updated_at->format('Y-m-d') }}</td>
                                                 <td>{{ $solicitud->updated_at->format('H:i') }}</td>
-                                                <td>{{ $solicitud->usuariosoporte }}</td>
                                                 <td>
                                                     <a class="btn btn-sm btn-outline-primary ver-detalles"
                                                         data-imagen1="{{ $solicitud->soporteimagen1 ? asset($solicitud->soporteimagen1) : '' }}"
                                                         data-imagen2="{{ $solicitud->soporteimagen2 ? asset($solicitud->soporteimagen2) : '' }}">
-                                                        <i class="fas fa-eye" style="cursor:pointer;"></i>
+                                                        <i class="fas fa-file" style="cursor:pointer;"></i>
                                                 </a>
                                                 </td>
+                                                <td>{{ $solicitud->usuariosoporte }}</td>
+                                                
                                             </tr>
                                         @endforeach
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        {{-- </div> --}}
 
                         <!-- Pendientes -->
-                        <div class="tab-pane fade show active" id="pendientes" role="tabpanel" aria-labelledby="pendientes-tab">
+                        {{-- <div class="tab-pane fade show active" id="pendientes" role="tabpanel" aria-labelledby="pendientes-tab">
                             <div class="table-responsive mt-3">
                                 <table class="table table-striped">
                                     <thead>
@@ -374,8 +334,8 @@
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
-                    </div>
+                        </div> --}}
+                    {{-- </div> --}}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Cerrar</button>

@@ -5,11 +5,314 @@
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
 @endif
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">BATERIA DEL CLIENTE</a>
+
+<div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="table-responsive">
+                <div class="modal-body">
+                    <strong>Fecha de Bateria:</strong>
+                    <select id="select-fechas" class="form-control">
+                        <option value="" disabled selected>Selecciona una fecha</option>
+                        @foreach($accionesPorFecha as $fecha => $acciones)
+                            <option value="{{ $fecha }}">{{ $fecha }}</option>
+                        @endforeach
+                    </select>
+                    <div id="acciones-container" class="mt-3">
+                        <strong>Acciones requeridas:</strong>
+                        <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Estudio/Espec.</th>
+                                    <th>Proveedor</th>
+                                    @if(!auth()->user()->hasRole('PROVEEDOR'))
+                                        <th>Precio</th>
+                                    @endif
+                                    <th>Informe</th>
+                                    <th>Usuario_Reg.</th>
+                                    <th>Info.Ajeno</th>
+                                    <th>Sel.<input type="checkbox" id="select-all"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {{-- <div class="modal-footer">
+                    <div class="form-group">
+                        <input type="text" name="clienteAuditoriaID" id="cliente-auditoria-id" class="form-control" placeholder="ID">
+                    </div>
+                    <button type="button" id="duplicar-btn" class="btn btn-traspasar">TRASPASAR A AUDITORIA</button>
+                    <button type="button" id="anular-btn" class="btn btn-anular">EDITAR COMO PROV. AJENO</button>
+                    <a id="ver-pdf-btn" href="#" target="_blank" class="btn btn-crear" onclick="generatePDF()">GENERAR PDF</a>
+                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">CERRAR</button>
+                </div> --}}
+                <div class="modal-footer d-flex justify-content-between">
+                    <div>
+                        <div class="form-group d-inline-block">
+                            <input type="text" name="clienteAuditoriaID" id="cliente-auditoria-id" class="form-control" placeholder="ID" style="width: 60px;">
+                        </div>
+                        <button type="button" id="duplicar-btn" class="btn btn-traspasar">TRASPASAR A AUDITORIA</button>
+                        <button type="button" id="anular-btn" class="btn btn-anular">EDITAR COMO PROV. AJENO</button>
+                    </div>
+                    <div>
+                        <a id="ver-pdf-btn" href="#" target="_blank" class="btn btn-crear" onclick="generatePDF()">GENERAR PDF</a>
+                        <button type="button" class="btn btn-cerrar" data-dismiss="modal">CERRAR</button>
+                    </div>
+                </div>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const duplicarBtn = document.getElementById('duplicar-btn');
+            
+                    duplicarBtn.addEventListener('click', function () {
+                        const selectedData = [];
+                        document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                            selectedData.push(cb.value);
+                        });
+            
+                        if (selectedData.length === 0) {
+                            alert('Seleccione al menos un registro.');
+                            return;
+                        }
+            
+                        const clienteAuditoriaID = document.getElementById('cliente-auditoria-id').value.trim();
+                        if (!clienteAuditoriaID) {
+                            alert('Debe ingresar un Cliente Auditoria ID.');
+                            return;
+                        }
+            
+                        fetch('{{ route("ruta.duplicar") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ registros: selectedData, clienteAuditoriaID })
+                        })
+                        
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Registros duplicados exitosamente.');
+                                location.reload();
+                            } else {
+                                alert('Ocurrió un error al procesar.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Ocurrió un error al procesar.');
+                        });
+                    });
+                });
+            </script>
+
+
+            {{-- EDITAR COMO PROVEEDOR AJENO --}}
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const selectFechas = document.getElementById('select-fechas');
+                    const accionesTable = document.getElementById('acciones-table');
+                    const tbody = accionesTable.querySelector('tbody');
+                    const selectAllCheckbox = document.getElementById('select-all');
+                    const anularBtn = document.getElementById('anular-btn');
+                    const accionesPorFecha = @json($accionesPorFecha);
+                    const rolusuario = @json($rolusuario);
+
+                    selectFechas.addEventListener('change', function () {
+                        const selectedDate = this.value;
+                        tbody.innerHTML = '';
+
+                        if (selectedDate && accionesPorFecha[selectedDate]) {
+                            const acciones = accionesPorFecha[selectedDate];
+                            acciones.forEach(item => {
+                                const esProveedorAjeno = item.proveedor === 'PROVEEDOR AJENO' || item.informe === 'NINGUNO';
+
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${item.id}</td>
+                                    <td title="${item.accion}" class="truncar">
+                                        
+                                        ${item.orden ? `<a href="{{ asset('ordenesbateria') }}/${item.clienteitaid}/${item.orden}" class="btn btn-sm btn-verorden" target="_blank" title="VER ORDEN"><i class="fas fa-eye"></i></a>` : ''} ${item.accion} 
+                                    </td>
+                                    <td title="${item.proveedor}" class="truncar">${item.proveedor}</td>
+                                    ${rolusuario === 'PROVEEDOR' ? '' : `<td>${item.precio}</td>`}
+                                    <td title="${item.informe}" class="truncar">${item.informe}</td>
+                                    <td title="${item.usuarioregistro}" class="truncar2">${item.usuarioregistro}</td>
+                                    <td>${item.fechainforme ? item.fechainforme : 
+                                    (esProveedorAjeno ? '' : `<input type="date" class="fecha-informe form-control form-control-sm" data-id="${item.id}" style="width: 100px;" disabled>`)}</td>
+                                    <td><input type="checkbox" class="row-checkbox" value="${item.id}"></td>
+
+                                `;
+                                tbody.appendChild(row);
+                            });
+
+                            accionesTable.style.display = 'table';
+                        } else {
+                            accionesTable.style.display = 'none';
+                        }
+                    });
+                    document.addEventListener('change', function (event) {
+                        if (event.target.classList.contains('row-checkbox')) {
+                            const row = event.target.closest('tr');
+                            const dateInput = row.querySelector('.fecha-informe');
+                            if (dateInput) {
+                                dateInput.disabled = !event.target.checked;
+                            }
+                        }
+                    });
+                    selectAllCheckbox.addEventListener('change', function () {
+                        const checkboxes = document.querySelectorAll('.row-checkbox:not(:disabled)');
+                        checkboxes.forEach(cb => {
+                            cb.checked = this.checked;
+                            const row = cb.closest('tr');
+                            const dateInput = row.querySelector('.fecha-informe');
+                            if (dateInput) {
+                                dateInput.disabled = !cb.checked;
+                            }
+                        });
+                    });
+                    anularBtn.addEventListener('click', function () {
+                        const selectedData = [];
+                        document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                            const row = cb.closest('tr');
+                            const dateInput = row.querySelector('.fecha-informe');
+                            const fechaInforme = dateInput ? dateInput.value : null;
+
+                            /* if (!fechaInforme) {
+                                alert('Debe seleccionar una fecha para cada registro marcado.');
+                                return;
+                            } */
+
+                            selectedData.push({ id: cb.value, fechainforme: fechaInforme });
+                        });
+
+                        if (selectedData.length === 0) {
+                            alert('Seleccione al menos un registro.');
+                            return;
+                        }
+                        fetch('{{ route("ruta.anular") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ registros: selectedData })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Registros anulados y nuevos registros creados.');
+                                location.reload();
+                            } else {
+                                alert('Ocurrió un error.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Ocurrió un error.');
+                        });
+                    });
+                });
+            </script>
+
+            {{-- GENERAR PDF DE PLANILLA DE BATERIA --}}
+            <script> 
+                function generatePDF() {
+                 var fechaSeleccionada = document.getElementById('select-fechas').value;
+             
+                 if (!fechaSeleccionada) {
+                     alert("Por favor, selecciona una fecha.");
+                     return;
+                 }
+                 var clienteId = @json($cliente->id);
+                 var url = '{{ route("admin.asociados.generarpdfcliente", ":clienteId") }}';
+                 url = url.replace(':clienteId', clienteId);
+                 fetch(url, {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                     },
+                     body: JSON.stringify({
+                         fecha: fechaSeleccionada
+                     })
+                 })
+                 .then(response => {
+                     if (!response.ok) {
+                         throw new Error('Error en la respuesta del servidor.');
+                     }
+                     return response.blob();
+                 })
+                 .then(blob => {
+                     var link = document.createElement('a');
+                     link.href = window.URL.createObjectURL(blob);
+                     link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
+                     link.click();
+                 })
+                 .catch(error => console.error('Error:', error));
+                }
+
+                document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                
+                    var fechaSeleccionada = document.getElementById('ver-pdf-btn').getAttribute('data-fecha');
+                    var clienteId = @json($cliente->id);
+                    var url = '{{ route('admin.asociados.generarpdfcliente', ':clienteId') }}';
+                    url = url.replace(':clienteId', clienteId);
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            fecha: fechaSeleccionada
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error en la respuesta del servidor.');
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
+                        link.click();
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            </script>
+        </div>
+    </div>
+</div>
+<style>
+    .compact-table th, .compact-table td {
+        padding: 4px 8px;
+        line-height: 1.5;
+    }
+
+    .compact-table {
+        font-size: 16px;
+    }
+</style>
+
 <h5>CREAR BATERIA DE:</h5> 
 <h3>{{$cliente->nombrecompleto}}</h3>
 
-
-@isset($fechaExpiracion)
+    @isset($fechaExpiracion)
         <div id="cronometro-container" class="mt-3 p-2 bg-light border rounded">
             <strong>Tiempo restante para crear la batería:</strong>
             <span id="cronometro">Calculando...</span>
@@ -17,7 +320,6 @@
     @endisset
 
     <style>
-        /* Animación Fade-In para el cronómetro */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -27,8 +329,6 @@
                 opacity: 1;
             }
         }
-
-        /* Animación Shake para el mensaje de tiempo agotado */
         @keyframes shake {
             0% {
                 transform: translateX(0);
@@ -50,29 +350,20 @@
                 transform: translateX(0);
             }
         }
-
-        /* Aplicar la animación Fade-In al contenedor del cronómetro */
         #cronometro-container {
             position: relative;
             z-index: 1000;
             animation: fadeIn 1s ease-in-out;
         }
-
-        /* Estilo del cronómetro */
         #cronometro {
             font-size: 1.2em;
             color: #dc3545;
-            /* Color rojo para destacar */
             font-weight: bold;
         }
-
-        /* Clase para aplicar la animación Shake */
         .shake {
             animation: shake 0.5s;
             animation-iteration-count: 2;
         }
-
-        /* Responsividad para el cronómetro */
         @media (max-width: 576px) {
             #cronometro-container {
                 text-align: center;
@@ -83,60 +374,48 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             @if(isset($fechaExpiracion))
-                // Convertir la fecha de expiración a formato de JavaScript
                 var fechaExpiracion = new Date("{{ $fechaExpiracion->toIso8601String() }}").getTime();
 
-                // Actualizar el cronómetro cada segundo
                 var x = setInterval(function() {
                     var ahora = new Date().getTime();
                     var distancia = fechaExpiracion - ahora;
-
-                    // Cálculos para minutos y segundos
                     var totalMinutos = Math.floor(distancia / (1000 * 60));
                     var segundos = Math.floor((distancia % (1000 * 60)) / 1000);
-
-                    // Formatear con ceros iniciales si es necesario
                     var minutosDisplay = totalMinutos < 10 ? "0" + totalMinutos : totalMinutos;
                     var segundosDisplay = segundos < 10 ? "0" + segundos : segundos;
-
-                    // Mostrar el resultado en el elemento con id="cronometro"
                     document.getElementById("cronometro").innerHTML = minutosDisplay + "m " + segundosDisplay + "s ";
 
-                    // Si la cuenta regresiva termina, ejecutar acciones
                     if (distancia < 0) {
                         clearInterval(x);
                         var cronometro = document.getElementById("cronometro");
                         cronometro.innerHTML = "¡Tiempo agotado!";
 
-                        // Aplicar la animación Shake al contenedor del cronómetro
                         var cronometroContainer = document.getElementById("cronometro-container");
                         cronometroContainer.classList.add('shake');
 
-                        // Recargar la página después de 2 segundos para mostrar el mensaje de error
                         setTimeout(function() {
                             location.reload();
-                        }, 2000); // 2000 milisegundos = 2 segundos
+                        }, 2000);
                     }
                 }, 1000);
             @endif
         });
-        </script>
+    </script>
 @stop
 
 @section('content')
-@if (session('info'))
-    <div id="alert-info" class="alert alert-success">
-        <strong>{{ session('info') }}</strong>
-    </div>
-    <script>
-        setTimeout(function() {
-            $('#alert-info').fadeOut('fast');
-        }, 5000);
-    </script>
-@endif 
+    @if (session('info'))
+        <div id="alert-info" class="alert alert-success">
+            <strong>{{ session('info') }}</strong>
+        </div>
+        <script>
+            setTimeout(function() {
+                $('#alert-info').fadeOut('fast');
+            }, 5000);
+        </script>
+    @endif 
 
-
-@if (session('success'))
+    @if (session('success'))
         <div id="alert-success" class="alert alert-success">
             <strong>{{ session('success') }}</strong>
         </div>
@@ -158,11 +437,10 @@
         </script>
     @endif
 
-
 <div class="card">
     <div class="card-body">
-        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE'|| $permisoValido)
-        {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST', 'id' => 'form-crear-bateria']) !!}
+        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'YELKA MORALES VELARDE' || $permisoValido)
+        {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST', 'id' => 'form-crear-bateria', 'files' => true ]) !!}
         <div class="row">
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
@@ -177,180 +455,6 @@
                             </small>
                         @enderror
                     </div> 
-                    <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-xl" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <strong>Fecha de Bateria:</strong>
-                                    <select id="select-fechas" class="form-control">
-                                        <option value="" disabled selected>Selecciona una fecha</option>
-                                        @foreach($accionesPorFecha as $fecha => $acciones)
-                                            <option value="{{ $fecha }}">{{ $fecha }}</option>
-                                        @endforeach
-                                    </select>
-                                    <div id="acciones-container" class="mt-3">
-                                        <strong>Acciones requeridas:</strong>
-                                        <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
-                                            <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Acción</th>
-                                                    <th>Informe</th>
-                                                    <th>Proveedor</th>
-                                                    @if(!auth()->user()->hasRole('PROVEEDOR'))
-                                                        <th>Precio</th>
-                                                    @endif
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <a id="ver-pdf-btn" href="#" target="_blank" class="btn btn-crear"
-                                        onclick=generatePDF()>Generar PDF</a>
-                                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                                </div>
-                                <script> 
-                                    function generatePDF() {
-                                     // Obtener la fecha seleccionada
-                                     var fechaSeleccionada = document.getElementById('select-fechas').value;
-                                 
-                                     if (!fechaSeleccionada) {
-                                         alert("Por favor, selecciona una fecha.");
-                                         return;
-                                     }
-                                 
-                                     // Obtener el cliente ID desde Blade
-                                     var clienteId = @json($cliente->id);
-                                 
-                                     // URL del controlador para generar el PDF
-                                     var url = '{{ route("admin.asociados.generarpdfcliente", ":clienteId") }}';
-                                     url = url.replace(':clienteId', clienteId);
-                                 
-                                     // Realizar la solicitud AJAX para generar y descargar el PDF
-                                     fetch(url, {
-                                         method: 'POST',
-                                         headers: {
-                                             'Content-Type': 'application/json',
-                                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                         },
-                                         body: JSON.stringify({
-                                             fecha: fechaSeleccionada
-                                         })
-                                     })
-                                     .then(response => {
-                                         if (!response.ok) {
-                                             throw new Error('Error en la respuesta del servidor.');
-                                         }
-                                         return response.blob();  // Obtener el PDF como un blob
-                                     })
-                                     .then(blob => {
-                                         // Crear un enlace para descargar el archivo
-                                         var link = document.createElement('a');
-                                         link.href = window.URL.createObjectURL(blob);
-                                         link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
-                                         link.click();
-                                     })
-                                     .catch(error => console.error('Error:', error));
-                                    }
-                                 
-                                    // Asociar el evento de clic al botón "Generar PDF"
-                                    document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
-                                        e.preventDefault();
-                                    
-                                        var fechaSeleccionada = document.getElementById('ver-pdf-btn').getAttribute('data-fecha');
-                                        var clienteId = @json($cliente->id); // Asegúrate de que tienes acceso a esta variable
-                                        var url = '{{ route('admin.asociados.generarpdfcliente', ':clienteId') }}';
-                                        url = url.replace(':clienteId', clienteId);
-                                    
-                                        // Realizar la solicitud AJAX para obtener el enlace del PDF
-                                        fetch(url, {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                            },
-                                            body: JSON.stringify({
-                                                fecha: fechaSeleccionada
-                                            })
-                                        })
-                                        .then(response => {
-                                            if (!response.ok) {
-                                                throw new Error('Error en la respuesta del servidor.');
-                                            }
-                                            return response.blob();  // Obtener el PDF como un blob
-                                        })
-                                        .then(blob => {
-                                            // Crear un enlace para descargar el archivo
-                                            var link = document.createElement('a');
-                                            link.href = window.URL.createObjectURL(blob);
-                                            link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
-                                            link.click();
-                                        })
-                                        .catch(error => console.error('Error:', error));
-                                    });
-                                </script>
-                                
-                            </div>
-                        </div>
-                    </div>
-
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function () {
-                                const selectFechas = document.getElementById('select-fechas');
-                                const accionesTable = document.getElementById('acciones-table');
-                                const tbody = accionesTable.querySelector('tbody');
-                            
-                                const accionesPorFecha = @json($accionesPorFecha);
-                                const rolusuario = @json($rolusuario); // Asegúrate de que el rol se pasa al script
-                            
-                                selectFechas.addEventListener('change', function () {
-                                    const selectedDate = this.value;
-                            
-                                    tbody.innerHTML = '';
-                            
-                                    if (selectedDate && accionesPorFecha[selectedDate]) {
-                                        const acciones = accionesPorFecha[selectedDate];
-                            
-                                        acciones.forEach(item => {
-                                            const row = document.createElement('tr');
-                                            row.innerHTML = `
-                                                <td>${item.id}</td>
-                                                <td>${item.accion}</td>
-                                                <td>${item.informe}</td>
-                                                <td>${item.proveedor}</td>
-                                                <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
-                                            `;
-                                            tbody.appendChild(row);
-                                        });
-                                        accionesTable.style.display = 'table';
-                                    } else {
-                                        accionesTable.style.display = 'none';
-                                    }
-                                });
-                            });
-                        </script>
-
-                        <style>
-                            .compact-table th, .compact-table td {
-                                padding: 4px 8px; /* Reduce el padding para compactar las celdas */
-                                line-height: 1.2; /* Ajusta el interlineado de las celdas */
-                            }
-
-                            .compact-table {
-                                font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
-                            }
-                        </style>
-
                     <div class="form-group">
                         <strong>Fecha de Batería:</strong>
                         <select id="select-fechas" name="fechabateria" class="form-control">
@@ -360,6 +464,17 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="form-group"> 
+                        <strong>Medico Derivador:</strong>
+                        <select id="select-fechas" name="medicoderivante" class="form-control">
+                            @foreach($proveedoresmedicos as $proveedor)
+                                <option value="{{ $proveedor->proveedor }}" {{ $proveedor->id == 3 ? 'selected' : '' }}>
+                                    {{ $proveedor->proveedor }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
                     <div class="form-group">
                         <strong>Informe:</strong>
                         <select id="informe" name="informe" class="form-control">
@@ -391,14 +506,27 @@
                                     fechaInformeGroup.classList.add('hidden');
                                 }
                             }
-                
-                            // Inicializa el estado del campo cuando la página carga
                             toggleFechaInforme();
-                
-                            // Añade un listener para cambios en la selección
                             informeSelect.addEventListener('change', toggleFechaInforme);
                         });
                     </script>
+                    @php
+                        $rolusuario = strtolower(auth()->user()->getRoleNames()->first());
+                    @endphp
+                    
+                    @if($rolusuario !== 'proveedor'/*  && $rolusuario !== 'maestro' */)
+                        <div class="form-group">
+                            {!! Form::label('orden', 'Orden:') !!}
+                            {!! Form::file('orden', ['id' => 'orden', 'class' => 'form-control', 'required']) !!}
+                            @error('orden')
+                                <small class="text-danger">
+                                    <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                                </small>
+                            @enderror
+                        </div>
+                    @endif
+                
+                    
                     <div class="form-group">
                         {!! Form::label('tipoarea', 'Tipo Area:', ['id' => 'area_label2']) !!}
                         {!! Form::select('tipoarea', ['Estudios' => 'ESTUDIOS', 'Especialidades' => 'ESPECIALIDADES'], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoarea']) !!}
@@ -408,7 +536,6 @@
                             </small>
                         @enderror
                     </div>
-                    <!-- Campo adicional "ANTECEDENTES" -->
                     <div class="form-group" id="antecedentes-field" style="display: none;">
                         {!! Form::label('antecedentes', 'Antecedentes:') !!}
                         {!! Form::text('antecedentes', null, ['class' => 'form-control', 'id' => 'antecedentes']) !!}
@@ -430,8 +557,6 @@
                                     antecedentesField.style.display = 'none';
                                 }
                             });
-                        
-                            // Opcional: si ya hay un valor seleccionado al cargar la página
                             if (tipoareaSelect.value === 'Especialidades') {
                                 antecedentesField.style.display = 'block';
                             }
@@ -517,413 +642,28 @@
                         </div>
                     </div>
                 <script>
-                    
                     function buscarEspecialidad() {
-                    var query = $('#search_especialidades').val().toLowerCase(); // Toma el valor del input y lo convierte a minúsculas
-                    $('.especialidad-item').each(function() {  // Recorre todas las especialidades
-                        var label = $(this).find('label').text().toLowerCase();
-                        
-                        if (label.includes(query)) {  // Si el texto de la especialidad incluye la búsqueda, mostrar
-                            $(this).show();
-                        } else {  // Si no incluye, ocultar
-                            $(this).hide();
-                        }
-                    });
-                }
+                        var query = $('#search_especialidades').val().toLowerCase();
+                        $('.especialidad-item').each(function() {
+                            var label = $(this).find('label').text().toLowerCase();
+                            
+                            if (label.includes(query)) {
+                                $(this).show();
+                            } else {
+                                $(this).hide();
+                            }
+                        });
+                    }
                 </script>                    
                     
                 </div>
             </div>
-            {{-- {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-crear']) !!} --}}
             <button type="button" class="btn btn-crear" id="btn-crear-bateria">CREAR BATERIA</button> 
             {!! Form::close() !!}
         </div>
         @else
         {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST', 'id' => 'form-crear-bateria']) !!}
         <div class="row">
-                {{-- <div class="col-lg-4">
-                    <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-xl" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <strong>Fecha de Bateria:</strong>
-                                    <select id="select-fechas" class="form-control">
-                                        <option value="" disabled selected>Selecciona una fecha</option>
-                                        @foreach($accionesPorFecha as $fecha => $acciones)
-                                            <option value="{{ $fecha }}">{{ $fecha }}</option>
-                                        @endforeach
-                                    </select>
-                                    <div id="acciones-container" class="mt-3">
-                                        <strong>Acciones requeridas:</strong>
-                                        <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
-                                            <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Acción</th>
-                                                    <th>Informe</th>
-                                                    <th>Proveedor</th>
-                                                    @if(!auth()->user()->hasRole('PROVEEDOR'))
-                                                        <th>Precio</th>
-                                                    @endif
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <a id="ver-pdf-btn" href="#" target="_blank" class="btn btn-crear"
-                                        onclick=generatePDF()>Generar PDF</a>
-                                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                                </div>
-                                <script> 
-                                    function generatePDF() {
-                                     // Obtener la fecha seleccionada
-                                     var fechaSeleccionada = document.getElementById('select-fechas').value;
-                                 
-                                     if (!fechaSeleccionada) {
-                                         alert("Por favor, selecciona una fecha.");
-                                         return;
-                                     }
-                                 
-                                     // Obtener el cliente ID desde Blade
-                                     var clienteId = @json($cliente->id);
-                                 
-                                     // URL del controlador para generar el PDF
-                                     var url = '{{ route("admin.asociados.generarpdfcliente", ":clienteId") }}';
-                                     url = url.replace(':clienteId', clienteId);
-                                 
-                                     // Realizar la solicitud AJAX para generar y descargar el PDF
-                                     fetch(url, {
-                                         method: 'POST',
-                                         headers: {
-                                             'Content-Type': 'application/json',
-                                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                         },
-                                         body: JSON.stringify({
-                                             fecha: fechaSeleccionada
-                                         })
-                                     })
-                                     .then(response => {
-                                         if (!response.ok) {
-                                             throw new Error('Error en la respuesta del servidor.');
-                                         }
-                                         return response.blob();  // Obtener el PDF como un blob
-                                     })
-                                     .then(blob => {
-                                         // Crear un enlace para descargar el archivo
-                                         var link = document.createElement('a');
-                                         link.href = window.URL.createObjectURL(blob);
-                                         link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
-                                         link.click();
-                                     })
-                                     .catch(error => console.error('Error:', error));
-                                    }
-                                 
-                                    // Asociar el evento de clic al botón "Generar PDF"
-                                    document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
-                                        e.preventDefault();
-                                    
-                                        var fechaSeleccionada = document.getElementById('ver-pdf-btn').getAttribute('data-fecha');
-                                        var clienteId = @json($cliente->id); // Asegúrate de que tienes acceso a esta variable
-                                        var url = '{{ route('admin.asociados.generarpdfcliente', ':clienteId') }}';
-                                        url = url.replace(':clienteId', clienteId);
-                                    
-                                        // Realizar la solicitud AJAX para obtener el enlace del PDF
-                                        fetch(url, {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                            },
-                                            body: JSON.stringify({
-                                                fecha: fechaSeleccionada
-                                            })
-                                        })
-                                        .then(response => {
-                                            if (!response.ok) {
-                                                throw new Error('Error en la respuesta del servidor.');
-                                            }
-                                            return response.blob();  // Obtener el PDF como un blob
-                                        })
-                                        .then(blob => {
-                                            // Crear un enlace para descargar el archivo
-                                            var link = document.createElement('a');
-                                            link.href = window.URL.createObjectURL(blob);
-                                            link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
-                                            link.click();
-                                        })
-                                        .catch(error => console.error('Error:', error));
-                                    });
-                                </script>
-                                
-                            </div>
-                        </div>
-                    </div>
-
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function () {
-                                const selectFechas = document.getElementById('select-fechas');
-                                const accionesTable = document.getElementById('acciones-table');
-                                const tbody = accionesTable.querySelector('tbody');
-                            
-                                const accionesPorFecha = @json($accionesPorFecha);
-                                const rolusuario = @json($rolusuario); // Asegúrate de que el rol se pasa al script
-                            
-                                selectFechas.addEventListener('change', function () {
-                                    const selectedDate = this.value;
-                            
-                                    tbody.innerHTML = '';
-                            
-                                    if (selectedDate && accionesPorFecha[selectedDate]) {
-                                        const acciones = accionesPorFecha[selectedDate];
-                            
-                                        acciones.forEach(item => {
-                                            const row = document.createElement('tr');
-                                            row.innerHTML = `
-                                                <td>${item.id}</td>
-                                                <td>${item.accion}</td>
-                                                <td>${item.informe}</td>
-                                                <td>${item.proveedor}</td>
-                                                <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
-                                            `;
-                                            tbody.appendChild(row);
-                                        });
-                                        accionesTable.style.display = 'table';
-                                    } else {
-                                        accionesTable.style.display = 'none';
-                                    }
-                                });
-                            });
-                        </script>
-
-                        <style>
-                            .compact-table th, .compact-table td {
-                                padding: 4px 8px; /* Reduce el padding para compactar las celdas */
-                                line-height: 1.2; /* Ajusta el interlineado de las celdas */
-                            }
-
-                            .compact-table {
-                                font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
-                            }
-                        </style>
-
-                    <div class="form-group">
-                        <strong>Fecha de Batería:</strong>
-                        <select id="select-fechas" name="fechabateria" class="form-control" disabled>
-                            <option value="nueva_bateria">FECHA DE HOY</option>
-                            @foreach($accionesPorFecha as $fecha => $acciones)
-                                <option value="{{ $fecha }}">{{ $fecha }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <strong>Informe:</strong>
-                        <select id="informe" name="informe" class="form-control" disabled>
-                            <option value="NO TIENE INFORME">NO TIENE</option>
-                            <option value="SI TIENE INFORME">SI TIENE</option>
-                        </select>
-                    </div>
-                    <style>
-                        .form-group {
-                            margin-bottom: 15px;
-                        }
-                        .hidden {
-                            display: none;
-                        }
-                    </style>
-                    
-                    <div class="form-group">
-                        {!! Form::label('tipoarea', 'Tipo Area:', ['id' => 'area_label2']) !!}
-                        {!! Form::select('tipoarea', ['Estudios' => 'ESTUDIOS', 'Especialidades' => 'ESPECIALIDADES'], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoarea', 'disabled' => 'disabled']) !!}
-                        @error('tipoarea')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
-                    </div>
-                </div> --}}
-                <!-- Campo de entrada de código a la derecha (solo si el usuario NO es uno de los especificados) -->
-                <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <strong>Fecha de Bateria:</strong>
-                                <select id="select-fechas" class="form-control">
-                                    <option value="" disabled selected>Selecciona una fecha</option>
-                                    @foreach($accionesPorFecha as $fecha => $acciones)
-                                        <option value="{{ $fecha }}">{{ $fecha }}</option>
-                                    @endforeach
-                                </select>
-                                <div id="acciones-container" class="mt-3">
-                                    <strong>Acciones requeridas:</strong>
-                                    <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Acción</th>
-                                                <th>Informe</th>
-                                                <th>Proveedor</th>
-                                                @if(!auth()->user()->hasRole('PROVEEDOR'))
-                                                    <th>Precio</th>
-                                                @endif
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <a id="ver-pdf-btn" href="#" target="_blank" class="btn btn-crear"
-                                    onclick=generatePDF()>Generar PDF</a>
-                                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                            </div>
-                            <script> 
-                                function generatePDF() {
-                                 // Obtener la fecha seleccionada
-                                 var fechaSeleccionada = document.getElementById('select-fechas').value;
-                             
-                                 if (!fechaSeleccionada) {
-                                     alert("Por favor, selecciona una fecha.");
-                                     return;
-                                 }
-                             
-                                 // Obtener el cliente ID desde Blade
-                                 var clienteId = @json($cliente->id);
-                             
-                                 // URL del controlador para generar el PDF
-                                 var url = '{{ route("admin.asociados.generarpdfcliente", ":clienteId") }}';
-                                 url = url.replace(':clienteId', clienteId);
-                             
-                                 // Realizar la solicitud AJAX para generar y descargar el PDF
-                                 fetch(url, {
-                                     method: 'POST',
-                                     headers: {
-                                         'Content-Type': 'application/json',
-                                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                     },
-                                     body: JSON.stringify({
-                                         fecha: fechaSeleccionada
-                                     })
-                                 })
-                                 .then(response => {
-                                     if (!response.ok) {
-                                         throw new Error('Error en la respuesta del servidor.');
-                                     }
-                                     return response.blob();  // Obtener el PDF como un blob
-                                 })
-                                 .then(blob => {
-                                     // Crear un enlace para descargar el archivo
-                                     var link = document.createElement('a');
-                                     link.href = window.URL.createObjectURL(blob);
-                                     link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
-                                     link.click();
-                                 })
-                                 .catch(error => console.error('Error:', error));
-                                }
-                             
-                                // Asociar el evento de clic al botón "Generar PDF"
-                                document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                
-                                    var fechaSeleccionada = document.getElementById('ver-pdf-btn').getAttribute('data-fecha');
-                                    var clienteId = @json($cliente->id); // Asegúrate de que tienes acceso a esta variable
-                                    var url = '{{ route('admin.asociados.generarpdfcliente', ':clienteId') }}';
-                                    url = url.replace(':clienteId', clienteId);
-                                
-                                    // Realizar la solicitud AJAX para obtener el enlace del PDF
-                                    fetch(url, {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                        },
-                                        body: JSON.stringify({
-                                            fecha: fechaSeleccionada
-                                        })
-                                    })
-                                    .then(response => {
-                                        if (!response.ok) {
-                                            throw new Error('Error en la respuesta del servidor.');
-                                        }
-                                        return response.blob();  // Obtener el PDF como un blob
-                                    })
-                                    .then(blob => {
-                                        // Crear un enlace para descargar el archivo
-                                        var link = document.createElement('a');
-                                        link.href = window.URL.createObjectURL(blob);
-                                        link.download = 'Checklist_' + '{{ $cliente->nombrecompleto }}' + '.pdf';
-                                        link.click();
-                                    })
-                                    .catch(error => console.error('Error:', error));
-                                });
-                            </script>
-                            
-                        </div>
-                    </div>
-                </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const selectFechas = document.getElementById('select-fechas');
-                        const accionesTable = document.getElementById('acciones-table');
-                        const tbody = accionesTable.querySelector('tbody');
-                    
-                        const accionesPorFecha = @json($accionesPorFecha);
-                        const rolusuario = @json($rolusuario); // Asegúrate de que el rol se pasa al script
-                    
-                        selectFechas.addEventListener('change', function () {
-                            const selectedDate = this.value;
-                    
-                            tbody.innerHTML = '';
-                    
-                            if (selectedDate && accionesPorFecha[selectedDate]) {
-                                const acciones = accionesPorFecha[selectedDate];
-                    
-                                acciones.forEach(item => {
-                                    const row = document.createElement('tr');
-                                    row.innerHTML = `
-                                        <td>${item.id}</td>
-                                        <td>${item.accion}</td>
-                                        <td>${item.informe}</td>
-                                        <td>${item.proveedor}</td>
-                                        <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
-                                    `;
-                                    tbody.appendChild(row);
-                                });
-                                accionesTable.style.display = 'table';
-                            } else {
-                                accionesTable.style.display = 'none';
-                            }
-                        });
-                    });
-                </script>
-
-                <style>
-                    .compact-table th, .compact-table td {
-                        padding: 4px 8px; /* Reduce el padding para compactar las celdas */
-                        line-height: 1.2; /* Ajusta el interlineado de las celdas */
-                    }
-
-                    .compact-table {
-                        font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
-                    }
-                </style>
             <div class="col-lg-6">
                 <div class="form-group">
                     @if (session('success'))
@@ -955,11 +695,6 @@
                 <button type="submit" class="btn btn-crear">INGRESAR CÓDIGO</button>
             </div>
             </div>
-
-            
-
-
-            {{-- <button type="button" class="btn btn-crear" id="btn-crear-bateria" disabled>CREAR BATERIA</button>  --}}
             {!! Form::close() !!}
         </div>
         @endif
@@ -1190,6 +925,21 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .table td {
+        padding: 5px 10px;
+    }
+    .truncar {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+    .truncar2 {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
+    }
     h1 {
         color:#94c93b; 
         font-family: "Segoe UI";
@@ -1206,15 +956,48 @@
         font-family: "Segoe UI";
         font-weight: 1000;
         }
+        .btn-verorden {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-verorden:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
     .btn-crear {
         background-color:  #ffffff;
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     .btn-crear:hover {
         background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-traspasar {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-traspasar:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
+        .btn-anular {
+        background-color:  #ffffff;
+        color: #970d8e;
+        border-color: #970d8e;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-anular:hover {
+        background-color: #970d8e;
         color: #ffffff;
         }
     .mensaje-error {
@@ -1233,7 +1016,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 5px 20px;
+        padding: 5px 10px;
     }
     .custom-button:hover {
         background-color: #faa625;
@@ -1244,7 +1027,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -1254,14 +1037,14 @@
     }
     .btn-cerrar {
         background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
+        color: #e11616;
+        border-color: #e11616;
         border-radius: 5px;
         padding: 5px 10px;
 
     }
     .btn-cerrar:hover {
-        background-color: #94c93b;
+        background-color: #e11616;
         color: #ffffff;
     }
     .btn-regresar {
@@ -1269,7 +1052,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;

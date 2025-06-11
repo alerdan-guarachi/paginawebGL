@@ -98,9 +98,28 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                             </div>
-                            <div class="modal-body">
+                            {{-- <div class="modal-body">
                             <iframe id="document-preview" style="width: 100%; height: 500px; border: none;"></iframe>
+                            </div> --}}
+                            <div class="modal-body">
+                                <object id="document-preview" type="application/pdf" style="width: 100%; height: 500px;">
+                                    <p><a id="pdf-download" href="#" target="_blank">Descargar</a></p>
+                                </object>
                             </div>
+                            <script>
+                                document.getElementById("archivo").addEventListener("change", function(event) {
+                                let file = event.target.files[0];
+
+                                if (file) {
+                                    let objectURL = URL.createObjectURL(file);
+                                    let preview = document.getElementById("document-preview");
+                                    let downloadLink = document.getElementById("pdf-download");
+
+                                    preview.data = objectURL;
+                                    downloadLink.href = objectURL;
+                                }
+                            });
+                            </script>  
                         </div>
                         </div>
                     </div>

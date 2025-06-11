@@ -13,11 +13,12 @@ class Proveedor extends Model
     protected $table = 'proveedores';
     static $rules = [
         'id' => '',
-        'proveedor' => 'required|max:45',
-        'usuarioid' => 'required|max:45',
-        'usuarioregistro' => 'required|max:45',
+        'proveedor' => 'required',
+        'usuarioid' => 'required',
+        'usuarioregistro' => 'required',
         'direccion' => 'required|max:255',
         'nit' => 'required|max:45',
+        'ci' => '',
         'banco' => 'required|max:255',
         'cuenta' => 'max:45',
         'tipocuenta' => 'max:45',
@@ -39,6 +40,11 @@ class Proveedor extends Model
         'direccion3' => '',
         'linkubicacion3' => '',
         'ciudad2' => '',
+        'bancoorigen' => '',
+        'tipoplanilla' => '',
+        'ci' => '',
+        'ciudad3' => '',
+        'imagenqr' => '',
     ]; 
 
     protected $fillable = [
@@ -68,7 +74,12 @@ class Proveedor extends Model
         'linkubicacion2',
         'direccion3',
         'linkubicacion3',
-        'ciudad',
+        'ciudad2',
+        'bancoorigen',
+        'tipoplanilla',
+        'ci',
+        'ciudad3',
+        'imagenqr',
     ];
     public function departamento()
     {

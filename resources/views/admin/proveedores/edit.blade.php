@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.proveedores.show', $proveedor) }}">REGRESAR</a>
+<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.proveedoresservicios.listaproveedoresservicios', $proveedor) }}">REGRESAR</a>
     <h1>EDITAR PROVEEDOR</h1>
 @stop
 
@@ -27,9 +27,20 @@
             <div class="col-lg-12">
                 {!! Form::label('', 'DATOS DEL PROVEEDOR') !!}
                 <div class="row">
-                    <div class="col-lg-6">
+                    <div class="col-lg-1" hidden>
                         <div class="form-group">
-                            {!! Form::label('proveedor', 'Nombre Completo:') !!}
+                            {!! Form::label('id', 'ID Prov.:') !!}
+                            {!! Form::text('id', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90', 'readonly' => true]) !!}
+                            @error('id')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            {!! Form::label('proveedor', 'Nombre Proveedor:') !!}
                             {!! Form::text('proveedor', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '90', 'readonly' => true]) !!}
                             @error('proveedor')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -38,30 +49,28 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-3">
+                    <div class="col-lg-2">
                         <div class="form-group">
-                            {!! Form::label('ciudad', 'Ciudad:') !!}
-                            {!! Form::select('ciudad', $departamentos, $departamentoActual, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
-                            @error('ciudad')
+                            {!! Form::label('nit', 'NIT:') !!}
+                            {!! Form::text('nit', null, ['class' => 'form-control', 'placeholder' => '','maxlength' => '20', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
+                            @error('nit')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
                                 </small>
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-3">
+                    <div class="col-lg-2">
                         <div class="form-group">
-                            {!! Form::label('estadoproveedor', 'Estado:') !!}
-                            {!! Form::select('estadoproveedor', $estadoproveedor, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
-                            @error('estadoproveedor')
+                            {!! Form::label('ci', 'CI:') !!}
+                            {!! Form::text('ci', null, ['class' => 'form-control', 'placeholder' => '','maxlength' => '20', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
+                            @error('ci')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
                                 </small>
                             @enderror
                         </div>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-lg-2">
                         <div class="form-group">
                             {!! Form::label('celular', 'Celular:') !!}
@@ -84,20 +93,34 @@
                             @enderror
                         </div>
                     </div>
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('bancoorigen', 'Cuenta Origen:') !!}
+                        {!! Form::select('bancoorigen', [
+                            'CUENTA FACTURADA' => 'CUENTA FACTURADA', 
+                            'CUENTA NO FACTURADA' => 'CUENTA NO FACTURADA',
+                        ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('bancoorigen')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-lg-2">
                         <div class="form-group">
-                            {!! Form::label('nit', 'NIT:') !!}
-                            {!! Form::text('nit', null, ['class' => 'form-control', 'placeholder' => '','maxlength' => '20', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
-                            @error('nit')
+                            {!! Form::label('ciudad', 'Ciudad 1:') !!}
+                            {!! Form::select('ciudad', $ciudades, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                            @error('ciudad')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
                                 </small>
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-3">
+                    <div class="col-lg-2">
                         <div class="form-group">
-                            {!! Form::label('direccion', 'Dirección:') !!}
+                            {!! Form::label('direccion', 'Dirección 2:') !!}
                             {!! Form::text('direccion', null, ['class' => 'form-control', 'placeholder' => '' , 'maxlength' => '200']) !!}
                             @error('direccion')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -106,20 +129,19 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-3">  
+                    <div class="col-lg-2">  
                         <div class="form-group">
-                            <label for="linkubicacion">Link Dirección:</label>
-                            <div style="display: flex;">
+                            <label for="linkubicacion">Link Dirección 1:</label>
+                            <div style="display: flex; width: 100%;">
                                 {!! Form::text('linkubicacion', null, [
                                     'class' => 'form-control',
                                     'placeholder' => '',
-                                    'maxlength' => '500', // Ajusta según sea necesario
+                                    'maxlength' => '500',
                                     'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57',
-                                    'style' => 'margin-right: 25px; width: auto;' // Espaciado entre el input y el botón
+                                    'style' => 'flex: 1; margin-right: 5px;'
                                 ]) !!}
-                                <!-- Botón para abrir el enlace -->
-                                <a id="open-link" class="btn btn-ver" type="button" style="pointer-events: none; opacity: 0.5;">
-                                    Ubic. <i class="fas fa-eye"></i>
+                                <a id="open-link" class="btn btn-ver" type="button" style="flex-shrink: 0;">
+                                    <i class="fas fa-map-marker-alt"></i>
                                 </a>
                             </div>
                         </div>
@@ -134,36 +156,97 @@
                         document.addEventListener('DOMContentLoaded', function() {
                             const inputField = document.querySelector('input[name="linkubicacion"]');
                             const openLinkButton = document.getElementById('open-link');
-                    
-                            // Función para habilitar o deshabilitar el botón según el valor del enlace
                             function updateButtonState() {
                                 const link = inputField.value;
-                    
                                 if (link.startsWith('http://') || link.startsWith('https://')) {
-                                    openLinkButton.style.pointerEvents = 'auto'; // Habilita el botón
-                                    openLinkButton.style.opacity = '1'; // Restaura la opacidad
+                                    openLinkButton.style.pointerEvents = 'auto';
+                                    openLinkButton.style.opacity = '1';
                                     openLinkButton.onclick = function(event) {
-                                        event.preventDefault(); // Previene el comportamiento por defecto
-                                        window.open(link, '_blank'); // Abre el enlace en una nueva pestaña
+                                        event.preventDefault();
+                                        window.open(link, '_blank');
                                     };
                                 } else {
-                                    openLinkButton.style.pointerEvents = 'none'; // Deshabilita el botón
-                                    openLinkButton.style.opacity = '0.5'; // Cambia la opacidad para indicar que está deshabilitado
-                                    openLinkButton.onclick = null; // Remueve el evento onclick
+                                    openLinkButton.style.pointerEvents = 'none';
+                                    openLinkButton.style.opacity = '0.5';
+                                    openLinkButton.onclick = null;
                                 }
                             }
-                    
-                            // Ejecuta la función al cargar la página para verificar si ya hay un enlace válido
                             updateButtonState();
-                    
-                            // Vuelve a ejecutar la función cuando se modifique el contenido del campo
                             inputField.addEventListener('input', updateButtonState);
                         });
                     </script>
-                    
+
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            {!! Form::label('ciudad2', 'Ciudad 2:') !!}
+                            {!! Form::select('ciudad2', $ciudades, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                            @error('ciudad2')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            {!! Form::label('direccion2', 'Dirección 2:') !!}
+                            {!! Form::text('direccion2', null, ['class' => 'form-control', 'placeholder' => '' , 'maxlength' => '200']) !!}
+                            @error('direccion2')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-2">  
+                        <div class="form-group">
+                            <label for="linkubicacion2">Link Dirección 2:</label>
+                            <div style="display: flex; width: 100%;">
+                                {!! Form::text('linkubicacion2', null, [
+                                    'class' => 'form-control',
+                                    'placeholder' => '',
+                                    'maxlength' => '500',
+                                    'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57',
+                                    'style' => 'flex: 1; margin-right: 5px;'
+                                ]) !!}
+                                <a id="open-link2" class="btn btn-ver" type="button" style="flex-shrink: 0;">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                </a>
+                            </div>
+                        </div>
+                        @error('linkubicacion2')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const inputField = document.querySelector('input[name="linkubicacion2"]');
+                            const openLinkButton = document.getElementById('open-link2');
+                            function updateButtonState2() {
+                                const link = inputField.value;
+                                if (link.startsWith('http://') || link.startsWith('https://')) {
+                                    openLinkButton.style.pointerEvents = 'auto';
+                                    openLinkButton.style.opacity = '1';
+                                    openLinkButton.onclick = function(event) {
+                                        event.preventDefault();
+                                        window.open(link, '_blank');
+                                    };
+                                } else {
+                                    openLinkButton.style.pointerEvents = 'none';
+                                    openLinkButton.style.opacity = '0.5';
+                                    openLinkButton.onclick = null;
+                                }
+                            }
+                            updateButtonState2();
+                            inputField.addEventListener('input', updateButtonState2);
+                        });
+                    </script>
                 </div>
                 <div class="row">
-                    <div class="col-lg-3">
+                    <div class="col-lg-2">
                         <div class="form-group">
                             {!! Form::label('mododepago', 'Modo de pago:') !!}
                             {!! Form::select('mododepago', $mododepago, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
@@ -174,7 +257,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-3">
+                    <div class="col-lg-2">
                         <div class="form-group">
                             {!! Form::label('banco', 'Banco:') !!}
                             {!! Form::select('banco', $bancos, $bancoActual, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '255']) !!}
@@ -185,7 +268,18 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-3">
+                    <div class="col-lg-2">
+                        <div class="form-group">
+                            {!! Form::label('tipocuenta', 'Tipo de cuenta:') !!}
+                            {!! Form::select('tipocuenta', $tipocuenta, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                            @error('tipocuenta')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-2">
                         <div class="form-group">
                             {!! Form::label('cuenta', 'Número de cuenta:') !!}
                             {!! Form::text('cuenta', null, ['class' => 'form-control', 'placeholder' => '','maxlength' => '30', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
@@ -196,11 +290,25 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-3">
+                    <div class="form-group col-lg-2">
+                        {!! Form::label('tipoplanilla', 'Tipo planilla:') !!}
+                        {!! Form::select('tipoplanilla', [
+                            'PAGO A TERCERO' => 'PAGO A TERCERO', 
+                            'PAGO INTERBANCARIO' => 'PAGO INTERBANCARIO',
+                            'PAGO EN LINEA' => 'PAGO EN LINEA',
+                            'PAGO QR' => 'PAGO QR',
+                        ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
+                        @error('tipoplanilla')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
+                    <div class="col-lg-2">
                         <div class="form-group">
-                            {!! Form::label('tipocuenta', 'Tipo de cuenta:') !!}
-                            {!! Form::select('tipocuenta', $tipocuenta, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
-                            @error('tipocuenta')
+                            {!! Form::label('estadoproveedor', 'Estado Provedor:') !!}
+                            {!! Form::select('estadoproveedor', $estadoproveedor, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                            @error('estadoproveedor')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
                                 </small>
@@ -266,15 +374,15 @@
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
     .btn-ver {
-                background-color:  #ffffff;
-                color: #302cf1;
-                border-color: #302cf1;
-                border-radius: 5px;
-            }
-        .btn-ver:hover {
-                background-color: #302cf1;
-                color: #ffffff;
-            }
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+    }
+    .btn-ver:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }
     h5 {
         color:#94c93b; 
         font-family: "Segoe UI";
@@ -297,7 +405,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     
     .btn-crear:hover {
@@ -353,7 +461,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;

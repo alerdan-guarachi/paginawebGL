@@ -27,6 +27,8 @@ class Recibo extends Model
         'montototal' => '',
         'saldototal' => '',
         'estado' => '',
+        'created_at' => '',
+        'updated_at' => '',
     ]; 
 
     protected $fillable = [
@@ -45,5 +47,7 @@ class Recibo extends Model
         'montototal',
         'saldototal',
         'estado',
+        'created_at',
+        'updated_at',
     ];
 }

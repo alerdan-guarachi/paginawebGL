@@ -57,6 +57,10 @@ class UpdateProveedorRequest extends FormRequest
             'direccion3' => '',
             'linkubicacion3' => '',
             'ciudad2' => '',
+            'bancoorigen' => '',
+            'tipoplanilla' => '',
+            'ci' => '',
+            'imagenqr' => '',
         ]; 
         return $rules;
     }

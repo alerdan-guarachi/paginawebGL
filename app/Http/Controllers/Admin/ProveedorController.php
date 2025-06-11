@@ -66,9 +66,13 @@ class ProveedorController extends Controller
             'TRANSFERENCIA BANCARIA' => 'TRANSFERENCIA BANCARIA',
             'CHEQUE' => 'CHEQUE',
         ];
+        $ciudades = [
+            'SANTA CRUZ' => 'SANTA CRUZ',
+            'COCHABAMBA' => 'COCHABAMBA'
+        ];
         $tipocuenta = [
             'CUENTA CORRIENTE' => 'CUENTA CORRIENTE',
-            'CUENTA DE AHORRO' => 'CUENTA DE AHORRO',
+            'CAJA DE AHORRO' => 'CAJA DE AHORRO',
             'CUENTA INFANTIL' => 'CUENTA INFANTIL',
             'CUENTA JOVEN' => 'CUENTA JOVEN',
             'CUENTA MANCOMUNADA' => 'CUENTA MANCOMUNADA',
@@ -82,7 +86,7 @@ class ProveedorController extends Controller
                                  ->pluck('departamento', 'id');
         $bancos = Banco::orderBy('nombrebanco')->pluck('nombrebanco', 'id');
 
-        return view('admin.proveedores.create', compact('proveedor','departamentos', 'estadoproveedor', 'areas', 'accionesPorArea', 'mododepago', 'bancos', 'tipocuenta'));
+        return view('admin.proveedores.create', compact('ciudades','proveedor','departamentos', 'estadoproveedor', 'areas', 'accionesPorArea', 'mododepago', 'bancos', 'tipocuenta'));
     }
     public function show(Proveedor $proveedor)
     {
@@ -90,10 +94,6 @@ class ProveedorController extends Controller
     }
     public function store(StoreProveedorRequest $request)
     {
-        $idCiudad = $request->input('ciudad');
-        $ciudad = Departamento::findOrFail($idCiudad);
-        $ciudadNombre = $ciudad->departamento;
-
         $idBanco = $request->input('banco');
         if ($idBanco) {
             $banco = Banco::findOrFail($idBanco);
@@ -105,76 +105,105 @@ class ProveedorController extends Controller
         $proveedorData = $request->all();
         $estadoSeleccionado = $request->input('estadoproveedor');
         $modopagoSeleccionado = $request->input('mododepago');
-
-        $proveedorData['ciudad'] = $ciudadNombre;
         $proveedorData['banco'] = $bancoNombre;
         $proveedorData['estadoproveedor'] = $estadoSeleccionado;
         $proveedorData['mododepago'] = $modopagoSeleccionado;
 
         $proveedor = Proveedor::create($proveedorData);
 
-        return redirect()->route('admin.proveedores.index', $proveedor)->with('info', 'El proveedor se creó con éxito');
+        return redirect()->route('admin.proveedoresservicios.listaproveedoresservicios')->with('info', 'El proveedor se creó con éxito');
     }
     public function edit(Proveedor $proveedor)
-    {
-        $areas = Area::pluck('nombrearea', 'id');
-        $accionesPorArea = [];
+{
+    $areas = Area::pluck('nombrearea', 'id');
+    $accionesPorArea = [];
 
-        foreach ($areas as $id => $nombreArea) {
-            $accionesPorArea[$id] = AreaAccion::where('areasid', $id)->pluck('accion');
-        }
-        $estadoproveedor = [
-            'ACTIVO' => 'ACTIVO',
-            'INACTIVO' => 'INACTIVO',
-        ];
-        $mododepago = [
-            'EFECTIVO' => 'EFECTIVO',
-            'TRANSFERENCIA BANCARIA' => 'TRANSFERENCIA BANCARIA',
-            'CHEQUE' => 'CHEQUE',
-        ];
-        $tipocuenta = [
-            'CUENTA CORRIENTE' => 'CUENTA CORRIENTE',
-            'CUENTA DE AHORRO' => 'CUENTA DE AHORRO',
-            'CUENTA INFANTIL' => 'CUENTA INFANTIL',
-            'CUENTA JOVEN' => 'CUENTA JOVEN',
-            'CUENTA MANCOMUNADA' => 'CUENTA MANCOMUNADA',
-            'CUENTA NÓMINA' => 'CUENTA NÓMINA',
-            'CUENTA NO NÓMINA' => 'CUENTA NO NÓMINA',
-            'CUENTA ONLINE' => 'CUENTA ONLINE',
-            'CUENTA REMUNERADA' => 'CUENTA REMUNERADA', 
-        ];
-        
-        $departamentos = Departamento::whereIn('id', [1, 3]) 
-                                 ->orderBy('departamento')
-                                 ->pluck('departamento', 'id');
-        $departamentoActual = $proveedor->departamento;
-        
-        $bancos = Banco::orderBy('nombrebanco')->pluck('nombrebanco', 'id');
-        $bancoActual = $proveedor->nombrebanco;
-
-        return view('admin.proveedores.edit', compact('bancoActual','departamentoActual','proveedor','departamentos', 'estadoproveedor', 'areas', 'accionesPorArea', 'mododepago', 'bancos', 'tipocuenta'));
+    foreach ($areas as $id => $nombreArea) {
+        $accionesPorArea[$id] = AreaAccion::where('areasid', $id)->pluck('accion');
     }
-    public function update(UpdateProveedorRequest $request, Proveedor $proveedor)
-    {
-        $idCiudad = $request->input('ciudad');
-        $ciudad = Departamento::findOrFail($idCiudad);
-        $ciudadNombre = $ciudad->departamento;
-        
-        $idBanco = $request->input('banco');
-        if ($idBanco) {
-            $banco = Banco::findOrFail($idBanco);
-            $bancoNombre = $banco->nombrebanco;
-        } else {
-            $bancoNombre = "NO APLICA";
-        }
-        $proveedorData = $request->validated();
-        $proveedorData['ciudad'] = $ciudadNombre;
-        $proveedorData['banco'] = $bancoNombre;
 
-        $proveedor->update($proveedorData);
+    $estadoproveedor = [
+        'ACTIVO' => 'ACTIVO',
+        'INACTIVO' => 'INACTIVO',
+    ];
 
-        return redirect()->route('admin.proveedores.show', $proveedor)->with('info', 'El proveedor se actualizó con éxito');
+    $mododepago = [
+        'EFECTIVO' => 'EFECTIVO',
+        'TRANSFERENCIA BANCARIA' => 'TRANSFERENCIA BANCARIA',
+        'CHEQUE' => 'CHEQUE',
+    ];
+    $ciudades = [
+        'SANTA CRUZ' => 'SANTA CRUZ',
+        'COCHABAMBA' => 'COCHABAMBA'
+    ];
+
+    $tipocuenta = [
+        'CUENTA CORRIENTE' => 'CUENTA CORRIENTE',
+        'CAJA DE AHORRO' => 'CAJA DE AHORRO',
+        'CUENTA INFANTIL' => 'CUENTA INFANTIL',
+        'CUENTA JOVEN' => 'CUENTA JOVEN',
+        'CUENTA MANCOMUNADA' => 'CUENTA MANCOMUNADA',
+        'CUENTA NÓMINA' => 'CUENTA NÓMINA',
+        'CUENTA NO NÓMINA' => 'CUENTA NO NÓMINA',
+        'CUENTA ONLINE' => 'CUENTA ONLINE',
+        'CUENTA REMUNERADA' => 'CUENTA REMUNERADA', 
+    ];
+    
+    $bancos = Banco::orderBy('nombrebanco')->pluck('nombrebanco', 'id');
+    $bancoActual = Banco::where('nombrebanco', $proveedor->banco)->value('id');
+
+    return view('admin.proveedores.edit', compact('ciudades', 'bancoActual', 'proveedor', 'estadoproveedor', 'areas', 'accionesPorArea', 'mododepago', 'bancos', 'tipocuenta'));
+}
+
+public function update(UpdateProveedorRequest $request, Proveedor $proveedor)
+{
+    $idBanco = $request->input('banco');
+    if ($idBanco) {
+        $banco = Banco::findOrFail($idBanco);
+        $bancoNombre = $banco->nombrebanco;
+    } else {
+        $bancoNombre = "NO APLICA";
     }
+
+    $proveedorData = $request->validated();
+    $proveedorData['banco'] = $bancoNombre;
+
+    // Si se está enviando el campo 'estado', primero capturarlo
+    $nuevoEstado = $request->input('estadoproveedor');
+
+    $proveedor->update($proveedorData);
+
+    // Solo si 'estado' viene en el request, actualizar en BateriaProveedor
+    if (!is_null($nuevoEstado)) {
+        BateriaProveedor::where('proveedorid', $proveedor->id)
+                        ->update(['estado' => $nuevoEstado]);
+    }
+
+    return redirect()->route('admin.proveedores.show', $proveedor)->with('info', 'El proveedor se actualizó con éxito');
+}
+
+    public function actualizarEstadoAcciones(Request $request)
+    {
+        // IDs seleccionados
+        $estudios = $request->input('acciones_estudios', []);
+        $especialidades = $request->input('acciones_especialidad', []);
+
+        // Actualizar los estudios seleccionados
+        if (!empty($estudios)) {
+            Bateriaproveedor::whereIn('id', $estudios)
+                            ->update(['estado' => 'INACTIVO']);
+        }
+
+        // Actualizar las especialidades seleccionadas
+        if (!empty($especialidades)) {
+            Bateriaproveedor::whereIn('id', $especialidades)
+                            ->update(['estado' => 'INACTIVO']);
+        }
+
+        return back()->with('info', 'Las acciones seleccionadas se actualizaron a INACTIVO.');
+    }
+
+
     public function destroy(Proveedor $proveedor)
     {
         $proveedor->delete();
@@ -189,33 +218,17 @@ class ProveedorController extends Controller
         $sucursalProveedor = $proveedor->ciudad;
         $accionesProveedor = BateriaProveedor::where('proveedor', $nombreProveedor)->pluck('accion')->toArray();
         
-        /* $idTipoAreaEstudio = 2;
-        $accionesProveedorEstudios = BateriaProveedor::where('proveedor', $nombreProveedor)
-            ->whereIn('accion', function ($query) use ($idTipoAreaEstudio) {
-                $query->select('accion')->from('areaacciones')->where('tipoid', $idTipoAreaEstudio);
-            })
-            ->pluck('accion');
-        
-        $idTipoAreaEspecialidad = 1;
-        $accionesProveedorEspecialidad = BateriaProveedor::where('proveedor', $nombreProveedor)
-                ->whereIn('accion', function ($query) use ($idTipoAreaEspecialidad) {
-                    $query->select('accion')->from('areaacciones')->where('tipoid', $idTipoAreaEspecialidad);
-                })
-                ->pluck('accion'); */
-
         $idTipoAreaEstudio = 2; 
         $accionesProveedorEstudios = BateriaProveedor::where('proveedor', $nombreProveedor)
-            ->whereIn('accion', function ($query) use ($idTipoAreaEstudio) {
-                $query->select('accion')->from('areaacciones')->where('tipoid', $idTipoAreaEstudio);
-            })
-            ->get(['accion', 'precio', 'preciocompra', 'asociado']);
+            ->where('tipoid', 2)
+            ->orderBy('accion')
+            ->get(['id', 'accion', 'precio', 'preciocompra', 'asociado', 'sucursal', 'estado']);
 
         $idTipoAreaEspecialidad = 1;
         $accionesProveedorEspecialidad = BateriaProveedor::where('proveedor', $nombreProveedor)
-            ->whereIn('accion', function ($query) use ($idTipoAreaEspecialidad) {
-                $query->select('accion')->from('areaacciones')->where('tipoid', $idTipoAreaEspecialidad);
-            })
-            ->get(['accion', 'precio', 'preciocompra', 'asociado']);
+            ->where('tipoid', 1)
+            ->orderBy('accion')
+            ->get(['id', 'accion', 'precio', 'preciocompra', 'asociado', 'sucursal', 'estado']);
 
         $areasConAcciones = AreaAccion::where('sucursal', $sucursalProveedor)
         ->where('estado', 'ACTIVO')

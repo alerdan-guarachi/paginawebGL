@@ -5,26 +5,382 @@
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
 @endif
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">BATERIA DEL CLIENTE</a>
+
+<div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <strong>Fecha de Bateria:</strong>
+                <select id="select-fechas" class="form-control">
+                    <option value="" disabled selected>Selecciona una fecha</option>
+                    @foreach($accionesPorFecha as $fecha => $acciones)
+                        <option value="{{ $fecha }}">{{ $fecha }}</option>
+                    @endforeach
+                </select>
+                <div id="acciones-container" class="mt-3">
+                    <strong>Acciones requeridas:</strong>
+                    <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Estudio/Espec.</th>
+                                <th>Proveedor</th>
+                                @if(!auth()->user()->hasRole('PROVEEDOR'))
+                                    <th>Precio</th>
+                                @endif
+                                <th>Informe</th>
+                                <th>Usuario_Reg.</th>
+                                <th>Info.Ajeno</th>
+                                <th>Sel.<input type="checkbox" id="select-all"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="anular-btn" class="btn btn-anular">EDITAR COMO PROV. AJENO</button>
+                <a id="ver-pdf-btn" href="#" target="_blank" class="btn btn-crear" onclick="generatePDF()">GENERAR PDF</a>
+                <button type="button" class="btn btn-cerrar" data-dismiss="modal">CERRAR</button>
+            </div>
+            
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const selectFechas = document.getElementById('select-fechas');
+                    const accionesTable = document.getElementById('acciones-table');
+                    const tbody = accionesTable.querySelector('tbody');
+                    const selectAllCheckbox = document.getElementById('select-all');
+                    const anularBtn = document.getElementById('anular-btn');
+                    const accionesPorFecha = @json($accionesPorFecha);
+                    const rolusuario = @json($rolusuario);
+
+                    selectFechas.addEventListener('change', function () {
+                        const selectedDate = this.value;
+                        tbody.innerHTML = '';
+
+                        if (selectedDate && accionesPorFecha[selectedDate]) {
+                            const acciones = accionesPorFecha[selectedDate];
+                            acciones.forEach(item => {
+                                const esProveedorAjeno = item.proveedor === 'PROVEEDOR AJENO' || item.informe === 'NINGUNO';
+
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    
+                                    <td>${item.id}</td>
+                                    <td title="${item.accion}" class="truncar">
+                                        
+                                        ${item.orden ? `<a href="{{ asset('ordenesbateria') }}/${item.clienteauditoriaid}/${item.orden}" class="btn btn-sm btn-verorden" target="_blank" title="VER ORDEN"><i class="fas fa-eye"></i></a>` : ''} ${item.accion} 
+                                    </td>
+                                    <td title="${item.proveedor}" class="truncar">${item.proveedor}</td>
+                                    ${rolusuario === 'PROVEEDOR' ? '' : `<td>${item.precio}</td>`}
+                                    <td>${item.informe}</td>
+                                    <td title="${item.usuarioregistro}" class="truncar2">${item.usuarioregistro}</td>
+                                    <td>${item.fechainforme ? item.fechainforme : 
+                                    (esProveedorAjeno ? '' : `<input type="date" class="fecha-informe form-control form-control-sm" data-id="${item.id}" style="width: 100px;" disabled>`)}</td>
+                                    <td>${esProveedorAjeno ? '' : `<input type="checkbox" class="row-checkbox" value="${item.id}">`}</td>
+                                `;
+                                tbody.appendChild(row);
+                            });
+
+                            accionesTable.style.display = 'table';
+                        } else {
+                            accionesTable.style.display = 'none';
+                        }
+                    });
+
+                    // Activar el input de fecha solo si se marca el checkbox
+                    document.addEventListener('change', function (event) {
+                        if (event.target.classList.contains('row-checkbox')) {
+                            const row = event.target.closest('tr');
+                            const dateInput = row.querySelector('.fecha-informe');
+                            if (dateInput) {
+                                dateInput.disabled = !event.target.checked;
+                            }
+                        }
+                    });
+
+                    // Funcionalidad de "Seleccionar Todo"
+                    selectAllCheckbox.addEventListener('change', function () {
+                        const checkboxes = document.querySelectorAll('.row-checkbox:not(:disabled)');
+                        checkboxes.forEach(cb => {
+                            cb.checked = this.checked;
+                            const row = cb.closest('tr');
+                            const dateInput = row.querySelector('.fecha-informe');
+                            if (dateInput) {
+                                dateInput.disabled = !cb.checked;
+                            }
+                        });
+                    });
+
+                    // Al hacer clic en el botón se envían los IDs y sus fechas seleccionadas
+                    anularBtn.addEventListener('click', function () {
+                        const selectedData = [];
+                        document.querySelectorAll('.row-checkbox:checked').forEach(cb => {
+                            const row = cb.closest('tr');
+                            const dateInput = row.querySelector('.fecha-informe');
+                            const fechaInforme = dateInput ? dateInput.value : null;
+
+                            /* if (!fechaInforme) {
+                                alert('Debe seleccionar una fecha para cada registro marcado.');
+                                return;
+                            } */
+
+                            selectedData.push({ id: cb.value, fechainforme: fechaInforme });
+                        });
+
+                        if (selectedData.length === 0) {
+                            alert('Seleccione al menos un registro.');
+                            return;
+                        }
+
+                        fetch('{{ route("ruta.anularbateriaauditoria") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ registros: selectedData })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert('Registros anulados y nuevos registros creados.');
+                                location.reload();
+                            } else {
+                                alert('Ocurrió un error.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Ocurrió un error.');
+                        });
+                    });
+                });
+            </script>
+
+            <script> 
+                function generatePDF() {
+                 var fechaSeleccionada = document.getElementById('select-fechas').value;
+             
+                 if (!fechaSeleccionada) {
+                     alert("Por favor, selecciona una fecha.");
+                     return;
+                 }
+                 var clienteId = @json($clienteauditoria->id);
+                 var url = '{{ route("admin.asociados.generarpdfclienteauditoriabateria", ":clienteId") }}';
+                 url = url.replace(':clienteId', clienteId);
+                 fetch(url, {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                     },
+                     body: JSON.stringify({
+                         fecha: fechaSeleccionada
+                     })
+                 })
+                 .then(response => {
+                     if (!response.ok) {
+                         throw new Error('Error en la respuesta del servidor.');
+                     }
+                     return response.blob();
+                 })
+                 .then(blob => {
+                     var link = document.createElement('a');
+                     link.href = window.URL.createObjectURL(blob);
+                     link.download = 'Checklist_' + '{{ $clienteauditoria->nombrecompleto }}' + '.pdf';
+                     link.click();
+                 })
+                 .catch(error => console.error('Error:', error));
+                }
+                document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                
+                    var fechaSeleccionada = document.getElementById('ver-pdf-btn').getAttribute('data-fecha');
+                    var clienteId = @json($clienteauditoria->id);
+                    var url = '{{ route('admin.asociados.generarpdfcliente', ':clienteId') }}';
+                    url = url.replace(':clienteId', clienteId);
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            fecha: fechaSeleccionada
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error en la respuesta del servidor.');
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = 'Checklist_' + '{{ $clienteauditoria->nombrecompleto }}' + '.pdf';
+                        link.click();
+                    })
+                    .catch(error => console.error('Error:', error));
+                });
+            </script>
+        </div>
+    </div>
+</div>
+
+<style>
+    .compact-table th, .compact-table td {
+        padding: 4px 8px;
+        line-height: 1.5;
+    }
+
+    .compact-table {
+        font-size: 16px;
+    }
+</style>
+
+
 <h5>CREAR BATERIA DE:</h5> 
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>
+
+@isset($fechaExpiracion)
+        <div id="cronometro-container" class="mt-3 p-2 bg-light border rounded">
+            <strong>Tiempo restante para crear la batería:</strong>
+            <span id="cronometro">Calculando...</span>
+        </div>
+    @endisset
+
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+        #cronometro-container {
+            position: relative;
+            z-index: 1000;
+            animation: fadeIn 1s ease-in-out;
+        }
+        #cronometro {
+            font-size: 1.2em;
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .shake {
+            animation: shake 0.5s;
+            animation-iteration-count: 2;
+        }
+        @media (max-width: 576px) {
+            #cronometro-container {
+                text-align: center;
+            }
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(isset($fechaExpiracion))
+                var fechaExpiracion = new Date("{{ $fechaExpiracion->toIso8601String() }}").getTime();
+
+                var x = setInterval(function() {
+                    var ahora = new Date().getTime();
+                    var distancia = fechaExpiracion - ahora;
+                    var totalMinutos = Math.floor(distancia / (1000 * 60));
+                    var segundos = Math.floor((distancia % (1000 * 60)) / 1000);
+                    var minutosDisplay = totalMinutos < 10 ? "0" + totalMinutos : totalMinutos;
+                    var segundosDisplay = segundos < 10 ? "0" + segundos : segundos;
+                    document.getElementById("cronometro").innerHTML = minutosDisplay + "m " + segundosDisplay + "s ";
+
+                    if (distancia < 0) {
+                        clearInterval(x);
+                        var cronometro = document.getElementById("cronometro");
+                        cronometro.innerHTML = "¡Tiempo agotado!";
+
+                        var cronometroContainer = document.getElementById("cronometro-container");
+                        cronometroContainer.classList.add('shake');
+
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
+                    }
+                }, 1000);
+            @endif
+        });
+    </script>
 @stop
 
 @section('content')
-@if (session('info'))
-    <div id="alert-info" class="alert alert-success">
-        <strong>{{ session('info') }}</strong>
-    </div>
-    <script>
-        setTimeout(function() {
-            $('#alert-info').fadeOut('fast');
-        }, 5000);
-    </script>
-@endif 
+    @if (session('info'))
+        <div id="alert-info" class="alert alert-success">
+            <strong>{{ session('info') }}</strong>
+        </div>
+        <script>
+            setTimeout(function() {
+                $('#alert-info').fadeOut('fast');
+            }, 5000);
+        </script>
+    @endif 
+
+    @if (session('success'))
+        <div id="alert-success" class="alert alert-success">
+            <strong>{{ session('success') }}</strong>
+        </div>
+        <script>
+            setTimeout(function() {
+                $('#alert-success').fadeOut('fast');
+            }, 5000);
+        </script>
+    @endif
+
+    @if ($errors->has('mensaje'))
+        <div id="alert-error" class="alert alert-danger">
+            <strong>{{ $errors->first('mensaje') }}</strong>
+        </div>
+        <script>
+            setTimeout(function() {
+                $('#alert-error').fadeOut('fast');
+            }, 5000);
+        </script>
+    @endif
+
 <div class="card">
     <div class="card-body">
-        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE')
+        @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'YELKA MORALES VELARDE' || $permisoValido)
 
-        {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardarbateriaclienteauditoria', $clienteauditoria], 'method' => 'POST']) !!}
+        {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardarbateriaclienteauditoria', $clienteauditoria], 'method' => 'POST', 'files' => true ]) !!}
         <div class="row">
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
@@ -39,186 +395,22 @@
                             </small>
                         @enderror
                     </div> 
-                    <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-xl" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body">
-                                    <strong>Fecha de Bateria:</strong>
-                                    <select id="select-fechas" class="form-control">
-                                        <option value="" disabled selected>Selecciona una fecha</option>
-                                        @foreach($accionesPorFecha as $fecha => $acciones)
-                                            <option value="{{ $fecha }}">{{ $fecha }}</option>
-                                        @endforeach
-                                    </select>
-                                    <div id="acciones-container" class="mt-3">
-                                        <strong>Acciones requeridas:</strong>
-                                        <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
-                                            <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Acción</th>
-                                                    <th>Informe</th>
-                                                    <th>Proveedor</th>
-                                                    @if(!auth()->user()->hasRole('PROVEEDOR'))
-                                                        <th>Precio</th>
-                                                    @endif
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <a id="ver-pdf-btn" href="#" target="_blank" class="btn btn-crear"
-                                        onclick=generatePDF()>Generar PDF</a>
-                                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                                </div>
-                                <script> 
-                                    function generatePDF() {
-                                     // Obtener la fecha seleccionada
-                                     var fechaSeleccionada = document.getElementById('select-fechas').value;
-                                 
-                                     if (!fechaSeleccionada) {
-                                         alert("Por favor, selecciona una fecha.");
-                                         return;
-                                     }
-                                 
-                                     // Obtener el cliente ID desde Blade
-                                     var clienteId = @json($clienteauditoria->id);
-                                 
-                                     // URL del controlador para generar el PDF
-                                     var url = '{{ route("admin.asociados.generarpdfclienteauditoriabateria", ":clienteId") }}';
-                                     url = url.replace(':clienteId', clienteId);
-                                 
-                                     // Realizar la solicitud AJAX para generar y descargar el PDF
-                                     fetch(url, {
-                                         method: 'POST',
-                                         headers: {
-                                             'Content-Type': 'application/json',
-                                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                         },
-                                         body: JSON.stringify({
-                                             fecha: fechaSeleccionada
-                                         })
-                                     })
-                                     .then(response => {
-                                         if (!response.ok) {
-                                             throw new Error('Error en la respuesta del servidor.');
-                                         }
-                                         return response.blob();  // Obtener el PDF como un blob
-                                     })
-                                     .then(blob => {
-                                         // Crear un enlace para descargar el archivo
-                                         var link = document.createElement('a');
-                                         link.href = window.URL.createObjectURL(blob);
-                                         link.download = 'Checklist_' + '{{ $clienteauditoria->nombrecompleto }}' + '.pdf';
-                                         link.click();
-                                     })
-                                     .catch(error => console.error('Error:', error));
-                                    }
-                                 
-                                    // Asociar el evento de clic al botón "Generar PDF"
-                                    document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
-                                        e.preventDefault();
-                                    
-                                        var fechaSeleccionada = document.getElementById('ver-pdf-btn').getAttribute('data-fecha');
-                                        var clienteId = @json($clienteauditoria->id); // Asegúrate de que tienes acceso a esta variable
-                                        var url = '{{ route('admin.asociados.generarpdfcliente', ':clienteId') }}';
-                                        url = url.replace(':clienteId', clienteId);
-                                    
-                                        // Realizar la solicitud AJAX para obtener el enlace del PDF
-                                        fetch(url, {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                            },
-                                            body: JSON.stringify({
-                                                fecha: fechaSeleccionada
-                                            })
-                                        })
-                                        .then(response => {
-                                            if (!response.ok) {
-                                                throw new Error('Error en la respuesta del servidor.');
-                                            }
-                                            return response.blob();  // Obtener el PDF como un blob
-                                        })
-                                        .then(blob => {
-                                            // Crear un enlace para descargar el archivo
-                                            var link = document.createElement('a');
-                                            link.href = window.URL.createObjectURL(blob);
-                                            link.download = 'Checklist_' + '{{ $clienteauditoria->nombrecompleto }}' + '.pdf';
-                                            link.click();
-                                        })
-                                        .catch(error => console.error('Error:', error));
-                                    });
-                                </script>
-                                
-                            </div>
-                        </div>
-                    </div>
-
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function () {
-                                const selectFechas = document.getElementById('select-fechas');
-                                const accionesTable = document.getElementById('acciones-table');
-                                const tbody = accionesTable.querySelector('tbody');
-                            
-                                const accionesPorFecha = @json($accionesPorFecha);
-                                const rolusuario = @json($rolusuario); // Asegúrate de que el rol se pasa al script
-                            
-                                selectFechas.addEventListener('change', function () {
-                                    const selectedDate = this.value;
-                            
-                                    tbody.innerHTML = '';
-                            
-                                    if (selectedDate && accionesPorFecha[selectedDate]) {
-                                        const acciones = accionesPorFecha[selectedDate];
-                            
-                                        acciones.forEach(item => {
-                                            const row = document.createElement('tr');
-                                            row.innerHTML = `
-                                                <td>${item.id}</td>
-                                                <td>${item.accion}</td>
-                                                <td>${item.informe}</td>
-                                                <td>${item.proveedor}</td>
-                                                <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
-                                            `;
-                                            tbody.appendChild(row);
-                                        });
-                                        accionesTable.style.display = 'table';
-                                    } else {
-                                        accionesTable.style.display = 'none';
-                                    }
-                                });
-                            });
-                        </script>
-
-                    <style>
-                        .compact-table th, .compact-table td {
-                            padding: 4px 8px; /* Reduce el padding para compactar las celdas */
-                            line-height: 1.2; /* Ajusta el interlineado de las celdas */
-                        }
-
-                        .compact-table {
-                            font-size: 16px; /* Ajusta el tamaño de fuente si es necesario */
-                        }
-                    </style>
-
                     <div class="form-group">
                         <strong>Fecha de Batería:</strong>
                         <select id="select-fechas" name="fechabateria" class="form-control">
                             <option value="nueva_bateria">FECHA DE HOY</option>
                             @foreach($accionesPorFecha as $fecha => $acciones)
                                 <option value="{{ $fecha }}">{{ $fecha }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group"> 
+                        <strong>Medico Derivador:</strong>
+                        <select id="select-fechas" name="medicoderivante" class="form-control">
+                            @foreach($proveedoresmedicos as $proveedor)
+                                <option value="{{ $proveedor->proveedor }}" {{ $proveedor->id == 3 ? 'selected' : '' }}>
+                                    {{ $proveedor->proveedor }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -253,14 +445,26 @@
                                     fechaInformeGroup.classList.add('hidden');
                                 }
                             }
-                
-                            // Inicializa el estado del campo cuando la página carga
                             toggleFechaInforme();
-                
-                            // Añade un listener para cambios en la selección
                             informeSelect.addEventListener('change', toggleFechaInforme);
                         });
                     </script>
+
+                    @php
+                        $rolusuario = strtolower(auth()->user()->getRoleNames()->first());
+                    @endphp
+                    @if($rolusuario !== 'proveedor'/*  && $rolusuario !== 'maestro' */)
+                        <div class="form-group">
+                            {!! Form::label('orden', 'Orden:') !!}
+                            {!! Form::file('orden', ['id' => 'orden', 'class' => 'form-control', 'required']) !!}
+                            @error('orden')
+                                <small class="text-danger">
+                                    <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                                </small>
+                            @enderror
+                        </div>
+                    @endif
+
                     <div class="form-group">
                         {!! Form::label('tipoarea', 'Tipo Area:', ['id' => 'area_label2']) !!}
                         {!! Form::select('tipoarea', ['Estudios' => 'ESTUDIOS', 'Especialidades' => 'ESPECIALIDADES'], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoarea']) !!}
@@ -270,7 +474,6 @@
                             </small>
                         @enderror
                     </div>
-                    <!-- Campo adicional "ANTECEDENTES" -->
                     <div class="form-group" id="antecedentes-field" style="display: none;">
                         {!! Form::label('antecedentes', 'Antecedentes:') !!}
                         {!! Form::text('antecedentes', null, ['class' => 'form-control', 'id' => 'antecedentes']) !!}
@@ -292,8 +495,6 @@
                                     antecedentesField.style.display = 'none';
                                 }
                             });
-                        
-                            // Opcional: si ya hay un valor seleccionado al cargar la página
                             if (tipoareaSelect.value === 'Especialidades') {
                                 antecedentesField.style.display = 'block';
                             }
@@ -311,32 +512,7 @@
                     </div>
                     <div id="reset_button_container" style="margin-bottom: 20px" class=""></div>
                 </div>
-                <div class="col-lg-8">
-                    {{-- @foreach($areas as $id => $nombreArea) 
-                        <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
-                            <div class="card" style="max-height: 500px; overflow-y: auto;">
-                                <div class="card-body">
-                                    @php $count = count($accionesPorArea[$id]); @endphp
-                                    @foreach($accionesPorArea[$id] as $accion)
-                                        <div class="form-check">
-                                            {!! Form::checkbox('acciones[]', $accion->id, null, ['class' => 'form-check-input', 'id' => 'accion_'.$accion->id]) !!}
-                                            {!! Form::label('accion_'.$accion->id, $accion->accion . ' - ID: ' . $accion->id . ' - Proveedor: ' . $accion->proveedor, ['class' => 'form-check-label']) !!}
-
-                                            @if(!auth()->user()->hasRole('PROVEEDOR'))
-                                                <span>- Precio: {{ $accion->precio }}</span>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                            @error('accionnombre')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    @endforeach --}}
-                              
+                <div class="col-lg-8">        
                     @foreach($areas as $id => $nombreArea)  
                         <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
                             <input type="text" id="search_{{ $id }}" placeholder="BUSCAR ESTUDIO" class="form-control" onkeyup="buscarAccion({{ $id }})"> <!-- Input de búsqueda -->
@@ -371,25 +547,12 @@
                                 
                                 if (label.includes(query)) { 
                                     $(this).show();
-                                } else {  // Si no incluye, ocultar
+                                } else {
                                     $(this).hide();
                                 }
                             });
                         }
                     </script>
-               
-
-                    {{-- <div class="form-group card card-body" id="especialidades_group" style="display: none;"> 
-                        {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
-                        <div class="row">
-                            @foreach ($areas2 as $area2)
-                                <div class="col-md-12 form-check">
-                                    {!! Form::checkbox('accionnombre[]', $area2->id, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area2->id]) !!}
-                                    {!! Form::label('accionnombre_' . $area2->id, $area2->area . ' - Proveedor: ' . $area2->proveedor . (auth()->user()->hasRole('OPERATIVO') ? '' : ' - Precio: ' . $area2->precio), ['class' => 'form-check-label']) !!}
-                                </div>
-                            @endforeach
-                        </div>
-                    </div> --}}
                     <div class="form-group card card-body" id="especialidades_group" style="display: none;">  
                         {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
                         <input type="text" id="search_especialidades" placeholder="BUSCAR ESPECIALIDAD" class="form-control" onkeyup="buscarEspecialidad()">
@@ -404,21 +567,19 @@
                         </div>
                     </div>
                     <script>
-                        
                         function buscarEspecialidad() {
-                        var query = $('#search_especialidades').val().toLowerCase(); // Toma el valor del input y lo convierte a minúsculas
-                        $('.especialidad-item').each(function() {  // Recorre todas las especialidades
-                            var label = $(this).find('label').text().toLowerCase();
-                            
-                            if (label.includes(query)) {  // Si el texto de la especialidad incluye la búsqueda, mostrar
-                                $(this).show();
-                            } else {  // Si no incluye, ocultar
-                                $(this).hide();
-                            }
-                        });
-                    }
+                            var query = $('#search_especialidades').val().toLowerCase();
+                            $('.especialidad-item').each(function() {
+                                var label = $(this).find('label').text().toLowerCase();
+                                
+                                if (label.includes(query)) {
+                                    $(this).show();
+                                } else {
+                                    $(this).hide();
+                                }
+                            });
+                        }
                     </script>                    
-                    
                 </div>
             </div>
             {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-crear']) !!}
@@ -426,7 +587,42 @@
         </div>
 
         @else
-        <p>USTED NO TIENE PERMISO PARA CREAR BATERIA</p>
+        {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardarbateriaclienteauditoria', $clienteauditoria], 'method' => 'POST', 'id' => 'form-crear-bateria']) !!}
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="form-group">
+                    @if (session('success'))
+                        <div id="alert-success" class="alert alert-success">
+                            <strong>{{ session('success') }}</strong>
+                        </div>
+                        <script>
+                            setTimeout(function() {
+                                $('#alert-success').fadeOut('fast');
+                            }, 5000);
+                        </script>
+                    @endif
+                    {!! Form::label('codigo', 'Código de Ingreso:') !!}
+                    {!! Form::text('codigo', null, [
+                        'class' => 'form-control',
+                        'placeholder' => 'Ingrese el código',
+                        'required',
+                        'maxlength' => '15',
+                        'size' => '15',
+                        'oninput' => 'this.value = this.value.toUpperCase()',
+                        'style' => 'text-transform: uppercase;',
+                    ]) !!}
+                    @error('codigo')
+                        <small class="text-danger fas fa-exclamation-circle">
+                            {{ $message }}
+                        </small>
+                    @enderror
+                </div>
+                <button type="submit" class="btn btn-crear">INGRESAR CÓDIGO</button>
+            </div>
+            </div>
+            {!! Form::close() !!}
+        </div>
+
         @endif
     </div>
 </div>
@@ -655,6 +851,32 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .table td {
+        padding: 5px 10px;
+    }
+    .truncar {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+    }
+    .truncar2 {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
+    }
+    .btn-verorden {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-verorden:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
     h1 {
         color:#94c93b; 
         font-family: "Segoe UI";
@@ -671,12 +893,12 @@
         font-family: "Segoe UI";
         font-weight: 1000;
         }
-    .btn-crear {
+        .btn-crear {
         background-color:  #ffffff;
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     .btn-crear:hover {
         background-color: #94c93b;
@@ -698,7 +920,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 5px 20px;
+        padding: 5px 10px;
     }
     .custom-button:hover {
         background-color: #faa625;
@@ -709,7 +931,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -719,22 +941,33 @@
     }
     .btn-cerrar {
         background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
+        color: #e1172b;
+        border-color: #e1172b;
         border-radius: 5px;
         padding: 5px 10px;
 
     }
     .btn-cerrar:hover {
-        background-color: #94c93b;
+        background-color: #e1172b;
         color: #ffffff;
     }
+    .btn-anular {
+        background-color:  #ffffff;
+        color: #970d8e;
+        border-color: #970d8e;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-anular:hover {
+        background-color: #970d8e;
+        color: #ffffff;
+        }
     .btn-regresar {
         background-color: #ffffff;
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
