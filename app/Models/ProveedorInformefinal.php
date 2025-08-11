@@ -41,8 +41,10 @@ class ProveedorInformefinal extends Model
         'documentolcambio' => '',
         'nrofactura' => '',
         'comprobante' => '',
+        'cheque' => '',
         'factura' => '',
         'usuariocomprobante' => '',
+        'codautorizacion' => '',
     ]; 
 
     protected $fillable = [
@@ -70,13 +72,14 @@ class ProveedorInformefinal extends Model
         'pagoservicio',
         'usuarioautorizador',
         'documentocredito',
-        'pagoservicio',
         'atencionservicio',
         'documentolcambio',
         'nrofactura',
         'comprobante',
+        'cheque',
         'factura',
         'usuariocomprobante',
+        'codautorizacion',
     ];
     /* public function programacionSubcliente()
     {

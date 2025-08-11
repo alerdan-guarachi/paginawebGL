@@ -126,6 +126,7 @@
                             'PAGO INTERBANCARIO' => 'PAGO INTERBANCARIO',
                             'PAGO EN LINEA' => 'PAGO EN LINEA',
                             'PAGO QR' => 'PAGO QR',
+                            'PAGO CHEQUE' => 'PAGO CHEQUE',
                         ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
                         @error('tipoplanilla')
                             <small class="text-danger fas fa-exclamation-circle">

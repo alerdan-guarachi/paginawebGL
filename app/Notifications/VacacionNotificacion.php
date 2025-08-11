@@ -26,7 +26,7 @@ class VacacionNotificacion extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'mensaje' => "{$this->solicitudvacacion->proveedornombre} ha enviado una solicitud de vacaciones por el motivo: {$this->solicitudvacacion->motivo}",
+            'mensaje' => "{$this->solicitudvacacion->proveedornombre} ha enviado una solicitud de vacaciones.",
             'registro_id' => $this->solicitudvacacion->id,
         ];
     }

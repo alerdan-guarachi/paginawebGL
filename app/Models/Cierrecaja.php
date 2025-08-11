@@ -19,9 +19,12 @@ class Cierrecaja extends Model
         'cierredeposito' => '',
         'cierretransferencia' => '',
         'cierrecheque' => '',
+        'egresotransferencia' => '',
+        'egresocheque' => '',
         'cierreatc' => '',
         'cierrecxc' => '',
         'cierrecxp' => '',
+        'fechacierre' => '',
     ]; 
 
     protected $fillable = [
@@ -32,8 +35,11 @@ class Cierrecaja extends Model
         'cierredeposito',
         'cierretransferencia',
         'cierrecheque',
+        'egresotransferencia',
+        'egresocheque',
         'cierreatc',
         'cierrecxc',
         'cierrecxp',
+        'fechacierre',
     ];
 }

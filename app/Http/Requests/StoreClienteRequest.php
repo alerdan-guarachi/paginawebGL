@@ -68,6 +68,7 @@ class StoreClienteRequest extends FormRequest
             'fechavencci' => '',
             'tipocliente' => '',
             'paisnacimiento' => '',
+            'matricula' => '',
         ]; 
         return $rules;
     }

@@ -9,6 +9,30 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
+<style>
+    .btn-regresar {
+        background-color:  #ffffff;
+        color: #252dc4;
+        border-color: #252dc4;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-regresar:hover {
+        background-color: #252dc4;
+        color: #ffffff;
+        }
+    .btn-crear {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-crear:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+</style>
 @stop
 
 @section('content')

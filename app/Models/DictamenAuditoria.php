@@ -21,7 +21,8 @@ class DictamenAuditoria extends Model
         'usuarioregistroid' => '',
         'usuarioregistronombre' => '',
         'documento' => '',
-
+        'clienteitaid' => '',
+        'clienteitanombre' => '',
     ]; 
 
     protected $fillable = [
@@ -34,5 +35,7 @@ class DictamenAuditoria extends Model
         'usuarioregistroid',
         'usuarioregistronombre',
         'documento',
+        'clienteitaid',
+        'clienteitanombre',
     ];
 }

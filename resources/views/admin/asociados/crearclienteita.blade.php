@@ -22,11 +22,12 @@ CREAR EMPRESA
 @endif
 <div class="card">
     <div class="card-body">
+        {!! Form::model($asociado, ['route' => ['admin.asociados.guardarclienteita', $asociado], 'method' => 'POST', 'files' => true]) !!}
+        {!! Form::hidden('users_id', auth()->user()->id) !!}
+        {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
         <div class="row">
             <div class="col-lg-5">
-                {!! Form::model($asociado, ['route' => ['admin.asociados.guardarclienteita', $asociado], 'method' => 'POST', 'files' => true]) !!}
-                {!! Form::hidden('users_id', auth()->user()->id) !!}
-                {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="form-group">
@@ -295,7 +296,7 @@ CREAR EMPRESA
 
                     <div class="col-lg-3">
                         <div class="form-group">
-                            {!! Form::label('genero', 'Genero:') !!}
+                            {!! Form::label('genero', 'Género:') !!}
                             {!! Form::select('genero', $genero, null, ['class' => 'form-control', 'placeholder' => '']) !!}
                             @error('genero')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -458,7 +459,7 @@ CREAR EMPRESA
                     
                     <div class="col-lg-3">
                         <div class="form-group">
-                            {!! Form::label('telefono', 'Telefono:') !!}
+                            {!! Form::label('telefono', 'Teléfono:') !!}
                             {!! Form::text('telefono', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45', 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57']) !!}
                             @error('telefono')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -758,9 +759,10 @@ CREAR EMPRESA
                     color: #dc3545;
                 }
             </style>
-            {!! Form::submit('CREAR CLIENTE', ['class' => 'btn btn-crear']) !!}
-            {!! Form::close() !!}
+           
         </div>
+        {!! Form::submit('CREAR CLIENTE', ['class' => 'btn btn-crear']) !!}
+        {!! Form::close() !!}
     </div>
 </div>
 <div class="modal fade" id="crearEmpresaModal" tabindex="-1" aria-labelledby="crearEmpresaModalLabel" aria-hidden="true">
@@ -803,84 +805,82 @@ CREAR EMPRESA
 </div>
 <script>
     document.getElementById('crearEmpresaForm').addEventListener('submit', function (e) { 
-    e.preventDefault(); // Evitar que se recargue la página
+        e.preventDefault(); // Evitar que se recargue la página
 
-    let formData = new FormData(this);
+        let formData = new FormData(this);
 
-    // Enviar la solicitud AJAX
-    fetch('{{ route('admin.asociados.crearempresa') }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) { // Verifica si la respuesta tiene el campo 'success' igual a true
-            // Mostrar la alerta de éxito
-            alert("La empresa ha sido registrada exitosamente.");
-            
-            // Agregar la nueva empresa al select
-            let empresaSelect = document.getElementById('empresa-select');
-            let option = new Option(data.empresa.nombreempresa, data.empresa.id);
-            empresaSelect.add(option);
-
-            // Cerrar el modal
-            $('#crearEmpresaModal').modal('hide');
-
-            // Opcional: Seleccionar automáticamente la nueva empresa
-            empresaSelect.value = data.empresa.id;
-
-            // Limpiar los campos del formulario
-            document.getElementById('crearEmpresaForm').reset();
-        } else {
-            alert('Hubo un error al registrar la empresa.');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-});
-
-
-document.getElementById('actualizarEmpresasBtn').addEventListener('click', function () {
-    // Obtener el select
-    let empresaSelect = document.getElementById('empresa');
-
-    // Hacer la solicitud para obtener las empresas
-    fetch('{{ route('admin.asociados.obtenerEmpresas') }}')
+        // Enviar la solicitud AJAX
+        fetch('{{ route('admin.asociados.crearempresa') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData
+        })
         .then(response => response.json())
         .then(data => {
-            // Limpiar el select antes de agregar las nuevas opciones
-            empresaSelect.innerHTML = '';
-
-            // Agregar un option vacío
-            let placeholderOption = new Option('Seleccione una empresa', '');
-            empresaSelect.add(placeholderOption);
-
-            // Recargar las empresas
-            data.empresas.forEach(empresa => {
-                let option = new Option(empresa.nombreempresa, empresa.id);
+            if (data.success) { // Verifica si la respuesta tiene el campo 'success' igual a true
+                // Mostrar la alerta de éxito
+                alert("La empresa ha sido registrada exitosamente.");
+                
+                // Agregar la nueva empresa al select
+                let empresaSelect = document.getElementById('empresa-select');
+                let option = new Option(data.empresa.nombreempresa, data.empresa.id);
                 empresaSelect.add(option);
-            });
 
-            // Opcional: Seleccionar automáticamente la primera empresa
-            if (data.empresas.length > 0) {
-                empresaSelect.value = data.empresas[0].id;
+                // Cerrar el modal
+                $('#crearEmpresaModal').modal('hide');
+
+                // Opcional: Seleccionar automáticamente la nueva empresa
+                empresaSelect.value = data.empresa.id;
+
+                // Limpiar los campos del formulario
+                document.getElementById('crearEmpresaForm').reset();
+            } else {
+                alert('Hubo un error al registrar la empresa.');
             }
         })
-        .catch(error => console.error('Error al actualizar las empresas:', error));
-});
+        .catch(error => console.error('Error:', error));
+    });
 
+
+    document.getElementById('actualizarEmpresasBtn').addEventListener('click', function () {
+        // Obtener el select
+        let empresaSelect = document.getElementById('empresa');
+
+        // Hacer la solicitud para obtener las empresas
+        fetch('{{ route('admin.asociados.obtenerEmpresas') }}')
+            .then(response => response.json())
+            .then(data => {
+                // Limpiar el select antes de agregar las nuevas opciones
+                empresaSelect.innerHTML = '';
+
+                // Agregar un option vacío
+                let placeholderOption = new Option('Seleccione una empresa', '');
+                empresaSelect.add(placeholderOption);
+
+                // Recargar las empresas
+                data.empresas.forEach(empresa => {
+                    let option = new Option(empresa.nombreempresa, empresa.id);
+                    empresaSelect.add(option);
+                });
+
+                // Opcional: Seleccionar automáticamente la primera empresa
+                if (data.empresas.length > 0) {
+                    empresaSelect.value = data.empresas[0].id;
+                }
+            })
+            .catch(error => console.error('Error al actualizar las empresas:', error));
+    });
 </script>          
-<STYle>
+<style>
     .modal {
-z-index: 1050 !important;
-}
-.modal-backdrop {
-z-index: 1040 !important;
-}
-
-</STYle>      
+    z-index: 1050 !important;
+    }
+    .modal-backdrop {
+    z-index: 1040 !important;
+    }
+</style>      
 
 @stop
 @section('js')
@@ -949,7 +949,7 @@ $('.dropify').dropify();
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     
     .btn-crear:hover {
@@ -996,7 +996,7 @@ $('.dropify').dropify();
         background-color: #94c93b;
         color: #fff;
         border: none;
-        padding: 10px 20px;
+        padding: 5px 10px;
         border-radius: 7px;
         text-decoration: none;
         cursor: pointer;
@@ -1043,7 +1043,7 @@ $('.dropify').dropify();
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -1051,13 +1051,13 @@ $('.dropify').dropify();
     }
     .btn-crearempresa {
         background-color: #ffffff;
-        color: #e29d26;
-        border-color: #e29d26;
+        color: #faa625;
+        border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-crearempresa:hover {
-        background-color: #e29d26;
+        background-color: #faa625;
         color: #ffffff;
     }
 </style>

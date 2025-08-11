@@ -56,6 +56,9 @@ class StoreProveedorInformefinalRequest extends FormRequest
         'nrofactura' => '',
         'factura' => '',
         'usuariocomprobante' => '',
+        'comprobante' => '',
+        'cheque' => '',
+        'codautorizacion' => '',
     ]; 
     return $rules;
 }

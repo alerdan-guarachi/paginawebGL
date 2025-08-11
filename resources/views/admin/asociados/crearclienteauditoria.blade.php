@@ -545,7 +545,7 @@ document.getElementById('fecha_nacimiento').addEventListener('change', function(
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     
     .btn-crear:hover {
@@ -568,7 +568,7 @@ document.getElementById('fecha_nacimiento').addEventListener('change', function(
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;

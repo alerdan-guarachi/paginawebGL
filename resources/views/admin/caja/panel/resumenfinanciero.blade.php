@@ -1,7 +1,7 @@
 @extends('adminlte::page')
     
 @section('content_header')
-<a type="button" class="btn btn-outline-secondary float-right" data-toggle="modal" data-target="#calendarModal">MOVIMIENTOS APROXIMADOS</a>
+{{-- <a type="button" class="btn btn-outline-secondary float-right" data-toggle="modal" data-target="#calendarModal">MOVIMIENTOS APROXIMADOS</a> --}}
 
 <div class="container">
     <div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true">

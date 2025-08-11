@@ -89,15 +89,15 @@
                         <thead>
                             <tr>
                                 <th hidden>Sucursal</th>
-                                <th>ID Prog</th>
-                                <th>Tipo Cliente</th>
-                                <th>ID Cliente</th>
-                                <th>Cliente</th>
+                                <th>ID_Prog</th>
+                                <th>Tipo_Cliente</th>
+                                <th>ID_Cli.</th>
+                                <th>Nombre_Cliente</th>
                                 <th>Proveedor</th>
-                                <th>Acción</th>
-                                <th>Fecha batería</th>
-                                <th>Fecha programada</th>
-                                <th>Hora programada</th>
+                                <th>Estudio/Especialidad</th>
+                                <th>Fecha_Batería</th>
+                                <th>Fecha_Prog.</th>
+                                <th>Hora_Prog.</th>
                                 <th>Servicio</th>
                                 <th>Precio</th>
                                 <th hidden>Bateria</th>
@@ -216,15 +216,15 @@
                         <thead>
                             <tr>
                                 <th hidden>Sucursal</th>
-                                <th>ID Prog</th>
-                                <th>Tipo Cliente</th>
-                                <th>ID Cliente</th>
-                                <th>Cliente</th>
+                                <th>ID_Prog</th>
+                                <th>Tipo_Cliente</th>
+                                <th>ID_Cli.</th>
+                                <th>Nombre_Cliente</th>
                                 <th>Proveedor</th>
-                                <th>Acción</th>
-                                <th>Fecha batería</th>
-                                <th>Fecha programada</th>
-                                <th>Hora programada</th>
+                                <th>Estudio/Especialidad</th>
+                                <th>Fecha_Bateria</th>
+                                <th>Fecha_Prog.</th>
+                                <th>Hora_Prog.</th>
                                 <th>Servicio</th>
                                 <th>Precio</th>
                                 {{-- <th>Selec.</th> --}}
@@ -336,18 +336,17 @@
                     <thead>
                         <tr>
                             <th hidden>Sucursal</th>
-                            <th>ID Prog</th>
-                            <th>Tipo Cliente</th>
-                            <th>ID Cliente</th>
-                            <th>Cliente</th>
+                            <th>ID_Prog</th>
+                            <th>Tipo_Cliente</th>
+                            <th>ID_Cli.</th>
+                            <th>Nombre_Cliente</th>
                             <th>Proveedor</th>
-                            <th>Acción</th>
-                            <th>Fecha bateria</th>
-                            <th>Fecha programada</th>
-                            <th>Hora programada</th>
+                            <th>Estudio/Especialidad</th>
+                            <th>Fecha_Bateria</th>
+                            <th>Fecha_Prog.</th>
+                            <th>Hora_Prog.</th>
                             <th>Servicio</th>
                             <th>Precio</th>
-                            
                         </tr>
                     </thead>
                     <tbody>
@@ -433,13 +432,13 @@
                         <thead>
                             <tr>
                                 <th hidden>Sucursal</th>
-                                <th>ID</th>
-                                <th>Tipo Cliente</th>
-                                <th>ID Cliente</th>
-                                <th>Cliente</th>
+                                <th>ID_Prog</th>
+                                <th>Tipo_Cliente</th>
+                                <th>ID_Cli.</th>
+                                <th>Nombre_Cliente</th>
                                 <th>Proveedor</th>
                                 <th>Acción</th>
-                                <th>Fecha batería</th>
+                                <th>Fecha_Bateria</th>
                                 <th>Servicio</th>
                                 <th>Precio</th>
                                 {{-- <th>Selec.</th> --}}
@@ -524,13 +523,13 @@
                     <thead>
                         <tr>
                             <th hidden>Sucursal</th>
-                            <th>ID Prog</th>
-                            <th>Tipo Cliente</th>
-                            <th>ID Cliente</th>
-                            <th>Cliente</th>
+                            <th>ID_Prog</th>
+                            <th>Tipo_Cliente</th>
+                            <th>ID_Cli.</th>
+                            <th>Nombre_Cliente</th>
                             <th>Proveedor</th>
                             <th>Acción</th>
-                            <th>Fecha bateria</th>
+                            <th>Fecha_Bateria</th>
                             <th>Servicio</th>
                             <th>Precio</th>
                         </tr>
@@ -591,6 +590,9 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .table td {
+        padding: 7px 10px;
+    }
     .nav-tabs {
         display: flex;
         justify-content: space-between;

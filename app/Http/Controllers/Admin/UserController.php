@@ -117,12 +117,26 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user)
+    /* public function destroy(User $user)
     {
         $user->delete();
 
         return redirect()->route('admin.users.index', $user)->with('eliminar', 'ok');
+    } */
+    public function destroy(User $user)
+    {
+        $count = User::where('email', 'LIKE', 'N%')
+                    ->whereRaw("email REGEXP '^N[0-9]+$'")
+                    ->count();
+
+        $nuevoEmail = 'N' . ($count + 1);
+        $user->roles()->sync([]);
+        $user->email = $nuevoEmail;
+        $user->password = '';
+        $user->remember_token = null;
+        $user->estado = 'INACTIVO';
+        $user->save();
+
+        return redirect()->route('admin.users.index')->with('eliminar', 'ok');
     }
-    
-    
 }

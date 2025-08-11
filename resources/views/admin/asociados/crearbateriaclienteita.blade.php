@@ -26,8 +26,8 @@
                     </select>
                     <div id="acciones-container" class="mt-3">
                         <strong>Acciones requeridas:</strong>
-                        <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
-                            <thead>
+                        <table id="acciones-table" class="table table-striped mt-2 compact-table table-bordered" style="display: none;">
+                            <thead class="table-secondary">
                                 <tr>
                                     <th>ID</th>
                                     <th>Estudio/Espec.</th>

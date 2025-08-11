@@ -26,17 +26,16 @@ class AreaaccionController extends Controller
     public function index(Request $request)
     {
         $areaaccionesestudios = Bateriaproveedor::where('tipoid', 2)
-            ->orderBy('area')->orderBy('accion')
-            ->get()
-            ->groupBy(['area', 'sucursal']);
-        /* $areaacciones = Bateriaproveedor::where('tipoid', 1)
-            ->orderBy('area')
-            ->distinct()
-            ->get(); */
-            $areaacciones = Bateriaproveedor::where('tipoid', 1)
         ->orderBy('area')
+        ->orderBy('estado')
+        ->orderBy('accion')
         ->get()
         ->groupBy(['area', 'sucursal']);
+
+        $areaacciones = Bateriaproveedor::where('tipoid', 1)
+            ->orderBy('area')
+            ->get()
+            ->groupBy(['area', 'sucursal']);
         $areastipo = Area::select('tipoarea', 'nombrearea')
             ->orderBy('nombrearea')
             ->get();

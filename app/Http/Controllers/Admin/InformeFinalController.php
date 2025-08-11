@@ -829,17 +829,17 @@ class InformeFinalController extends Controller
                     })->$campo ?? null;
                 }
             
-                if ($accionEstado === 'PENDIENTE') {
+                /* if ($accionEstado === 'PENDIENTE') {
                     $estado = 'INCOMPLETO';
-                }
+                } */
                 $accionesConEstado[] = [
                     'accion' => $item->accionnombre,
-                    'estado' => $accionEstado,
-                    'document' => $documentacion,
-                    'documentfirmado' => $documentacionfirmado,
-                    'documentword' => $documentacionword,
+                    'estado' => '',
+                    'document' => '',
+                    'documentfirmado' => '',
+                    'documentword' => '',
                     'proveedornombre' => $item->proveedornombre,
-                    'created_at' => $formattedDate,
+                    'created_at' => '',
                     'poder' => $poder,
                     'numeropoder' => $numeropoder,
                     'avcci' => $avcci,
@@ -853,7 +853,7 @@ class InformeFinalController extends Controller
                     'denfaccidente' => $denfaccidente,
                     'crodomicilio' => $crodomicilio,
                     'contrato' => $contrato,
-                    'observacion' => $observacion,
+                    'observacion' => '',
                     'clienteitanombre' => $clienteNombre,
                     'clienteitaid' => $clienteitaid,
                     'fechabateria' => $fechabateria,
@@ -896,7 +896,7 @@ class InformeFinalController extends Controller
                 'cicliente' => $ciclienteita,
                 'cicliente2' => $ciclienteita2,
                 'sinProgramacion' => $sinProgramacion,
-                'observacion' => $observacion,
+                'observacion' => '',
                 'tramite' => $tramiteString,
                 'estadoaprob' => $aprob,
                 
@@ -1031,6 +1031,7 @@ class InformeFinalController extends Controller
                 $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
                 $texto2 = "MEDICINA LABORAL Y SALUD OCUPACIONAL";
                 $texto3 = "M.P.A-7676725 CM:11019";
+                $textoFecha = "{$sucursal}, {$fechaActual}";
             break;
 
             default:
@@ -1043,10 +1044,11 @@ class InformeFinalController extends Controller
                 $selloUltimaPath = public_path('/glfirmasello/default/sello.png');
                 $firmaUltimaCoords = ['x' => 85, 'y' => 215, 'width' => 60, 'height' => 40];
                 $selloUltimaCoords = ['x' => 85, 'y' => 220, 'width' => 50, 'height' => 50];
+                $textoFecha = null; // ✅ aquí explícitamente es null
             break;
         }
 
-        $textoFecha = "{$sucursal}, {$fechaActual}";
+        /* $textoFecha = "{$sucursal}, {$fechaActual}"; */
 
         if (!file_exists($firmaAnteriorPath) || !file_exists($selloAnteriorPath) ||
             !file_exists($firmaUltimaPath) || !file_exists($selloUltimaPath)) {
@@ -1198,6 +1200,7 @@ class InformeFinalController extends Controller
                 'estado' => 'APROBADO',
                 'documentword' => $archivo3_name,
                 'servicio' => $request->tramite,
+                'proveedorasignado' => $request->proveedornombre,
             ]);
             
             if ($informefinalcliente) {
@@ -1552,9 +1555,8 @@ class InformeFinalController extends Controller
                     ->where('fechabateria', $item->fechabateria)
                     ->value('motivoabandono');
 
-                    $diagnosticomedicoauditoria = Documentacionsubcliente::withTrashed()
-                ->where('clienteitaid', $items->first()->clienteitaid)
-                ->where('fechabateria', $fechabateria)
+                    $diagnosticomedicoauditoria = Documentacionsubcliente::where('clienteauditoriaid', $item->clienteauditoriaid)
+                ->where('fechabateria', $item->fechabateria)
                 ->where('accion', 'DIAGNÓSTICO MÉDICO')
                 ->first();
 
@@ -1803,6 +1805,7 @@ class InformeFinalController extends Controller
                 $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
                 $texto2 = "MEDICINA LABORAL Y SALUD OCUPACIONAL";
                 $texto3 = "M.P.A-7676725 CM:11019";
+                $textoFecha = "{$sucursal}, {$fechaActual}";
             break;
 
             default:
@@ -1815,11 +1818,12 @@ class InformeFinalController extends Controller
                 $selloUltimaPath = public_path('/glfirmasello/default/sello.png');
                 $firmaUltimaCoords = ['x' => 85, 'y' => 215, 'width' => 60, 'height' => 40];
                 $selloUltimaCoords = ['x' => 85, 'y' => 220, 'width' => 50, 'height' => 50];
+                $textoFecha = null;
             break;
         }
 
         // Agregar el texto de la sucursal y la fecha
-        $textoFecha = "{$sucursal}, {$fechaActual}";
+        /* $textoFecha = "{$sucursal}, {$fechaActual}"; */
 
         // Verificar si los archivos de firma y sello existen
         if (!file_exists($firmaAnteriorPath) || !file_exists($selloAnteriorPath) ||
@@ -1993,6 +1997,7 @@ class InformeFinalController extends Controller
                 'estado' => 'APROBADO',
                 'documentword' => $archivo3_name,
                 'servicio' => $request->tramite,
+                'proveedorasignado' => $request->proveedornombre,
             ]);
 
             if ($informefinalcliente) {
@@ -2191,8 +2196,7 @@ class InformeFinalController extends Controller
                 ->first();
             $usuarioRegistro = Cliente::where('id', $items->first()->clienteitaid)
                 ->first();
-            $diagnosticomedico = Documentacionsubcliente::withTrashed()
-                ->where('clienteitaid', $items->first()->clienteitaid)
+            $diagnosticomedico = Documentacionsubcliente::where('clienteitaid', $items->first()->clienteitaid)
                 ->where('fechabateria', $fechabateria)
                 ->where('accion', 'DIAGNÓSTICO MÉDICO')
                 ->first();
@@ -2577,9 +2581,8 @@ class InformeFinalController extends Controller
                     ->where('fechabateria', $item->fechabateria)
                     ->value('motivoabandono');
 
-                    $diagnosticomedicoauditoria = Documentacionsubcliente::withTrashed()
-                ->where('clienteitaid', $items->first()->clienteitaid)
-                ->where('fechabateria', $fechabateria)
+                    $diagnosticomedicoauditoria = Documentacionsubcliente::where('clienteauditoriaid', $item->clienteauditoriaid)
+                ->where('fechabateria', $item->fechabateria)
                 ->where('accion', 'DIAGNÓSTICO MÉDICO')
                 ->first();
 
@@ -3382,11 +3385,16 @@ class InformeFinalController extends Controller
         $clienteitanombre = urldecode($clienteitanombre); // Decodificar el nombre recibido en la URL
 
         // Filtrar los registros por CLIENTEITAID y FECHABATERIA
-        $registros = Programacionsubcliente::select('id', 'medicoderivante', 'accionnombre')
-            ->where('clienteitaid', $clienteitaid)
-            ->where('fechabateria', $fechabateria)
-            ->where('proveedornombre', $proveedornombre)
-            ->get();
+        $registros = DB::table('programacionsubclientes as p')
+        ->select('p.id', 'p.medicoderivante', 'p.accionnombre')
+        ->leftJoin('estadoprogramacionsubclientes as d', 'p.id', '=', 'd.programacionid')
+        ->where('p.clienteitaid', $clienteitaid)
+        ->where('p.fechabateria', $fechabateria)
+        ->whereNull('p.motivoreprogramacion')
+        ->where('p.proveedornombre', $proveedornombre)
+        ->whereNull('d.programacionid') // Solo los que no tienen documentación
+        ->get();
+
 
         if ($registros->isEmpty()) {
             return back()->with('error', 'No hay registros para los datos seleccionados.');
@@ -3402,11 +3410,16 @@ class InformeFinalController extends Controller
         $clienteauditorianombre = urldecode($clienteauditorianombre); // Decodificar el nombre recibido en la URL
 
         // Filtrar los registros por CLIENTEITAID y FECHABATERIA
-        $registros = Programacionsubcliente::select('id', 'medicoderivante', 'accionnombre')
-            ->where('clienteauditoriaid', $clienteauditoriaid)
-            ->where('fechabateria', $fechabateria)
-            ->where('proveedornombre', $proveedornombre)
-            ->get();
+        $registros = DB::table('programacionsubclientes as p')
+        ->select('p.id', 'p.medicoderivante', 'p.accionnombre')
+        ->leftJoin('documentacionsubclientes as d', 'p.id', '=', 'd.programacionid')
+        ->where('p.clienteauditoriaid', $clienteauditoriaid)
+        ->where('p.fechabateria', $fechabateria)
+        ->whereNull('p.motivoreprogramacion')
+        ->where('p.proveedornombre', $proveedornombre)
+        ->whereNull('d.programacionid') // Solo los que no tienen documentación
+        ->get();
+
 
         if ($registros->isEmpty()) {
             return back()->with('error', 'No hay registros para los datos seleccionados.');
@@ -3603,7 +3616,13 @@ class InformeFinalController extends Controller
                 break;
         }
 
-        $textoFecha = "{$sucursal}, {$fechaActual}";
+        /* $textoFecha = "{$sucursal}, {$fechaActual}"; */
+
+        if ($usuario === 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.') {
+            $textoFecha = null;
+        } else {
+            $textoFecha = "{$sucursal}, {$fechaActual}";
+        }
 
         if (!file_exists($firmaAnteriorPath) || !file_exists($selloAnteriorPath) ||
             !file_exists($firmaUltimaPath) || !file_exists($selloUltimaPath)) {
@@ -3631,15 +3650,12 @@ class InformeFinalController extends Controller
         
                 if (strtoupper($usuario) == 'MONICA MACOÑO FLORES') {
                     if ($isAntesDePenultima) {
-                        // Páginas anteriores a la penúltima → firma/sello anteriores
                         $pdf->Image($firmaAnteriorPath, $firmaAnteriorCoords['x'], $firmaAnteriorCoords['y'], $firmaAnteriorCoords['width'], $firmaAnteriorCoords['height']);
                         $pdf->Image($selloAnteriorPath, $selloAnteriorCoords['x'], $selloAnteriorCoords['y'], $selloAnteriorCoords['width'], $selloAnteriorCoords['height']);
                     } elseif ($isPenultima) {
-                        // Penúltima hoja → firma/sello finales + textos
                         $pdf->Image($firmaUltimaPath, $firmaUltimaCoords['x'], $firmaUltimaCoords['y'], $firmaUltimaCoords['width'], $firmaUltimaCoords['height']);
                         $pdf->Image($selloUltimaPath, $selloUltimaCoords['x'], $selloUltimaCoords['y'], $selloUltimaCoords['width'], $selloUltimaCoords['height']);
-        
-                        // Textos finales
+
                         $xSello = $selloUltimaCoords['x'];
                         $ySello = $selloUltimaCoords['y'];
                         $anchoSello = $selloUltimaCoords['width'];
@@ -3660,18 +3676,14 @@ class InformeFinalController extends Controller
                             $pdf->Cell($anchoTexto, $lineHeight, utf8_decode($lineaTexto), 0, 1, 'C');
                         }
                     }
-                    // Última hoja: no se hace nada
                 } else {
                     if ($isAntesDeUltima) {
-                        // Todas menos la última → firma/sello anteriores
                         $pdf->Image($firmaAnteriorPath, $firmaAnteriorCoords['x'], $firmaAnteriorCoords['y'], $firmaAnteriorCoords['width'], $firmaAnteriorCoords['height']);
                         $pdf->Image($selloAnteriorPath, $selloAnteriorCoords['x'], $selloAnteriorCoords['y'], $selloAnteriorCoords['width'], $selloAnteriorCoords['height']);
                     } elseif ($isUltima) {
-                        // Última hoja → firma/sello finales + textos
                         $pdf->Image($firmaUltimaPath, $firmaUltimaCoords['x'], $firmaUltimaCoords['y'], $firmaUltimaCoords['width'], $firmaUltimaCoords['height']);
                         $pdf->Image($selloUltimaPath, $selloUltimaCoords['x'], $selloUltimaCoords['y'], $selloUltimaCoords['width'], $selloUltimaCoords['height']);
         
-                        // Textos finales
                         $xSello = $selloUltimaCoords['x'];
                         $ySello = $selloUltimaCoords['y'];
                         $anchoSello = $selloUltimaCoords['width'];
@@ -3693,13 +3705,10 @@ class InformeFinalController extends Controller
                         }
                     }
                 }
-        
             } catch (Exception $e) {
                 return back()->withErrors(['error' => 'Error al insertar imágenes: ' . $e->getMessage()]);
             }
         }
-        
-        
 
         try {
             $pdf->Output($outputPath, 'F');
@@ -3772,7 +3781,6 @@ class InformeFinalController extends Controller
                         } else {
                             $pdf->SetFont('Helvetica', '', 10);
                         }
-        
                         $pdf->Cell($anchoTexto, $lineHeight, utf8_decode($lineaTexto), 0, 1, 'C');
                     }
                 }
@@ -3839,16 +3847,6 @@ class InformeFinalController extends Controller
             ]
         );
 
-        /* if ($documentacioncliente) {
-            $usuarioAutenticado = auth()->user();
-
-            if ($usuarioAutenticado->hasRole(['PROVEEDOR', 'PROVEEDOR IF'])) { 
-                $usuariosNotificar = User::whereIn('id', [3, 5, 10, 11, 25, 33])->get();
-                foreach ($usuariosNotificar as $usuarioDestino) {
-                    $usuarioDestino->notify(new InformeProveedorNotification($documentacioncliente));
-                }
-            }
-        } */
         if ($documentacioncliente) {
             $usuarioAutenticado = auth()->user();
 
@@ -3865,7 +3863,6 @@ class InformeFinalController extends Controller
                     $usuarioDestino->notify(new InformeProveedorNotification($documentacioncliente));
                 }
             }
-
         }
 
         return back()->with('info', 'El archivo PDF firmado y sellado ha sido guardado correctamente.');
@@ -3983,7 +3980,38 @@ class InformeFinalController extends Controller
                 $texto3 = "MAT. PROF. K-2";
             break;
 
-            case 'CARDIOVIDA':
+            /* case 'CARDIOVIDA':
+                if (Str::startsWith($accion, 'ELECTROCARDIOGRAMA') || Str::startsWith($accion, 'ERGOMETRIA') || Str::startsWith($accion, 'CARDIOLOGIA')) {
+                    $firmaAnteriorPath = public_path('/glfirmasello/CARDIOVIDA/FIRMA ORIGINAL CARDIOVIDA VERTICAL.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/CARDIOVIDA/SELLO ORIGINAL CARDIOVIDA VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 185, 'y' => 205, 'width' => 15, 'height' => 25];
+                    $selloAnteriorCoords = ['x' => 178, 'y' => 200, 'width' => 40, 'height' => 40];
+
+                    $firmaUltimaPath = public_path('/glfirmasello/CARDIOVIDA/FIRMA ORIGINAL CARDIOVIDA.png');
+                    $selloUltimaPath = public_path('/glfirmasello/CARDIOVIDA/SELLO ORIGINAL CARDIOVIDA.png');
+                    $firmaUltimaCoords = ['x' => 97, 'y' => 205, 'width' => 30, 'height' => 20];
+                    $selloUltimaCoords = ['x' => 90, 'y' => 205, 'width' => 40, 'height' => 40];
+                    $texto1 = "DR. IGNACIO VACA VELARDE";
+                    $texto2 = "CARDIÓLOGO - HEMODINAMISTA";
+                    $texto3 = "V-4762072 M22-8858";
+
+                } elseif (Str::startsWith($accion, 'ECOCARDIOGRAMA')) {
+                    $firmaAnteriorPath = public_path('/glfirmasello/CARDIOVIDA ECO/FIRMA ORIGINAL CARDIOVIDA ECO VERTICAL.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/CARDIOVIDA ECO/SELLO ORIGINAL CARDIOVIDA ECO VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 187, 'y' => 205, 'width' => 15, 'height' => 25];
+                    $selloAnteriorCoords = ['x' => 180, 'y' => 200, 'width' => 40, 'height' => 40];
+
+                    $firmaUltimaPath = public_path('/glfirmasello/CARDIOVIDA ECO/FIRMA ORIGINAL CARDIOVIDA ECO.png');
+                    $selloUltimaPath = public_path('/glfirmasello/CARDIOVIDA ECO/SELLO ORIGINAL CARDIOVIDA ECO.png');
+                    $firmaUltimaCoords = ['x' => 97, 'y' => 205, 'width' => 30, 'height' => 20];
+                    $selloUltimaCoords = ['x' => 90, 'y' => 205, 'width' => 40, 'height' => 40];
+                    $texto1 = "DRA. ANA PAOLA ESPINOZA R.";
+                    $texto2 = "E-6289025";
+                    $texto3 = "";
+                }
+            break; */
+
+            case 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.':
                 if (Str::startsWith($accion, 'ELECTROCARDIOGRAMA') || Str::startsWith($accion, 'ERGOMETRIA') || Str::startsWith($accion, 'CARDIOLOGIA')) {
                     $firmaAnteriorPath = public_path('/glfirmasello/CARDIOVIDA/FIRMA ORIGINAL CARDIOVIDA VERTICAL.png');
                     $selloAnteriorPath = public_path('/glfirmasello/CARDIOVIDA/SELLO ORIGINAL CARDIOVIDA VERTICAL.png');
@@ -4027,7 +4055,13 @@ class InformeFinalController extends Controller
                 break;
         }
 
-        $textoFecha = "{$sucursal}, {$fechaActual}";
+        /* $textoFecha = "{$sucursal}, {$fechaActual}"; */
+
+        if ($usuario === 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.') {
+            $textoFecha = null;
+        } else {
+            $textoFecha = "{$sucursal}, {$fechaActual}";
+        }
 
         if (!file_exists($firmaAnteriorPath) || !file_exists($selloAnteriorPath) ||
             !file_exists($firmaUltimaPath) || !file_exists($selloUltimaPath)) {
@@ -4370,7 +4404,38 @@ class InformeFinalController extends Controller
                 $texto3 = "MAT. PROF. K-2";
             break;
 
-            case 'CARDIOVIDA':
+            /* case 'CARDIOVIDA':
+                if (Str::startsWith($accion, 'ELECTROCARDIOGRAMA') || Str::startsWith($accion, 'ERGOMETRIA') || Str::startsWith($accion, 'CARDIOLOGIA')) {
+                    $firmaAnteriorPath = public_path('/glfirmasello/CARDIOVIDA/FIRMA ORIGINAL CARDIOVIDA VERTICAL.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/CARDIOVIDA/SELLO ORIGINAL CARDIOVIDA VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 185, 'y' => 205, 'width' => 15, 'height' => 25];
+                    $selloAnteriorCoords = ['x' => 178, 'y' => 200, 'width' => 40, 'height' => 40];
+
+                    $firmaUltimaPath = public_path('/glfirmasello/CARDIOVIDA/FIRMA ORIGINAL CARDIOVIDA.png');
+                    $selloUltimaPath = public_path('/glfirmasello/CARDIOVIDA/SELLO ORIGINAL CARDIOVIDA.png');
+                    $firmaUltimaCoords = ['x' => 97, 'y' => 205, 'width' => 30, 'height' => 20];
+                    $selloUltimaCoords = ['x' => 90, 'y' => 205, 'width' => 40, 'height' => 40];
+                    $texto1 = "DR. IGNACIO VACA VELARDE";
+                    $texto2 = "CARDIÓLOGO - HEMODINAMISTA";
+                    $texto3 = "V-4762072 M22-8858";
+
+                } elseif (Str::startsWith($accion, 'ECOCARDIOGRAMA')) {
+                    $firmaAnteriorPath = public_path('/glfirmasello/CARDIOVIDA ECO/FIRMA ORIGINAL CARDIOVIDA ECO VERTICAL.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/CARDIOVIDA ECO/SELLO ORIGINAL CARDIOVIDA ECO VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 187, 'y' => 205, 'width' => 15, 'height' => 25];
+                    $selloAnteriorCoords = ['x' => 180, 'y' => 200, 'width' => 40, 'height' => 40];
+
+                    $firmaUltimaPath = public_path('/glfirmasello/CARDIOVIDA ECO/FIRMA ORIGINAL CARDIOVIDA ECO.png');
+                    $selloUltimaPath = public_path('/glfirmasello/CARDIOVIDA ECO/SELLO ORIGINAL CARDIOVIDA ECO.png');
+                    $firmaUltimaCoords = ['x' => 97, 'y' => 205, 'width' => 30, 'height' => 20];
+                    $selloUltimaCoords = ['x' => 90, 'y' => 205, 'width' => 40, 'height' => 40];
+                    $texto1 = "DRA. ANA PAOLA ESPINOZA R.";
+                    $texto2 = "E-6289025";
+                    $texto3 = "";
+                }
+            break; */
+
+            case 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.':
                 if (Str::startsWith($accion, 'ELECTROCARDIOGRAMA') || Str::startsWith($accion, 'ERGOMETRIA') || Str::startsWith($accion, 'CARDIOLOGIA')) {
                     $firmaAnteriorPath = public_path('/glfirmasello/CARDIOVIDA/FIRMA ORIGINAL CARDIOVIDA VERTICAL.png');
                     $selloAnteriorPath = public_path('/glfirmasello/CARDIOVIDA/SELLO ORIGINAL CARDIOVIDA VERTICAL.png');
@@ -4414,7 +4479,13 @@ class InformeFinalController extends Controller
                 break;
         }
 
-        $textoFecha = "{$sucursal}, {$fechaActual}";
+        /* $textoFecha = "{$sucursal}, {$fechaActual}"; */
+
+        if ($usuario === 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.') {
+            $textoFecha = null;
+        } else {
+            $textoFecha = "{$sucursal}, {$fechaActual}";
+        }
 
         if (!file_exists($firmaAnteriorPath) || !file_exists($selloAnteriorPath) ||
             !file_exists($firmaUltimaPath) || !file_exists($selloUltimaPath)) {
@@ -4866,7 +4937,13 @@ class InformeFinalController extends Controller
             break;
         }
 
-        $textoFecha = "{$sucursal}, {$fechaActual}";
+        /* $textoFecha = "{$sucursal}, {$fechaActual}"; */
+
+        if ($usuario === 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.') {
+            $textoFecha = null;
+        } else {
+            $textoFecha = "{$sucursal}, {$fechaActual}";
+        }
 
         if (!file_exists($firmaAnteriorPath) || !file_exists($selloAnteriorPath) ||
             !file_exists($firmaUltimaPath) || !file_exists($selloUltimaPath)) {

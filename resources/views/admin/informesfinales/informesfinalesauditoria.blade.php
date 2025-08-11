@@ -1848,6 +1848,7 @@
                             <input type="hidden" name="clienteauditorianombre" value="{{ $item['clienteauditorianombre'] }}">
                             <input type="hidden" name="fechabateria" value="{{ $item['fechabateria'] }}">
                             <input type="hidden" name="tramite" value="{{ $item['tramite'] }}">
+                            <input type="hidden" name="proveedornombre" value="{{ $item['proveedornombre'] }}">
                             <input type="hidden" name="estado" value="EN REVISIÓN">
                             {!! Form::label('file', 'INFORME PDF (OBLIGATORIO):') !!}
                             <input type="file" name="document" id="document" class="dropify" accept=".pdf"/>

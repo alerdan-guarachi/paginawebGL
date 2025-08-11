@@ -268,12 +268,14 @@
                             
 
                             <div class="d-flex justify-content-between mt-2">
-                                <button id="actualizarPrioridadBtn" class="btn btn-priorizar mt-2">
+                                <button id="actualizarPrioridadBtn" class="btn btn-priorizar">
                                     ACTUALIZAR PRIORIDAD
                                 </button>
+                                @can('admin.inventario.aprobarpreordenes')
                                 <button id="unificarPreordenBtn" class="btn btn-outline-secondary btn-sm">
                                     UNIFICAR ID
                                 </button>
+                                @endcan
                             </div>
                         </div>
                     </div>
@@ -513,7 +515,6 @@
                                 </button>
                                 @endcan
                             </div>
-
                         </div>
                     </div>
                     {{-- ÓRDENES DE SERVICIO APROBADAS --}}
@@ -743,12 +744,14 @@
                                 </tbody>
                             </table>
                             <div class="d-flex justify-content-between mt-2">
-                                <button id="actualizarPrioridadBtn3" class="btn btn-priorizar mt-2">
+                                <button id="actualizarPrioridadBtn3" class="btn btn-priorizar">
                                     ACTUALIZAR PRIORIDAD
                                 </button>
+                                @can('admin.inventario.aprobarpreordenes')
                                 <button id="unificarPreordenBtn3" class="btn btn-outline-secondary btn-sm">
                                     UNIFICAR ID
                                 </button>
+                                @endcan
                             </div>
                         </div>
                     </div>
@@ -887,11 +890,11 @@
 
             {{-- ATENCIÓN MÉDICA --}}
             <div class="tab-pane fade" id="tab-content-5">
-                <ul class="nav nav-tabs">
+                {{-- <ul class="nav nav-tabs">
                     <li class="nav-item">
                         <a class="nav-link active" data-toggle="tab" href="#sub-tab-13">PRIORIZADOS</a>
                     </li>
-                </ul>
+                </ul> --}}
                 <div class="tab-content">
                     {{-- PRIORIZADOS --}}
                     <div class="tab-pane fade show active" id="sub-tab-13">
@@ -954,41 +957,42 @@
                         
                         <form action="{{ route('guardar.pagos') }}" method="POST"> 
                             @csrf
-                            <div class="row align-items-end">
-                                <div class="form-group col-lg-2">
-                                    <label for="bancoorigenprogramacion">Nro. Cuenta Origen:</label>
-                                    <select id="bancoorigenprogramacion" name="bancoorigenprogramacion" class="form-control">
-                                        <option value="">Seleccione una cuenta</option>
-                                        <option value="3000189269" data-saldo="{{ $cuentasConSaldo['3000189269'] ?? 0 }}">3000189269</option>
-                                        <option value="2505314878" data-saldo="{{ $cuentasConSaldo['2505314878'] ?? 0 }}">2505314878</option>
-                                        {{-- <option value="4011113557" data-saldo="{{ $cuentasConSaldo['4011113557'] ?? 0 }}">4011113557</option> --}}
-                                    </select>
-                                </div>
-                                <div class="form-group col-lg-2">
-                                    <label for="fechapago">Fecha Pago:</label>
-                                    <input type="date" name="fechapago" class="form-control">
-                                </div>
-                                <div class="form-group col-lg-2">
-                                    <button type="submit" id="btn-guardar" name="accion" value="guardar" class="btn btn-outline-success mt-4">GUARDAR</button>
-                                    {{-- <button type="submit" id="btn-despriorizar" name="accion" value="despriorizar" class="btn btn-outline-danger mt-4" style="margin-left:10px;">DESPRIORIZAR</button> --}}
-                                </div>
-                                <div class="form-group col-lg-2">
-
-                                </div>
-                                <div class="form-group col-lg-2">
-                                    <label for="busqueda">Buscar Factura:</label>
-                                    <div class="input-group">
-                                        <input type="text" id="busqueda" class="form-control" placeholder="Nro. de Factura...">
-                                        <div class="input-group-append">
-                                            <button type="button" id="btn-buscar-factura" class="btn btn-outline-primary"><i class="fas fa-search"></i></button>
+                            <div class="card" style="background-color: #f8f8f8;">
+                                <div class="card-body">
+                                    <div class="row align-items-end" style=" margin-top: -15px; margin-bottom: -15px;">
+                                        <div class="form-group col-lg-2">
+                                            <label for="bancoorigenprogramacion">Nro. Cuenta Origen:</label>
+                                            <select id="bancoorigenprogramacion" name="bancoorigenprogramacion" class="form-control">
+                                                <option value="">Seleccione una cuenta</option>
+                                                <option value="3000189269" data-saldo="{{ $cuentasConSaldo['3000189269'] ?? 0 }}">3000189269</option>
+                                                <option value="2505314878" data-saldo="{{ $cuentasConSaldo['2505314878'] ?? 0 }}">2505314878</option>
+                                                {{-- <option value="4011113557" data-saldo="{{ $cuentasConSaldo['4011113557'] ?? 0 }}">4011113557</option> --}}
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-lg-2">
+                                            <label for="fechapago">Fecha Pago:</label>
+                                            <input type="date" name="fechapago" class="form-control">
+                                        </div>
+                                        <div class="form-group col-lg-2">
+                                            <button type="submit" id="btn-guardar" name="accion" value="guardar" class="btn btn-outline-success mt-4">GUARDAR</button>
+                                            {{-- <button type="submit" id="btn-despriorizar" name="accion" value="despriorizar" class="btn btn-outline-danger mt-4" style="margin-left:10px;">DESPRIORIZAR</button> --}}
+                                        </div>
+                                        <div class="form-group col-lg-2">
+                                        </div>
+                                        <div class="form-group col-lg-2">
+                                            <label for="busqueda">Buscar Factura:</label>
+                                            <div class="input-group">
+                                                <input type="text" id="busqueda" class="form-control" placeholder="Nro. de Factura...">
+                                                <div class="input-group-append">
+                                                    <button type="button" id="btn-buscar-factura" class="btn btn-outline-primary"><i class="fas fa-search"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group col-lg-2">
+                                            <label>Total:</label>
+                                            <input type="text" id="total-seleccionado" class="form-control" value="0.00" readonly>
                                         </div>
                                     </div>
-                                </div>
-
-
-                                <div class="form-group col-lg-2">
-                                    <label>Total:</label>
-                                    <input type="text" id="total-seleccionado" class="form-control" value="0.00" readonly>
                                 </div>
                             </div>
                             {{-- <div class="table-responsive">
@@ -1777,10 +1781,10 @@
                                                                     saldosDisponibles[sel.value] -= total;
                                                                 }
                                                             });
-                                                            if (selectedCuenta && totalUnitario >= saldosDisponibles[selectedCuenta]) {
-                                                                alert(`No hay saldo suficiente en la cuenta ${selectedCuenta}. Saldo disponible: ${saldosDisponibles[selectedCuenta].toFixed(2)}`);
-                                                                this.value = '';
-                                                            }
+                                                            //if (selectedCuenta && totalUnitario >= saldosDisponibles[selectedCuenta]) {
+                                                            //    alert(`No hay saldo suficiente en la cuenta ${selectedCuenta}. Saldo disponible: ${saldosDisponibles[selectedCuenta].toFixed(2)}`);
+                                                            //    this.value = '';
+                                                            //}
                                                         });
                                                     });
                                                 });

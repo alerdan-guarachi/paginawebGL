@@ -55,6 +55,7 @@ class ClienteAuditoria extends Model
         'nrocredito16' => '',
         'nrocredito17' => '',
         'nrocredito18' => '',
+        'cicomplemento' => '',
     ]; 
 
     protected $fillable = [
@@ -96,6 +97,7 @@ class ClienteAuditoria extends Model
         'nrocredito16',
         'nrocredito17',
         'nrocredito18',
+        'cicomplemento',
     ];
 
     public function user(){

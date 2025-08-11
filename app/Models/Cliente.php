@@ -12,44 +12,45 @@ class Cliente extends Model
     use SoftDeletes;
     static $rules = [
         'id',
-        'apepaterno' => 'max:45',
-        'apematerno' => 'max:45',
-        'nombrecompleto' => 'required',
-        'nombres' => 'required',
-        'ci' => 'required|max:45',
-        'cicomplemento' => 'required|max:45',
-        'ciexp' => 'required|max:45',
-        'tipoidentificacion' => 'required',
+        'apepaterno' => '',
+        'apematerno' => '',
+        'nombrecompleto' => '',
+        'nombres' => '',
+        'ci' => '',
+        'cicomplemento' => '',
+        'ciexp' => '',
+        'tipoidentificacion' => '',
         'image' => '',
-        'users_id' => 'required',
-        'fechanacimiento' => 'required',
-        'edad' => 'required',
-        'estadocivil' => 'required',
-        'genero' => 'required',
-        'ocupacion' => 'required',
+        'users_id' => '',
+        'fechanacimiento' => '',
+        'edad' => '',
+        'estadocivil' => '',
+        'genero' => '',
+        'ocupacion' => '',
         'lugarnacimiento' => '',
         'gradoinstruccion' => '',
-        'celular' => 'required',
-        'telefono' => 'required',
-        'domicilio' => 'required',
-        'email' => 'required',
-        'nuacua' => 'required',
-        'estadolaboral' => 'required',
-        'empresa' => 'required',
-        'paisresidencia' => 'required',
-        'departamentoresidencia' => 'required',
-        'ciudadresidencia' => 'required',
-        'aseguradora' => 'required',
-        'referenciador' => 'required',
-        'afp' => 'required',
-        'numhijosmenores' => 'required',
-        'alertas' => 'required',
-        'usuarioregistro' => 'required',
-        'usuarioultimaactualizacion' => 'required',
-        'sucursal' => 'required',
+        'celular' => '',
+        'telefono' => '',
+        'domicilio' => '',
+        'email' => '',
+        'nuacua' => '',
+        'estadolaboral' => '',
+        'empresa' => '',
+        'paisresidencia' => '',
+        'departamentoresidencia' => '',
+        'ciudadresidencia' => '',
+        'aseguradora' => '',
+        'referenciador' => '',
+        'afp' => '',
+        'numhijosmenores' => '',
+        'alertas' => '',
+        'usuarioregistro' => '',
+        'usuarioultimaactualizacion' => '',
+        'sucursal' => '',
         'fechavencci' => '',
         'tipocliente' => '',
         'paisnacimiento' => '',
+        'matricula' => '',
     ]; 
 
     protected $fillable = [
@@ -92,6 +93,7 @@ class Cliente extends Model
         'tipocliente',
         'nombres',
         'paisnacimiento',
+        'matricula',
     ];
 
     public function user(){
@@ -131,7 +133,7 @@ class Cliente extends Model
     }
     public function tramites()
     {
-        return $this->hasMany(Tramite::class, 'clienteitaid', 'id');
+        return $this->hasMany(Tramite::class, 'clienteid', 'id');
     }
     public function servicios()
     {

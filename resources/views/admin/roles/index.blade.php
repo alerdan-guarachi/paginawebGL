@@ -64,39 +64,41 @@
     h1, th {color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 900;
+    }
+    .btn-editar {
+            background-color:  #ffffff;
+            color: #94c93b;
+            border-color: #94c93b;
+            border-radius: 5px;
         }
-        .btn-editar {
-                background-color:  #ffffff;
-                color: #94c93b;
-                border-color: #94c93b;
-                border-radius: 5px;
-            }
-        .btn-editar:hover {
-                background-color: #94c93b;
-                color: #ffffff;
-            }
-        .btn-eliminar {
-                background-color:  #ffffff;
-                color: #ff0000;
-                border-color: #ff0000;
-                border-radius: 5px;
-            }
-        .btn-eliminar:hover {
-                background-color: #ff0000;
-                color: #ffffff;
-            }
-        .btn-crear {
-                background-color:  #ffffff;
-                color: #94c93b;
-                border-color: #94c93b;
-                border-radius: 5px;
-                padding: 10px 20px;
-            }
-        .btn-crear:hover {
-                background-color: #94c93b;
-                color: #ffffff;
-            }
-        
+    .btn-editar:hover {
+            background-color: #94c93b;
+            color: #ffffff;
+        }
+    .btn-eliminar {
+            background-color:  #ffffff;
+            color: #ff0000;
+            border-color: #ff0000;
+            border-radius: 5px;
+        }
+    .btn-eliminar:hover {
+            background-color: #ff0000;
+            color: #ffffff;
+        }
+    .btn-crear {
+            background-color:  #ffffff;
+            color: #94c93b;
+            border-color: #94c93b;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+    .btn-crear:hover {
+            background-color: #94c93b;
+            color: #ffffff;
+        }
+    .table td {
+        padding: 5px 10px;
+        }
 </style>
 @stop
 

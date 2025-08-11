@@ -32,6 +32,66 @@
         {{-- <a class="btn btn-outline-secondary" data-toggle="modal" data-target="#consolidadosModal">
             CONSOLIDADOS
         </a> --}}
+        {{-- CAMBIO DE FECHA --}}
+            <a class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#modalCodigo" style="margin-right: 10px;">
+                CODIGO CAMBIO FECHA
+            </a>
+            <div class="modal fade" id="modalCodigo" tabindex="-1" role="dialog" aria-labelledby="modalCodigoLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                    <form id="formCodigo">
+                        <div class="modal-header">
+                        <h3 class="modal-title" id="modalCodigoLabel" style="font-weight: 900;">Ingresar Código</h3>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        </div>
+                        <div class="modal-body">
+                        <input type="text" id="codigoInput" name="codigo" class="form-control" placeholder="Ingrese el código" required>
+                        <div id="codigoMensaje" class="mt-2 text-danger" style="display: none;"></div>
+                        </div>
+                        <div class="modal-footer">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">VALIDAR</button>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+            <script>
+                document.getElementById('formCodigo').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const codigo = document.getElementById('codigoInput').value.trim();
+                    const mensaje = document.getElementById('codigoMensaje');
+                    mensaje.style.display = 'none';
+
+                    fetch('{{ route("permisoscodigo.cajaegresos") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        },
+                        body: JSON.stringify({ codigo: codigo })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            $('#modalCodigo').modal('hide');
+                            alert('Código validado correctamente');
+                            location.reload();
+                        } else {
+                            mensaje.textContent = data.message;
+                            mensaje.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        mensaje.textContent = 'Ocurrió un error al procesar la solicitud.';
+                        mensaje.style.display = 'block';
+                    });
+                });
+            </script>
+        {{-- FIN --}}
+
         <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.caja.egreso.cajaegresos') }}">
             REGRESAR
         </a>
@@ -288,368 +348,382 @@
 @else
 <form action="{{ route('guardar.cajacentral.egresocomprobantes') }}" method="POST" id="guardarFormulario">
     @csrf
-    <div class="row">
-        <!-- Panel Izquierdo -->
-        <div class="col-md-2 panel">
-            <div class="form-group" hidden>
-                <label>Ciudad de Operación</label>
-                <input type="text" class="form-control" name="ciudadregistro" value="{{ $sucursal }}" readonly>
-            </div>
+    <div class="card">
+        <div class="card-body">
             <div class="row">
-                {{-- <div class="form-group col-lg-4">
-                    <label for="siguienteId">Recibo</label>
-                    <input type="text" id="siguienteId" class="form-control" value="{{ $siguienteId }}" readonly>
-                </div> --}}
-                <div class="form-group col-lg-4">
-                    <label for="siguienteId">Recibo</label>
-                    <input type="text" id="siguienteId" class="form-control" readonly>
-
-                </div>
-                <script>
-                    function actualizarSiguienteId() {
-                        fetch("{{ url('/recibos/siguiente-id') }}")
-                            .then(response => response.json())
-                            .then(data => {
-                                document.getElementById('siguienteId').value = data.siguienteId;
-                            })
-                            .catch(error => console.error('Error al obtener el siguiente ID:', error));
-                    }
-                
-                    setInterval(actualizarSiguienteId, 1000);
-                    actualizarSiguienteId();
-                </script>
-
-                <div class="form-group col-lg-8">
-                    <label>Tipo de Proveedor</label>
-                    <select id="tipocliente" class="form-control" name="tipocliente" onchange="cambiarArea()">
-                        <option value="" selected disabled></option>
-                        <option value="medico">MEDICO</option>
-                        <option value="proveedor">PROVEEDOR</option>
-                    </select>
-                    <input type="hidden" id="area" class="form-control" name="area" value="MEDICA">
-                </div>
-                
-                <script>
-                function cambiarArea() {
-                    var tipoCliente = document.getElementById('tipocliente').value;
-                    var areaInput = document.getElementById('area');
-                    
-                    if (tipoCliente === 'medico') {
-                        areaInput.value = 'MEDICA';
-                    } else if (tipoCliente === 'proveedor') {
-                        areaInput.value = 'CUENTA POR PAGAR';
-                    }
-                }
-                </script>
-                
-            </div>
-
-            <label for="proveedorid">Nombre de Proveedor</label>
-            <div class="row">
-                <div class="form-group col-lg-12"> 
-                    <select id="proveedorid" name="proveedorid" class="form-control">
-                        <option value="" selected disabled></option>
-                    </select>
-                </div>
-
-                <script>
-                    // Asume que los datos de proveedores están disponibles como variables JS
-                    var proveedores = @json($proveedores);
-                    var proveedoresServicios = @json($proveedoresservicios);
-
-                    // Función para cargar los proveedores según el tipo
-                    function cargarProveedores(tipo) {
-                        var selectProveedor = document.getElementById('proveedorid');
-                        selectProveedor.innerHTML = '<option value="" selected disabled></option>'; // Limpiar opciones existentes
-
-                        var opciones = [];
-                        if (tipo === 'medico') {
-                            opciones = proveedores.map(function(proveedor) {
-                                return `<option value="${proveedor.proveedor}">${proveedor.proveedor}</option>`;
-                            });
-                        } else if (tipo === 'proveedor') {
-                            opciones = proveedoresServicios.map(function(proveedor) {
-                                return `<option value="${proveedor.razonsocial}">${proveedor.razonsocial}</option>`;
-                            });
-                        }
-
-                        selectProveedor.innerHTML += opciones.join('');
-                    }
-
-                    // Agregar un evento para cuando cambie el tipo de proveedor
-                    document.getElementById('tipocliente').addEventListener('change', function() {
-                        cargarProveedores(this.value);
-                    });
-                </script>
-                
-                
-                <div class="form-group col-lg-12">
-                    <label>N. Factura 1</label>
-                    <input type="text" id="nrofactura" name="nrofactura" class="form-control">
-                </div>
-                <div class="form-group col-lg-6">
-                    <label>N. Factura 2</label>
-                    <input type="text" id="nrofactura2" name="nrofactura2" class="form-control">
-                </div>
-                <div class="form-group col-lg-6">
-                    <label>N. Factura 3</label>
-                    <input type="text" id="nrofactura3" name="nrofactura3" class="form-control">
-                </div>
-                
-                <div class="form-group col-lg-6 d-flex justify-content-between">
-                    <a id="buscarProveedor" class="btn btn-secondary" disabled>BUSCAR</a>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Tipo de Transacción</label>
-                <div>
-                    <select class="form-control" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
-                        <option disabled selected></option>
-                        <option value="CHEQUE">CHEQUE</option>
-                        <option value="DEPOSITO_BANCARIO" hidden>DEPÓSITO BANCARIO</option>
-                        <option value="EFECTIVO" hidden>EFECTIVO</option>
-                        <option value="TRANSFERENCIA_BANCARIA">TRANSFERENCIA BANCARIA</option>
-                        {{-- <option value="RETIRO_BANCARIO">RETIRO BANCARIO</option> --}}
-                    </select>
-                    <div class="form-check mt-2" hidden>
-                        <input type="checkbox" class="form-check-input" id="dobleTransaccion" onchange="validarTipoTransaccion()">
-                        <label class="form-check-label" for="dobleTransaccion">Doble Tipo de Transac.</label>
+                <!-- Panel Izquierdo -->
+                <div class="col-md-2 panel">
+                    <div class="form-group" hidden>
+                        <label>Ciudad de Operación</label>
+                        <input type="text" class="form-control" name="ciudadregistro" value="{{ $sucursal }}" readonly>
                     </div>
-                    <select class="form-control mt-2 d-none" id="tipoTransaccion2" name="tipotransaccion2" onchange="validarTipoTransaccion()">
-                        <option disabled selected></option>
-                        <option value="ATC">ATC</option>
-                        <option value="CHEQUE">CHEQUE</option>
-                        <option value="DEPOSITO_BANCARIO">DEPÓSITO BANCARIO</option>
-                        <option value="EFECTIVO">EFECTIVO</option>
-                        <option value="TRANSFERENCIA_BANCARIA">TRANSFERENCIA BANCARIA</option>
-                    </select>
+                    <div class="row">
+                        {{-- <div class="form-group col-lg-4">
+                            <label for="siguienteId">Recibo</label>
+                            <input type="text" id="siguienteId" class="form-control" value="{{ $siguienteId }}" readonly>
+                        </div> --}}
+                        <div class="form-group col-lg-4">
+                            <label for="siguienteId">Recibo</label>
+                            <input type="text" id="siguienteId" class="form-control" readonly>
+
+                        </div>
+                        <script>
+                            function actualizarSiguienteId() {
+                                fetch("{{ url('/recibos/siguiente-id') }}")
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        document.getElementById('siguienteId').value = data.siguienteId;
+                                    })
+                                    .catch(error => console.error('Error al obtener el siguiente ID:', error));
+                            }
+                        
+                            setInterval(actualizarSiguienteId, 1000);
+                            actualizarSiguienteId();
+                        </script>
+
+                        <div class="form-group col-lg-8">
+                            <label>Tipo de Proveedor</label>
+                            <select id="tipocliente" class="form-control" name="tipocliente" onchange="cambiarArea()">
+                                <option value="" selected disabled></option>
+                                <option value="medico">MEDICO</option>
+                                <option value="proveedor">PROVEEDOR</option>
+                            </select>
+                            <input type="hidden" id="area" class="form-control" name="area" value="MEDICA">
+                        </div>
+                        
+                        <script>
+                        function cambiarArea() {
+                            var tipoCliente = document.getElementById('tipocliente').value;
+                            var areaInput = document.getElementById('area');
+                            
+                            if (tipoCliente === 'medico') {
+                                areaInput.value = 'MEDICA';
+                            } else if (tipoCliente === 'proveedor') {
+                                areaInput.value = 'CUENTA POR PAGAR';
+                            }
+                        }
+                        </script>
+                        
+                    </div>
+
+                    <label for="proveedorid">Nombre de Proveedor</label>
+                    <div class="row">
+                        <div class="form-group col-lg-12"> 
+                            <select id="proveedorid" name="proveedorid" class="form-control">
+                                <option value="" selected disabled></option>
+                            </select>
+                        </div>
+
+                        <script>
+                            // Asume que los datos de proveedores están disponibles como variables JS
+                            var proveedores = @json($proveedores);
+                            var proveedoresServicios = @json($proveedoresservicios);
+
+                            // Función para cargar los proveedores según el tipo
+                            function cargarProveedores(tipo) {
+                                var selectProveedor = document.getElementById('proveedorid');
+                                selectProveedor.innerHTML = '<option value="" selected disabled></option>'; // Limpiar opciones existentes
+
+                                var opciones = [];
+                                if (tipo === 'medico') {
+                                    opciones = proveedores.map(function(proveedor) {
+                                        return `<option value="${proveedor.proveedor}">${proveedor.proveedor}</option>`;
+                                    });
+                                } else if (tipo === 'proveedor') {
+                                    opciones = proveedoresServicios.map(function(proveedor) {
+                                        return `<option value="${proveedor.razonsocial}">${proveedor.razonsocial}</option>`;
+                                    });
+                                }
+
+                                selectProveedor.innerHTML += opciones.join('');
+                            }
+
+                            // Agregar un evento para cuando cambie el tipo de proveedor
+                            document.getElementById('tipocliente').addEventListener('change', function() {
+                                cargarProveedores(this.value);
+                            });
+                        </script>
+                        
+                        
+                        <div class="form-group col-lg-12">
+                            <label>N. Factura 1</label>
+                            <input type="text" id="nrofactura" name="nrofactura" class="form-control">
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label>N. Factura 2</label>
+                            <input type="text" id="nrofactura2" name="nrofactura2" class="form-control">
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label>N. Factura 3</label>
+                            <input type="text" id="nrofactura3" name="nrofactura3" class="form-control">
+                        </div>
+                        
+                        <div class="form-group col-lg-6 d-flex justify-content-between">
+                            <a id="buscarProveedor" class="btn btn-secondary" disabled>BUSCAR</a>
+                        </div>
+                    </div>
+                    
+                    {{-- CAMBIO FECHA --}}
+                        <div id="campoFechas" style="display: none;">
+                            <div class="form-group">
+                                <label>Registro</label>
+                                <input type="datetime-local" name="created_at" id="created_at" class="form-control">
+                                <input type="datetime-local" name="updated_at" id="updated_at" class="form-control" hidden>
+                            </div>
+                        </div>
+                    {{-- FIN --}}
+
+                    <div class="form-group">
+                        <label>Tipo de Transacción</label>
+                        <div>
+                            <select class="form-control" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
+                                <option disabled selected></option>
+                                <option value="CHEQUE">CHEQUE</option>
+                                <option value="DEPOSITO_BANCARIO" hidden>DEPÓSITO BANCARIO</option>
+                                <option value="EFECTIVO" hidden>EFECTIVO</option>
+                                <option value="TRANSFERENCIA_BANCARIA">TRANSFERENCIA BANCARIA</option>
+                                {{-- <option value="RETIRO_BANCARIO">RETIRO BANCARIO</option> --}}
+                            </select>
+                            <div class="form-check mt-2" hidden>
+                                <input type="checkbox" class="form-check-input" id="dobleTransaccion" onchange="validarTipoTransaccion()">
+                                <label class="form-check-label" for="dobleTransaccion">Doble Tipo de Transac.</label>
+                            </div>
+                            <select class="form-control mt-2 d-none" id="tipoTransaccion2" name="tipotransaccion2" onchange="validarTipoTransaccion()">
+                                <option disabled selected></option>
+                                <option value="ATC">ATC</option>
+                                <option value="CHEQUE">CHEQUE</option>
+                                <option value="DEPOSITO_BANCARIO">DEPÓSITO BANCARIO</option>
+                                <option value="EFECTIVO">EFECTIVO</option>
+                                <option value="TRANSFERENCIA_BANCARIA">TRANSFERENCIA BANCARIA</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- FACTURA --}}
+                    {{-- <div class="form-group">
+                        <label>Nro. Factura</label>
+                        <input type="text" id="nrofactura" name="nrofactura" class="form-control">
+                    </div> --}}
+
+                    <!-- ATC -->
+                    <div class="form-group atc-fields d-none">
+                        <label>Nro. Tarjeta</label>
+                        <input type="text" id="nrotarjeta" name="nrotarjeta" class="form-control">
+                        <label>AP.</label>
+                        <input type="text" id="nroap" name="nroap" class="form-control">
+                        <label>REF.</label>
+                        <input type="text" id="nroref" name="nroref" class="form-control">
+                    </div>
+
+                    <!-- CHEQUE -->
+                    <div class="form-group cheque-fields d-none">
+                        <label>Nro. Cheque</label>
+                        <input type="text" id="nrocheque" name="nrocheque" class="form-control">
+
+                        <label>Bancarización</label>
+                        <input type="text" id="nrobancarizacioncheque" name="nrobancarizacioncheque" class="form-control">
+
+                        <div class="form-group mb-3">
+                            <label for="tipobancocheque">Tipo Banco</label>
+                            <select name="tipobancocheque" id="tipobancocheque" class="form-control">
+                                <option value=""></option>
+                                @foreach ($bancos as $banco)
+                                    <option value="{{ $banco->nombrebanco }}">{{ $banco->nombrebanco }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="bancoDestino">Nro. Banco Origen</label>
+                            <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control">
+                                <option value=""></option>
+                                @foreach ($cuentas as $cuenta)
+                                    <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- DEPOSITO BANCARIO -->
+                    <div class="form-group deposito-fields d-none">
+                        <div class="form-group mb-3">
+                            <label for="bancoDestino">Nro. Banco Origen</label>
+                            <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control">
+                                <option value=""></option>
+                                @foreach ($cuentas as $cuenta)
+                                    <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <label>Bancarización</label>
+                        <input type="text" id="nrobancarizaciondeposito" name="nrobancarizaciondeposito" class="form-control">
+                    </div>
+                    
+                    <!-- TRANSFERENCIA BANCARIA -->
+                    <div class="form-group transferencia-fields d-none">
+                        <div class="form-group mb-3">
+                            <label for="bancoDestino">Nro. Banco Origen</label>
+                            <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control">
+                                <option value=""></option>
+                                @foreach ($cuentas as $cuenta)
+                                    <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <label>Bancarización</label>
+                        <input type="text" id="nrobancarizaciontransferencia" name="nrobancarizaciontransferencia" class="form-control">
+                    </div>
+                    
+                    <!-- EFECTIVO -->
+                    <div class="form-group efectivo-fields d-none">
+                        <label>Tipo de Cambio</label>
+                        <select name="tipocambio" id="tipocambio" class="form-control">
+                            <option value="Bs.">Bs.</option>
+                            <option value="Usd.">Usd.</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            {{-- FACTURA --}}
-            {{-- <div class="form-group">
-                <label>Nro. Factura</label>
-                <input type="text" id="nrofactura" name="nrofactura" class="form-control">
-            </div> --}}
+                {{-- REGISTROS --}}
+                <div class="col-md-10">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white text-center">
+                            <h5 style="margin-top: -5px; margin-bottom: -5px; font-weight: 700;">PAGOS PENDIENTES</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    <label>ID</label>
+                                    <input type="text" class="form-control" id="proveedorid" name="proveedorid" placeholder="ID del proveedor" readonly>
+                                </div>
+                                <div class="form-group col-lg-8">
+                                    <label>Proveedor</label>
+                                    <input type="text" id="proveedornombre" name="proveedornombre" class="form-control" placeholder="Nombre del proveedor" readonly>
+                                </div>
+                                <div class="form-group col-lg-4" hidden>
+                                    <label>NIT</label>
+                                    <input type="text" class="form-control" placeholder="NIT del proveedor" readonly>
+                                </div>
+                            </div>
 
-            <!-- ATC -->
-            <div class="form-group atc-fields d-none">
-                <label>Nro. Tarjeta</label>
-                <input type="text" id="nrotarjeta" name="nrotarjeta" class="form-control">
-                <label>AP.</label>
-                <input type="text" id="nroap" name="nroap" class="form-control">
-                <label>REF.</label>
-                <input type="text" id="nroref" name="nroref" class="form-control">
-            </div>
+                            <div class="table-responsive">
+                                <table class="table table-bordered mt-3">
+                                    <thead>
+                                        <tr style="background-color: #eff1f3">
+                                            
+                                            <th style="width: 5%;">ID</th>
+                                            <th style="width: 25%;">Detalle</th>
+                                            <th style="width: 10%;">Fecha Asig.</th>
+                                            <th hidden style="width: 0%;">Fecha de Batería</th>
+                                            <th style="width: 20%;">Servicio</th>
+                                            <th style="width: 10%;">Subtotal</th>
+                                            <th style="width: 10%;">Descuento</th>
+                                            <th style="width: 10%;">Total</th>  
+                                            {{-- <th style="width: 5%;">Selec.</th> --}}
+                                            <th style="width: 5%;">
+                                                <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 10px; margin-bottom: 0px;">
+                                                    <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 20px;">
+                                                    Sel.
+                                                </label>
+                                            </th>
+                                            <th style="width: 5%;">Comp.</th>
+                                            <th style="width: 5%;">Fact.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaRegistros">
+                                    </tbody>
+                                </table>
+                            </div>
 
-            <!-- CHEQUE -->
-            <div class="form-group cheque-fields d-none">
-                <label>Nro. Cheque</label>
-                <input type="text" id="nrocheque" name="nrocheque" class="form-control">
+                            <div class="card-body card">
+                                <h5 class="text-left" style="margin-top: 0; font-weight: 700;">RESUMEN DE PAGO</h5>
+                                <div class="row">
 
-                <label>Bancarización</label>
-                <input type="text" id="nrobancarizacioncheque" name="nrobancarizacioncheque" class="form-control">
+                                    <input type="hidden" class="form-control border border-dark" name="montoreal" id="montoreal" value="0" readonly>
 
-                <div class="form-group mb-3">
-                    <label for="tipobancocheque">Tipo Banco</label>
-                    <select name="tipobancocheque" id="tipobancocheque" class="form-control">
-                        <option value=""></option>
-                        @foreach ($bancos as $banco)
-                            <option value="{{ $banco->nombrebanco }}">{{ $banco->nombrebanco }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Subtotal</label>
+                                        <input type="text" class="form-control" name="subtotal" placeholder="Subtotal" value="0" readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Descuento</label>
+                                        <input type="text" class="form-control" name="descuento" placeholder="Descuento" value="0" readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Total</label>
+                                        <input type="text" class="form-control border border-dark" name="montototal" placeholder="Total" value="0" readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Registrar</label>
+                                            <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
+                                                    onclick="imprimirReciboSeleccionados()">
+                                                GUARDAR REGISTRO
+                                            </button>
+                                            <input type="hidden" id="html_recibo" name="html_recibo">
+                                        {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                            <a id="actualizarId" class="btn btn-secondary btn-block">
+                                                INSERTAR DATOS
+                                            </a>
+                                            <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
+                                                    onclick="imprimirReciboSeleccionados()" disabled style="display: none;">
+                                                GUARDAR REGISTRO
+                                            </button>
+                                            <input type="hidden" id="html_recibo" name="html_recibo">
+                                        </div> --}}
+                                        
+                                        <script>
+                                            // Agregar un temporizador para ocultar el botón "Guardar" después de 1 segundo si no se presiona
+                                            let timer;
+                                        
+                                            document.getElementById('actualizarId').addEventListener('click', function () {
+                                                fetch('{{ route('actualizar_id_egreso') }}') // Cambia esta ruta según tu controlador
+                                                    .then(response => response.json())
+                                                    .then(data => {
+                                                        if (data.siguienteId) {
+                                                            document.getElementById('siguienteId').value = data.siguienteId;
+                                                        } else {
+                                                            alert('No se pudo obtener el siguiente ID.');
+                                                        }
+                                                    })
+                                                    .catch(error => console.error('Error:', error));
+                                        
+                                                // Ocultar "Generar Recibo" y mostrar "Guardar Registro"
+                                                document.getElementById('actualizarId').style.display = 'none';
+                                                document.getElementById('imprimirReciboBtn').style.display = 'inline-block';
+                                        
+                                                // Iniciar un temporizador para ocultar el botón "Guardar Registro" después de 1 segundo
+                                                timer = setTimeout(function() {
+                                                    console.log("No se presionó Guardar, ocultando el botón Guardar y mostrando Generar Recibo.");
+                                                    document.getElementById('imprimirReciboBtn').style.display = 'none';
+                                                    document.getElementById('actualizarId').style.display = 'inline-block';
+                                                }, 1500);  // 1000 ms = 1 segundo
+                                            });
+                                        
+                                            // Manejar el clic del botón "Guardar"
+                                            document.getElementById('imprimirReciboBtn').addEventListener('click', function () {
+                                                // Cancelar el temporizador si se presiona el botón "Guardar"
+                                                clearTimeout(timer);
+                                                
+                                                // Después de presionar "Guardar", ocultar "Guardar" y mostrar "Generar Recibo"
+                                                document.getElementById('imprimirReciboBtn').style.display = 'none';
+                                                document.getElementById('actualizarId').style.display = 'inline-block';
+                                            });
+                                        </script>
 
-                <div class="form-group mb-3">
-                    <label for="bancoDestino">Nro. Banco Origen</label>
-                    <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control">
-                        <option value=""></option>
-                        @foreach ($cuentas as $cuenta)
-                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                
-            </div>
-            
-            <!-- DEPOSITO BANCARIO -->
-            <div class="form-group deposito-fields d-none">
-                <div class="form-group mb-3">
-                    <label for="bancoDestino">Nro. Banco Origen</label>
-                    <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control">
-                        <option value=""></option>
-                        @foreach ($cuentas as $cuenta)
-                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <label>Bancarización</label>
-                <input type="text" id="nrobancarizaciondeposito" name="nrobancarizaciondeposito" class="form-control">
-            </div>
-            
-            <!-- TRANSFERENCIA BANCARIA -->
-            <div class="form-group transferencia-fields d-none">
-                <div class="form-group mb-3">
-                    <label for="bancoDestino">Nro. Banco Origen</label>
-                    <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control">
-                        <option value=""></option>
-                        @foreach ($cuentas as $cuenta)
-                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <label>Bancarización</label>
-                <input type="text" id="nrobancarizaciontransferencia" name="nrobancarizaciontransferencia" class="form-control">
-            </div>
-            
-            <!-- EFECTIVO -->
-            <div class="form-group efectivo-fields d-none">
-                <label>Tipo de Cambio</label>
-                <select name="tipocambio" id="tipocambio" class="form-control">
-                    <option value="Bs.">Bs.</option>
-                    <option value="Usd.">Usd.</option>
-                </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="programacionIds" id="programacionIds">
+                            <input type="hidden" name="descuentos" id="descuentos">
+                            <input type="hidden" name="pagos" id="pagos">
+                        </div>
+                    </div>
+                </div>    
             </div>
         </div>
-
-        {{-- REGISTROS --}}
-        <div class="col-md-10">
-            <div class="card">
-                <div class="card-header bg-dark text-white text-center">
-                    <h5 style="margin-bottom: 0;">PAGOS PENDIENTES</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="form-group col-lg-4">
-                            <label>ID</label>
-                            <input type="text" class="form-control" id="proveedorid" name="proveedorid" placeholder="ID del proveedor" readonly>
-                        </div>
-                        <div class="form-group col-lg-8">
-                            <label>Proveedor</label>
-                            <input type="text" id="proveedornombre" name="proveedornombre" class="form-control" placeholder="Nombre del proveedor" readonly>
-                        </div>
-                        <div class="form-group col-lg-4" hidden>
-                            <label>NIT</label>
-                            <input type="text" class="form-control" placeholder="NIT del proveedor" readonly>
-                        </div>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table table-bordered mt-3">
-                            <thead>
-                                <tr style="background-color: #eff1f3">
-                                    
-                                    <th style="width: 5%;">ID</th>
-                                    <th style="width: 25%;">Detalle</th>
-                                    <th style="width: 10%;">Fecha Asig.</th>
-                                    <th hidden style="width: 0%;">Fecha de Batería</th>
-                                    <th style="width: 20%;">Servicio</th>
-                                    <th style="width: 10%;">Subtotal</th>
-                                    <th style="width: 10%;">Descuento</th>
-                                    <th style="width: 10%;">Total</th>  
-                                    {{-- <th style="width: 5%;">Selec.</th> --}}
-                                    <th style="width: 5%;">
-                                        <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 10px; margin-bottom: 0px;">
-                                            <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 20px;">
-                                            Sel.
-                                        </label>
-                                    </th>
-                                    <th style="width: 5%;">Comp.</th>
-                                    <th style="width: 5%;">Fact.</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaRegistros">
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="card-body card">
-                        <h5 class="text-left" style="margin-top: 0;">RESUMEN DE PAGO</h5>
-                        <div class="row">
-
-                            <input type="hidden" class="form-control border border-dark" name="montoreal" id="montoreal" value="0" readonly>
-
-                            <div class="form-group col-lg-3">
-                                <label>Subtotal</label>
-                                <input type="text" class="form-control" name="subtotal" placeholder="Subtotal" value="0" readonly>
-                            </div>
-                            <div class="form-group col-lg-3">
-                                <label>Descuento</label>
-                                <input type="text" class="form-control" name="descuento" placeholder="Descuento" value="0" readonly>
-                            </div>
-                            <div class="form-group col-lg-3">
-                                <label>Total</label>
-                                <input type="text" class="form-control border border-dark" name="montototal" placeholder="Total" value="0" readonly>
-                            </div>
-                            <div class="form-group col-lg-3">
-                                <label>Registrar</label>
-                                    <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
-                                            onclick="imprimirReciboSeleccionados()">
-                                        GUARDAR REGISTRO
-                                    </button>
-                                    <input type="hidden" id="html_recibo" name="html_recibo">
-                                {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
-                                    <a id="actualizarId" class="btn btn-secondary btn-block">
-                                        INSERTAR DATOS
-                                    </a>
-                                    <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
-                                            onclick="imprimirReciboSeleccionados()" disabled style="display: none;">
-                                        GUARDAR REGISTRO
-                                    </button>
-                                    <input type="hidden" id="html_recibo" name="html_recibo">
-                                </div> --}}
-                                
-                                <script>
-                                    // Agregar un temporizador para ocultar el botón "Guardar" después de 1 segundo si no se presiona
-                                    let timer;
-                                
-                                    document.getElementById('actualizarId').addEventListener('click', function () {
-                                        fetch('{{ route('actualizar_id_egreso') }}') // Cambia esta ruta según tu controlador
-                                            .then(response => response.json())
-                                            .then(data => {
-                                                if (data.siguienteId) {
-                                                    document.getElementById('siguienteId').value = data.siguienteId;
-                                                } else {
-                                                    alert('No se pudo obtener el siguiente ID.');
-                                                }
-                                            })
-                                            .catch(error => console.error('Error:', error));
-                                
-                                        // Ocultar "Generar Recibo" y mostrar "Guardar Registro"
-                                        document.getElementById('actualizarId').style.display = 'none';
-                                        document.getElementById('imprimirReciboBtn').style.display = 'inline-block';
-                                
-                                        // Iniciar un temporizador para ocultar el botón "Guardar Registro" después de 1 segundo
-                                        timer = setTimeout(function() {
-                                            console.log("No se presionó Guardar, ocultando el botón Guardar y mostrando Generar Recibo.");
-                                            document.getElementById('imprimirReciboBtn').style.display = 'none';
-                                            document.getElementById('actualizarId').style.display = 'inline-block';
-                                        }, 1500);  // 1000 ms = 1 segundo
-                                    });
-                                
-                                    // Manejar el clic del botón "Guardar"
-                                    document.getElementById('imprimirReciboBtn').addEventListener('click', function () {
-                                        // Cancelar el temporizador si se presiona el botón "Guardar"
-                                        clearTimeout(timer);
-                                        
-                                        // Después de presionar "Guardar", ocultar "Guardar" y mostrar "Generar Recibo"
-                                        document.getElementById('imprimirReciboBtn').style.display = 'none';
-                                        document.getElementById('actualizarId').style.display = 'inline-block';
-                                    });
-                                </script>
-
-                            </div>
-                        </div>
-                    </div>
-                    <input type="hidden" name="programacionIds" id="programacionIds">
-                    <input type="hidden" name="descuentos" id="descuentos">
-                    <input type="hidden" name="pagos" id="pagos">
-                </div>
-            </div>
-        </div>    
     </div>
 </form>
 @endif
@@ -752,6 +826,14 @@
                 const subtotalInput = document.querySelector('input[placeholder="Subtotal"]');
                 const descuentoInput = document.querySelector('input[placeholder="Descuento"]');
                 const totalInput = document.querySelector('input[placeholder="Total"]');
+                const campoFechas = document.getElementById('campoFechas');
+                // CAMBIO FECHA
+                    if (data.permisoExistefecha) {
+                        document.getElementById('campoFechas').style.display = 'block';
+                    } else {
+                        document.getElementById('campoFechas').style.display = 'none';
+                    }
+                //
 
                 if (data.proveedor) {
                     nombreInput.value = data.proveedor.proveedor || data.proveedor.nombrecompleto || data.proveedor.razonsocial;
@@ -1174,7 +1256,12 @@
         /* EFECTIVO */
         const tipocambio = document.getElementById('tipocambio').value;
 
-        
+        //CAMBIO FECHA
+            const createdAt = document.getElementById('created_at').value;
+            const fechaHora = createdAt
+                ? new Date(createdAt).toLocaleString()
+                : new Date().toLocaleString();
+        //
 
         // Tipo de Transacción 2 (opcional)
         let tipoTransaccion2 = '';
@@ -1188,6 +1275,7 @@
         let reciboHTML = `
             <html>
             <head>
+                <meta charset="UTF-8">
                 <style>
                     body {
                         font-family: monospace;
@@ -1258,7 +1346,7 @@
                 <div class="recibo-container">
                     <div class="logo"><img src="${logoUrl}" alt="Logo de la empresa"></div>
                     <div class="recibo"><strong>RECIBO Nro.${idrecibo}</strong></div>
-                    <div class="fecha"><strong>Fecha y Hora:</strong> ${new Date().toLocaleString()}</div>
+                    <div class="fecha"><strong>Fecha y Hora:</strong> ${fechaHora}</div>
                     <div class="linea" style="margin-bottom: -1px;"></div>
                     <div class="info"><strong>Proveedor:</strong> ${nombreCliente}</div>
                     <div class="info" style="margin-top: -3px;"><strong>Emitido por:</strong> ${nombreUsuario}</div>

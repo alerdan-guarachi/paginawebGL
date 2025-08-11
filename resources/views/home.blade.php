@@ -237,7 +237,7 @@
         <div class="col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="card card-stats bg-color-5">
                 <div class="card-body">
-                    <div class="novedadtitulo">MENSAJES</div>
+                    <div class="novedadtitulo">ANUNCIOS</div>
                     <table class="table">
                         <thead>
                             <tr>
@@ -518,7 +518,7 @@
                 <div class="card-header text-white text-center">
                     <h3 class="mb-0">¡BIENVENID@ AL SISTEMA WEB DE GOOD LIFE S.R.L.!</h3>
                 </div>
-                <div class="card-body text-center">
+                <div class="card-body text-right">
                     <p class="lead">
                         En nuestro sistema web, los médicos podrán visualizar fácilmente sus programaciones médicas 
                         y citas programadas para los próximos días, permitiéndoles organizar mejor su tiempo y atención a los pacientes.  
@@ -529,6 +529,26 @@
                     </p>
                     <p class="lead">
                         Accede a todas estas funciones desde cualquier dispositivo y mantén tu información médica siempre disponible.  
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+@if($userRole === 'CONTABLE EXTERNO')   
+    <div class="row justify-content-center" style="">
+        <div class="col-md-8">
+            <div class="custom-card shadow-lg">
+                <div class="card-header text-white text-center">
+                    <h3 class="mb-0">¡BIENVENID@ AL SISTEMA WEB DE GOOD LIFE S.R.L.!</h3>
+                </div>
+                <div class="card-body text-right">
+                    <p class="lead">
+                        En GOOD LIFE S.R.L. nos dedicamos a cuidar de tu bienestar y asegurar tu futuro financiero.
+                        Descubre nuestros servicios médicos y asesoría en la ley de pensiones para una vida plena y segura.
+                        Explora nuestra página web y conoce más sobre nuestro equipo de profesionales apasionados y dedicados a tu atención.
+                        Estamos aquí para escucharte y responder a tus necesidades de manera personalizada. ¡Tu bienestar es nuestra prioridad!
                     </p>
                 </div>
             </div>

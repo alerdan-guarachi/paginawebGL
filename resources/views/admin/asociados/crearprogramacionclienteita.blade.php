@@ -92,54 +92,54 @@
                         @enderror
 
                         @foreach($accionesPorFecha as $fecha => $acciones)     
-                                <div class="acciones-{{ $fecha }}" style="display:none;">
-                                    <div class="row" style="margin-top: 5px; margin-bottom: 20px; align-items: center;">
-                                        <div class="col-lg-12">
-                                            <input type="text" id="search-{{ $fecha }}" placeholder="Buscar estudio / especialidad..."
-                                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); 
-                                                        transition: box-shadow 0.3s ease; outline: none;" 
-                                                onfocus="this.style.boxShadow='0 0 8px rgba(0, 0, 255, 0.3)';" 
-                                                onblur="this.style.boxShadow='none';">
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-2" style="margin-left: -8px;">
-                                        <label style="font-weight: normal; display: flex; align-items: center;">
-                                            <input type="checkbox" id="select-all-{{ $fecha }}" style="margin-right: 5px;"> 
-                                            <span style="font-weight: bold; font-size: 14px;">SELECCIONAR TODO</span>
-                                        </label>
-                                    </div>
-                                    <div class="row action-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
-                                        @foreach($acciones as $accion)
-                                            @php
-                                                $proveedorAjeno = 'PROVEEDOR AJENO';
-                                                $proveedor = isset($proveedoresDetalles[$accion]) ? $proveedoresDetalles[$accion] : null;
-                                                $registrada = isset($accionesRegistradas[$fecha]) && in_array($accion, $accionesRegistradas[$fecha]);
-                                                $accionSanitizada = str_replace([' ', '.'], ['_', '-'], $accion);
-                                            @endphp
-                                            
-                                            @if(!$registrada && (!isset($proveedor) || $proveedor['proveedor'] !== $proveedorAjeno))
-                                                <div class="col-lg-6 action-item" style="flex: 0 0 48%; margin-bottom: -15px;">
-                                                    <div class="form-group">
-                                                        <div>
-                                                            <label style="font-weight: normal; margin-bottom: -15px;">
-                                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }} - {{ $proveedor['proveedor'] }}
-                                                            </label>
-                                                            <input type="hidden" name="proveedor_{{ $accionSanitizada }}" value="{{ $proveedor['proveedor'] ?? '' }}">
-                                                            <input type="hidden" name="areanombre_{{ $accionSanitizada }}" value="{{ $proveedor['area'] ?? '' }}">
-                                                            <input type="hidden" name="precio_{{ $accionSanitizada }}" value="{{ $proveedor['precio'] ?? '' }}">
-                                                            <input type="hidden" name="preciocompra_{{ $accionSanitizada }}" value="{{ $proveedor['preciocompra'] ?? '' }}">
-                                                            <input type="hidden" name="servicio_{{ $accionSanitizada }}" value="{{ $proveedor['servicio'] ?? '' }}">
-                                                            <input type="hidden" name="pagoservicio_{{ $accionSanitizada }}" value="{{ $proveedor['pagoservicio'] ?? '' }}">
-                                                            <input type="hidden" name="bateriaid_{{ $accionSanitizada }}" value="{{ $proveedor['bateriaid'] ?? '' }}">
-                                                            <input type="hidden" name="comision_{{ $accionSanitizada }}" value="{{ $proveedor['comision'] ?? '' }}">
-                                                            <input type="hidden" name="medicoderivante_{{ $accionSanitizada }}" value="{{ $proveedor['medicoderivante'] ?? '' }}">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        @endforeach
+                            <div class="acciones-{{ $fecha }}" style="display:none;">
+                                <div class="row" style="margin-top: 5px; margin-bottom: 20px; align-items: center;">
+                                    <div class="col-lg-12">
+                                        <input type="text" id="search-{{ $fecha }}" placeholder="Buscar estudio / especialidad..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); 
+                                                    transition: box-shadow 0.3s ease; outline: none;" 
+                                            onfocus="this.style.boxShadow='0 0 8px rgba(0, 0, 255, 0.3)';" 
+                                            onblur="this.style.boxShadow='none';">
                                     </div>
                                 </div>
+                                <div class="col-lg-2" style="margin-left: -8px;">
+                                    <label style="font-weight: normal; display: flex; align-items: center;">
+                                        <input type="checkbox" id="select-all-{{ $fecha }}" style="margin-right: 5px;"> 
+                                        <span style="font-weight: bold; font-size: 14px;">SELECCIONAR TODO</span>
+                                    </label>
+                                </div>
+                                <div class="row action-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                                    @foreach($acciones as $accion)
+                                        @php
+                                            $proveedorAjeno = 'PROVEEDOR AJENO';
+                                            $proveedor = isset($proveedoresDetalles[$accion]) ? $proveedoresDetalles[$accion] : null;
+                                            $registrada = isset($accionesRegistradas[$fecha]) && in_array($accion, $accionesRegistradas[$fecha]);
+                                            $accionSanitizada = str_replace([' ', '.'], ['_', '-'], $accion);
+                                        @endphp
+                                        
+                                        @if(!$registrada && (!isset($proveedor) || $proveedor['proveedor'] !== $proveedorAjeno))
+                                            <div class="col-lg-6 action-item" style="flex: 0 0 48%; margin-bottom: -15px;">
+                                                <div class="form-group">
+                                                    <div>
+                                                        <label style="font-weight: normal; margin-bottom: -15px;">
+                                                            <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }} - {{ $proveedor['proveedor'] }}
+                                                        </label>
+                                                        <input type="hidden" name="proveedor_{{ $accionSanitizada }}" value="{{ $proveedor['proveedor'] ?? '' }}">
+                                                        <input type="hidden" name="areanombre_{{ $accionSanitizada }}" value="{{ $proveedor['area'] ?? '' }}">
+                                                        <input type="hidden" name="precio_{{ $accionSanitizada }}" value="{{ $proveedor['precio'] ?? '' }}">
+                                                        <input type="hidden" name="preciocompra_{{ $accionSanitizada }}" value="{{ $proveedor['preciocompra'] ?? '' }}">
+                                                        <input type="hidden" name="servicio_{{ $accionSanitizada }}" value="{{ $proveedor['servicio'] ?? '' }}">
+                                                        <input type="hidden" name="pagoservicio_{{ $accionSanitizada }}" value="{{ $proveedor['pagoservicio'] ?? '' }}">
+                                                        <input type="hidden" name="bateriaid_{{ $accionSanitizada }}" value="{{ $proveedor['bateriaid'] ?? '' }}">
+                                                        <input type="hidden" name="comision_{{ $accionSanitizada }}" value="{{ $proveedor['comision'] ?? '' }}">
+                                                        <input type="hidden" name="medicoderivante_{{ $accionSanitizada }}" value="{{ $proveedor['medicoderivante'] ?? '' }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
                         @endforeach
 
                         <script>
@@ -281,10 +281,10 @@
                 <form id="update-form" method="post"
                     action="{{ route('admin.asociados.actualizarproveedorfecha', ['cliente' => $cliente->id]) }}">
                     @csrf
-                    <div id="acciones-container" class="mt-3">
+                    <div id="acciones-container" class="mt-3 table-responsive">
                         <strong>Acciones programadas:</strong>
-                        <table class="table mt-3" id="acciones-table">
-                            <thead>
+                        <table class="table mt-3 table-striped table-bordered" id="acciones-table">
+                            <thead class="table-secondary">
                                 <tr>
                                     <th>ID</th>
                                     <th>Estudio / Especialidad</th>

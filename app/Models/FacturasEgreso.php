@@ -32,7 +32,7 @@ class FacturasEgreso extends Model
         'subtotal' => '',
         'descuento' => '',
         'giftcard' => '',
-        'cfdf' => '',
+        'importebasecfdf' => '',
         'creditodebitofiscal' => '',
         'tipo' => '',
         'complemento' => '',
@@ -40,9 +40,11 @@ class FacturasEgreso extends Model
         'usuarioregistroid' => '',
         'usuarioregistronombre' => '',
         'ciudad' => '',
-        'importesujetocfdf' => '',
+        'importenosujetocfdf' => '',
         'codigocontrol' => '',
-        'idcaja' => '', 
+        'idcaja' => '',
+        'usuarioentrega' => '',
+        'motivo' => '',
     ]; 
 
     protected $fillable = [
@@ -65,7 +67,7 @@ class FacturasEgreso extends Model
         'subtotal',
         'descuento',
         'giftcard',
-        'cfdf',
+        'importebasecfdf',
         'creditodebitofiscal',
         'tipo',
         'complemento',
@@ -73,9 +75,11 @@ class FacturasEgreso extends Model
         'usuarioregistroid',
         'usuarioregistronombre',
         'ciudad',
-        'importesujetocfdf',
+        'importenosujetocfdf',
         'codigocontrol',
         'idcaja',
+        'usuarioentrega',
+        'motivo',
     ];
 
 }

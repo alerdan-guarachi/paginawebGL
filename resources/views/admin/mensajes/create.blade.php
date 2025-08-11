@@ -1,7 +1,7 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<h1>MENSAJES</h1>
+<h1>ANUNCIOS</h1>
 @stop
 
 @section('content')
@@ -18,14 +18,13 @@
     <div class="card">
         <div class="card-body">
             <div class="row">
-                
                 <div class="col-lg-6">
-                    <strong>NUEVO MENSAJE</strong>
+                    <strong>NUEVO ANUNCIO</strong>
                     {!! Form::model($mensaje, ['route' => ['admin.mensajes.store', $mensaje], 'method' => 'POST']) !!}
                     {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                     {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                     <div class="form-group">
-                        {!! Form::label('titulo', 'Título:') !!}
+                        {!! Form::label('titulo', 'Título del Anuncio:') !!}
                         {!! Form::text('titulo', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                         @error('titulo')
                         <small class="text-danger fas fa-exclamation-circle">
@@ -34,7 +33,7 @@
                         @enderror
                     </div>
                     <div class="form-group">
-                        {!! Form::label('mensaje', 'Mensaje:') !!}
+                        {!! Form::label('mensaje', 'Detalle del Anuncio:') !!}
                         {!! Form::text('mensaje', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                         @error('mensaje')
                         <small class="text-danger fas fa-exclamation-circle">
@@ -44,7 +43,7 @@
                     </div>
                     <div class="form-group">
                         {!! Form::label('opcion', 'Destino:') !!}
-                        {!! Form::select('opcion', ['TODOS' => 'TODOS', 'elegir_usuarios' => 'SELECCIONAR USUARIOS'], null, ['class' => 'form-control', 'id' => 'opcionSelect']) !!}
+                        {!! Form::select('opcion', ['TODOS' => 'TODOS '/* , 'elegir_usuarios' => 'SELECCIONAR USUARIOS' */], null, ['class' => 'form-control', 'id' => 'opcionSelect']) !!}
                     </div>
                     <div class="form-group hidden" id="usuarioSelectContainer">
                         {!! Form::label('usuariodestino', 'Seleccionar usuarios:') !!}
@@ -62,11 +61,11 @@
                         </small>
                         @enderror
                     </div>
-                        {!! Form::submit('Enviar Mensaje', ['class' => 'btn btn-crear']) !!}
+                        {!! Form::submit('Enviar Anuncio', ['class' => 'btn btn-crear']) !!}
                     {!! Form::close() !!}
                 </div>
                 <div class="col-lg-6">
-                    <strong>MENSAJES ENVIADOS HOY</strong>
+                    <strong>ANUNCIOS ENVIADOS HOY</strong>
                     <div class="table-responsive">
                         <table class="table table-striped">
                             <thead>
@@ -117,60 +116,56 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        // Obtener referencias a los selects
-        var opcionSelect = document.getElementById('opcionSelect');
-        var usuarioSelectContainer = document.getElementById('usuarioSelectContainer');
-  
-        // Función para mostrar/ocultar el select de usuarios basado en la opción seleccionada
-        opcionSelect.addEventListener('change', function () {
-          if (opcionSelect.value === 'elegir_usuarios') {
-            usuarioSelectContainer.classList.remove('hidden');
-          } else {
-            usuarioSelectContainer.classList.add('hidden');
-          }
+        document.addEventListener('DOMContentLoaded', function () {
+            var opcionSelect = document.getElementById('opcionSelect');
+            var usuarioSelectContainer = document.getElementById('usuarioSelectContainer');
+            opcionSelect.addEventListener('change', function () {
+            if (opcionSelect.value === 'elegir_usuarios') {
+                usuarioSelectContainer.classList.remove('hidden');
+            } else {
+                usuarioSelectContainer.classList.add('hidden');
+            }
+            });
         });
-      });
     </script>
 @endsection
 
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .table td {
+        padding: 5px 10px;
+        }
     .hidden {
       display: none;
     }
-  </style>
-<style>
     .btn-cerrar {
-                background-color:  #ffffff;
-                color: #ff0000;
-                border-color: #ff0000;
-                border-radius: 5px;
-                padding: 4px 5px;
-            }
-        .btn-cerrar:hover {
-                background-color: #ff0000;
-                color: #ffffff;
-            }
-h1, th {
-    color:#94c93b; 
-    font-family: "Segoe UI";
-    font-weight: 900;
-    }
-
-.btn-crear {
-    background-color:  #ffffff;
-    color: #94c93b;
-    border-color: #94c93b;
-    border-radius: 5px;
-    padding: 10px 20px;
-    }
-
-.btn-crear:hover {
-    background-color: #94c93b;
-    color: #ffffff;
-    }
+        background-color:  #ffffff;
+        color: #ff0000;
+        border-color: #ff0000;
+        border-radius: 5px;
+        padding: 4px 5px;
+        }
+    .btn-cerrar:hover {
+        background-color: #ff0000;
+        color: #ffffff;
+        }
+    h1, th {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 900;
+        }
+    .btn-crear {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-crear:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
     .btn-ver {
         background-color:  #ffffff;
         color: #94c93b;

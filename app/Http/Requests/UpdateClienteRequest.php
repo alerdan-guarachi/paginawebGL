@@ -68,6 +68,7 @@ class UpdateClienteRequest extends FormRequest
         'fechavencci' => '',
         'tipocliente' => '',
         'paisnacimiento' => '',
+        'matricula' => '',
     
         ]; 
         return $rules;

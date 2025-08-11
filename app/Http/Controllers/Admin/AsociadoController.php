@@ -76,6 +76,7 @@ use Carbon\Carbon;
 use App\Models\CartasPolizas;
 use Dompdf\Options;
 use Illuminate\Support\Facades\View;
+use App\Models\ModificacionesDatos;
 
 class AsociadoController extends Controller
 {
@@ -425,6 +426,7 @@ class AsociadoController extends Controller
         $proveedores = Proveedor::whereIn('id', [3, 54])->get(['id', 'proveedor', 'celular']);
         $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
         $tieneBateria = Bateriasubcliente::where('clienteitaid', $cliente->id)->exists();
+        $dictamenitas = DictamenAuditoria::where('clienteitaid', $cliente->id)->get();
         $tieneContactos = ContactoSubCliente::where('clienteitaid', $cliente->id)->exists();
         $tieneCotizacionaprobada = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)->exists();
         $tieneProgramacion = Programacionsubcliente::where('clienteitaid', $cliente->id)->exists();
@@ -518,8 +520,82 @@ class AsociadoController extends Controller
             ->exists();
 
 
-        return view('admin.asociados.verclienteita', compact('cartasclientes','clienteConInvalidez','clienteConApelacionOSegunda','tramitesPorFecha','historiamedicaclienteita','nombreusuario','tienerequisitosapelacion','tienerequisitossegundasolicitud','tienerequisitostercerasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneTercerasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion'));
+        return view('admin.asociados.verclienteita', compact('cartasclientes','clienteConInvalidez','clienteConApelacionOSegunda','tramitesPorFecha','historiamedicaclienteita','nombreusuario','tienerequisitosapelacion','tienerequisitossegundasolicitud','tienerequisitostercerasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneTercerasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion', 'dictamenitas'));
     }
+
+    public function guardardictamenita(Request $request, Cliente $cliente)
+    {
+        $archivo_name = null;
+
+        $request->validate([
+            'documento' => '',
+            'nrodictamen' => '',
+            'fechadictamen' => '',
+            'porcentajeinvalidez' => '',
+        ]);
+
+        if ($request->hasFile('documento')) {
+            $file = $request->file('documento');
+            
+            $carpetaCliente = public_path("/dictamenita/{$cliente->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);}
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+        }
+
+        $porcentajeConSimbolo = $request->porcentajeinvalidez . ' %';
+
+        DictamenAuditoria::create([
+            'clienteitaid' => $cliente->id,
+            'clienteitanombre' => $cliente->nombrecompleto,
+            'usuarioregistroid' => $request->usuarioregistroid,
+            'usuarioregistronombre' => $request->usuarioregistronombre,
+            'nrodictamen' => $request->nrodictamen,
+            'fechadictamen' => $request->fechadictamen,
+            'porcentajeinvalidez' => $porcentajeConSimbolo,
+            'documento' => $archivo_name,
+        ]);
+
+        return redirect()->route('admin.asociados.verclienteita', $cliente)
+            ->with('info', 'Dictamen guardado exitosamente.');
+    }
+    
+    public function guardarcartaclienteauditoriaita(Cliente $cliente, Request $request) 
+        {
+            $archivo_name = null;
+            if ($request->hasFile('carta')) {
+                $file = $request->file('carta');
+                $carpetaCliente = public_path("/cartasclientesita/{$cliente->id}");
+                if (!file_exists($carpetaCliente)) {
+                    mkdir($carpetaCliente, 0755, true);
+                }
+                $archivo_name = time() . '_' . $file->getClientOriginalName();
+                $file->move($carpetaCliente, $archivo_name);
+            }
+
+            $nombrecliente = $request->input('nombrecompleto');
+            $detalle = $request->input('detalle');
+            $fecha = $request->input('fecha');
+            $idcliente = $request->input('clienteitaid');
+            $nombrecliente = $request->input('clienteitanombre');
+            $usuarioAutenticado = Auth::user();
+
+            CartasClientes::create([
+                'documento' => $archivo_name,
+                'detalle' => $detalle,
+                'fecha' => $fecha,
+                'clienteid' => $idcliente,
+                'clientenombre' => $nombrecliente,
+                'usuarioregistroid' => $usuarioAutenticado->id,
+                'usuarioregistronombre' => $usuarioAutenticado->name,
+            ]
+        );
+
+
+        return redirect()->route('admin.asociados.verclienteita', $request->cliente)->with('info', 'La carta se subió con éxito');
+    }
+
     public function editarclienteita(Cliente $cliente)
     {
         $suc = [
@@ -599,7 +675,6 @@ class AsociadoController extends Controller
     {
         $clienteData = $request->validated();
 
-        // Guardar solo el campo visible
         if ($request->paisnacimiento === 'BOLIVIA') {
             $clienteData['lugarnacimiento'] = $request->lugarnacimiento_select;
         } else {
@@ -616,6 +691,21 @@ class AsociadoController extends Controller
             }
             $clienteData['image'] = $image_name;
         }
+
+        foreach ($clienteData as $campo => $nuevoValor) {
+            $valorAnterior = $cliente->$campo;
+            if ($valorAnterior != $nuevoValor) {
+                Modificacionesdatos::create([
+                    'tabla' => 'clientes',
+                    'columna' => $campo,
+                    'datoantiguo' => $valorAnterior,
+                    'datonuevo' => $nuevoValor,
+                    'usuarioedicionid' => Auth::id(),
+                    'usuarioedicionnombre' => Auth::user()->name,
+                ]);
+            }
+        }
+
         $cliente->update($clienteData);
 
         return redirect()->route('admin.asociados.verclienteita', $cliente)->with('info', 'El cliente se actualizó con éxito');
@@ -1504,15 +1594,35 @@ class AsociadoController extends Controller
 
                         $existe = Bateriasubcliente::where('clienteitaid', $clienteID)
                             ->where('accionnombre', $nombreConSufijo)
-                            ->where('fechabateria', $fechaSeleccionada ? $fechaActual : $fechaSeleccionada)
+                            ->where('fechabateria', $fechaSeleccionada)
                             ->exists();
 
                         $contador++;
                     } while ($existe);
 
                     if ($informe === 'SI TIENE INFORME') {
-                        $clienteitaData['accionid'] = $accionId . '0PA';
-                        $clienteitaData['accionnombre'] = $accionNombre . ' - PA';
+                        /* $clienteitaData['accionid'] = $accionId . '0PA';
+                        $clienteitaData['accionnombre'] = $accionNombre . ' - PA'; */
+                        // Base para ID y nombre
+                        $baseAccionId = $accionId . '0PA';
+                        $baseAccionNombre = $accionNombre . ' - PA';
+                        $contadorPA = 0;
+
+                        do {
+                            $sufijoPA = $contadorPA === 0 ? '' : ($contadorPA + 1); // empieza desde 2
+                            $accionIdFinal = $baseAccionId . $sufijoPA;
+                            $accionNombreFinal = $baseAccionNombre . ($sufijoPA ? $sufijoPA : '');
+
+                            $existePA = Bateriasubcliente::where('clienteitaid', $clienteID)
+                                ->where('accionid', $accionIdFinal)
+                                ->where('fechabateria', $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada)
+                                ->exists();
+
+                            $contadorPA++;
+                        } while ($existePA);
+
+                        $clienteitaData['accionid'] = $accionIdFinal;
+                        $clienteitaData['accionnombre'] = $accionNombreFinal;
                         $clienteitaData['precio'] = '0';
                         $clienteitaData['preciocompra'] = '0';
                         $clienteitaData['proveedorasignado'] = 'PROVEEDOR AJENO';
@@ -1520,8 +1630,6 @@ class AsociadoController extends Controller
                         $clienteitaData['pagoservicio'] = 'AJENO';
                         $clienteitaData['comision'] = null;
                     } else {
-                        /* $clienteitaData['accionid'] = $accionId;
-                        $clienteitaData['accionnombre'] = $accionNombre; */
                         $clienteitaData['accionid'] = $idConSufijo;
                         $clienteitaData['accionnombre'] = $nombreConSufijo;
                         $clienteitaData['precio'] = $precioAccion;
@@ -1551,7 +1659,8 @@ class AsociadoController extends Controller
                             'horadesde' => $horaActual,
                             'horahasta' => $horaActual,
                             'areanombre' => $areaNombre,
-                            'accionnombre' => $accionNombre . ' - PA',
+                            /* 'accionnombre' => $accionNombre . ' - PA', */
+                            'accionnombre' => $accionNombreFinal,
                             'precio' => '0',
                             'usuarioid' => $usuarioID,
                             'usuarioregistro' => $usuarioNombre,
@@ -1565,7 +1674,8 @@ class AsociadoController extends Controller
                             'clienteitanombre' => $cliente->nombrecompleto,
                             'fechaatencionprogramacion' => $fechaActual,
                             'fechabateria' => $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada,
-                            'accionnombre' => $accionNombre . ' - PA',
+                            /* 'accionnombre' => $accionNombre . ' - PA', */
+                            'accionnombre' => $accionNombreFinal,
                             'usuarioid' => $usuarioID,
                             'usuarioregistro' => $usuarioNombre,
                         ]);
@@ -1615,16 +1725,35 @@ class AsociadoController extends Controller
 
                     $existe = Bateriasubcliente::where('clienteitaid', $clienteID)
                         ->where('accionnombre', $nombreConSufijo)
-                        ->where('fechabateria', $fechaSeleccionada ? $fechaActual : $fechaSeleccionada)
+                        ->where('fechabateria', $fechaSeleccionada)
                         ->exists();
 
                     $contador++;
                 } while ($existe);
 
-
                 if ($informe === 'SI TIENE INFORME') {
-                    $clienteitaData['accionid'] = $accionId . '0PA';
-                    $clienteitaData['accionnombre'] = $accionNombre . ' - PA';
+                    /* $clienteitaData['accionid'] = $accionId . '0PA';
+                    $clienteitaData['accionnombre'] = $accionNombre . ' - PA'; */
+                     // Base para ID y nombre
+                    $baseAccionId = $accionId . '0PA';
+                    $baseAccionNombre = $accionNombre . ' - PA';
+                    $contadorPA = 0;
+
+                    do {
+                        $sufijoPA = $contadorPA === 0 ? '' : ($contadorPA + 1); // empieza desde 2
+                        $accionIdFinal = $baseAccionId . $sufijoPA;
+                        $accionNombreFinal = $baseAccionNombre . ($sufijoPA ? $sufijoPA : '');
+
+                        $existePA = Bateriasubcliente::where('clienteitaid', $clienteID)
+                            ->where('accionid', $accionIdFinal)
+                            ->where('fechabateria', $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada)
+                            ->exists();
+
+                        $contadorPA++;
+                    } while ($existePA);
+
+                    $clienteitaData['accionid'] = $accionIdFinal;
+                    $clienteitaData['accionnombre'] = $accionNombreFinal;
                     $clienteitaData['precio'] = '0';
                     $clienteitaData['preciocompra'] = '0';
                     $clienteitaData['proveedorasignado'] = 'PROVEEDOR AJENO';
@@ -1632,8 +1761,6 @@ class AsociadoController extends Controller
                     $clienteitaData['pagoservicio'] = 'AJENO';
                     $clienteitaData['comision'] = null;
                 } else{
-                    /* $clienteitaData['accionid'] = $accionId;
-                    $clienteitaData['accionnombre'] = $accionNombre; */
                     $clienteitaData['accionid'] = $idConSufijo;
                     $clienteitaData['accionnombre'] = $nombreConSufijo;
                     $clienteitaData['precio'] = $precioAccion;
@@ -1663,7 +1790,8 @@ class AsociadoController extends Controller
                         'horadesde' => $horaActual,
                         'horahasta' => $horaActual,
                         'areanombre' => $accionNombre,
-                        'accionnombre' => $accionNombre . ' - PA',
+                        /* 'accionnombre' => $accionNombre . ' - PA', */
+                        'accionnombre' => $accionNombreFinal,
                         'precio' => '0',
                         'usuarioid' => $usuarioID,
                         'usuarioregistro' => $usuarioNombre,
@@ -1677,7 +1805,8 @@ class AsociadoController extends Controller
                         'clienteitanombre' => $cliente->nombrecompleto,
                         'fechaatencionprogramacion' => $fechaActual,
                         'fechabateria' => $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada,
-                        'accionnombre' => $accionNombre . ' - PA',
+                        /* 'accionnombre' => $accionNombre . ' - PA', */
+                        'accionnombre' => $accionNombreFinal,
                         'usuarioid' => $usuarioID,
                         'usuarioregistro' => $usuarioNombre,
                     ]);
@@ -2206,8 +2335,10 @@ class AsociadoController extends Controller
         $programacionsubclientes = collect();
         
         $reprogramaciones = ProgramacionSubCliente::where('clienteitaid', $cliente->id)
+        ->whereNotNull('motivoreprogramacion')
         ->onlyTrashed()
         ->get();
+
         $total = 0;
         if ($fechaSeleccionada) {
             $programacionsubclientes = ProgramacionSubCliente::where('clienteitaid', $cliente->id)
@@ -5785,6 +5916,20 @@ class AsociadoController extends Controller
     public function actualizarclientecomun(UpdateClienteComunRequest $request, ClienteComun $clientecomun)
     {
         $clientecomunData = $request->validated();
+
+        foreach ($clientecomunData as $campo => $nuevoValor) {
+            $valorAnterior = $clientecomun->$campo;
+            if ($valorAnterior != $nuevoValor) {
+                Modificacionesdatos::create([
+                    'tabla' => 'clientescomunes',
+                    'columna' => $campo,
+                    'datoantiguo' => $valorAnterior,
+                    'datonuevo' => $nuevoValor,
+                    'usuarioedicionid' => Auth::id(),
+                    'usuarioedicionnombre' => Auth::user()->name,
+                ]);
+            }
+        }
         $clientecomun->update($clientecomunData);
 
         return redirect()->route('admin.asociados.verclientecomun', $clientecomun)->with('info', 'El cliente se actualizó con éxito');
@@ -6521,6 +6666,7 @@ class AsociadoController extends Controller
         $programacionsubclientes = collect();
         
         $reprogramaciones = ProgramacionSubCliente::where('clientecomunid', $clientecomun->id)
+        ->whereNotNull('motivoreprogramacion')
         ->onlyTrashed()
         ->get();
         $total = 0;
@@ -7281,6 +7427,19 @@ class AsociadoController extends Controller
     public function actualizarclienteauditoria(UpdateClienteAuditoriaRequest $request, ClienteAuditoria $clienteauditoria)
     {
         $clienteData = $request->validated();
+        foreach ($clienteData as $campo => $nuevoValor) {
+            $valorAnterior = $clienteauditoria->$campo;
+            if ($valorAnterior != $nuevoValor) {
+                Modificacionesdatos::create([
+                    'tabla' => 'clienteauditorias',
+                    'columna' => $campo,
+                    'datoantiguo' => $valorAnterior,
+                    'datonuevo' => $nuevoValor,
+                    'usuarioedicionid' => Auth::id(),
+                    'usuarioedicionnombre' => Auth::user()->name,
+                ]);
+            }
+        }
         $clienteauditoria->update($clienteData);
 
         return redirect()->route('admin.asociados.verclienteauditoria', $clienteauditoria)->with('info', 'El cliente se actualizó con éxito');
@@ -8074,15 +8233,34 @@ class AsociadoController extends Controller
 
                         $existe = Bateriasubcliente::where('clienteauditoriaid', $clienteID)
                             ->where('accionnombre', $nombreConSufijo)
-                            ->where('fechabateria', $fechaSeleccionada ? $fechaActual : $fechaSeleccionada)
+                            ->where('fechabateria', $fechaSeleccionada)
                             ->exists();
 
                         $contador++;
                     } while ($existe);
 
                     if ($informe === 'SI TIENE INFORME') {
-                        $clienteitaData['accionid'] = $accionId . '0PA';
-                        $clienteitaData['accionnombre'] = $accionNombre . ' - PA';
+                        /* $clienteitaData['accionid'] = $accionId . '0PA';
+                        $clienteitaData['accionnombre'] = $accionNombre . ' - PA'; */
+                        $baseAccionId = $accionId . '0PA';
+                        $baseAccionNombre = $accionNombre . ' - PA';
+                        $contadorPA = 0;
+
+                        do {
+                            $sufijoPA = $contadorPA === 0 ? '' : ($contadorPA + 1); // empieza desde 2
+                            $accionIdFinal = $baseAccionId . $sufijoPA;
+                            $accionNombreFinal = $baseAccionNombre . ($sufijoPA ? $sufijoPA : '');
+
+                            $existePA = Bateriasubcliente::where('clienteauditoriaid', $clienteID)
+                                ->where('accionid', $accionIdFinal)
+                                ->where('fechabateria', $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada)
+                                ->exists();
+
+                            $contadorPA++;
+                        } while ($existePA);
+
+                        $clienteitaData['accionid'] = $accionIdFinal;
+                        $clienteitaData['accionnombre'] = $accionNombreFinal;
                         $clienteitaData['precio'] = '0';
                         $clienteitaData['preciocompra'] = '0';
                         $clienteitaData['proveedorasignado'] = 'PROVEEDOR AJENO';
@@ -8121,7 +8299,7 @@ class AsociadoController extends Controller
                             'horadesde' => $horaActual,
                             'horahasta' => $horaActual,
                             'areanombre' => $areaNombre,
-                            'accionnombre' => $accionNombre . ' - PA',
+                            'accionnombre' => $accionNombreFinal,
                             'precio' => '0',
                             'usuarioid' => $usuarioID,
                             'usuarioregistro' => $usuarioNombre,
@@ -8135,7 +8313,7 @@ class AsociadoController extends Controller
                             'clienteauditorianombre' => $clienteauditoria->nombrecompleto,
                             'fechaatencionprogramacion' => $fechaActual,
                             'fechabateria' => $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada,
-                            'accionnombre' => $accionNombre . ' - PA',
+                            'accionnombre' => $accionNombreFinal,
                             'usuarioid' => $usuarioID,
                             'usuarioregistro' => $usuarioNombre,
                         ]);
@@ -8183,15 +8361,34 @@ class AsociadoController extends Controller
 
                     $existe = Bateriasubcliente::where('clienteauditoriaid', $clienteID)
                         ->where('accionnombre', $nombreConSufijo)
-                        ->where('fechabateria', $fechaSeleccionada ? $fechaActual : $fechaSeleccionada)
+                        ->where('fechabateria', $fechaSeleccionada)
                         ->exists();
 
                     $contador++;
                 } while ($existe);
 
                 if ($informe === 'SI TIENE INFORME') {
-                    $clienteitaData['accionid'] = $accionId . '0PA';
-                    $clienteitaData['accionnombre'] = $accionNombre . ' - PA';
+                    /* $clienteitaData['accionid'] = $accionId . '0PA';
+                    $clienteitaData['accionnombre'] = $accionNombre . ' - PA'; */
+                    $baseAccionId = $accionId . '0PA';
+                    $baseAccionNombre = $accionNombre . ' - PA';
+                    $contadorPA = 0;
+
+                    do {
+                        $sufijoPA = $contadorPA === 0 ? '' : ($contadorPA + 1); // empieza desde 2
+                        $accionIdFinal = $baseAccionId . $sufijoPA;
+                        $accionNombreFinal = $baseAccionNombre . ($sufijoPA ? $sufijoPA : '');
+
+                        $existePA = Bateriasubcliente::where('clienteauditoriaid', $clienteID)
+                            ->where('accionid', $accionIdFinal)
+                            ->where('fechabateria', $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada)
+                            ->exists();
+
+                        $contadorPA++;
+                    } while ($existePA);
+
+                    $clienteitaData['accionid'] = $accionIdFinal;
+                    $clienteitaData['accionnombre'] = $accionNombreFinal;
                     $clienteitaData['precio'] = '0';
                     $clienteitaData['preciocompra'] = '0';
                     $clienteitaData['proveedorasignado'] = 'PROVEEDOR AJENO';
@@ -8230,7 +8427,7 @@ class AsociadoController extends Controller
                         'horadesde' => $horaActual,
                         'horahasta' => $horaActual,
                         'areanombre' => $accionNombre,
-                        'accionnombre' => $accionNombre . ' - PA',
+                        'accionnombre' => $accionNombreFinal,
                         'precio' => '0',
                         'usuarioid' => $usuarioID,
                         'usuarioregistro' => $usuarioNombre,
@@ -8244,7 +8441,7 @@ class AsociadoController extends Controller
                         'clienteauditorianombre' => $clienteauditoria->nombrecompleto,
                         'fechaatencionprogramacion' => $fechaActual,
                         'fechabateria' => $fechaSeleccionada === 'nueva_bateria' ? $fechaActual : $fechaSeleccionada,
-                        'accionnombre' => $accionNombre . ' - PA',
+                        'accionnombre' => $accionNombreFinal,
                         'usuarioid' => $usuarioID,
                         'usuarioregistro' => $usuarioNombre,
                     ]);
@@ -8509,50 +8706,56 @@ class AsociadoController extends Controller
     }
     public function actualizarPdfcotauditoria(Request $request) 
     {
-        // Validar el formulario
         $request->validate([
             'fechabateria' => 'required|date',
-            'archivo' => 'required|file|mimes:pdf|max:20480', // max:20MB
+            'archivo' => 'nullable|file|mimes:pdf|max:20480',
+            'archivo2' => 'nullable|file|mimes:pdf|max:20480',
         ]);
-
-        // Encuentra el estado de cotización existente
+    
         $estadoCotizacion = EstadoCotizacionSubCliente::where('clienteauditoriaid', $request->clienteauditoriaid)
             ->where('fechabateria', $request->fechabateria)
             ->first();
-
-        // Verifica si el registro existe
+    
         if ($estadoCotizacion) {
             $carpetaCliente = public_path("/cotizacionesaprobadasauditoria/{$request->clienteauditoriaid}");
-            
-            // Elimina el archivo PDF existente si es necesario
-            if ($estadoCotizacion->document) {
-                $archivoAntiguo = $carpetaCliente . '/' . $estadoCotizacion->document;
-                if (file_exists($archivoAntiguo)) {
-                    unlink($archivoAntiguo);
-                }
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
             }
-            
-            // Guarda el nuevo archivo PDF
-            $archivo_name = null;
+    
+            // Cotización
             if ($request->hasFile('archivo')) {
+                if ($estadoCotizacion->document) {
+                    $archivoAntiguo = $carpetaCliente . '/' . $estadoCotizacion->document;
+                    if (file_exists($archivoAntiguo)) unlink($archivoAntiguo);
+                }
                 $file = $request->file('archivo');
                 $archivo_name = time() . '_' . $file->getClientOriginalName();
                 $file->move($carpetaCliente, $archivo_name);
+                $estadoCotizacion->document = $archivo_name;
             }
-            
-            // Actualiza el registro existente
-            $estadoCotizacion->update([
-                'document' => $archivo_name,
-                'usuarioid' => auth()->user()->id,
-                'usuarioregistro' => auth()->user()->name
-            ]);
-            
+    
+            // Consentimiento informado
+            if ($request->hasFile('archivo2')) {
+                if ($estadoCotizacion->documentconsinfo) {
+                    $archivoAntiguo2 = $carpetaCliente . '/' . $estadoCotizacion->documentconsinfo;
+                    if (file_exists($archivoAntiguo2)) unlink($archivoAntiguo2);
+                }
+                $file2 = $request->file('archivo2');
+                $archivo_name2 = time() . '_cons_' . $file2->getClientOriginalName();
+                $file2->move($carpetaCliente, $archivo_name2);
+                $estadoCotizacion->documentconsinfo = $archivo_name2;
+            }
+    
+            $estadoCotizacion->usuarioid = auth()->user()->id;
+            $estadoCotizacion->usuarioregistro = auth()->user()->name;
+            $estadoCotizacion->save();
+    
             return redirect()->route('admin.asociados.aprobarcotizacionprogramacionclienteauditoria', $request->clienteauditoriaid)
-                ->with('info', 'El documento se actualizó con éxito');
-        } else {
-            return redirect()->route('admin.asociados.aprobarcotizacionprogramacionclienteauditoria', $request->clienteauditoriaid)
-                ->with('error', 'No se encontró el registro para actualizar');
+                ->with('info', 'El(los) documento(s) se actualizaron correctamente');
         }
+    
+        return redirect()->route('admin.asociados.aprobarcotizacionprogramacionclienteauditoria', $request->clienteauditoriaid)
+            ->with('error', 'No se encontró el registro para actualizar');
     }
     public function aprobarcotizacionprogramacionclienteauditoria(ClienteAuditoria $clienteauditoria)
     {
@@ -8563,6 +8766,10 @@ class AsociadoController extends Controller
         $fechasRegistradas = EstadoCotizacionSubCliente::where('clienteauditoriaid', $clienteauditoria->id)
                                         ->pluck('fechabateria')
                                         ->unique();
+
+        $cotizaciones = EstadoCotizacionSubCliente::where('clienteauditoriaid', $clienteauditoria->id)
+                                        ->where('detalle', 'COTIZACION Y CONSENTIMIENTO INFORMADO PARA LA REALIZACIÓN DE EVALUACIONES Y ESTUDIOS MÉDICOS ADICIONALES APROBADO')
+                                        ->get();
 
         $fechasDisponibles = BateriaSubCliente::where('clienteauditoriaid', $clienteauditoria->id)
                                         ->pluck('fechabateria')
@@ -8585,7 +8792,7 @@ class AsociadoController extends Controller
             ->get(['fechabateria', 'document', 'documentconsinfo'])
             ->groupBy('fechabateria');
         $fecha = '';
-        return view('admin.asociados.aprobarcotizacionprogramacionclienteauditoria', compact('fecha','documentosPorFecha','fechasregis','clienteauditoria', 'id', 'fechas', 'fechasRegistradas','fechasDisponibles'));
+        return view('admin.asociados.aprobarcotizacionprogramacionclienteauditoria', compact('cotizaciones','fecha','documentosPorFecha','fechasregis','clienteauditoria', 'id', 'fechas', 'fechasRegistradas','fechasDisponibles'));
     }
     public function guardaraprobacioncotizacionclienteauditoria(StoreEstadocotizacionsubclienteRequest $request, ClienteAuditoria $clienteauditoria)
     {
@@ -8838,6 +9045,7 @@ class AsociadoController extends Controller
         $programacionsubclientes = collect();
         
         $reprogramaciones = ProgramacionSubCliente::where('clienteauditoriaid', $clienteauditoria->id)
+        ->whereNotNull('motivoreprogramacion')
         ->onlyTrashed()
         ->get();
         $total = 0;

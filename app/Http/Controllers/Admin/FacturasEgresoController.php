@@ -9,6 +9,14 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use App\Models\Empresa;
 use App\Models\FacturasEgreso;
+use App\Models\SaldoCreditoFiscal;
+use App\Models\FormularioImpuestos;
+use App\Models\Proveedoresservicios;
+use App\Models\Proveedor;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use App\Models\PermisoCodigo;
 
 class FacturasEgresoController extends Controller
 {
@@ -24,7 +32,203 @@ class FacturasEgresoController extends Controller
 
     public function index(Request $request)
     {
-         $fechaDesde = $request->input('fechaDesde');
+        $fechaDesde = $request->input('fechaDesde');
+        $fechaHasta = $request->input('fechaHasta');
+
+        $ventas = collect();
+        $compras = collect();
+
+        $totales = [
+            'totalVentas' => 0,
+            'ivaDebito' => 0,
+            'itVentas' => 0,
+            'totalCompras' => 0,
+            'ivaCredito' => 0,
+            'diferencia' => 0
+        ];
+
+        if ($fechaDesde && $fechaHasta) {
+            $ventas = FacturasEgreso::where('tipo', 2)
+                ->whereBetween('fechafacturaduidim', [$fechaDesde, $fechaHasta])
+                ->where('estado', 'VALIDO')
+                ->get()
+                ->groupBy('ciudad');
+
+            $compras = FacturasEgreso::where('tipo', 1)
+                ->whereBetween('fechafacturaduidim', [$fechaDesde, $fechaHasta])
+                ->where('estado', 'VALIDO')
+                ->get()
+                ->groupBy('ciudad');
+
+            // Calcular totales
+            foreach ($ventas as $registros) {
+                $total = $registros->sum('importebasecfdf');
+                $cdfiscal = $registros->sum('creditodebitofiscal');
+                $totales['totalVentas'] += $total;
+                $totales['ivaDebito'] += /* $total *  */$cdfiscal;
+                $totales['itVentas'] += $total * 0.03;
+            }
+
+            foreach ($compras as $registros) {
+                $total = $registros->sum('importebasecfdf');
+                $cdfiscal = $registros->sum('creditodebitofiscal');
+                $totales['totalCompras'] += $total;
+                $totales['ivaCredito'] += /* $total *  */$cdfiscal;
+            }
+
+            // Diferencia final
+            $totales['diferencia'] = $totales['ivaDebito'] + $totales['itVentas'] - $totales['ivaCredito'];
+        }
+
+        $ventasscz = collect();
+        $comprasscz = collect();
+        $ventascbba = collect();
+        $comprascbba = collect();
+
+        if ($fechaDesde && $fechaHasta) {
+            $ventasscz = FacturasEgreso::where('tipo', 2)
+                ->whereBetween('fechafacturaduidim', [$fechaDesde, $fechaHasta])
+                ->where('estado', 'VALIDO')
+                ->where('ciudad', 'SANTA CRUZ')
+                ->get();
+
+            $comprasscz = FacturasEgreso::where('tipo', 1)
+                ->whereBetween('fechafacturaduidim', [$fechaDesde, $fechaHasta])
+                ->where('estado', 'VALIDO')
+                ->where('ciudad', 'SANTA CRUZ')
+                ->get();
+
+            $ventascbba = FacturasEgreso::where('tipo', 2)
+                ->whereBetween('fechafacturaduidim', [$fechaDesde, $fechaHasta])
+                ->where('estado', 'VALIDO')
+                ->where('ciudad', 'COCHABAMBA')
+                ->get();
+
+            $comprascbba = FacturasEgreso::where('tipo', 1)
+                ->whereBetween('fechafacturaduidim', [$fechaDesde, $fechaHasta])
+                ->where('estado', 'VALIDO')
+                ->where('ciudad', 'COCHABAMBA')
+                ->get();
+        }
+
+        $registrosImpuestos = FormularioImpuestos::latest()->get();
+        $periodo = now()->subMonth()->format('Y-m');
+        $nombresExistentes = FormularioImpuestos::where('periodo', $periodo)->pluck('nombre')->toArray();
+
+        /* $usuariosEntrega = Proveedoresservicios::whereIn('categoria', ['PROVEEDOR EXTERNO', 'PROVEEDOR INTERNO'])
+        ->orderBy('razonsocial')
+        ->get(); */
+        $usuariosEntrega = Proveedoresservicios::where(function ($query) {
+            $query->whereIn('categoria', ['PROVEEDOR EXTERNO', 'PROVEEDOR INTERNO'])
+                ->orWhere('id', '1PS');
+        })
+        ->orderBy('razonsocial')
+        ->get();
+
+        $razonesSociales1 = Proveedor::pluck('proveedor')->toArray();
+        $razonesSociales2 = ProveedoresServicios::pluck('razonsocial')->toArray();
+
+        $razonesSociales = array_unique(array_merge($razonesSociales1, $razonesSociales2));
+        sort($razonesSociales, SORT_NATURAL | SORT_FLAG_CASE);
+
+
+        $otrasventasscz = FacturasEgreso::where('tipo', 2)
+            ->whereIn('estado', ['ANULADO', 'PENDIENTE', 'RECHAZADO'])
+            ->where('ciudad', 'SANTA CRUZ')
+            ->get();
+
+        $otrascomprasscz = FacturasEgreso::where('tipo', 1)
+            ->whereIn('estado', ['ANULADO', 'PENDIENTE', 'RECHAZADO'])
+            ->where('ciudad', 'SANTA CRUZ')
+            ->get();
+
+        $otrasventascbba = FacturasEgreso::where('tipo', 2)
+            ->whereIn('estado', ['ANULADO', 'PENDIENTE', 'RECHAZADO'])
+            ->where('ciudad', 'COCHABAMBA')
+            ->get();
+
+        $otrascomprascbba = FacturasEgreso::where('tipo', 1)
+            ->whereIn('estado', ['ANULADO', 'PENDIENTE', 'RECHAZADO'])
+            ->where('ciudad', 'COCHABAMBA')
+            ->get();
+
+        $usuarioAutenticado = auth()->user()->name;
+        $hoy = Carbon::today();
+        $codigosPermitidos = PermisoCodigo::where('usuarioSolicitante', $usuarioAutenticado)
+            ->whereDate('fechaSolicitada', $hoy->toDateString())
+            ->where('permisoSolicitado', 'admin.facturasegreso.cambiarrazonsocial')
+            ->where('estado', 'expirado')
+            ->pluck('clienteid')
+        ->toArray();
+
+        return view('admin.facturasegreso.index', compact('codigosPermitidos','razonesSociales','ventas', 'compras', 'fechaDesde', 
+        'fechaHasta', 'totales', 'ventasscz', 'comprasscz', 'ventascbba', 'comprascbba', 'registrosImpuestos', 
+        'nombresExistentes', 'usuariosEntrega','otrasventasscz','otrascomprasscz','otrasventascbba','otrascomprascbba'));
+    }
+    public function codigocambiofacturacambiorsocial(Request $request)
+    {
+        $codigo = $request->input('codigo');
+
+        $permiso = PermisoCodigo::where('codigo', $codigo)->first();
+
+        if (!$permiso) {
+            return response()->json(['success' => false, 'message' => 'CODIGO INVALIDO']);
+        }
+
+        $permiso->estado = 'Expirado';
+        $permiso->save();
+
+        return response()->json(['success' => true]);
+    }
+    public function actualizarfacturaimpuestos(Request $request, $id)
+    {
+        $request->validate([
+            'nitci' => '',
+            'complemento' => '',
+            'razonsocial' => '',
+        ]);
+
+        $producto = DB::table('facturasegreso')->where('id', $id)->first();
+
+        $datosActualizados = [
+            'nitci' => $request->nitci,
+            'complemento' => $request->complemento,
+            'razonsocial' => $request->razonsocial,
+            'updated_at' => now(),
+        ];
+
+        DB::table('facturasegreso')
+            ->where('id', $id)
+            ->update($datosActualizados);
+
+        return redirect()->back()->with('info', 'Stock actualizado correctamente.');
+    }
+
+
+    public function actualizarEstado(Request $request)
+    {
+        $ids = $request->input('seleccionados', []);
+        $accion = $request->input('accion'); // 'pendiente' o 'rechazado'
+        $motivo = $request->input('motivo');
+
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Debe seleccionar al menos un registro.');
+        }
+
+        foreach ($ids as $id) {
+            DB::table('facturasegreso') // o usa el modelo FacturaEgreso::where(...)
+                ->where('id', $id)
+                ->update([
+                    'estado' => $accion === 'pendiente' ? 'PENDIENTE' : 'RECHAZADO',
+                    'motivo' => $motivo,
+                ]);
+        }
+
+        return redirect()->back()->with('info', 'Registros actualizados correctamente.');
+    }
+    public function facturascontadorexterno(Request $request)
+    {
+        $fechaDesde = $request->input('fechaDesde');
         $fechaHasta = $request->input('fechaHasta');
 
         $ventas = collect();
@@ -95,8 +299,122 @@ class FacturasEgresoController extends Controller
                 ->get();
         }
 
-        return view('admin.facturasegreso.index', compact('ventas', 'compras', 'fechaDesde', 'fechaHasta', 'totales', 'ventasscz', 'comprasscz', 'ventascbba', 'comprascbba'));
+        $registrosImpuestos = FormularioImpuestos::latest()->get();
+        $periodo = now()->subMonth()->format('Y-m');
+        $nombresExistentes = FormularioImpuestos::where('periodo', $periodo)->pluck('nombre')->toArray();
+
+        $usuariosEntrega = Proveedoresservicios::whereIn('categoria', ['PROVEEDOR EXTERNO', 'PROVEEDOR INTERNO'])
+        ->orderBy('razonsocial')
+        ->get();
+
+        $nombresExistentes = FormularioImpuestos::where('periodo', $periodo)->pluck('nombre')->toArray();
+
+        $formulariosCompletos = in_array('IMPUESTO AL VALOR AGREGADO', $nombresExistentes) &&
+                                in_array('IMPUESTO A LAS TRANSACCIONES', $nombresExistentes);
+
+        return view('admin.facturasegreso.facturascontadorexterno', compact('ventas', 'compras', 'fechaDesde', 'fechaHasta', 'totales', 'ventasscz', 'comprasscz', 'ventascbba', 'comprascbba', 'registrosImpuestos', 'nombresExistentes', 'usuariosEntrega','formulariosCompletos'));
     }
+    public function guardarfacturacontaext(Request $request, FacturasEgreso $empresa)
+    {
+        $request->validate([
+            'archivo_iva' => 'required|file|mimes:pdf|max:2048',
+            'archivo_it' => 'required|file|mimes:pdf|max:2048',
+        ]);
+
+        $periodo = now()->subMonth()->format('Y-m');
+
+        // Guardar o actualizar IVA
+        $archivoIVA = $request->file('archivo_iva');
+        $nombreArchivoIVA = time() . '_' . $archivoIVA->getClientOriginalName();
+        $archivoIVA->move(public_path('formulariosimpuestos'), $nombreArchivoIVA);
+
+        FormularioImpuestos::updateOrCreate(
+            ['periodo' => $periodo, 'nombre' => 'IMPUESTO AL VALOR AGREGADO'],
+            [
+                'montocontador' => $request->monto_iva,
+                'archivo' => $nombreArchivoIVA,
+                'registrocontadorid' => auth()->id(),
+                'registrocontadornombre' => auth()->user()->name,
+                'fecharegistrocontador' => now(),
+            ]
+        );
+
+        // Guardar o actualizar IT
+        $archivoIT = $request->file('archivo_it');
+        $nombreArchivoIT = time() . '_' . $archivoIT->getClientOriginalName();
+        $archivoIT->move(public_path('formulariosimpuestos'), $nombreArchivoIT);
+
+        FormularioImpuestos::updateOrCreate(
+            ['periodo' => $periodo, 'nombre' => 'IMPUESTO A LAS TRANSACCIONES'],
+            [
+                'montocontador' => $request->monto_it,
+                'archivo' => $nombreArchivoIT,
+                'registrocontadorid' => auth()->id(),
+                'registrocontadornombre' => auth()->user()->name,
+                'fecharegistrocontador' => now(),
+            ]
+        );
+
+        return redirect()->back()->with('info', 'Formularios guardados exitosamente.');
+    }
+    public function guardarsaldocreditofiscal(Request $request)
+    {
+        $request->validate([
+            'monto' => 'required|numeric'
+        ]);
+
+        SaldoCreditofiscal::create([
+            'saldo' => $request->monto,
+            'usuarioregistroid' => Auth::id(),
+            'usuarioregistronombre' => Auth::user()->name,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function guardarAmbosFormularios(Request $request)
+    {
+
+        $periodo = now()->subMonth()->format('Y-m');
+
+        // Verificar si ya existen ambos
+        $existen = FormularioImpuestos::where('periodo', $periodo)->pluck('nombre')->toArray();
+        if (in_array('IMPUESTO AL VALOR AGREGADO', $existen) && in_array('IMPUESTO A LAS TRANSACCIONES', $existen)) {
+            return redirect()->back()->with('error', 'Ambos montos ya fueron registrados para el mes anterior.');
+        }
+
+        // Verificar si la fecha actual es mayor al 16
+        /* if (now()->day > 16) {
+            return redirect()->back()->with('error', 'El plazo para registrar estos motnos ha vencido (hasta el día 16).');
+        } */
+
+        // Guardar IVA
+        if (!in_array('IMPUESTO AL VALOR AGREGADO', $existen)) {
+            FormularioImpuestos::create([
+                'nombre' => 'IMPUESTO AL VALOR AGREGADO',
+                'periodo' => $periodo,
+                'monto' => $request->monto_iva,
+                'usuarioregistroid' => auth()->id(),
+                'usuarioregistronombre' => auth()->user()->name,
+            ]);
+        }
+
+        // Guardar IT
+        if (!in_array('IMPUESTO A LAS TRANSACCIONES', $existen)) {
+            FormularioImpuestos::create([
+                'nombre' => 'IMPUESTO A LAS TRANSACCIONES',
+                'periodo' => $periodo,
+                'monto' => $request->monto_it,
+                'usuarioregistroid' => auth()->id(),
+                'usuarioregistronombre' => auth()->user()->name,
+            ]);
+        }
+
+        return redirect()->back()->with('info', 'Montos guardados exitosamente.');
+    }
+
+
+
 
     /**
      * Show the form for creating a new resource.

@@ -1,4 +1,5 @@
 @foreach($bienesalmacen as $bienes)
+    @if ($bienes->estado === 'ACTIVO')
     <tr>
         <td>{{ $bienes->id }}</td>
         <td>{{ $bienes->tipoinventario }}</td>
@@ -21,6 +22,7 @@
 
         </td>
     </tr>
+    @endif
 @endforeach
 
 

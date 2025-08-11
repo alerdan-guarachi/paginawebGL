@@ -116,68 +116,70 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body"> 
-                <table class="table table-bordered table-hover">
-                    <thead class="text-center" style="background-color: #f9fff7;">
-                        <tr>
-                            <th style="color: black; font-weight:700;">Fecha de Batería</th>
-                            <th style="color: black; font-weight:700;">Documentos</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($fechasDisponibles as $fecha)
-                            <tr style="color:{{ $fechasRegistradas->contains($fecha) ? '#94c93b' : 'red' }}">
-                                <td style="vertical-align: middle;">
-                                    <span style="display: inline-block; width: 8px; height: 8px; background-color: black; border-radius: 50%; margin-right: 8px;"></span>
-                                    <strong>{{ $fecha }}</strong>
-                                </td>
-                                <td class="text-left" style="vertical-align: middle;">
-                                    @if($fechasRegistradas->contains($fecha))
-                                        @php
-                                            $documentosMostrados = [];
-                                            $documentoDisponible = false;
-                                        @endphp
-            
-                                        @foreach ($cotizaciones as $cotizacion)
-                                            @php
-                                                $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
-                                                $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
-                                            @endphp
-                                            
-                                            @if($document && !in_array($document, $documentosMostrados))
-                                                <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm" title="VER COTIZACIÓN APROBADA">
-                                                    COTIZACIÓN
-                                                </a>
-                                                @php
-                                                    $documentosMostrados[] = $document;
-                                                    $documentoDisponible = true;
-                                                @endphp
-                                            @endif
-            
-                                            @if($documentconsinfo && !in_array($documentconsinfo, $documentosMostrados))
-                                                <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm" title="VER CONSENTIMIENTO INFORMADO">
-                                                    CONSENTIMIENTO
-                                                </a>
-                                                @php
-                                                    $documentosMostrados[] = $documentconsinfo;
-                                                    $documentoDisponible = true;
-                                                @endphp
-                                            @endif
-                                        @endforeach
-            
-                                        @if($documentoDisponible && $loop->last)
-                                            <a type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal" title="MODIFICAR DOCUMENTOS">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        @endif
-                                    @else
-                                        <span class="badge badge-danger">NO APROBADO</span>
-                                    @endif
-                                </td>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm table-striped">
+                        <thead class="text-center table-secondary">
+                            <tr>
+                                <th style="color: black; font-weight:700;">Fecha de Batería</th>
+                                <th style="color: black; font-weight:700;">Documentos</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach($fechasDisponibles as $fecha)
+                                <tr style="color:{{ $fechasRegistradas->contains($fecha) ? '#94c93b' : 'red' }}">
+                                    <td style="vertical-align: middle;">
+                                        <span style="display: inline-block; width: 8px; height: 8px; background-color: black; border-radius: 50%; margin-right: 8px;"></span>
+                                        <strong>{{ $fecha }}</strong>
+                                    </td>
+                                    <td class="text-left" style="vertical-align: middle;">
+                                        @if($fechasRegistradas->contains($fecha))
+                                            @php
+                                                $documentosMostrados = [];
+                                                $documentoDisponible = false;
+                                            @endphp
+                
+                                            @foreach ($cotizaciones as $cotizacion)
+                                                @php
+                                                    $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
+                                                    $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
+                                                @endphp
+                                                
+                                                @if($document && !in_array($document, $documentosMostrados))
+                                                    <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm" title="VER COTIZACIÓN APROBADA">
+                                                        COTIZACIÓN
+                                                    </a>
+                                                    @php
+                                                        $documentosMostrados[] = $document;
+                                                        $documentoDisponible = true;
+                                                    @endphp
+                                                @endif
+                
+                                                @if($documentconsinfo && !in_array($documentconsinfo, $documentosMostrados))
+                                                    <a href="{{ asset('/cotizacionesaprobadasita/'.$cliente->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm" title="VER CONSENTIMIENTO INFORMADO">
+                                                        CONSENTIMIENTO
+                                                    </a>
+                                                    @php
+                                                        $documentosMostrados[] = $documentconsinfo;
+                                                        $documentoDisponible = true;
+                                                    @endphp
+                                                @endif
+                                            @endforeach
+                
+                                            @if($documentoDisponible && $loop->last)
+                                                <a type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal" title="MODIFICAR DOCUMENTOS">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            @endif
+                                        @else
+                                            <span class="badge badge-danger">NO APROBADO</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
             <div class="modal-footer">
@@ -273,7 +275,7 @@
                     </script> 
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-guardarobservacion">Guardar</button>
+                <button type="submit" class="btn btn-crear2">Guardar</button>
                 <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
             </div>
         </form>

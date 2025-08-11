@@ -1,7 +1,7 @@
 @extends('adminlte::page')
     
 @section('content_header')
-<a class="btn float-right btn-outline-secondary" data-toggle="modal" data-target="#anulacionesModal">
+<a class="btn btn-sm float-right btn-outline-secondary" data-toggle="modal" data-target="#anulacionesModal">
     ANULACIONES
 </a>
 <h1>ANULAR REGISTROS DE CAJA</h1>
@@ -36,54 +36,56 @@
         
         <form action="{{ route('anularregitrocaja') }}" method="POST"> 
             @csrf
-            <div class="row mb-3">
-                <div class="col-lg-6">
-                
-                    <label for="motivoAnulacion" class="form-label">Motivo de Anulación</label>
-                    <textarea id="motivoAnulacion" name="motivoAnulacion" class="form-control" rows="3" placeholder="" required></textarea>
-                </div>
-            </div>
             
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>ID Prog</th>
-                        <th>Tipo</th>
-                        <th>Nombre</th>
-                        <th>Tipo Transac.</th>
-                        <th>Nro. Recibo</th>
-                        <th>Monto Total</th>
-                        <th>Ciudad Reg.</th>
-                        <th>Usuario Reg.</th>
-                        <th>Selec.</th>
-                    </tr>
-                </thead>
-                @if ($registros->isNotEmpty()) 
-                    <tbody>
-                        @foreach ($registros as $registro)
-                            <tr>
-                                <td>{{ $registro->id }}</td>
-                                <td>{{ $registro->tipocliente }}</td>
-                                <td>{{ $registro->clientenombre }} {{ $registro->proveedornombre }}</td>
-                                <td>{{ $registro->tipotransaccion }}</td>
-                                <td>{{ $registro->nrorecibo }}</td>
-                                <td>{{ $registro->montototal }}</td>
-                                <td>{{ $registro->ciudadregistro }}</td>
-                                <td>{{ $registro->usuarioregistronombre }}</td>
-                                <td>
-                                    <input type="checkbox" name="seleccionados[]" value="{{ $registro->id }}" class="checkbox-seleccion">
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                @else
-                    @if (request()->has('search'))
-                        <p>REGISTRO NO ENCONTRADO O ANULADO "{{ request('search') }}".</p>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>ID_Caja</th>
+                            <th>Tipo</th>
+                            <th>Cliente/Proveedor</th>
+                            <th>Tipo_Transac.</th>
+                            <th>Nro.Recibo</th>
+                            <th>Monto_Total</th>
+                            <th>Ciudad_Reg.</th>
+                            <th>Usuario_Reg.</th>
+                            <th>Sel.</th>
+                        </tr>
+                    </thead>
+                    @if ($registros->isNotEmpty()) 
+                        <tbody>
+                            @foreach ($registros as $registro)
+                                <tr>
+                                    <td>{{ $registro->id }}</td>
+                                    <td>{{ $registro->tipocliente }}</td>
+                                    <td>{{ $registro->clientenombre }} {{ $registro->proveedornombre }}</td>
+                                    <td>{{ $registro->tipotransaccion }}</td>
+                                    <td>{{ $registro->nrorecibo }}</td>
+                                    <td>{{ $registro->montototal }}</td>
+                                    <td>{{ $registro->ciudadregistro }}</td>
+                                    <td>{{ $registro->usuarioregistronombre }}</td>
+                                    <td>
+                                        <input type="checkbox" name="seleccionados[]" value="{{ $registro->id }}" class="checkbox-seleccion">
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    @else
+                       @if (request()->has('search'))
+                            <div class="alert alert-danger d-flex align-items-center" role="alert" style="font-size: 16px;">
+                                <i class="fas fa-exclamation-triangle me-2"></i> 
+                                <div>
+                                    <strong>REGISTRO NO ENCONTRADO O ANULADO:</strong> "{{ request('search') }}"
+                                </div>
+                            </div>
+                        @endif
+
                     @endif
-                @endif
-            </table>
-            <div class="d-flex">
-                <button type="submit" class="btn btn-outline-danger ml-auto" id="btnAsignarCredito" disabled>ANULAR REGISTRO</button>
+                </table>
+            </div>
+            <div class="d-flex justify-content-end" style="gap: 10px; width: 100%; margin-top:30px;">
+                <input type="text" id="motivoAnulacion" name="motivoAnulacion" class="form-control" style="max-width: 400px;" placeholder="MOTIVO DE ANULACIÓN..." required />
+                <button type="submit" class="btn btn-outline-danger" id="btnAsignarCredito" disabled>ANULAR</button>
             </div>
         </form>
     </div>
@@ -93,24 +95,25 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content border-0 shadow-sm">
             <div class="modal-header w-100 text-center">
-                <h4 class="modal-title w-100 fw-bold" id="anulacionesModalLabel" style="font-weight: 900">ANULACIONES</h4>
+                <h4 class="modal-title w-100 fw-bold" id="anulacionesModalLabel" style="font-weight: 900">ANULACIONES DE CAJA</h4>
             </div>
                 
             <div class="modal-body">
                 <div class="table-responsive">
                     <table class="table table-striped">
-                        <thead>
+                        <thead class="table-secondary">
                             <tr>
-                                <th>ID Prog</th>
+                                <th>ID_Caja</th>
                                 <th>Tipo</th>
-                                <th>Nombre</th>
-                                <th>Tipo Transac.</th>
-                                <th>Nro. Recibo</th>
-                                <th>Monto Total</th>
-                                <th>Ciudad Reg.</th>
-                                <th>Usuario Reg.</th>
-                                <th>Fecha Anul.</th>
-                                <th>Usuario Anul.</th>
+                                <th>Cliente/Proveedor</th>
+                                <th>Tipo_Transac.</th>
+                                <th>Nro.Recibo</th>
+                                <th>Monto_Total</th>
+                                <th>Ciudad_Reg.</th>
+                                <th>Usuario_Reg.</th>
+                                <th>Fecha_Anul.</th>
+                                <th>Usuario_Anul.</th>
+                                <th>Motivo_Anul.</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -119,14 +122,15 @@
                                     <td>{{ $anulacion->id }}</td>
                                     <td>{{ $anulacion->tipocliente }}</td>
                                     <td>{{ $anulacion->clientenombre }} {{ $anulacion->proveedornombre }}</td>
-                                    <td>{{ $anulacion->tipotransaccion }}</td>
+                                    <td>{{ $anulacion->tipotransaccion ?? 0 }}</td>
                                     <td>{{ $anulacion->nrorecibo }}</td>
                                     <td>{{ $anulacion->montototal }}</td>
                                     <td>{{ $anulacion->ciudadregistro }}</td>
                                     <td>{{ $anulacion->usuarioregistronombre }}</td>
                                     <td>{{ $anulacion->deleted_at }}</td>
                                     <td>{{ $anulacion->usuarioanulacion }}</td>
-                                    </tr>
+                                    <td>{{ $anulacion->motivoanulacion }}</td>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>

@@ -1,4 +1,4 @@
-<div class="col-lg-6">
+<div class="col-lg-4">
     <div class="form-group">
         {!! Form::label('name', 'Nombre:') !!}
         {!! Form::text('name', null, ['class' => 'form-control', 'placeholder' => 'Ingrese el nombre del rol']) !!}
@@ -15,7 +15,6 @@
     <h2>Lista de permisos:</h2>
     <div class="row">
         @foreach ($permissions as $permission)
-            
             <div class="col-sm-4">
                 <div class="form-check">
                     <h3>

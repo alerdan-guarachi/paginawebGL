@@ -50,7 +50,7 @@
                                                 </tr>
                                                 <tr>
                                                     <th>CI</th>
-                                                    <td>{{$proveedoresservicios->ci}}</td>
+                                                    <td>{{$proveedoresservicios->ci}}{{$proveedoresservicios->ciexp}}</td>
                                                 </tr> 
                                                 <tr>
                                                     <th>Correo</th>

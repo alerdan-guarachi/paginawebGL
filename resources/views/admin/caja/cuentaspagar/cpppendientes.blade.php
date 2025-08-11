@@ -58,7 +58,7 @@
     </script>
 @endif
 <div class="card">
-    <div class="card-header">
+    {{-- <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" id="myTabs">  
             <li class="nav-item">
                 <a class="nav-link active" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
@@ -71,120 +71,13 @@
                 </a>
             </li>         
         </ul>
-    </div>
+    </div> --}}
 
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
             
             {{-- PENDIENTES --}}
             <div class="tab-pane fade show active" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
-                {{-- <h4 style="font-weight:900;">CUENTAS POR PAGAR</h4>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Selec</th>
-                                <th hidden>ID</th>
-                                <th>Orden_ID</th>
-                                <th>Proveedor</th>
-                                <th>Detalle</th>
-                                <th>Fecha_Pago</th>
-                                <th>Tipo_Planilla</th>
-                                <th>Banco_Origen</th>
-                                <th>Monto_Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($cuentaspagar->where('estadoaprobacion', 'APROBADO') as $item)
-                                @php
-                                    $tipoplanilla = optional($item->proveedorServicio)->tipoplanilla ?? 'NO DEFINIDO';
-                                @endphp
-                                @if ($item->nrobancoorigen === '3000189269' && in_array($tipoplanilla, ['PAGO QR', 'PAGO EN LINEA']))
-                                    @php
-                                        $archivoExistente = \App\Models\PlanillasPagosGeneradas::where('proveedor', $item->proveedornombre)
-                                            ->where('fechapago', $item->fechaasignada)
-                                            ->first();
-                                    @endphp
-                                    <tr>
-                                        <td><input type="checkbox" class="checkbox-cuentas" value="{{ $item->id }}"></td>
-                                        <td hidden>{{ $item->id }}</td>
-                                        <td>{{ $item->ordenid }}</td>
-                                        <td>{{ $item->proveedornombre }}</td>
-                                        <td>{{ $item->detalleproducto }}</td>
-                                        <td>{{ $item->fechaasignada }}</td>
-                                        <td>
-                                            {{ $tipoplanilla }}
-                                            @if ($tipoplanilla === 'PAGO QR' && $archivoExistente)
-                                                <a class="btn btn-botongris" 
-                                                    onclick="mostrarQR('{{ asset('planillaspagosgeneradas/' . str_replace('-', '', $archivoExistente->fechapago) . '/' . $archivoExistente->documento) }}')">
-                                                    <i class="fas fa-qrcode"></i>
-                                                </a>
-                                            @endif
-                                        </td>
-                                        <td>{{ $item->nrobancoorigen }}</td>
-                                        <td class="text-right">{{ number_format($item->montototal, 2) }}</td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                <br>
-                <h4 style="font-weight:900;">PROVEEDORES MÉDICOS</h4>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Selec</th>
-                                <th hidden>ID</th>
-                                <th>Orden_ID</th>
-                                <th>Proveedor</th>
-                                <th>Cliente</th>
-                                <th>Detalle</th>
-                                <th>Fecha_Pago</th>
-                                <th>Tipo_Planilla</th>
-                                <th>Banco_Origen</th>
-                                <th>Monto_Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($registrosbateria->where('estadoaprobacion', 'APROBADO') as $item)
-                                @php
-                                    $tipoplanilla = $proveedoresServicios[$item->proveedorasignado] ?? 'NO DEFINIDO';
-                                @endphp
-
-                                @if ($item->nrobancoorigen === '3000189269' && in_array($tipoplanilla, ['PAGO QR', 'PAGO EN LINEA']))
-                                    @php
-                                        $archivoExistente = \App\Models\PlanillasPagosGeneradas::where('proveedor', $item->proveedorasignado)
-                                            ->where('fechapago', $item->fechapago)
-                                            ->first();
-                                    @endphp
-                                    <tr>
-                                        <td><input type="checkbox" class="checkbox-bateria" value="{{ $item->id }}"></td>
-                                        <td hidden>{{ $item->id }}</td>
-                                        <td>{{ $item->ordenid }}</td>
-                                        <td>{{ $item->proveedorasignado }}</td>
-                                        <td>{{ $item->clienteitanombre }}{{ $item->clienteauditorianombre }}{{ $item->clientecomunnombre }}</td>
-                                        <td>{{ $item->accionnombre }}</td>
-                                        <td>{{ $item->fechapago }}</td>
-                                        <td>
-                                            {{ $tipoplanilla }}
-                                            @if ($tipoplanilla === 'PAGO QR' && $archivoExistente)
-                                                <a class="btn btn-botongris" 
-                                                    onclick="mostrarQR('{{ asset('planillaspagosgeneradas/' . str_replace('-', '', $archivoExistente->fechapago) . '/' . $archivoExistente->documento) }}')">
-                                                    <i class="fas fa-qrcode"></i>
-                                                </a>
-                                            @endif
-                                        </td>
-                                        <td>{{ $item->nrobancoorigen }}</td>
-                                        <td class="text-right">{{ number_format($item->preciocompra, 2) }}</td>
-                                    </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div> --}}
-
                 {{-- GERENCIA --}}
                 <div class="card">
                     <div class="card-body" style="background-color: #f8f8f8">
@@ -231,6 +124,19 @@
                             @if ($filtrados->count() > 0)
                                 @php
                                     [$ordenId, $proveedor] = explode('|', $clave);
+
+                                    //
+                                    /* if (strtoupper(trim($proveedor)) === 'TELEFONICA CELULAR DE BOLIVIA S.A.') {
+                                        $detalle = strtoupper($filtrados->first()->detalleproducto ?? '');
+
+                                        if (preg_match('/NRO\. CONTRATO (\d+)/i', $detalle, $matches)) {
+                                            $proveedor .= ' - CONTRATO ' . $matches[1];
+                                        } elseif (preg_match('/NRO\. CODIGO (\d+)/i', $detalle, $matches)) {
+                                            $proveedor .= ' - CODIGO ' . $matches[1];
+                                        }
+                                    } */
+                                    //
+                                    
                                     $total = $filtrados->sum('montototal');
                                     $idGrupo = 'grupo_' . md5($clave);
                                     $registroQR = $filtrados->first(function ($item) {
@@ -501,7 +407,7 @@
                 {{-- ADMINISTRACION --}}
                 <div class="card">
                     <div class="card-body">
-                        <h6 style="font-size: 20px;"><strong>PAGOS A TERCERO E INTERBANCARIO DE LA CUENTA 3000189269</strong></h6>
+                        <h6 style="font-size: 20px;"><strong>PAGOS A TERCERO, INTERBANCARIO Y CHEQUE DE LA CUENTA 3000189269</strong></h6>
                         <div class="table-responsive" style="margin-bottom: -10px;">
                             <table class="table table-sm table-bordered">
                                 <thead>
@@ -527,7 +433,6 @@
                                 $clave = $item->ordenid . '|' . $item->proveedornombre;
                                 $agrupados[$clave][] = $item;
                             }
-                            // Ordena por tipoplanilla del primer elemento de cada grupo
                             uksort($agrupados, function ($a, $b) use ($agrupados) {
                                 $tipoplanillaA = optional(optional($agrupados[$a][0])->proveedorServicio)->tipoplanilla ?? 'ZZZ';
                                 $tipoplanillaB = optional(optional($agrupados[$b][0])->proveedorServicio)->tipoplanilla ?? 'ZZZ';
@@ -539,7 +444,7 @@
                                 $filtrados = collect($items)->filter(function ($item) {
                                     $tipoplanilla = optional($item->proveedorServicio)->tipoplanilla ?? 'NO DEFINIDO';
                                     return $item->nrobancoorigen === '3000189269' &&
-                                        in_array($tipoplanilla, ['PAGO A TERCERO', 'PAGO INTERBANCARIO']);
+                                        in_array($tipoplanilla, ['PAGO A TERCERO', 'PAGO INTERBANCARIO', 'PAGO CHEQUE']);
                                 });
                                 $estadoGrupo = $filtrados->every(fn($item) => $item->estadoaprobacion === 'SUBIDO') ? 'SUBIDO' : 'PENDIENTE';
                                 $estadosGrupos[] = $estadoGrupo;
@@ -577,9 +482,7 @@
                                     $tipoplanilla = $proveedorServicio->tipoplanilla ?? 'NO DEFINIDO';
                                     $numcuenta = $proveedorServicio->numcuenta ?? 'NO DEFINIDO';
                                     $nrobancoorigen = $primerItem->nrobancoorigen ?? 'NO DEFINIDO';
-
                                     $detalleLimpio = strtoupper(preg_replace('/\s+/', '', $filtrados->first()->detalleproducto ?? ''));
-
                                     $siglasItem = \App\Models\PlanesServiciosProv::where('razonsocial', $proveedor)
                                         ->get()
                                         ->filter(function ($registro) use ($detalleLimpio) {
@@ -594,7 +497,6 @@
                                         ->unique()
                                         ->values()
                                         ->all();
-
                                     $provsigla = count($siglasItem) > 0 ? implode(', ', $siglasItem) : '0';
                                 @endphp
                                 <div class="mb-1 border rounded">
@@ -709,7 +611,7 @@
                                 $filtrados = collect($items)->filter(function ($item) use ($proveedoresServicios) {
                                     $tipoplanilla = $proveedoresServicios[$item->proveedorasignado] ?? 'NO DEFINIDO';
                                     return $item->nrobancoorigen === '3000189269' &&
-                                        in_array($tipoplanilla, ['PAGO A TERCERO', 'PAGO INTERBANCARIO']);
+                                        in_array($tipoplanilla, ['PAGO A TERCERO', 'PAGO INTERBANCARIO', 'PAGO CHEQUE']);
                                 });
                                 $estadoGrupo = $filtrados->every(fn($item) => $item->estadoaprobacion === 'SUBIDO') ? 'SUBIDO' : 'PENDIENTE';
                                 $estadosGrupos[] = $estadoGrupo;
@@ -1139,7 +1041,7 @@
                             </div>
                             <button class="btn btn-botongrisgrande" onclick="enviarSeleccionados()" style="margin-left: 10px;">CONFIRMAR PAGOS</button>
                         </div> --}}
-                        <div class="d-flex align-items-center p-3 mb-3" style="background-color: #f5f5f5; border-radius: 5px;"> 
+                        {{-- <div class="d-flex align-items-center p-3 mb-3" style="background-color: #f5f5f5; border-radius: 5px;"> 
                             <div>
                                 <input 
                                     type="checkbox" 
@@ -1187,13 +1089,71 @@
                                     alert("Error al actualizar.");
                                 });
                             }
-                        </script>
+                        </script> --}}
+                        <div class="d-flex align-items-center p-3 mb-3" style="background-color: #f5f5f5; border-radius: 5px;">  
+    <div>
+        <input 
+            type="checkbox" 
+            id="select-todos-global" 
+            {{ $bloquearAcciones ? 'disabled' : '' }}>
+        <strong>SELECCIONAR TODO</strong>
+    </div>
+    <button 
+        class="btn btn-botongrisgrande" 
+        onclick="enviarSeleccionados()" 
+        id="btn-confirmar-pagos"
+        style="margin-left: 10px;" 
+        disabled>
+        CONFIRMAR PAGOS
+    </button>
+</div>
+
+<script>
+    const checkboxGlobal = document.getElementById('select-todos-global');
+    const btnConfirmar = document.getElementById('btn-confirmar-pagos');
+
+    checkboxGlobal.addEventListener('change', function () {
+        const isChecked = this.checked;
+        
+        // Activar/desactivar checkbox individuales
+        document.querySelectorAll('.checkbox-cuentas, .checkbox-bateria').forEach(cb => cb.checked = isChecked);
+        
+        // Activar/desactivar botón confirmar pagos
+        btnConfirmar.disabled = !isChecked;
+    });
+
+    function enviarSeleccionados() {
+        const seleccionadosCuentas = Array.from(document.querySelectorAll('.checkbox-cuentas:checked')).map(cb => cb.value);
+        const seleccionadosBateria = Array.from(document.querySelectorAll('.checkbox-bateria:checked')).map(cb => cb.value);
+
+        fetch("{{ route('actualizar.estado.aprobacion') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+                cuentas: seleccionadosCuentas,
+                bateria: seleccionadosBateria
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            location.reload();
+        })
+        .catch(error => {
+            console.error(error);
+            alert("Error al actualizar.");
+        });
+    }
+</script>
+
                     </div>
                 </div>
-
             </div>
             {{-- COMPLETOS --}}
-            <div class="tab-pane fade" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
+            {{-- <div class="tab-pane fade" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
                 <div class="row">
                     <div class="col-lg-6">
                         <div class="card">
@@ -1399,7 +1359,7 @@
                         }
                     }
                 }
-            </script>
+            </script> --}}
         </div>
     </div>
 </div>

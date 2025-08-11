@@ -3,7 +3,7 @@
 <link href="assets/img/logo.png" rel="icon">
 
 @section('content_header')
-    <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.acciones.index') }}">REGRESAR</a>
+    {{-- <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.acciones.index') }}">REGRESAR</a> --}}
     {{-- <a class="btn btn-codigos btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">CODIGOS GENERADOS</a> --}}
     <h1>ASIGNACIÓN DE CÓDIGOS</h1>
 @stop
@@ -106,7 +106,7 @@
                 <div class="col-lg-6">
                     <div class="card">
                         <div class="card-body">
-                            <h4>ASIGNAR CODIGO</h4>
+                            <h4>ASIGNAR CÓDIGO</h4>
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="form-group">
@@ -211,7 +211,7 @@
                             <div class="row">
                                 <div class="col-lg-6" id="grupoClienteId" style="display: none;"> 
                                     <div class="form-group">
-                                        {!! Form::label('clienteid', 'ID del Cliente/Proveedor:') !!}
+                                        {!! Form::label('clienteid', 'ID Cliente/Reg./Prov./Inv.:') !!}
                                         <div class="input-group">
                                             {!! Form::text('clienteid', null, [
                                                 'class' => 'form-control',
@@ -251,8 +251,8 @@
 
                                         // Define los grupos
                                         const tipo1 = ['CREAR BATERIA CLIENTE ITA', 'CREAR BATERIA CLIENTE AUDITORIA'];
-                                        const tipo2 = ['CONCEDER DESCUENTO INGRESO', 'CAMBIAR FECHA DE CAJA INGRESO'];
-                                        const tipo3 = ['DESBLOQUEAR CAJA'];
+                                        const tipo2 = ['CONCEDER DESCUENTO INGRESO', 'CAMBIAR FECHA DE CAJA INGRESO', 'CAMBIAR FECHA DE CAJA EGRESO', 'CAMBIAR STOCK DE INVENTARIO', 'MODIFICAR FECHA DE PROCEDIMIENTO TRAMITE', 'EDITAR ARCHIVO DE PROCEDIMIENTO TRAMITE', 'DAR CONTINUIDAD DE PROCEDIMIENTO TRAMITE', 'MODIFICAR RAZON SOCIAL DE FACTURAS IMPUESTOS'];
+                                        const tipo3 = ['DESBLOQUEAR CAJA', 'ADELANTO DE VACACIONES'];
 
                                         selPermiso.addEventListener('change', function(e) {
                                         const texto = e.target.options[e.target.selectedIndex].text;
@@ -277,26 +277,23 @@
                                         } else if ( tipo3.includes(texto) ) {
                                             inpCliente.value = 0;
                                             inpTiempo.value = 1;
-                                            // nada se muestra
-
                                         }
                                         });
                                     });
 
                                     function setPermisoNombre() {
-                                        // ya se maneja dentro del evento change
                                     }
                                 </script>
                             </div>
                         </div>
                     </div>
                     {!! Form::submit('GENERAR CÓDIGO', ['class' => 'btn btn-sm btn-crear']) !!}
-            {!! Form::close() !!}
+                    {!! Form::close() !!}
                 </div>
                 <div class="col-lg-6">
                     <div class="card">
                         <div class="card-body">
-                            <h4>ULTIMOS CODIGOS ASIGNADOS</h4>
+                            <h4>ULTIMOS CÓDIGOS ASIGNADOS</h4>
                             <div class="table-responsive">
                                 <table class="table table-striped">
                                     <thead>
@@ -304,9 +301,9 @@
                                             <th>Solicitante</th>
                                             <th>Codigo</th>
                                             <th>Solicitado</th>
-                                            <th>ID_Cli.</th>
+                                            <th>ID_Sol.</th>
                                             <th>Permiso_Solicitado</th>
-                                            <th>Tiempo_Limite</th>
+                                            <th>Limite</th>
                                             <th>Fecha_Reg.</th>
                                             <th>Estado</th>
                                         </tr>
@@ -321,8 +318,7 @@
                                                 <td>
                                                     {{ $descripcionesPermisos[$registroscodigo->permisoSolicitado] ?? 'Descripción no disponible' }}
                                                 </td>
-
-                                                <td>{{$registroscodigo->tiempoLimite}} min.</td>
+                                                <td>{{$registroscodigo->tiempoLimite}}</td>
                                                 <td>{{$registroscodigo->created_at}}</td>
                                                 <td>
                                                     @if($registroscodigo->estado == 'expirado')
@@ -344,7 +340,6 @@
                     </div>
                 </div>
             </div>
-            
         </div>
     </div>
 </div>

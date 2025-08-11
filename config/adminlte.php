@@ -319,11 +319,12 @@ return [
             'can'  => 'admin.mensajes.index',
         ], */
         [
-            'text' => 'Mensajes',
+            'text' => 'Anuncios',
             'route'  => 'admin.mensajes.create',
             'icon' => 'fas fa-fw fas fa-comment',
-            'can'  => 'admin.mensajes.index',
+            'can'  => 'admin.mensajes.create',
         ],
+
         /* [
             'text' => 'EXCEL',
             'route'  => 'upload.excel',
@@ -603,7 +604,7 @@ return [
             'submenu' => [
                 [
                     'text' => 'Instructivas de Poder',
-                    'route'  => 'admin.instructivaspoder.index',
+                    'route'  => 'admin.instructivaspoder.nuevainstructiva',
                     'icon' => 'fas fa-fw fas fa-book-reader',
                 ],
                 [
@@ -763,19 +764,45 @@ return [
             'can'  => 'admin.facturasegreso.index',
             'submenu' => [
                 [
-                    'text' => 'Facturas Egreso',
+                    'text' => 'Facturas Impuestos',
                     'route'  => 'admin.facturasegreso.index',
                     'icon' => 'fas fa-file-invoice-dollar',
                     'can'  => 'admin.facturasegreso.index',
                 ],
             ],
         ],
-
         [
+            'text' => 'Formularios Facturas',
+            'route'  => 'admin.facturasegreso.facturascontadorexterno',
+            'icon' => 'fas fas fa-clipboard-list',
+            'can'  => 'admin.facturasegreso.facturascontadorexterno',
+        ],
+
+        /* [
             'text' => 'Cierre de Caja',
             'route'  => 'admin.caja.ingreso.cierre',
             'icon' => 'fas fa-lock',
             'can'  => 'admin.ingreso.index',
+        ], */
+
+        [
+            'text' => 'Cierres de Caja',
+            'icon' => 'fas fa-lock',
+            'can'  => 'admin.ingreso.index',
+            'submenu' => [
+                [
+                    'text' => 'Cierre de Caja Diario',
+                    'route'  => 'admin.caja.ingreso.cierre',
+                    'icon' => 'fas fa-unlock-alt',
+                    'can'  => 'admin.ingreso.index',
+                ],
+                [
+                    'text' => 'Historial de Cierres',
+                    'route'  => 'admin.caja.ingreso.historialcierrescaja',
+                    'icon' => 'fas fa-indent',
+                    'can'  => 'admin.caja.ingreso.historialcierrescaja',
+                ],
+            ],
         ],
 
         [
@@ -815,6 +842,12 @@ return [
                     'icon' => 'fas fa-file-signature',
                     'can'  => 'admin.inventario.solicitarproducto',
                 ],
+                [
+                    'text' => 'Opciones Inventario',
+                    'route'  => 'admin.inventario.opcionesinventario',
+                    'icon' => 'fas fa-project-diagram',
+                    'can'  => 'admin.inventario.opcionesinventario',
+                ],
             ],
         ],
         [
@@ -843,6 +876,12 @@ return [
             'can'  => 'admin.banco.index',
             'submenu' => [
                 [
+                    'text' => 'Cuentas Bancarias',
+                    'route'  => 'admin.banco.montototalbancos',
+                    'icon' => 'fas fa-landmark',
+                    'can'  => 'admin.banco.index',
+                ],
+                [
                     'text' => 'Consolidado General',
                     'route'  => 'admin.banco.index',
                     'icon' => 'fas fa-comments-dollar',
@@ -860,12 +899,7 @@ return [
                     'icon' => 'fas fa-comments-dollar',
                     'can'  => 'admin.banco.index',
                 ], */
-                [
-                    'text' => 'Cuentas Bancarias',
-                    'route'  => 'admin.banco.montototalbancos',
-                    'icon' => 'fas fa-landmark',
-                    'can'  => 'admin.banco.index',
-                ],
+                
             ],
         ],
 

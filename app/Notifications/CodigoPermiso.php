@@ -26,7 +26,7 @@ class CodigoPermiso extends Notification
     public function toDatabase($notifiable)
     {
         return [
-            'mensaje' => "{$this->permisoCodigo->usuarioAutorizador} te ha asignado el código de: {$this->permisoCodigo->codigo} para el cliente: {$this->permisoCodigo->clienteid}.",
+            'mensaje' => "{$this->permisoCodigo->usuarioAutorizador} te ha asignado el código: {$this->permisoCodigo->codigo} para el cliente/proveedor: {$this->permisoCodigo->clienteid}.",
             'registro_id' => $this->permisoCodigo->id,
         ];
     }

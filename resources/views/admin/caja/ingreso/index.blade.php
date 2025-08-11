@@ -14,15 +14,17 @@
 {{-- @if (!$mostrarVista && $rolUsuario === 'CONTABLE') --}}
 @if (!$mostrarVista && $tieneRolContable)
     <div class="alert alert-danger text-center py-4" style="border-radius: 10px; background-color: #f8d7da; color: #842029; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
-        <h4 class="font-weight-bold mb-3" style="text-transform: uppercase; letter-spacing: 1px;">Vista Bloqueada</h4>
-        <p class="mb-4" style="font-size: 1.1rem;">TU CAJA ESTA BLOQUEADA, SOLICITA UN CÓDIGO DE DESBLOQUEO A ADMINISTRACIÓN.</p>
+        <h4 class="font-weight-bold mb-3" style="text-transform: uppercase; letter-spacing: 1px;">Caja Bloqueada</h4>
+        <p class="mb-4" style="font-size: 1.1rem;">
+            {{ $motivoBloqueo ?? 'TU CAJA ESTA BLOQUEADA, SOLICITA UN CÓDIGO DE DESBLOQUEO A ADMINISTRACIÓN.' }}
+        </p>
         <form action="{{ route('verificar.codigo') }}" method="POST" style="max-width: 500px; margin: 0 auto;">
             @csrf
             <div class="form-group mb-3">
                 <label for="codigo" class="font-weight-bold" style="font-size: 1rem;">Ingresa el código para continuar:</label>
                 <input type="text" id="codigo" name="codigo" class="form-control" placeholder="Código de autorización" required style="border-radius: 5px;">
             </div>
-            <button type="submit" class="btn btn-outline-success btn-block" style="padding: 10px 20px; font-size: 1rem; border-radius: 5px;">VALIDAR CÓDIGO</button>
+            <button type="submit" class="btn btn-sm btn-success btn-block" style="padding: 5px 10px; font-size: 1rem; border-radius: 5px;">VALIDAR CÓDIGO</button>
         </form>
     </div>
 @else
@@ -30,7 +32,7 @@
         <div class="flex-grow-1">
             <h2 class="font-weight-bold">CAJA DE INGRESOS INTERNOS</h2>
         </div>
-        <a class="btn btn-outline-success btn-sm" id="btnVerCreditos" 
+        <a class="btn btn-outline-warning btn-sm" id="btnVerCreditos" 
             data-toggle="modal" data-target="#modalCreditos" 
             style="display: {{ $tieneCredito->isEmpty() ? 'none' : 'block' }}; margin-right: 10px;">
             VER CRÉDITOS
@@ -517,1033 +519,1040 @@
 @else
 <form action="{{ route('guardar.cajacentral') }}" method="POST" id="guardarFormulario">
     @csrf
-    <div class="row">
-        <!-- Panel Izquierdo -->
-        <div class="col-md-2 panel">
-            <div class="form-group" hidden>
-                <label>Ciudad de Operación</label>
-                <input type="text" class="form-control" name="ciudadregistro" value="{{ $sucursal }}">
-            </div>
-
+    <div class="card">
+        <div class="card-body">
             <div class="row">
-                {{-- <div class="form-group col-lg-4">
-                    <label for="siguienteId">Recibo</label>
-                    <input type="text" id="siguienteId" class="form-control" value="{{ $siguienteId }}" readonly>
-                </div> --}}
-                <div class="form-group col-lg-4">
-                    <label for="siguienteId">Recibo</label>
-                    <input type="text" id="siguienteId" class="form-control" readonly>
-
-                </div>
-                <script>
-                    function actualizarSiguienteId() {
-                        fetch("{{ url('/recibos/siguiente-id') }}")
-                            .then(response => response.json())
-                            .then(data => {
-                                document.getElementById('siguienteId').value = data.siguienteId;
-                            })
-                            .catch(error => console.error('Error al obtener el siguiente ID:', error));
-                    }
-                
-                    setInterval(actualizarSiguienteId, 1000);
-                    actualizarSiguienteId();
-                </script>
-
-                <div class="form-group col-lg-8">
-                    <label>Tipo de Cliente</label>
-                    <select id="tipoCliente" class="form-control" name="tipocliente" onchange="cambiarArea()">
-                        <option value="" selected disabled>Seleccione un tipo</option>
-                        <option value="clienteitaid">Cliente ITA</option>
-                        <option value="clienteauditoriaid">Cliente Auditoría</option>
-                        <option value="clientecomunid">Cliente Común</option>
-                        <option value="clientebancoid">Proveedor</option>
-                        <option value="clienteproveedor" hidden>Cliente Banco</option>
-                    </select>
-                    <input type="hidden" id="area" class="form-control" name="area" value="MEDICA">
-                </div>
-                {{-- <script>
-                    function cambiarArea() {
-                        var tipoCliente = document.getElementById('tipoCliente').value;
-                        var areaInput = document.getElementById('area');
-                        
-                        if (tipoCliente === 'clienteitaid' || tipoCliente === 'clienteauditoriaid' || tipoCliente === 'clientecomunid') {
-                            areaInput.value = 'MEDICA';
-                        } else if (tipoCliente === 'clientebancoid') {
-                            areaInput.value = 'CUENTA POR COBRAR';
-                        }
-                    }
-                </script> --}}
-            </div>
-            
-            {{-- <label for="clienteid">ID / CI del Cliente</label>
-            <div class="row mb-3">
-                <div class="form-group col-lg-12">
-                    <input type="text" id="clienteid" name="clienteid" class="form-control" placeholder="">
-                </div>
-            </div> --}}
-            <label for="clienteid">Nombre del Cliente</label>
-            <div class="row mb-3">
-                <div class="form-group col-lg-12">
-                    <input list="clientes" id="clienteSearch" class="form-control" placeholder="Buscar cliente..." oninput="actualizarID()">
-                    <datalist id="clientes"></datalist>
-                    <!-- Campo oculto para almacenar el id del cliente seleccionado -->
-                    <input type="hidden" id="clienteid" name="clienteid">
-                </div>
-            </div>
-
-            <script>
-                const clientesIta = @json($clientesIta);
-                const clientesAuditoria = @json($clientesAuditoria);
-                const clientesComunes = @json($clientesComunes);
-                const proveedores = @json($proveedores);
-
-                function cambiarArea() {
-                    const tipoCliente = document.getElementById("tipoCliente").value;
-                    const datalist = document.getElementById("clientes");
-                    const clienteSearch = document.getElementById("clienteSearch");
-                    var areaInput = document.getElementById('area');
-                        
-                        if (tipoCliente === 'clienteitaid' || tipoCliente === 'clienteauditoriaid' || tipoCliente === 'clientecomunid') {
-                            areaInput.value = 'MEDICA';
-                        } else if (tipoCliente === 'clientebancoid') {
-                            areaInput.value = 'CUENTA POR COBRAR';
-                        }
-
-                    // Limpiar las opciones anteriores
-                    datalist.innerHTML = '';
-
-                    let clientes = [];
-
-                    // Obtener los clientes adecuados según el tipo
-                    if (tipoCliente === 'clienteitaid') {
-                        clientes = clientesIta;
-                    } else if (tipoCliente === 'clienteauditoriaid') {
-                        clientes = clientesAuditoria;
-                    } else if (tipoCliente === 'clientecomunid') {
-                        clientes = clientesComunes;
-                    } else if (tipoCliente === 'clientebancoid') {
-                        clientes = proveedores;
-                    }
-
-                    // Agregar las nuevas opciones al datalist
-                    clientes.forEach(cliente => {
-                        const option = document.createElement("option");
-                        option.value = cliente.nombrecompleto || cliente.razonsocial;
-                        option.dataset.id = cliente.id; // Guardamos el id como un atributo de datos
-                        datalist.appendChild(option);
-                    });
-                }
-
-                // Actualizar el campo oculto con el id del cliente seleccionado
-                function actualizarID() {
-                    const clienteSearch = document.getElementById("clienteSearch");
-                    const datalist = document.getElementById("clientes");
-                    const options = datalist.querySelectorAll("option");
-
-                    options.forEach(option => {
-                        if (option.value === clienteSearch.value) {
-                            // Al encontrar una opción que coincida, asignamos su id al campo oculto
-                            document.getElementById("clienteid").value = option.dataset.id;
-                        }
-                    });
-                }
-            </script>
-            <div class="row mb-3" style="margin-top: -25px;">
-                <div class="form-group col-lg-6">
-                    <a id="buscarCliente" class="btn btn-sm btn-secondary w-100" disabled>Buscar Hoy</a>
-                </div>
-                <div class="form-group col-lg-6">
-                    <a id="buscarClienteTodo" class="btn btn-sm btn-secondary w-100" disabled>Mostrar Todo</a>
-                </div>
-            </div>
-            <div class="row mb-3" style="margin-top: -20px;">
-                <div class="form-group col-lg-6">
-                    <input type="date" id="fechaInicio" class="form-control" placeholder="Fecha de inicio">
-                </div>
-                <div class="form-group col-lg-6">
-                    <input type="date" id="fechaFinal" class="form-control" placeholder="Fecha final">
-                </div>
-            </div>
-            <div class="row mb-3" style="margin-top: -25px;">
-                <div class="form-group col-lg-12">
-                    <a id="buscarPorFecha" class="btn btn-sm btn-secondary w-100" disabled>Buscar por Fechas</a>
-                </div>
-            </div>
-            <div id="campoFechas" style="display: none;">
-                <div class="form-group">
-                    <label>Registro</label>
-                    <input type="datetime-local" name="created_at" id="created_at" class="form-control">
-                    <input type="datetime-local" name="updated_at" id="updated_at" class="form-control" hidden>
-                </div>
-            </div>
-
-
-            
-            {{-- TIPO TRANSACCION --}}
-            <div class="form-group">
-                <label>Tipo de Transacción</label>
-                <div>
-                    <select class="form-control" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
-                        <option disabled selected></option>
-                        <option value="ATC">ATC</option>
-                        <option value="CHEQUE">CHEQUE</option>
-                        <option value="DEPOSITO_BANCARIO">DEPÓSITO BANCARIO</option>
-                        <option value="EFECTIVO">EFECTIVO</option>
-                        <option value="TRANSFERENCIA_BANCARIA">TRANSFERENCIA BANCARIA</option>
-                    </select>
-                    <div class="form-check mt-2" hidden>
-                        <input type="checkbox" class="form-check-input" id="dobleTransaccion" onchange="validarTipoTransaccion()">
-                        <label class="form-check-label" for="dobleTransaccion">Doble Tipo de Transac.</label>
+                <!-- Panel Izquierdo -->
+                <div class="col-md-2 panel">
+                    <div class="form-group" hidden>
+                        <label>Ciudad de Operación</label>
+                        <input type="text" class="form-control" name="ciudadregistro" value="{{ $sucursal }}">
                     </div>
-                    <select class="form-control mt-2 d-none" id="tipoTransaccion2" name="tipotransaccion2" onchange="validarTipoTransaccion()">
-                        <option disabled selected></option>
-                        <option value="ATC">ATC</option>
-                        <option value="CHEQUE">CHEQUE</option>
-                        <option value="DEPOSITO_BANCARIO">DEPÓSITO BANCARIO</option>
-                        <option value="EFECTIVO">EFECTIVO</option>
-                        <option value="TRANSFERENCIA_BANCARIA">TRANSFERENCIA BANCARIA</option>
-                    </select>
-                </div>
-            </div>
-            
-            {{-- FACTURA --}}
-            <div class="form-group">
-                <label>Nro. Factura</label>
-                <input type="text" id="nrofactura" name="nrofactura" class="form-control">
-            </div>
 
-            <!-- ATC -->
-            <div class="form-group atc-fields d-none">
-                <label>Nro. Tarjeta</label>
-                <input type="text" id="nrotarjeta" name="nrotarjeta" class="form-control" maxlength="16" oninput="formatearTarjeta(this)">
-                <script>
-                    function formatearTarjeta(input) {
-                        let valor = input.value.replace(/\D/g, '');
-                        if (valor.length === 6) {
-                            valor += 'XXXXXX';
-                        } else if (valor.length > 6 && !valor.includes('XXXXXX')) {
-                            valor = valor.substring(0, 6) + 'XXXXXX' + valor.substring(6);
-                        }
-                        if (valor.length > 12) {
-                            valor = valor.substring(0, 12) + valor.substring(12, 16);
-                        }
-
-                        input.value = valor;
-                    }
-                </script>
-                <label>AP.</label>
-                <input type="text" id="nroap" name="nroap" class="form-control">
-                <label>REF.</label>
-                <input type="text" id="nroref" name="nroref" class="form-control">
-            </div>
-            
-            <!-- CHEQUE -->
-            <div class="form-group cheque-fields d-none">
-                <label>Nro. Cheque</label>
-                <input type="text" id="nrocheque" name="nrocheque" class="form-control">
-                <div class="form-group mb-3">
-                    <label for="tipobancocheque">Tipo Banco</label>
-                    <select name="tipobancocheque" id="tipobancocheque" class="form-control">
-                        <option value=""></option>
-                        @foreach ($bancos as $banco)
-                            <option value="{{ $banco->nombrebanco }}">{{ $banco->nombrebanco }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label for="bancoDestino">Nro. Banco Destino</label>
-                    <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control">
-                        <option value=""></option>
-                        @foreach ($cuentas as $cuenta)
-                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            
-            <!-- DEPOSITO BANCARIO -->
-            <div class="form-group deposito-fields d-none">
-                <div class="form-group mb-3">
-                    <label for="bancoDestino">Nro. Banco Origen</label>
-                    <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control">
-                        <option value=""></option>
-                        @foreach ($cuentas as $cuenta)
-                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <label>Bancarización</label>
-                <input type="text" id="nrobancarizaciondeposito" name="nrobancarizaciondeposito" class="form-control">
-            </div>
-            
-            <!-- TRANSFERENCIA BANCARIA -->
-            <div class="form-group transferencia-fields d-none">
-                <div class="form-group mb-3">
-                    <label for="bancoDestino">Nro. Banco Origen</label>
-                    <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control">
-                        <option value=""></option>
-                        @foreach ($cuentas as $cuenta)
-                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <label>Bancarización</label>
-                <input type="text" id="nrobancarizaciontransferencia" name="nrobancarizaciontransferencia" class="form-control">
-            </div>
-            
-            <!-- EFECTIVO -->
-            <div class="form-group efectivo-fields d-none">
-                <label>Tipo de Cambio</label>
-                <select name="tipocambio" id="tipocambio" class="form-control">
-                    <option value="Bs.">Bs.</option>
-                    <option value="Usd.">Usd.</option>
-                </select>
-            </div>
-        </div>
-
-        {{-- REGISTROS --}}
-        <div class="col-md-10">
-            <div class="card">
-                <div class="card-header bg-dark text-white text-center">
-                    <h5 style="margin-bottom: 0;">PAGOS PENDIENTES</h5>
-                </div>
-                <div class="card-body">
                     <div class="row">
-                        <div class="form-group col-lg-2">
-                            <label>ID</label>
-                            <input type="text" class="form-control" id="clienteid" name="clienteid" placeholder="ID del cliente" readonly>
+                        {{-- <div class="form-group col-lg-4">
+                            <label for="siguienteId">Recibo</label>
+                            <input type="text" id="siguienteId" class="form-control" value="{{ $siguienteId }}" readonly>
+                        </div> --}}
+                        <div class="form-group col-lg-4">
+                            <label for="siguienteId">Recibo</label>
+                            <input type="text" id="siguienteId" class="form-control" readonly>
+
+                        </div>
+                        <script>
+                            function actualizarSiguienteId() {
+                                fetch("{{ url('/recibos/siguiente-id') }}")
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        document.getElementById('siguienteId').value = data.siguienteId;
+                                    })
+                                    .catch(error => console.error('Error al obtener el siguiente ID:', error));
+                            }
+                        
+                            setInterval(actualizarSiguienteId, 1000);
+                            actualizarSiguienteId();
+                        </script>
+
+                        <div class="form-group col-lg-8">
+                            <label>Tipo de Cliente</label>
+                            <select id="tipoCliente" class="form-control" name="tipocliente" onchange="cambiarArea()">
+                                <option value="" selected disabled>Seleccione un tipo</option>
+                                <option value="clienteitaid">Cliente ITA</option>
+                                <option value="clienteauditoriaid">Cliente Auditoría</option>
+                                <option value="clientecomunid">Cliente Común</option>
+                                <option value="clientebancoid">Proveedor</option>
+                                <option value="clienteproveedor" hidden>Cliente Banco</option>
+                            </select>
+                            <input type="hidden" id="area" class="form-control" name="area" value="MEDICA">
+                        </div>
+                        {{-- <script>
+                            function cambiarArea() {
+                                var tipoCliente = document.getElementById('tipoCliente').value;
+                                var areaInput = document.getElementById('area');
+                                
+                                if (tipoCliente === 'clienteitaid' || tipoCliente === 'clienteauditoriaid' || tipoCliente === 'clientecomunid') {
+                                    areaInput.value = 'MEDICA';
+                                } else if (tipoCliente === 'clientebancoid') {
+                                    areaInput.value = 'CUENTA POR COBRAR';
+                                }
+                            }
+                        </script> --}}
+                    </div>
+                    
+                    {{-- <label for="clienteid">ID / CI del Cliente</label>
+                    <div class="row mb-3">
+                        <div class="form-group col-lg-12">
+                            <input type="text" id="clienteid" name="clienteid" class="form-control" placeholder="">
+                        </div>
+                    </div> --}}
+                    <label for="clienteid">Nombre del Cliente</label>
+                    <div class="row mb-3">
+                        <div class="form-group col-lg-12">
+                            <input list="clientes" id="clienteSearch" class="form-control" placeholder="Buscar cliente..." oninput="actualizarID()">
+                            <datalist id="clientes"></datalist>
+                            <!-- Campo oculto para almacenar el id del cliente seleccionado -->
+                            <input type="hidden" id="clienteid" name="clienteid">
+                        </div>
+                    </div>
+
+                    <script>
+                        const clientesIta = @json($clientesIta);
+                        const clientesAuditoria = @json($clientesAuditoria);
+                        const clientesComunes = @json($clientesComunes);
+                        const proveedores = @json($proveedores);
+
+                        function cambiarArea() {
+                            const tipoCliente = document.getElementById("tipoCliente").value;
+                            const datalist = document.getElementById("clientes");
+                            const clienteSearch = document.getElementById("clienteSearch");
+                            var areaInput = document.getElementById('area');
+                                
+                                if (tipoCliente === 'clienteitaid' || tipoCliente === 'clienteauditoriaid' || tipoCliente === 'clientecomunid') {
+                                    areaInput.value = 'MEDICA';
+                                } else if (tipoCliente === 'clientebancoid') {
+                                    areaInput.value = 'CUENTA POR COBRAR';
+                                }
+
+                            // Limpiar las opciones anteriores
+                            datalist.innerHTML = '';
+
+                            let clientes = [];
+
+                            // Obtener los clientes adecuados según el tipo
+                            if (tipoCliente === 'clienteitaid') {
+                                clientes = clientesIta;
+                            } else if (tipoCliente === 'clienteauditoriaid') {
+                                clientes = clientesAuditoria;
+                            } else if (tipoCliente === 'clientecomunid') {
+                                clientes = clientesComunes;
+                            } else if (tipoCliente === 'clientebancoid') {
+                                clientes = proveedores;
+                            }
+
+                            // Agregar las nuevas opciones al datalist
+                            clientes.forEach(cliente => {
+                                const option = document.createElement("option");
+                                option.value = cliente.nombrecompleto || cliente.razonsocial;
+                                option.dataset.id = cliente.id; // Guardamos el id como un atributo de datos
+                                datalist.appendChild(option);
+                            });
+                        }
+
+                        // Actualizar el campo oculto con el id del cliente seleccionado
+                        function actualizarID() {
+                            const clienteSearch = document.getElementById("clienteSearch");
+                            const datalist = document.getElementById("clientes");
+                            const options = datalist.querySelectorAll("option");
+
+                            options.forEach(option => {
+                                if (option.value === clienteSearch.value) {
+                                    // Al encontrar una opción que coincida, asignamos su id al campo oculto
+                                    document.getElementById("clienteid").value = option.dataset.id;
+                                }
+                            });
+                        }
+                    </script>
+                    <div class="row mb-3" style="margin-top: -25px;">
+                        <div class="form-group col-lg-6">
+                            <a id="buscarCliente" class="btn btn-sm btn-secondary w-100" disabled>Buscar Hoy</a>
                         </div>
                         <div class="form-group col-lg-6">
-                            <label>Cliente</label>
-                            <input type="text" id="clientenombre" name="clientenombre" class="form-control" placeholder="Nombre del cliente" readonly>
+                            <a id="buscarClienteTodo" class="btn btn-sm btn-secondary w-100" disabled>Mostrar Todo</a>
                         </div>
-                        <div class="form-group col-lg-4">
-                            <label>CI</label>
-                            <input type="text" class="form-control" placeholder="CI del cliente" readonly>
+                    </div>
+                    <div class="row mb-3" style="margin-top: -20px;">
+                        <div class="form-group col-lg-6">
+                            <input type="date" id="fechaInicio" class="form-control" placeholder="Fecha de inicio">
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <input type="date" id="fechaFinal" class="form-control" placeholder="Fecha final">
+                        </div>
+                    </div>
+                    <div class="row mb-3" style="margin-top: -25px;">
+                        <div class="form-group col-lg-12">
+                            <a id="buscarPorFecha" class="btn btn-sm btn-secondary w-100" disabled>Buscar por Fechas</a>
+                        </div>
+                    </div>
+                    <div id="campoFechas" style="display: none;">
+                        <div class="form-group">
+                            <label>Registro</label>
+                            <input type="datetime-local" name="created_at" id="created_at" class="form-control">
+                            <input type="datetime-local" name="updated_at" id="updated_at" class="form-control" hidden>
                         </div>
                     </div>
 
-                    <div class="table-responsive">
-                        <table class="table table-bordered mt-3">
-                            <thead>
-                                <tr style="background-color: #eff1f3">
-                                    <th style="width: 5%; text-align: center;">ID</th>
-                                    <th style="width: 28%; text-align: center;">Detalle</th>
-                                    <th style="width: 12%; text-align: center;">Prog.</th>
-                                    <th hidden style="width: 0%;">Fecha de Batería</th>
-                                    <th style="width: 20%; text-align: center;">Servicio</th>
-                                    <th style="width: 10%; text-align: center;">Precio</th>
-                                    <th style="width: 10%; text-align: center;">Descuento</th>
-                                    <th style="width: 10%; text-align: center;">Pago</th>  
-                                    <th style="width: 5%;">
-                                        <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 10px; margin-bottom: 0px;">
-                                            <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 20px;">
-                                            Sel.
-                                        </label>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaRegistros">
-                            </tbody>
-                        </table>
+                    <div class="form-group">
+                        <label>Cod. Autorización</label>
+                        <input type="text" id="codautorizacion" name="codautorizacion" class="form-control">
                     </div>
 
-                    <div class="card-body card">
-                        <h5 class="text-left" style="margin-top: 0;">RESUMEN DE PAGO</h5>
-                        <div class="row">
-                            <input type="hidden" class="form-control border border-dark" name="montoreal" id="montoreal" value="0" readonly>
-                            <div class="form-group col-lg-3">
-                                <label>Subtotal</label>
-                                <input type="text" class="form-control" name="subtotal" placeholder="Subtotal" value="0" readonly>
+                    {{-- TIPO TRANSACCION --}}
+                    <div class="form-group">
+                        <label>Tipo de Transacción</label>
+                        <div>
+                            <select class="form-control" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
+                                <option disabled selected></option>
+                                <option value="ATC">ATC</option>
+                                <option value="CHEQUE">CHEQUE</option>
+                                <option value="DEPOSITO_BANCARIO">DEPÓSITO BANCARIO</option>
+                                <option value="EFECTIVO">EFECTIVO</option>
+                                <option value="TRANSFERENCIA_BANCARIA">TRANSFERENCIA BANCARIA</option>
+                            </select>
+                            <div class="form-check mt-2" hidden>
+                                <input type="checkbox" class="form-check-input" id="dobleTransaccion" onchange="validarTipoTransaccion()">
+                                <label class="form-check-label" for="dobleTransaccion">Doble Tipo de Transac.</label>
                             </div>
-                            <div class="form-group col-lg-3">
-                                <label>Descuento</label>
-                                <input type="text" class="form-control" name="descuento" placeholder="Descuento" value="0" readonly>
-                            </div>
-                            <div class="form-group col-lg-3">
-                                <label>Total</label>
-                                <input type="text" class="form-control border border-dark" name="montototal" id="montototal" placeholder="Total" value="0" readonly>
-                            </div>
-                            <div class="form-group col-lg-3">
-                                <label>Registrar</label>
-                                    <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
-                                            onclick="imprimirReciboSeleccionados()">
-                                        GUARDAR REGISTRO
-                                    </button>
-                                {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
-                                    <a id="actualizarId" class="btn btn-secondary btn-block" style="display: none;">
-                                        INSERTAR DATOS
-                                    </a>
-                                    <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
-                                            onclick="imprimirReciboSeleccionados()" disabled style="display: none;">
-                                        GUARDAR REGISTRO
-                                    </button>
-                                </div> --}}
-                                <a class="btn btn-secondary" id="abrirModalBtn" data-toggle="modal" data-target="#modalArqueo" style="display: none;">
-                                    ARQUEO DE CAJA
-                                </a>
-
-                                <script>
-                                    let timer;
-                                    document.addEventListener('click', function (event) {
-                                        if (event.target && event.target.id === 'actualizarId') {
-                                            fetch('{{ route('actualizar_id') }}')
-                                                .then(response => response.json())
-                                                .then(data => {
-                                                    if (data.siguienteId) {
-                                                        document.getElementById('siguienteId').value = data.siguienteId;
-                                                    } else {
-                                                        alert('No se pudo obtener el siguiente ID.');
-                                                    }
-                                                })
-                                                .catch(error => console.error('Error:', error));
-                                
-                                            document.getElementById('actualizarId').style.display = 'none';
-                                            document.getElementById('imprimirReciboBtn').style.display = 'inline-block';
-                                
-                                            timer = setTimeout(function() {
-                                                console.log("No se presionó Guardar, ocultando el botón Guardar y mostrando Generar Recibo.");
-                                                document.getElementById('imprimirReciboBtn').style.display = 'none';
-                                                document.getElementById('actualizarId').style.display = 'inline-block';
-                                            }, 2000);
-                                        }
-                                        if (event.target && event.target.id === 'imprimirReciboBtn') {
-                                            clearTimeout(timer);
-                                
-                                            document.getElementById('imprimirReciboBtn').style.display = 'none';
-                                            document.getElementById('actualizarId').style.display = 'inline-block';
-                                        }
-                                    });
-                                </script>
+                            <select class="form-control mt-2 d-none" id="tipoTransaccion2" name="tipotransaccion2" onchange="validarTipoTransaccion()">
+                                <option disabled selected></option>
+                                <option value="ATC">ATC</option>
+                                <option value="CHEQUE">CHEQUE</option>
+                                <option value="DEPOSITO_BANCARIO">DEPÓSITO BANCARIO</option>
+                                <option value="EFECTIVO">EFECTIVO</option>
+                                <option value="TRANSFERENCIA_BANCARIA">TRANSFERENCIA BANCARIA</option>
+                            </select>
+                        </div>
+                    </div>
                     
-                                <div class="modal fade" id="modalArqueo" tabindex="-1" aria-labelledby="modalArqueoLabel" aria-hidden="true">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content">
-                                            <div class="modal-header" style="text-align: center; width: 100%; justify-content: center; margin-bottom:-25px;">
-                                                <h5 class="modal-title" id="modalArqueoLabel" style="font-weight: 900; margin: 0;">
-                                                    ARQUEO DE CAJA
-                                                </h5>
-                                            </div>
-                                            
-                                            <div class="modal-body">
-                                                <div class="card shadow-sm border p-2" style="background-color: #eeeded">
-                                                    <h6 class="card-title fw-bold mb-1" style="text-align: center; width: 100%; justify-content: center; margin-bottom:-10px;">RESUMEN DE MOVIMIENTO</h6>
-                                                    <div class="card-body p-2 text-center" style="background-color: #ffffff">
-                                                        <div class="row align-items-center">
-                                                            <div class="col-8 text-center">
-                                                                <div class="d-flex justify-content-between">
-                                                                    <div class="flex-fill">
-                                                                        <small>MONTO REAL</small>
-                                                                        <p class="h6 mb-0"><strong id="montoRealModal">0.00</strong></p>
-                                                                    </div>
-                                                                    <div class="flex-fill">
-                                                                        <small>MONTO TOTAL</small>
-                                                                        <p class="h2 mb-0"><strong id="montoTotalModal">0.00</strong></p>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                            <div class="col-4 text-center">
-                                                                <div class="d-flex flex-column">
-                                                                    <div>
-                                                                        <small>Dif. Contra</small>
-                                                                        <input type="text" name="diferenciacontra" id="diferenciacontra" class="form-control form-control-sm text-center mx-auto" style="width: 60px;" value="0.00" readonly>
-                                                                    </div>
-                                                                    <div class="mt-1">
-                                                                        <small>Dif. Favor</small>
-                                                                        <input type="text" name="diferenciafavor" id="diferenciafavor" class="form-control form-control-sm text-center mx-auto" style="width: 60px;" value="0.00" readonly>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                    {{-- FACTURA --}}
+                    <div class="form-group">
+                        <label>Nro. Factura</label>
+                        <input type="text" id="nrofactura" name="nrofactura" class="form-control">
+                    </div>
+
+                    <!-- ATC -->
+                    <div class="form-group atc-fields d-none">
+                        <label>Nro. Tarjeta</label>
+                        <input type="text" id="nrotarjeta" name="nrotarjeta" class="form-control" maxlength="16" oninput="formatearTarjeta(this)">
+                        <script>
+                            function formatearTarjeta(input) {
+                                let valor = input.value.replace(/\D/g, '');
+                                if (valor.length === 6) {
+                                    valor += 'XXXXXX';
+                                } else if (valor.length > 6 && !valor.includes('XXXXXX')) {
+                                    valor = valor.substring(0, 6) + 'XXXXXX' + valor.substring(6);
+                                }
+                                if (valor.length > 12) {
+                                    valor = valor.substring(0, 12) + valor.substring(12, 16);
+                                }
+
+                                input.value = valor;
+                            }
+                        </script>
+                        <label>AP.</label>
+                        <input type="text" id="nroap" name="nroap" class="form-control">
+                        <label>REF.</label>
+                        <input type="text" id="nroref" name="nroref" class="form-control">
+                    </div>
+                    
+                    <!-- CHEQUE -->
+                    <div class="form-group cheque-fields d-none">
+                        <label>Nro. Cheque</label>
+                        <input type="text" id="nrocheque" name="nrocheque" class="form-control">
+                        <div class="form-group mb-3">
+                            <label for="tipobancocheque">Tipo Banco</label>
+                            <select name="tipobancocheque" id="tipobancocheque" class="form-control">
+                                <option value=""></option>
+                                @foreach ($bancos as $banco)
+                                    <option value="{{ $banco->nombrebanco }}">{{ $banco->nombrebanco }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="bancoDestino">Nro. Banco Destino</label>
+                            <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control">
+                                <option value=""></option>
+                                @foreach ($cuentas as $cuenta)
+                                    <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- DEPOSITO BANCARIO -->
+                    <div class="form-group deposito-fields d-none">
+                        <div class="form-group mb-3">
+                            <label for="bancoDestino">Nro. Banco Origen</label>
+                            <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control">
+                                <option value=""></option>
+                                @foreach ($cuentas as $cuenta)
+                                    <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <label>Bancarización</label>
+                        <input type="text" id="nrobancarizaciondeposito" name="nrobancarizaciondeposito" class="form-control">
+                    </div>
+                    
+                    <!-- TRANSFERENCIA BANCARIA -->
+                    <div class="form-group transferencia-fields d-none">
+                        <div class="form-group mb-3">
+                            <label for="bancoDestino">Nro. Banco Origen</label>
+                            <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control">
+                                <option value=""></option>
+                                @foreach ($cuentas as $cuenta)
+                                    <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <label>Bancarización</label>
+                        <input type="text" id="nrobancarizaciontransferencia" name="nrobancarizaciontransferencia" class="form-control">
+                    </div>
+                    
+                    <!-- EFECTIVO -->
+                    <div class="form-group efectivo-fields d-none">
+                        <label>Tipo de Cambio</label>
+                        <select name="tipocambio" id="tipocambio" class="form-control">
+                            <option value="Bs.">Bs.</option>
+                            <option value="Usd.">Usd.</option>
+                        </select>
+                    </div>
+                </div>
+
+                {{-- REGISTROS --}}
+                <div class="col-md-10">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white text-center">
+                            <h5 style="margin-top: -5px; margin-bottom: -5px; font-weight: 700;">PAGOS PENDIENTES</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="form-group col-lg-2">
+                                    <label>ID</label>
+                                    <input type="text" class="form-control" id="clienteid" name="clienteid" placeholder="ID del cliente" readonly>
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label>Cliente</label>
+                                    <input type="text" id="clientenombre" name="clientenombre" class="form-control" placeholder="Nombre del cliente" readonly>
+                                </div>
+                                <div class="form-group col-lg-4">
+                                    <label>CI</label>
+                                    <input type="text" class="form-control" placeholder="CI del cliente" readonly>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-bordered mt-3">
+                                    <thead>
+                                        <tr style="background-color: #eff1f3">
+                                            <th style="width: 5%; text-align: center;">ID</th>
+                                            <th style="width: 28%; text-align: center;">Detalle</th>
+                                            <th style="width: 12%; text-align: center;">Prog.</th>
+                                            <th hidden style="width: 0%;">Fecha de Batería</th>
+                                            <th style="width: 20%; text-align: center;">Servicio</th>
+                                            <th style="width: 10%; text-align: center;">Precio</th>
+                                            <th style="width: 10%; text-align: center;">Descuento</th>
+                                            <th style="width: 10%; text-align: center;">Pago</th>  
+                                            <th style="width: 5%;">
+                                                <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 10px; margin-bottom: 0px;">
+                                                    <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 20px;">
+                                                    Sel.
+                                                </label>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaRegistros">
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="card-body card">
+                                <h5 class="text-left" style="margin-top: 0; font-weight: 700;">RESUMEN DE PAGO</h5>
+                                <div class="row">
+                                    <input type="hidden" class="form-control border border-dark" name="montoreal" id="montoreal" value="0" readonly>
+                                    <div class="form-group col-lg-3">
+                                        <label>Subtotal</label>
+                                        <input type="text" class="form-control" name="subtotal" placeholder="Subtotal" value="0" readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Descuento</label>
+                                        <input type="text" class="form-control" name="descuento" placeholder="Descuento" value="0" readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Total</label>
+                                        <input type="text" class="form-control border border-dark" name="montototal" id="montototal" placeholder="Total" value="0" readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label>Registrar</label>
+                                            <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
+                                                    onclick="imprimirReciboSeleccionados()">
+                                                GUARDAR REGISTRO
+                                            </button>
+                                        {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                            <a id="actualizarId" class="btn btn-secondary btn-block" style="display: none;">
+                                                INSERTAR DATOS
+                                            </a>
+                                            <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
+                                                    onclick="imprimirReciboSeleccionados()" disabled style="display: none;">
+                                                GUARDAR REGISTRO
+                                            </button>
+                                        </div> --}}
+                                        <a class="btn btn-secondary" id="abrirModalBtn" data-toggle="modal" data-target="#modalArqueo" style="display: none;">
+                                            ARQUEO DE CAJA
+                                        </a>
+
+                                        <script>
+                                            let timer;
+                                            document.addEventListener('click', function (event) {
+                                                if (event.target && event.target.id === 'actualizarId') {
+                                                    fetch('{{ route('actualizar_id') }}')
+                                                        .then(response => response.json())
+                                                        .then(data => {
+                                                            if (data.siguienteId) {
+                                                                document.getElementById('siguienteId').value = data.siguienteId;
+                                                            } else {
+                                                                alert('No se pudo obtener el siguiente ID.');
+                                                            }
+                                                        })
+                                                        .catch(error => console.error('Error:', error));
+                                        
+                                                    document.getElementById('actualizarId').style.display = 'none';
+                                                    document.getElementById('imprimirReciboBtn').style.display = 'inline-block';
+                                        
+                                                    timer = setTimeout(function() {
+                                                        console.log("No se presionó Guardar, ocultando el botón Guardar y mostrando Generar Recibo.");
+                                                        document.getElementById('imprimirReciboBtn').style.display = 'none';
+                                                        document.getElementById('actualizarId').style.display = 'inline-block';
+                                                    }, 2000);
+                                                }
+                                                if (event.target && event.target.id === 'imprimirReciboBtn') {
+                                                    clearTimeout(timer);
+                                        
+                                                    document.getElementById('imprimirReciboBtn').style.display = 'none';
+                                                    document.getElementById('actualizarId').style.display = 'inline-block';
+                                                }
+                                            });
+                                        </script>
+                            
+                                        <div class="modal fade" id="modalArqueo" tabindex="-1" aria-labelledby="modalArqueoLabel" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header" style="text-align: center; width: 100%; justify-content: center; margin-bottom:-25px;">
+                                                        <h5 class="modal-title" id="modalArqueoLabel" style="font-weight: 900; margin: 0;">
+                                                            ARQUEO DE CAJA
+                                                        </h5>
                                                     </div>
-                                                </div>
-                                                
-                                                <div class="row">
-                                                    <div class="col-lg-6">
-                                                        <div class="card shadow-sm border p-2" style="background-color: #eeeded">
-                                                            <div class="card-body p-2" style="background-color: #ffffff">
-                                                                <!-- Pago del Cliente -->
-                                                                <div class="form-group">
-                                                                    <label for="montoPagado" class="mb-1" style="text-align: center; width: 100%; justify-content: center; background-color: #eeeded"><strong>PAGO DEL CLIENTE</strong></label>
-                                                                    <input type="number" name="montoPagado" id="montoPagado" class="form-control form-control-lg text-center" value="0" style="height: 30px;">
-                                                                </div>
-                                                        
-                                                                <!-- Sección de Billetes y Monedas -->
-                                                                <div class="row mt-3">
-                                                                    <!-- Billetes -->
-                                                                    <div class="col-lg-6">
-                                                                        <div class="border p-2">
-                                                                            <h6 class="text-center mb-2"><strong>Billetes</strong></h6>
-                                                                            <div class="form-group">
-                                                                                <label for="billete200" class="mb-1">200 Bs.</label>
-                                                                                <input type="number" name="billetecorte200" id="billetecorte200" class="form-control form-control-sm text-center" value="0" data-billete="200" style="height: 25px;">
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="billete100" class="mb-1">100 Bs.</label>
-                                                                                <input type="number" name="billetecorte100" id="billetecorte100" class="form-control form-control-sm text-center" value="0" data-billete="100" style="height: 25px;">
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="billete50" class="mb-1">50 Bs.</label>
-                                                                                <input type="number" name="billetecorte50" id="billetecorte50" class="form-control form-control-sm text-center" value="0" data-billete="50" style="height: 25px;">
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="billete20" class="mb-1">20 Bs.</label>
-                                                                                <input type="number" name="billetecorte20" id="billetecorte20" class="form-control form-control-sm text-center" value="0" data-billete="20" style="height: 25px;">
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="billete10" class="mb-1">10 Bs.</label>
-                                                                                <input type="number" name="billetecorte10" id="billetecorte10" class="form-control form-control-sm text-center" value="0" data-billete="10" style="height: 25px;">
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                        
-                                                                    <!-- Monedas -->
-                                                                    <div class="col-lg-6">
-                                                                        <div class="border p-2">
-                                                                            <h6 class="text-center mb-2"><strong>Monedas</strong></h6>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda5" class="mb-1">5 Bs.</label>
-                                                                                <input type="number" name="monedacorte5" id="monedacorte5" class="form-control form-control-sm text-center" value="0" data-moneda="5" style="height: 25px;">
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda2" class="mb-1">2 Bs.</label>
-                                                                                <input type="number" name="monedacorte2" id="monedacorte2" class="form-control form-control-sm text-center" value="0" data-moneda="2" style="height: 25px;">
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda1" class="mb-1">1 Bs.</label>
-                                                                                <input type="number" name="monedacorte1" id="monedacorte1" class="form-control form-control-sm text-center" value="0" data-moneda="1" style="height: 25px;">
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda050" class="mb-1">0.50 Bs.</label>
-                                                                                <input type="number" name="monedacorte050" id="monedacorte050" class="form-control form-control-sm text-center" value="0" data-moneda="0.50" style="height: 25px;">
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda020" class="mb-1">0.20 Bs.</label>
-                                                                                <input type="number" name="monedacorte020" id="monedacorte020" class="form-control form-control-sm text-center" value="0" data-moneda="0.20" style="height: 25px;">
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda010" class="mb-1">0.10 Bs.</label>
-                                                                                <input type="number" name="monedacorte010" id="monedacorte010" class="form-control form-control-sm text-center" value="0" data-moneda="0.10" style="height: 25px;">
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                        
-                                                                <!-- Monto Restante Arqueo-->
-                                                                <div class="form-group mt-3">
-                                                                    <label for="montoTotalDisplay" class="mb-1"><strong>Monto Restante Arqueo:</strong></label>
-                                                                    <input type="text" id="montoTotalDisplay" class="form-control form-control-lg text-center" value="0" readonly>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-lg-6">
-                                                        <div class="card shadow-sm border p-2" style="background-color: #eeeded">
-                                                            <div class="card-body p-2" style="background-color: #ffffff">
-                                                                <!-- Pago del Cliente -->
-                                                                <div class="form-group">
-                                                                    <label for="cambio" class="mb-1" style="text-align: center; width: 100%; justify-content: center; background-color: #eeeded"><strong>CAMBIO AL CLIENTE</strong></label>
-                                                                    <input type="number" name="cambio" id="cambio" class="form-control form-control-lg text-center" value="0" style="height: 30px;" readonly>
-                                                                </div>
-                                                        
-                                                                <!-- Sección de Billetes y Monedas -->
-                                                                <div class="row mt-3">
-                                                                    <!-- Billetes -->
-                                                                    <div class="col-lg-6">
-                                                                        <div class="border p-2">
-                                                                            <h6 class="text-center mb-2"><strong>Billetes</strong></h6>
-                                                                            <div class="form-group">
-                                                                                <label for="billete200" class="mb-1">200 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueobilletecorte200" id="arqueobilletecorte200" class="form-control form-control-sm text-center" value="{{ $arqueo->billetecorte200 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiobilletecorte200" id="cambiobilletecorte200" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="billete100" class="mb-1">100 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueobilletecorte100" id="arqueobilletecorte100" class="form-control form-control-sm text-center" value="{{ $arqueo->billetecorte100 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiobilletecorte100" id="cambiobilletecorte100" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="billete50" class="mb-1">50 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueobilletecorte50" id="arqueobilletecorte50" class="form-control form-control-sm text-center" value="{{ $arqueo->billetecorte50 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiobilletecorte50" id="cambiobilletecorte50" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="billete20" class="mb-1">20 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueobilletecorte20" id="arqueobilletecorte20" class="form-control form-control-sm text-center" value="{{ $arqueo->billetecorte20 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiobilletecorte20" id="cambiobilletecorte20" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="billete10" class="mb-1">10 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueobilletecorte10" id="arqueobilletecorte10" class="form-control form-control-sm text-center" value="{{ $arqueo->billetecorte10 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiobilletecorte10" id="cambiobilletecorte10" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                        
-                                                                    <!-- Monedas -->
-                                                                    <div class="col-lg-6">
-                                                                        <div class="border p-2">
-                                                                            <h6 class="text-center mb-2"><strong>Monedas</strong></h6>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda5" class="mb-1">5 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueomoneda5" id="arqueomoneda5" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte5 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiomoneda5" id="cambiomoneda5" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda2" class="mb-1">2 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueomoneda2" id="arqueomoneda2" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte2 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiomoneda2" id="cambiomoneda2" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda1" class="mb-1">1 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueomoneda1" id="arqueomoneda1" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte1 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiomoneda1" id="cambiomoneda1" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda050" class="mb-1">0.50 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueomoneda050" id="arqueomoneda050" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte050 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiomoneda050" id="cambiomoneda050" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda020" class="mb-1">0.20 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueomoneda020" id="arqueomoneda020" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte020 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiomoneda020" id="cambiomoneda020" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div class="form-group">
-                                                                                <label for="moneda010" class="mb-1">0.10 Bs.</label>
-                                                                                <div class="row">
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="arqueomoneda010" id="arqueomoneda010" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte010 ?? 0 }}" style="height: 25px;" readonly>
-                                                                                    </div>
-                                                                                    <div class="col-lg-6">
-                                                                                        <input type="number" name="cambiomoneda010" id="cambiomoneda010" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                        
-                                                                <!-- Monto Restante Cambio-->
-                                                                <div class="form-group mt-3">
-                                                                    <label for="montocambio" class="mb-1"><strong>Monto Restante Cambio:</strong></label>
-                                                                    <input type="text" name="montocambio" id="montocambio" class="form-control form-control-lg text-center" value="0" readonly>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
-                                                <a id="actualizarId" class="btn btn-secondary btn-block">
-                                                    INSERTAR DATOS
-                                                </a>
-                                                <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
-                                                        onclick="imprimirReciboSeleccionados()">
-                                                    GUARDAR REGISTRO
-                                                </button>
-                                            </div> --}}
-
-                                            {{-- CAMBIO DE BOTON DE INSERTAR DATOS EN EFECTIVO --}}
-                                            <style>
-                                                .button-container {
-                                                    position: relative;
-                                                    margin-bottom: 20px;
-                                                    width: 100%;
-                                                    display: flex;
-                                                    justify-content: center;
-                                                }
-                                            
-                                                .boton-wrapper {
-                                                    position: relative;
-                                                    width: 200px;
-                                                    height: 45px;
-                                                }
-                                            
-                                                .btn-flotante {
-                                                    position: absolute;
-                                                    top: 0;
-                                                    left: 0;
-                                                    width: 100%;
-                                                }
-                                            
-                                                .btn-insertar {
-                                                    z-index: 2;
-                                                }
-                                            
-                                                .btn-guardar {
-                                                    z-index: 1;
-                                                    transition: z-index 0.3s ease;
-                                                }
-                                            </style>
-                                            <div class="button-container">
-                                                <div class="boton-wrapper">
-                                                    {{-- <a id="actualizarId" class="btn btn-secondary btn-flotante btn-insertar">
-                                                        INSERTAR DATOS
-                                                    </a> --}}
-                                                    <button class="btn btn-success btn-flotante btn-guardar"
-                                                        onclick="imprimirReciboSeleccionados()"
-                                                        {{-- disabled --}}>
-                                                        GUARDAR REGISTRO
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <script>
-                                                document.querySelectorAll('.button-container').forEach(container => {
-                                                    const insertarBtn = container.querySelector('.btn-insertar');
-                                                    const guardarBtn = container.querySelector('.btn-guardar');
-                                            
-                                                    insertarBtn.addEventListener('click', function () {
-                                                        guardarBtn.disabled = false;
-                                                        guardarBtn.style.zIndex = 4;
-                                                        setTimeout(() => {
-                                                            guardarBtn.style.zIndex = 1;
-                                                        }, 1800);
-                                                    });
-                                                });
-                                            </script>
-
-                                           {{--  CALCULAR MONTOS TOTALES Y REDONDEO --}}
-                                            <script>
-                                                /* function actualizarMontoRestante() {
-                                                    var montoTotal = parseFloat(document.getElementById('montoTotalModal').textContent) || 0;
-                                                    var totalBilletesYMonedas = 0;
-                                            
-                                                    // Obtener los valores de los billetes y monedas
-                                                    var inputsBilletesYMonedas = document.querySelectorAll('input[data-billete], input[data-moneda]');
-                                                    inputsBilletesYMonedas.forEach(function(input) {
-                                                        var cantidad = parseFloat(input.value) || 0;
-                                                        var valor = parseFloat(input.getAttribute('data-billete')) || parseFloat(input.getAttribute('data-moneda')) || 0;
-                                                        totalBilletesYMonedas += cantidad * valor;
-                                                    });
-                                            
-                                                    // Calcular el monto restante
-                                                    var montoRestante = montoTotal - totalBilletesYMonedas;
-                                                    document.getElementById('montoTotalDisplay').value = montoRestante.toFixed(2);
-                                            
-                                                    // Habilitar o deshabilitar el botón de impresión según el monto restante
-                                                    var botonGuardar = document.getElementById('imprimirReciboBtn');
-                                                    botonGuardar.disabled = (montoRestante.toFixed(2) !== "0.00");
-                                                } */
-                                                document.getElementById('montoPagado').addEventListener('input', function() {
-                                                    var montoPagado = parseFloat(this.value) || 0;
-                                                    document.getElementById('montoTotalDisplay').value = montoPagado.toFixed(2);
-                                                });
-
-                                                function actualizarMontoRestante() {
-                                                    var montoPagado = parseFloat(document.getElementById('montoPagado').value) || 0;
-                                                    var totalBilletesYMonedas = 0;
-
-                                                    // Obtener los valores de los billetes y monedas
-                                                    var inputsBilletesYMonedas = document.querySelectorAll('input[data-billete], input[data-moneda]');
-                                                    inputsBilletesYMonedas.forEach(function(input) {
-                                                        var cantidad = parseFloat(input.value) || 0;
-                                                        var valor = parseFloat(input.getAttribute('data-billete')) || parseFloat(input.getAttribute('data-moneda')) || 0;
-                                                        totalBilletesYMonedas += cantidad * valor;
-                                                    });
-
-                                                    // Calcular el monto restante
-                                                    var montoRestante = montoPagado - totalBilletesYMonedas;
-                                                    document.getElementById('montoTotalDisplay').value = montoRestante.toFixed(2);
-
-                                                    // Habilitar o deshabilitar el botón de impresión según el monto restante
-                                                    var botonGuardar = document.getElementById('imprimirReciboBtn');
-                                                    botonGuardar.disabled = (montoRestante.toFixed(2) !== "0.00");
-                                                }
-
-                                            
-                                                // Agregar eventos a los inputs de billetes y monedas
-                                                document.querySelectorAll('input[data-billete], input[data-moneda]').forEach(function(input) {
-                                                    input.addEventListener('input', actualizarMontoRestante);
-                                                });
-                                            
-                                                document.getElementById('abrirModalBtn').addEventListener('click', function() {
-                                                    var montoTotal = parseFloat(document.getElementById('montototal').value) || 0;
-                                                    var montoRedondeado = redondearMonto(montoTotal);
-                                                    var diferencia = Math.abs(montoTotal - montoRedondeado);
-                                            
-                                                    // Ajustar los valores de diferencia
-                                                    if (montoRedondeado > montoTotal) {
-                                                        document.getElementById('diferenciacontra').value = '0';
-                                                        document.getElementById('diferenciafavor').value = diferencia.toFixed(2);
-                                                    } else {
-                                                        document.getElementById('diferenciacontra').value = diferencia.toFixed(2);
-                                                        document.getElementById('diferenciafavor').value = '0';
-                                                    }
-                                            
-                                                    // Mostrar montos en el modal
-                                                    document.getElementById('montoTotalModal').textContent = montoRedondeado.toFixed(2);
-                                                    document.getElementById('montoRealModal').textContent = montoTotal.toFixed(2);
-                                            
-                                                    // Actualizar monto restante arqueo
-                                                    actualizarMontoRestante();
-                                                });
-                                            
-                                                // Función de redondeo (a múltiplos de 0.10)
-                                                function redondearMonto(monto) {
-                                                    return Math.round(monto * 10) / 10;
-                                                }
-                                            
-                                                // Calcular el cambio según el pago ingresado
-                                                document.getElementById('montoPagado').addEventListener('input', function() {
-                                                    var montoTotalRedondeado = parseFloat(document.getElementById('montoTotalModal').textContent) || 0;
-                                                    var montoPagado = parseFloat(document.getElementById('montoPagado').value) || 0;
-                                                    var cambio = montoPagado - montoTotalRedondeado;
-                                                    var montocambio = montoPagado - montoTotalRedondeado;
-                                                    document.getElementById('cambio').value = cambio.toFixed(2);
-                                                    document.getElementById('montocambio').value = montocambio.toFixed(2);
-                                                });
-                                            </script>
-                                            
-                                            {{-- CALCULAR MONTO DE CAMBIOS --}}
-                                            <script>
-                                                // Función para calcular el cambio al cliente y monto restante
-                                                function calcularCambio() {
-                                                    var montoPagado = parseFloat(document.getElementById('montoPagado').value) || 0;
-                                                    var montoDeuda = 400.00; // Monto de la deuda
                                                     
-                                                    // Calcular el cambio
-                                                    var cambio = montoPagado - montoDeuda;
-                                                    // Actualizar el valor de "Monto Restante Cambio" (campo visible en el formulario)
-                                                    document.getElementById('montocambio').value = cambio.toFixed(2);
-                                                }
+                                                    <div class="modal-body">
+                                                        <div class="card shadow-sm border p-2" style="background-color: #eeeded">
+                                                            <h6 class="card-title fw-bold mb-1" style="text-align: center; width: 100%; justify-content: center; margin-bottom:-10px;">RESUMEN DE MOVIMIENTO</h6>
+                                                            <div class="card-body p-2 text-center" style="background-color: #ffffff">
+                                                                <div class="row align-items-center">
+                                                                    <div class="col-8 text-center">
+                                                                        <div class="d-flex justify-content-between">
+                                                                            <div class="flex-fill">
+                                                                                <small>MONTO REAL</small>
+                                                                                <p class="h6 mb-0"><strong id="montoRealModal">0.00</strong></p>
+                                                                            </div>
+                                                                            <div class="flex-fill">
+                                                                                <small>MONTO TOTAL</small>
+                                                                                <p class="h2 mb-0"><strong id="montoTotalModal">0.00</strong></p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-4 text-center">
+                                                                        <div class="d-flex flex-column">
+                                                                            <div>
+                                                                                <small>Dif. Contra</small>
+                                                                                <input type="text" name="diferenciacontra" id="diferenciacontra" class="form-control form-control-sm text-center mx-auto" style="width: 60px;" value="0.00" readonly>
+                                                                            </div>
+                                                                            <div class="mt-1">
+                                                                                <small>Dif. Favor</small>
+                                                                                <input type="text" name="diferenciafavor" id="diferenciafavor" class="form-control form-control-sm text-center mx-auto" style="width: 60px;" value="0.00" readonly>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="row">
+                                                            <div class="col-lg-6">
+                                                                <div class="card shadow-sm border p-2" style="background-color: #eeeded">
+                                                                    <div class="card-body p-2" style="background-color: #ffffff">
+                                                                        <!-- Pago del Cliente -->
+                                                                        <div class="form-group">
+                                                                            <label for="montoPagado" class="mb-1" style="text-align: center; width: 100%; justify-content: center; background-color: #eeeded"><strong>PAGO DEL CLIENTE</strong></label>
+                                                                            <input type="number" name="montoPagado" id="montoPagado" class="form-control form-control-lg text-center" value="0" style="height: 30px;">
+                                                                        </div>
+                                                                
+                                                                        <!-- Sección de Billetes y Monedas -->
+                                                                        <div class="row mt-3">
+                                                                            <!-- Billetes -->
+                                                                            <div class="col-lg-6">
+                                                                                <div class="border p-2">
+                                                                                    <h6 class="text-center mb-2"><strong>Billetes</strong></h6>
+                                                                                    <div class="form-group">
+                                                                                        <label for="billete200" class="mb-1">200 Bs.</label>
+                                                                                        <input type="number" name="billetecorte200" id="billetecorte200" class="form-control form-control-sm text-center" value="0" data-billete="200" style="height: 25px;">
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="billete100" class="mb-1">100 Bs.</label>
+                                                                                        <input type="number" name="billetecorte100" id="billetecorte100" class="form-control form-control-sm text-center" value="0" data-billete="100" style="height: 25px;">
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="billete50" class="mb-1">50 Bs.</label>
+                                                                                        <input type="number" name="billetecorte50" id="billetecorte50" class="form-control form-control-sm text-center" value="0" data-billete="50" style="height: 25px;">
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="billete20" class="mb-1">20 Bs.</label>
+                                                                                        <input type="number" name="billetecorte20" id="billetecorte20" class="form-control form-control-sm text-center" value="0" data-billete="20" style="height: 25px;">
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="billete10" class="mb-1">10 Bs.</label>
+                                                                                        <input type="number" name="billetecorte10" id="billetecorte10" class="form-control form-control-sm text-center" value="0" data-billete="10" style="height: 25px;">
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                
+                                                                            <!-- Monedas -->
+                                                                            <div class="col-lg-6">
+                                                                                <div class="border p-2">
+                                                                                    <h6 class="text-center mb-2"><strong>Monedas</strong></h6>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda5" class="mb-1">5 Bs.</label>
+                                                                                        <input type="number" name="monedacorte5" id="monedacorte5" class="form-control form-control-sm text-center" value="0" data-moneda="5" style="height: 25px;">
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda2" class="mb-1">2 Bs.</label>
+                                                                                        <input type="number" name="monedacorte2" id="monedacorte2" class="form-control form-control-sm text-center" value="0" data-moneda="2" style="height: 25px;">
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda1" class="mb-1">1 Bs.</label>
+                                                                                        <input type="number" name="monedacorte1" id="monedacorte1" class="form-control form-control-sm text-center" value="0" data-moneda="1" style="height: 25px;">
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda050" class="mb-1">0.50 Bs.</label>
+                                                                                        <input type="number" name="monedacorte050" id="monedacorte050" class="form-control form-control-sm text-center" value="0" data-moneda="0.50" style="height: 25px;">
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda020" class="mb-1">0.20 Bs.</label>
+                                                                                        <input type="number" name="monedacorte020" id="monedacorte020" class="form-control form-control-sm text-center" value="0" data-moneda="0.20" style="height: 25px;">
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda010" class="mb-1">0.10 Bs.</label>
+                                                                                        <input type="number" name="monedacorte010" id="monedacorte010" class="form-control form-control-sm text-center" value="0" data-moneda="0.10" style="height: 25px;">
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                
+                                                                        <!-- Monto Restante Arqueo-->
+                                                                        <div class="form-group mt-3">
+                                                                            <label for="montoTotalDisplay" class="mb-1"><strong>Monto Restante Arqueo:</strong></label>
+                                                                            <input type="text" id="montoTotalDisplay" class="form-control form-control-lg text-center" value="0" readonly>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
 
-                                                // Función para recalcular el monto restante de cambio basado en los billetes y monedas
-                                                function recalcularMontoRestanteCambio() {
-                                                    var billete200 = parseInt(document.getElementById('cambiobilletecorte200').value) || 0;
-                                                    var billete100 = parseInt(document.getElementById('cambiobilletecorte100').value) || 0;
-                                                    var billete50 = parseInt(document.getElementById('cambiobilletecorte50').value) || 0;
-                                                    var billete20 = parseInt(document.getElementById('cambiobilletecorte20').value) || 0;
-                                                    var billete10 = parseInt(document.getElementById('cambiobilletecorte10').value) || 0;
-                                                    var moneda5 = parseInt(document.getElementById('cambiomoneda5').value) || 0;
-                                                    var moneda2 = parseInt(document.getElementById('cambiomoneda2').value) || 0;
-                                                    var moneda1 = parseInt(document.getElementById('cambiomoneda1').value) || 0;
-                                                    var moneda050 = parseInt(document.getElementById('cambiomoneda050').value) || 0;
-                                                    var moneda020 = parseInt(document.getElementById('cambiomoneda020').value) || 0;
-                                                    var moneda010 = parseInt(document.getElementById('cambiomoneda010').value) || 0;
+                                                            <div class="col-lg-6">
+                                                                <div class="card shadow-sm border p-2" style="background-color: #eeeded">
+                                                                    <div class="card-body p-2" style="background-color: #ffffff">
+                                                                        <!-- Pago del Cliente -->
+                                                                        <div class="form-group">
+                                                                            <label for="cambio" class="mb-1" style="text-align: center; width: 100%; justify-content: center; background-color: #eeeded"><strong>CAMBIO AL CLIENTE</strong></label>
+                                                                            <input type="number" name="cambio" id="cambio" class="form-control form-control-lg text-center" value="0" style="height: 30px;" readonly>
+                                                                        </div>
+                                                                
+                                                                        <!-- Sección de Billetes y Monedas -->
+                                                                        <div class="row mt-3">
+                                                                            <!-- Billetes -->
+                                                                            <div class="col-lg-6">
+                                                                                <div class="border p-2">
+                                                                                    <h6 class="text-center mb-2"><strong>Billetes</strong></h6>
+                                                                                    <div class="form-group">
+                                                                                        <label for="billete200" class="mb-1">200 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueobilletecorte200" id="arqueobilletecorte200" class="form-control form-control-sm text-center" value="{{ $arqueo->billetecorte200 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiobilletecorte200" id="cambiobilletecorte200" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="billete100" class="mb-1">100 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueobilletecorte100" id="arqueobilletecorte100" class="form-control form-control-sm text-center" value="{{ $arqueo->billetecorte100 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiobilletecorte100" id="cambiobilletecorte100" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="billete50" class="mb-1">50 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueobilletecorte50" id="arqueobilletecorte50" class="form-control form-control-sm text-center" value="{{ $arqueo->billetecorte50 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiobilletecorte50" id="cambiobilletecorte50" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="billete20" class="mb-1">20 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueobilletecorte20" id="arqueobilletecorte20" class="form-control form-control-sm text-center" value="{{ $arqueo->billetecorte20 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiobilletecorte20" id="cambiobilletecorte20" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="billete10" class="mb-1">10 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueobilletecorte10" id="arqueobilletecorte10" class="form-control form-control-sm text-center" value="{{ $arqueo->billetecorte10 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiobilletecorte10" id="cambiobilletecorte10" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                
+                                                                            <!-- Monedas -->
+                                                                            <div class="col-lg-6">
+                                                                                <div class="border p-2">
+                                                                                    <h6 class="text-center mb-2"><strong>Monedas</strong></h6>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda5" class="mb-1">5 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueomoneda5" id="arqueomoneda5" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte5 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiomoneda5" id="cambiomoneda5" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda2" class="mb-1">2 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueomoneda2" id="arqueomoneda2" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte2 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiomoneda2" id="cambiomoneda2" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda1" class="mb-1">1 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueomoneda1" id="arqueomoneda1" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte1 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiomoneda1" id="cambiomoneda1" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda050" class="mb-1">0.50 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueomoneda050" id="arqueomoneda050" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte050 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiomoneda050" id="cambiomoneda050" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda020" class="mb-1">0.20 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueomoneda020" id="arqueomoneda020" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte020 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiomoneda020" id="cambiomoneda020" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="form-group">
+                                                                                        <label for="moneda010" class="mb-1">0.10 Bs.</label>
+                                                                                        <div class="row">
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="arqueomoneda010" id="arqueomoneda010" class="form-control form-control-sm text-center" value="{{ $arqueo->monedacorte010 ?? 0 }}" style="height: 25px;" readonly>
+                                                                                            </div>
+                                                                                            <div class="col-lg-6">
+                                                                                                <input type="number" name="cambiomoneda010" id="cambiomoneda010" class="form-control form-control-sm text-center" value="0" style="height: 25px;">
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                
+                                                                        <!-- Monto Restante Cambio-->
+                                                                        <div class="form-group mt-3">
+                                                                            <label for="montocambio" class="mb-1"><strong>Monto Restante Cambio:</strong></label>
+                                                                            <input type="text" name="montocambio" id="montocambio" class="form-control form-control-lg text-center" value="0" readonly>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                                                        <a id="actualizarId" class="btn btn-secondary btn-block">
+                                                            INSERTAR DATOS
+                                                        </a>
+                                                        <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
+                                                                onclick="imprimirReciboSeleccionados()">
+                                                            GUARDAR REGISTRO
+                                                        </button>
+                                                    </div> --}}
 
-                                                    // Calcular el total de billetes y monedas entregados por el cliente
-                                                    var totalProporcionado = (billete200 * 200) + (billete100 * 100) + (billete50 * 50) + (billete20 * 20) +
-                                                                            (billete10 * 10) + (moneda5 * 5) + (moneda2 * 2) + (moneda1 * 1) +
-                                                                            (moneda050 * 0.5) + (moneda020 * 0.2) + (moneda010 * 0.1);
+                                                    {{-- CAMBIO DE BOTON DE INSERTAR DATOS EN EFECTIVO --}}
+                                                    <style>
+                                                        .button-container {
+                                                            position: relative;
+                                                            margin-bottom: 20px;
+                                                            width: 100%;
+                                                            display: flex;
+                                                            justify-content: center;
+                                                        }
+                                                    
+                                                        .boton-wrapper {
+                                                            position: relative;
+                                                            width: 200px;
+                                                            height: 45px;
+                                                        }
+                                                    
+                                                        .btn-flotante {
+                                                            position: absolute;
+                                                            top: 0;
+                                                            left: 0;
+                                                            width: 100%;
+                                                        }
+                                                    
+                                                        .btn-insertar {
+                                                            z-index: 2;
+                                                        }
+                                                    
+                                                        .btn-guardar {
+                                                            z-index: 1;
+                                                            transition: z-index 0.3s ease;
+                                                        }
+                                                    </style>
+                                                    <div class="button-container">
+                                                        <div class="boton-wrapper">
+                                                            {{-- <a id="actualizarId" class="btn btn-secondary btn-flotante btn-insertar">
+                                                                INSERTAR DATOS
+                                                            </a> --}}
+                                                            <button class="btn btn-success btn-flotante btn-guardar"
+                                                                onclick="imprimirReciboSeleccionados()"
+                                                                {{-- disabled --}}>
+                                                                GUARDAR REGISTRO
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <script>
+                                                        document.querySelectorAll('.button-container').forEach(container => {
+                                                            const insertarBtn = container.querySelector('.btn-insertar');
+                                                            const guardarBtn = container.querySelector('.btn-guardar');
+                                                    
+                                                            insertarBtn.addEventListener('click', function () {
+                                                                guardarBtn.disabled = false;
+                                                                guardarBtn.style.zIndex = 4;
+                                                                setTimeout(() => {
+                                                                    guardarBtn.style.zIndex = 1;
+                                                                }, 1800);
+                                                            });
+                                                        });
+                                                    </script>
 
-                                                    // Obtener el cambio inicial
-                                                    var cambioInicial = parseFloat(document.getElementById('cambio').value) || 0;
-
-                                                    // Calcular el monto restante de cambio
-                                                    var montoRestanteCambio = cambioInicial - totalProporcionado;
-
-                                                    // Actualizar el campo de "Monto Restante Cambio"
-                                                    document.getElementById('montocambio').value = montoRestanteCambio.toFixed(2);
-                                                }
-
-                                                // Evento para recalcular el cambio y monto restante cuando se cambia el monto pagado
-                                                document.getElementById('montoPagado').addEventListener('input', function() {
-                                                    calcularCambio();
-                                                    recalcularMontoRestanteCambio();
-                                                });
-
-                                                // Evento para recalcular el monto restante de cambio cuando se cambian los billetes y monedas
-                                                document.querySelectorAll('input[id^="cambiobilletecorte"], input[id^="cambiomoneda"]').forEach(function(input) {
-                                                    input.addEventListener('input', recalcularMontoRestanteCambio);
-                                                });
-
-                                            </script>
-                                            
-                                            {{-- MANEJO DE ARQUEO PARA CAMBIO AL CLIENTE --}}
-                                            <script>
-                                                // Función para verificar si se debe habilitar o deshabilitar los campos de billetes y monedas
-                                                function verificarCambio() {
-                                                    // Array con los IDs de los campos de arqueo para billetes y monedas
-                                                    var arqueoIds = [
-                                                        'arqueobilletecorte200', 'arqueobilletecorte100', 'arqueobilletecorte50',
-                                                        'arqueobilletecorte20', 'arqueobilletecorte10', 'arqueomoneda5', 'arqueomoneda2',
-                                                        'arqueomoneda1', 'arqueomoneda050', 'arqueomoneda020', 'arqueomoneda010'
-                                                    ];
-                                            
-                                                    // Iterar sobre los campos de arqueo y actualizar el estado de los campos de cambio
-                                                    arqueoIds.forEach(function(id) {
-                                                        // Identificar los campos de arqueo y cambio correspondientes
-                                                        var arqueoValue = parseFloat(document.getElementById(id).value) || 0;
-                                                        var cambioFieldId = id.replace('arqueo', 'cambio'); // Cambiar "arqueo" por "cambio" en el ID
-                                                        var cambioField = document.getElementById(cambioFieldId);
-                                            
-                                                        // Verificar si el campo arqueo tiene un valor menor o igual a cero
-                                                        /* if (arqueoValue <= 0) {
-                                                            // Deshabilitar el campo de cambio y restablecer su valor
-                                                            if (cambioField) {
-                                                                cambioField.disabled = true;
-                                                                cambioField.value = "0";  // Restablecer el valor a cero
-                                                            }
-                                                        } else {
-                                                            // Habilitar el campo de cambio si el valor es mayor a cero
-                                                            if (cambioField) {
-                                                                cambioField.disabled = false;
-                                            
-                                                                // Validar que el valor del campo de cambio no sea mayor que el del campo de arqueo
-                                                                var cambioValue = parseFloat(cambioField.value) || 0;
-                                                                if (cambioValue > arqueoValue) {
-                                                                    // Limitar el valor de cambio al valor del campo de arqueo
-                                                                    cambioField.value = arqueoValue;
-                                                                }
-                                                            }
+                                                {{--  CALCULAR MONTOS TOTALES Y REDONDEO --}}
+                                                    <script>
+                                                        /* function actualizarMontoRestante() {
+                                                            var montoTotal = parseFloat(document.getElementById('montoTotalModal').textContent) || 0;
+                                                            var totalBilletesYMonedas = 0;
+                                                    
+                                                            // Obtener los valores de los billetes y monedas
+                                                            var inputsBilletesYMonedas = document.querySelectorAll('input[data-billete], input[data-moneda]');
+                                                            inputsBilletesYMonedas.forEach(function(input) {
+                                                                var cantidad = parseFloat(input.value) || 0;
+                                                                var valor = parseFloat(input.getAttribute('data-billete')) || parseFloat(input.getAttribute('data-moneda')) || 0;
+                                                                totalBilletesYMonedas += cantidad * valor;
+                                                            });
+                                                    
+                                                            // Calcular el monto restante
+                                                            var montoRestante = montoTotal - totalBilletesYMonedas;
+                                                            document.getElementById('montoTotalDisplay').value = montoRestante.toFixed(2);
+                                                    
+                                                            // Habilitar o deshabilitar el botón de impresión según el monto restante
+                                                            var botonGuardar = document.getElementById('imprimirReciboBtn');
+                                                            botonGuardar.disabled = (montoRestante.toFixed(2) !== "0.00");
                                                         } */
-                                                    });
-                                                }
-                                            
-                                                // Llamar a la función cuando se carga la página para establecer el estado inicial
-                                                window.onload = function() {
-                                                    verificarCambio();
-                                                };
-                                            
-                                                // Event listener para verificar el cambio cuando se modifiquen los valores de los campos de arqueo
-                                                document.querySelectorAll('[id^="arqueo"]').forEach(function(element) {
-                                                    element.addEventListener('input', function() {
-                                                        verificarCambio();
-                                                    });
-                                                });
-                                            
-                                                // Event listener para verificar el cambio cuando se modifiquen los valores de los campos de cambio
-                                                document.querySelectorAll('[id^="cambio"]').forEach(function(element) {
-                                                    element.addEventListener('input', function() {
-                                                        verificarCambio();
-                                                    });
-                                                });
-                                            </script>
+                                                        document.getElementById('montoPagado').addEventListener('input', function() {
+                                                            var montoPagado = parseFloat(this.value) || 0;
+                                                            document.getElementById('montoTotalDisplay').value = montoPagado.toFixed(2);
+                                                        });
+
+                                                        function actualizarMontoRestante() {
+                                                            var montoPagado = parseFloat(document.getElementById('montoPagado').value) || 0;
+                                                            var totalBilletesYMonedas = 0;
+
+                                                            // Obtener los valores de los billetes y monedas
+                                                            var inputsBilletesYMonedas = document.querySelectorAll('input[data-billete], input[data-moneda]');
+                                                            inputsBilletesYMonedas.forEach(function(input) {
+                                                                var cantidad = parseFloat(input.value) || 0;
+                                                                var valor = parseFloat(input.getAttribute('data-billete')) || parseFloat(input.getAttribute('data-moneda')) || 0;
+                                                                totalBilletesYMonedas += cantidad * valor;
+                                                            });
+
+                                                            // Calcular el monto restante
+                                                            var montoRestante = montoPagado - totalBilletesYMonedas;
+                                                            document.getElementById('montoTotalDisplay').value = montoRestante.toFixed(2);
+
+                                                            // Habilitar o deshabilitar el botón de impresión según el monto restante
+                                                            var botonGuardar = document.getElementById('imprimirReciboBtn');
+                                                            botonGuardar.disabled = (montoRestante.toFixed(2) !== "0.00");
+                                                        }
+
+                                                    
+                                                        // Agregar eventos a los inputs de billetes y monedas
+                                                        document.querySelectorAll('input[data-billete], input[data-moneda]').forEach(function(input) {
+                                                            input.addEventListener('input', actualizarMontoRestante);
+                                                        });
+                                                    
+                                                        document.getElementById('abrirModalBtn').addEventListener('click', function() {
+                                                            var montoTotal = parseFloat(document.getElementById('montototal').value) || 0;
+                                                            var montoRedondeado = redondearMonto(montoTotal);
+                                                            var diferencia = Math.abs(montoTotal - montoRedondeado);
+                                                    
+                                                            // Ajustar los valores de diferencia
+                                                            if (montoRedondeado > montoTotal) {
+                                                                document.getElementById('diferenciacontra').value = '0';
+                                                                document.getElementById('diferenciafavor').value = diferencia.toFixed(2);
+                                                            } else {
+                                                                document.getElementById('diferenciacontra').value = diferencia.toFixed(2);
+                                                                document.getElementById('diferenciafavor').value = '0';
+                                                            }
+                                                    
+                                                            // Mostrar montos en el modal
+                                                            document.getElementById('montoTotalModal').textContent = montoRedondeado.toFixed(2);
+                                                            document.getElementById('montoRealModal').textContent = montoTotal.toFixed(2);
+                                                    
+                                                            // Actualizar monto restante arqueo
+                                                            actualizarMontoRestante();
+                                                        });
+                                                    
+                                                        // Función de redondeo (a múltiplos de 0.10)
+                                                        function redondearMonto(monto) {
+                                                            return Math.round(monto * 10) / 10;
+                                                        }
+                                                    
+                                                        // Calcular el cambio según el pago ingresado
+                                                        document.getElementById('montoPagado').addEventListener('input', function() {
+                                                            var montoTotalRedondeado = parseFloat(document.getElementById('montoTotalModal').textContent) || 0;
+                                                            var montoPagado = parseFloat(document.getElementById('montoPagado').value) || 0;
+                                                            var cambio = montoPagado - montoTotalRedondeado;
+                                                            var montocambio = montoPagado - montoTotalRedondeado;
+                                                            document.getElementById('cambio').value = cambio.toFixed(2);
+                                                            document.getElementById('montocambio').value = montocambio.toFixed(2);
+                                                        });
+                                                    </script>
+                                                    
+                                                    {{-- CALCULAR MONTO DE CAMBIOS --}}
+                                                    <script>
+                                                        // Función para calcular el cambio al cliente y monto restante
+                                                        function calcularCambio() {
+                                                            var montoPagado = parseFloat(document.getElementById('montoPagado').value) || 0;
+                                                            var montoDeuda = 400.00; // Monto de la deuda
+                                                            
+                                                            // Calcular el cambio
+                                                            var cambio = montoPagado - montoDeuda;
+                                                            // Actualizar el valor de "Monto Restante Cambio" (campo visible en el formulario)
+                                                            document.getElementById('montocambio').value = cambio.toFixed(2);
+                                                        }
+
+                                                        // Función para recalcular el monto restante de cambio basado en los billetes y monedas
+                                                        function recalcularMontoRestanteCambio() {
+                                                            var billete200 = parseInt(document.getElementById('cambiobilletecorte200').value) || 0;
+                                                            var billete100 = parseInt(document.getElementById('cambiobilletecorte100').value) || 0;
+                                                            var billete50 = parseInt(document.getElementById('cambiobilletecorte50').value) || 0;
+                                                            var billete20 = parseInt(document.getElementById('cambiobilletecorte20').value) || 0;
+                                                            var billete10 = parseInt(document.getElementById('cambiobilletecorte10').value) || 0;
+                                                            var moneda5 = parseInt(document.getElementById('cambiomoneda5').value) || 0;
+                                                            var moneda2 = parseInt(document.getElementById('cambiomoneda2').value) || 0;
+                                                            var moneda1 = parseInt(document.getElementById('cambiomoneda1').value) || 0;
+                                                            var moneda050 = parseInt(document.getElementById('cambiomoneda050').value) || 0;
+                                                            var moneda020 = parseInt(document.getElementById('cambiomoneda020').value) || 0;
+                                                            var moneda010 = parseInt(document.getElementById('cambiomoneda010').value) || 0;
+
+                                                            // Calcular el total de billetes y monedas entregados por el cliente
+                                                            var totalProporcionado = (billete200 * 200) + (billete100 * 100) + (billete50 * 50) + (billete20 * 20) +
+                                                                                    (billete10 * 10) + (moneda5 * 5) + (moneda2 * 2) + (moneda1 * 1) +
+                                                                                    (moneda050 * 0.5) + (moneda020 * 0.2) + (moneda010 * 0.1);
+
+                                                            // Obtener el cambio inicial
+                                                            var cambioInicial = parseFloat(document.getElementById('cambio').value) || 0;
+
+                                                            // Calcular el monto restante de cambio
+                                                            var montoRestanteCambio = cambioInicial - totalProporcionado;
+
+                                                            // Actualizar el campo de "Monto Restante Cambio"
+                                                            document.getElementById('montocambio').value = montoRestanteCambio.toFixed(2);
+                                                        }
+
+                                                        // Evento para recalcular el cambio y monto restante cuando se cambia el monto pagado
+                                                        document.getElementById('montoPagado').addEventListener('input', function() {
+                                                            calcularCambio();
+                                                            recalcularMontoRestanteCambio();
+                                                        });
+
+                                                        // Evento para recalcular el monto restante de cambio cuando se cambian los billetes y monedas
+                                                        document.querySelectorAll('input[id^="cambiobilletecorte"], input[id^="cambiomoneda"]').forEach(function(input) {
+                                                            input.addEventListener('input', recalcularMontoRestanteCambio);
+                                                        });
+
+                                                    </script>
+                                                    
+                                                    {{-- MANEJO DE ARQUEO PARA CAMBIO AL CLIENTE --}}
+                                                    <script>
+                                                        // Función para verificar si se debe habilitar o deshabilitar los campos de billetes y monedas
+                                                        function verificarCambio() {
+                                                            // Array con los IDs de los campos de arqueo para billetes y monedas
+                                                            var arqueoIds = [
+                                                                'arqueobilletecorte200', 'arqueobilletecorte100', 'arqueobilletecorte50',
+                                                                'arqueobilletecorte20', 'arqueobilletecorte10', 'arqueomoneda5', 'arqueomoneda2',
+                                                                'arqueomoneda1', 'arqueomoneda050', 'arqueomoneda020', 'arqueomoneda010'
+                                                            ];
+                                                    
+                                                            // Iterar sobre los campos de arqueo y actualizar el estado de los campos de cambio
+                                                            arqueoIds.forEach(function(id) {
+                                                                // Identificar los campos de arqueo y cambio correspondientes
+                                                                var arqueoValue = parseFloat(document.getElementById(id).value) || 0;
+                                                                var cambioFieldId = id.replace('arqueo', 'cambio'); // Cambiar "arqueo" por "cambio" en el ID
+                                                                var cambioField = document.getElementById(cambioFieldId);
+                                                    
+                                                                // Verificar si el campo arqueo tiene un valor menor o igual a cero
+                                                                /* if (arqueoValue <= 0) {
+                                                                    // Deshabilitar el campo de cambio y restablecer su valor
+                                                                    if (cambioField) {
+                                                                        cambioField.disabled = true;
+                                                                        cambioField.value = "0";  // Restablecer el valor a cero
+                                                                    }
+                                                                } else {
+                                                                    // Habilitar el campo de cambio si el valor es mayor a cero
+                                                                    if (cambioField) {
+                                                                        cambioField.disabled = false;
+                                                    
+                                                                        // Validar que el valor del campo de cambio no sea mayor que el del campo de arqueo
+                                                                        var cambioValue = parseFloat(cambioField.value) || 0;
+                                                                        if (cambioValue > arqueoValue) {
+                                                                            // Limitar el valor de cambio al valor del campo de arqueo
+                                                                            cambioField.value = arqueoValue;
+                                                                        }
+                                                                    }
+                                                                } */
+                                                            });
+                                                        }
+                                                    
+                                                        // Llamar a la función cuando se carga la página para establecer el estado inicial
+                                                        window.onload = function() {
+                                                            verificarCambio();
+                                                        };
+                                                    
+                                                        // Event listener para verificar el cambio cuando se modifiquen los valores de los campos de arqueo
+                                                        document.querySelectorAll('[id^="arqueo"]').forEach(function(element) {
+                                                            element.addEventListener('input', function() {
+                                                                verificarCambio();
+                                                            });
+                                                        });
+                                                    
+                                                        // Event listener para verificar el cambio cuando se modifiquen los valores de los campos de cambio
+                                                        document.querySelectorAll('[id^="cambio"]').forEach(function(element) {
+                                                            element.addEventListener('input', function() {
+                                                                verificarCambio();
+                                                            });
+                                                        });
+                                                    </script>
+                                                </div>
+                                            </div>
                                         </div>
+                                        <script>
+                                            document.addEventListener('DOMContentLoaded', function () {
+                                            const tipotransaccion = '{{ session('tipotransaccion') }}';
+                                            const tipotransaccion2 = '{{ session('tipotransaccion2') }}';
+                                            const montototal = parseFloat('{{ session('montototal') }}');
+                                            
+                                            /* if ((tipotransaccion === 'EFECTIVO' || tipotransaccion2 === 'EFECTIVO') && montototal) {
+                                                $('#modalArqueo').modal('show');
+                                            } */
+
+                                            const inputs = document.querySelectorAll('#arqueoForm input');
+                                            const saldoRestanteDisplay = document.getElementById('saldoRestanteDisplay');
+                                            let saldoRestante = montototal;
+
+                                            let valoresPrevios = {
+                                                'billetecorte200': 0,
+                                                'billetecorte100': 0,
+                                                'billetecorte50': 0,
+                                                'billetecorte20': 0,
+                                                'billetecorte10': 0,
+                                                'monedacorte5': 0,
+                                                'monedacorte2': 0,
+                                                'monedacorte1': 0,
+                                                'monedacorte050': 0,
+                                                'monedacorte020': 0,
+                                                'monedacorte010': 0
+                                            };
+
+                                            const actualizarSaldo = () => {
+                                                saldoRestanteDisplay.innerText = saldoRestante.toFixed(2);
+                                                const guardarButton = document.getElementById('guardarArqueo');
+                                                if (saldoRestante <= 0.09) {
+                                                    guardarButton.disabled = false;
+                                                } else {
+                                                    guardarButton.disabled = true;
+                                                }
+                                            };
+
+                                            inputs.forEach(input => {
+                                                input.addEventListener('input', function () {
+                                                    const tipo = input.id;
+                                                    const cantidad = parseFloat(input.value) || 0;
+                                                    const valorPrevia = valoresPrevios[tipo];
+                                                    const tipoValor = input.dataset.billete || input.dataset.moneda;
+
+                                                    const diferencia = (cantidad - valorPrevia) * tipoValor;
+                                                    saldoRestante -= diferencia;
+                                                    valoresPrevios[tipo] = cantidad;
+
+                                                    actualizarSaldo();
+                                                });
+                                            });
+
+                                            document.getElementById('guardarArqueo').addEventListener('click', function () {
+                                                document.getElementById('saldoRestanteHidden').value = saldoRestante.toFixed(2);
+                                                document.getElementById('arqueoForm').submit();
+                                            });
+                                            });
+                                        </script>
                                     </div>
                                 </div>
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', function () {
-                                    const tipotransaccion = '{{ session('tipotransaccion') }}';
-                                    const tipotransaccion2 = '{{ session('tipotransaccion2') }}';
-                                    const montototal = parseFloat('{{ session('montototal') }}');
-                                    
-                                    /* if ((tipotransaccion === 'EFECTIVO' || tipotransaccion2 === 'EFECTIVO') && montototal) {
-                                        $('#modalArqueo').modal('show');
-                                    } */
-
-                                    const inputs = document.querySelectorAll('#arqueoForm input');
-                                    const saldoRestanteDisplay = document.getElementById('saldoRestanteDisplay');
-                                    let saldoRestante = montototal;
-
-                                    let valoresPrevios = {
-                                        'billetecorte200': 0,
-                                        'billetecorte100': 0,
-                                        'billetecorte50': 0,
-                                        'billetecorte20': 0,
-                                        'billetecorte10': 0,
-                                        'monedacorte5': 0,
-                                        'monedacorte2': 0,
-                                        'monedacorte1': 0,
-                                        'monedacorte050': 0,
-                                        'monedacorte020': 0,
-                                        'monedacorte010': 0
-                                    };
-
-                                    const actualizarSaldo = () => {
-                                        saldoRestanteDisplay.innerText = saldoRestante.toFixed(2);
-                                        const guardarButton = document.getElementById('guardarArqueo');
-                                        if (saldoRestante <= 0.09) {
-                                            guardarButton.disabled = false;
-                                        } else {
-                                            guardarButton.disabled = true;
-                                        }
-                                    };
-
-                                    inputs.forEach(input => {
-                                        input.addEventListener('input', function () {
-                                            const tipo = input.id;
-                                            const cantidad = parseFloat(input.value) || 0;
-                                            const valorPrevia = valoresPrevios[tipo];
-                                            const tipoValor = input.dataset.billete || input.dataset.moneda;
-
-                                            const diferencia = (cantidad - valorPrevia) * tipoValor;
-                                            saldoRestante -= diferencia;
-                                            valoresPrevios[tipo] = cantidad;
-
-                                            actualizarSaldo();
-                                        });
-                                    });
-
-                                    document.getElementById('guardarArqueo').addEventListener('click', function () {
-                                        document.getElementById('saldoRestanteHidden').value = saldoRestante.toFixed(2);
-                                        document.getElementById('arqueoForm').submit();
-                                    });
-                                    });
-                                </script>
                             </div>
+                            <input type="hidden" name="programacionIds" id="programacionIds">
+                            <input type="hidden" name="descuentos" id="descuentos">
+                            <input type="hidden" name="pagos" id="pagos">
                         </div>
                     </div>
-                    <input type="hidden" name="programacionIds" id="programacionIds">
-                    <input type="hidden" name="descuentos" id="descuentos">
-                    <input type="hidden" name="pagos" id="pagos">
-                </div>
+                </div>    
             </div>
-        </div>    
+        </div>
     </div>
 </form>
 @endif
@@ -1597,7 +1606,28 @@
             })
             .then(response => response.json())
             .then(data => {
-                actualizarTabla(data);
+                actualizarTabla(data, data.permitirDescuento, data.permisoExistefecha);
+                const campoFechas = document.getElementById('campoFechas');
+                if (campoFechas) {
+                    // 🔴 Ocultar siempre primero
+                    campoFechas.style.display = 'none';
+                }
+
+                // ✅ Mostrar solo si el permiso lo permite
+                if (data.permisoExistefecha) {
+                    if (campoFechas) {
+                        campoFechas.style.display = 'block';
+                    }
+
+                    // Sincronizar updated_at con created_at
+                    const createdAtInput = document.getElementById('created_at');
+                    const updatedAtInput = document.getElementById('updated_at');
+                    if (createdAtInput && updatedAtInput) {
+                        createdAtInput.addEventListener('change', function () {
+                            updatedAtInput.value = this.value;
+                        });
+                    }
+                }
             })
             .catch(error => console.error('Error:', error));
         });
@@ -1718,7 +1748,28 @@
             })
             .then(response => response.json())
             .then(data => {
-                actualizarTabla(data);
+                actualizarTabla(data, data.permitirDescuento, data.permisoExistefecha);
+                const campoFechas = document.getElementById('campoFechas');
+                if (campoFechas) {
+                    // 🔴 Ocultar siempre primero
+                    campoFechas.style.display = 'none';
+                }
+
+                // ✅ Mostrar solo si el permiso lo permite
+                if (data.permisoExistefecha) {
+                    if (campoFechas) {
+                        campoFechas.style.display = 'block';
+                    }
+
+                    // Sincronizar updated_at con created_at
+                    const createdAtInput = document.getElementById('created_at');
+                    const updatedAtInput = document.getElementById('updated_at');
+                    if (createdAtInput && updatedAtInput) {
+                        createdAtInput.addEventListener('change', function () {
+                            updatedAtInput.value = this.value;
+                        });
+                    }
+                }
             })
             .catch(error => console.error('Error:', error));
         });
@@ -2144,6 +2195,7 @@
         let reciboHTML = `
             <html>
             <head>
+                <meta charset="UTF-8">
                 <style>
                     body {
                         font-family: monospace;

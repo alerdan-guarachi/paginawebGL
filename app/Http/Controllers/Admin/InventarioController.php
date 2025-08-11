@@ -39,6 +39,9 @@ use App\Models\ClienteComun;
 use App\Models\Cliente;
 use App\Models\Proveedor;
 use App\Models\Bateriasubcliente;
+use App\Models\OpcionesInventario;
+use App\Models\PermisoCodigo;
+use Carbon\Carbon;
 
 class InventarioController extends Controller
 {
@@ -57,17 +60,40 @@ class InventarioController extends Controller
     {
         $nombreproducto = $request->get('buscarpor');
 
-        $bienesalmacen = Inventario::where('nombreproducto','Like',"%$nombreproducto%")
-                                    ->where('tipoinventario','ALMACEN')->simplePaginate(50);
+        // Buscar y paginar los bienes del ALMACÉN
+        $bienesalmacen = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
+            ->where('tipoinventario', 'ALMACEN')
+            ->simplePaginate(20);
 
-        $bienesalmacenstockbajo = Inventario::where('nombreproducto', 'Like', "%$nombreproducto%")
+        // Contar todos los que coinciden (sin paginar)
+        $almacenCount = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
+            ->where('tipoinventario', 'ALMACEN')
+            ->count();
+
+
+        // Buscar y paginar los bienes de ACTIVOS FIJOS
+        $bienesactivosfijos = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
+            ->where('tipoinventario', 'ACTIVO FIJO')
+            ->simplePaginate(20);
+
+        // Contar todos los que coinciden (sin paginar)
+        $activosfijosCount = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
+            ->where('tipoinventario', 'ACTIVO FIJO')
+            ->count();
+
+
+        // Paginar resultados con stock bajo
+        $bienesalmacenstockbajo = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
             ->where('tipoinventario', 'ALMACEN')
             ->whereColumn('stockactual', '<', 'minimocantidad')
-        ->simplePaginate(1000);
+            ->simplePaginate(20);
 
+        // Contar total de registros con stock bajo (sin paginación)
+        $stockbajoCount = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
+            ->where('tipoinventario', 'ALMACEN')
+            ->whereColumn('stockactual', '<', 'minimocantidad')
+            ->count();
 
-        $bienesactivosfijos = Inventario::where('nombreproducto','Like',"%$nombreproducto%")
-                                    ->where('tipoinventario','ACTIVO FIJO')->simplePaginate(50);
 
         $usuarios = User::has('roles')
                         ->orderBy('name', 'asc')
@@ -76,7 +102,7 @@ class InventarioController extends Controller
         $historiales = EntradaSalidaInventario::where('tipo','ENTRADA')->orderBy('created_at', 'desc')->get();
         $historialessalidas = EntradaSalidaInventario::where('tipo','SALIDA')->orderBy('created_at', 'desc')->get();
 
-        $detalleOrdenes = DB::table('detalleordenes')
+        /* $detalleOrdenes = DB::table('detalleordenes')
             ->whereIn('id', function ($query) {
                 $query->select('detalleordenid')
                     ->from('cuentasporpagar');
@@ -90,11 +116,93 @@ class InventarioController extends Controller
                             ->where('estado', 'PAGO PROCESADO');
                     });
             })
+            ->get(); */
+        
+        $detalleOrdenes = DB::table('detalleordenes') 
+            ->whereNull('estado')
+            ->where('tipoorden', 'ORDEN DE COMPRA')
+            ->whereIn('id', function ($query) {
+                $query->select('detalleordenid')
+                ->from('cuentasporpagar');
+            })
+            ->whereIn('id', function ($query) {
+                $query->select('detalleordenid')
+                    ->from('cuentasporpagar')
+                    ->whereIn('id', function ($subquery) {
+                        $subquery->select('cuentapagarid')
+                            ->from('detallerecibos')
+                            ->where('estado', 'PAGO PROCESADO');
+                    });
+            })
             ->get();
 
-        return view('admin.inventario.index', compact('bienesalmacenstockbajo','detalleOrdenes', 'bienesalmacen', 'bienesactivosfijos', 'usuarios', 'historiales', 'historialessalidas'));
+        $detalleOrdenesCount = $detalleOrdenes->count(); // ahora serán exactamente iguales
+            
+        // Traer todos los códigos como strings
+        $codigosInventario = Inventario::pluck('codigo')->map(fn($c) => (string) $c)->toArray();
+        $codigosPreordenes = PreOrdenes::pluck('codigo')->map(fn($c) => (string) $c)->toArray();
+
+        // Unir y filtrar los existentes
+        $codigosExistentes = array_unique(array_merge($codigosInventario, $codigosPreordenes));
+
+        // Ahora convertir también los ID de portafolio a string antes de comparar
+        $detalleingresodirecto = PortafolioProveedores::all()->filter(function($item) use ($codigosExistentes) {
+            return !in_array((string) $item->id, $codigosExistentes);
+        });
+
+        $detalleingresodirectoCount = $detalleingresodirecto->count();
+
+        $usuarioAutenticado = auth()->user()->name;
+        $hoy = Carbon::today();
+        $codigosPermitidos = PermisoCodigo::where('usuarioSolicitante', $usuarioAutenticado)
+        ->whereDate('fechaSolicitada', $hoy->toDateString())
+        ->where('permisoSolicitado', 'admin.inventario.cambiarstockinventario')
+        ->where('estado', 'expirado')
+        ->pluck('clienteid')
+        ->toArray();
+
+        return view('admin.inventario.index', compact('codigosPermitidos','detalleingresodirectoCount','detalleOrdenesCount','stockbajoCount','almacenCount','activosfijosCount','detalleingresodirecto','bienesalmacenstockbajo','detalleOrdenes', 'bienesalmacen', 'bienesactivosfijos', 'usuarios', 'historiales', 'historialessalidas'));
     }
-    
+    public function permisoscodigocambiarstock(Request $request)
+    {
+        $codigo = $request->input('codigo');
+
+        $permiso = PermisoCodigo::where('codigo', $codigo)->first();
+
+        if (!$permiso) {
+            return response()->json(['success' => false, 'message' => 'CODIGO INVALIDO']);
+        }
+
+        $permiso->estado = 'Expirado';
+        $permiso->save();
+
+        return response()->json(['success' => true]);
+    }
+    public function actualizarStockcodigo(Request $request, $codigo)
+    {
+        $request->validate([
+            'stockactual' => 'required|numeric|min:0',
+        ]);
+
+        $producto = DB::table('inventario')->where('codigo', $codigo)->first();
+
+        $datosActualizados = [
+            'stockactual' => $request->stockactual,
+            'updated_at' => now(),
+        ];
+
+        // Solo si el valor actual de 'inventario' es 'AGOTADO', se actualiza a 'PRINCIPAL'
+        if (!is_null($producto) && strtoupper($producto->inventario) === 'AGOTADO') {
+            $datosActualizados['inventario'] = 'PRINCIPAL';
+        }
+
+        DB::table('inventario')
+            ->where('codigo', $codigo)
+            ->update($datosActualizados);
+
+        return redirect()->back()->with('info', 'Stock actualizado correctamente.');
+    }
+
     public function getByCodigo($codigo)
     {
         $registro = PortafolioProveedores::find($codigo);
@@ -112,6 +220,7 @@ class InventarioController extends Controller
 
     if ($inventario) {
         $inventario->stockactual += $cantidad;
+        $inventario->inventario = 'PRINCIPAL';
         $inventario->save();
 
         $detalleOrdenes = DB::table('detalleordenes')
@@ -163,9 +272,12 @@ class InventarioController extends Controller
             'presentacion' => '',
             'unidades' => '',
             'cantidad' => '',
-            'minimocantidad' => '',
+            'minimacantidad' => '',
             'fechavencimiento' => '',
             'garantia' => '',
+            'proveedorid' => '',
+            'proveedornombre' => '',
+            'preciounitario' => '',
         ]);
 
         $usuario = auth()->user();
@@ -191,9 +303,12 @@ class InventarioController extends Controller
         $nuevoProducto->presentacion = $request->presentacion;
         $nuevoProducto->unidades = $request->unidades;
         $nuevoProducto->cantidad = $request->cantidad;
-        $nuevoProducto->minimocantidad = $request->minimocantidad;
+        $nuevoProducto->minimocantidad = $request->minimacantidad;
         $nuevoProducto->usuarioregistroid = $usuario->id;
         $nuevoProducto->usuarioregistronombre = $usuario->name;
+        $nuevoProducto->proveedorid = $request->proveedorid;
+        $nuevoProducto->proveedornombre = $request->proveedornombre;
+        $nuevoProducto->preciounitario = $request->preciounitario;
 
         $nuevoProducto->save();
 
@@ -242,8 +357,11 @@ class InventarioController extends Controller
         $user = auth()->user();
         $sucursal = $user->sucursal; 
 
-        return view('admin.inventario.create', compact('proveedores', 'sucursal'));
+        $opcionesInventario = DB::table('opcionesinventario')->get();
+
+        return view('admin.inventario.create', compact('proveedores', 'sucursal', 'opcionesInventario'));
     }
+
     /* CREAR ACTIVO FIJO */
     public function crearactivofijo(Request $request)
     {
@@ -258,8 +376,10 @@ class InventarioController extends Controller
 
         $user = auth()->user();
         $sucursal = $user->sucursal; 
+
+        $opcionesInventario = DB::table('opcionesinventario')->get();
     
-        return view('admin.inventario.crearactivofijo', compact('proveedores','sucursal'));
+        return view('admin.inventario.crearactivofijo', compact('proveedores','sucursal', 'opcionesInventario'));
     }
     /**
      * Store a newly created resource in storage.
@@ -274,47 +394,47 @@ class InventarioController extends Controller
         if ($request->tipo_inventario == 'ALMACEN') {
             $prefijo = null;
             if ($request->seccion == 'ESCRITORIO') {
-                $prefijo = 'ESAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'COCINA') {
-                $prefijo = 'COAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'ALIMENTOS Y BEBIDAS') {
-                $prefijo = 'ABAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'CONTRUCCION Y FERRETERIA') {
-                $prefijo = 'CFAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'LIMPIEZA') {
-                $prefijo = 'LIAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'PLASTICO') {
-                $prefijo = 'PLAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'PROMOCIONAL') {
-                $prefijo = 'PRAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'USO MEDICO') {
-                $prefijo = 'UMAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'INSUMOS DECORATIVOS') {
-                $prefijo = 'IDAL-';
+                $prefijo = 'OTIN-';
             } else {
-                $prefijo = 'OTAL-';
+                $prefijo = 'OTIN-';
             }
             
         } elseif ($request->tipo_inventario == 'ACTIVO FIJO') {
             $prefijo = null;
             if ($request->seccion == 'ALMACEN') {
-                $prefijo = 'ALAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['BAÑO 1', 'BAÑO 2', 'BAÑO GERENCIAL', 'BAÑO PLANTA ALTA'])) {
-                $prefijo = 'BAAF-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'COCINA') {
-                $prefijo = 'COAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['CONSULTORIO 1', 'CONSULTORIO 2', 'CONSULTORIO 3'])) {
-                $prefijo = 'CNAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['GERENCIA COMERCIAL Y FINANCIERA', 'GERENCIA GENERAL', 'GERENCIA FINANCIERA'])) {
-                $prefijo = 'GEAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['LAVANDERIA', 'GRADAS','PASILLO PLANTA ALTA','PASILLO PLANTA BAJA','DEPOSITO SECUNDARIO','DEPOSITO PRINCIPAL'])) {
-                $prefijo = 'LAAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['OFICINA 1', 'OFICINA 2', 'ADMINISTRACION', 'AUDIOMETRIA', 'CAJA', 'ELECTROCARDIOGRAMA', 'ERGOMETRIA', 'ESPIROMETRIA', 'FISIOTERAPIA-MEDICINA LABORAL', 'LABORATORIO', 'OFICINA ADMINISTRATIVA', 'OFTALMOLOGIA', 'PRESTACIONES 1', 'PRESTACIONES 2', 'PROGRAMACION', 'PSICOLOGIA', 'SISTEMAS','OFICINA 1 PLANTA ALTA','OFICINA 2 PLANTA BAJA','OFICINA 3 PLANTA BAJA','CONSULTORIO 1 PLANTA ALTA','CONSULTORIO 2 PLANTA ALTA','CONSULTORIO 3 PLANTA ALTA','CONSULTORIO 4 PLANTA ALTA','CONSULTORIO 5 PLANTA ALTA','CONSULTORIO 6 PLANTA BAJA','CONSULTORIO 7 PLANTA BAJA','CONSULTORIO 8 PLANTA BAJA','CONSULTORIO 9 PLANTA BAJA'])) {
-                $prefijo = 'OFAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['SALA DE ESPERA PLANTA BAJA', 'SALA 1', 'SALA DE ESPERA', 'SALA DE REUNIONES', 'ZONA DE MONITOREO','VISTA FRONTAL','ENTRADA PRINCIPAL','SALA DE ATENCION AL CLIENTE'])) {
-                $prefijo = 'SEAF-';
+                $prefijo = 'OTIN-';
             } else {
-                $prefijo = 'OTAF-';
+                $prefijo = 'OTIN-';
             }
             
         }
@@ -373,10 +493,12 @@ class InventarioController extends Controller
             ->select('portafolioproveedores.*', 'inventario.stockactual as cantidadalmacen');
 
         if ($nombreproducto) {
-            $bienesalmacen = $bienesalmacen->where('portafolioproveedores.nombreproducto', 'LIKE', "%$nombreproducto%");
-        }
-
-        $bienesalmacen = $bienesalmacen->paginate(10);
+            $bienesalmacen = $bienesalmacen->where(function ($query) use ($nombreproducto) {
+                    $query->where('portafolioproveedores.nombreproducto', 'LIKE', "%$nombreproducto%")
+                        ->orWhere('portafolioproveedores.id', 'LIKE', "%$nombreproducto%");
+                });
+            }
+            $bienesalmacen = $bienesalmacen->paginate(20);
 
         if ($request->ajax()) {
             return view('admin.inventario.partials.tabla', compact('bienesalmacen'))->render();
@@ -689,6 +811,7 @@ class InventarioController extends Controller
                 $query->select(DB::raw(1))
                     ->from('detallerecibos')
                     ->whereColumn('detallerecibos.ordenid', 'ordenes.id')
+                    ->whereNull('detallerecibos.deleted_at')
                     ->groupBy('detallerecibos.ordenid')
                     ->havingRaw('SUM(CASE WHEN estado != "PAGO PROCESADO" THEN 1 ELSE 0 END) = 0');
             })
@@ -731,6 +854,7 @@ class InventarioController extends Controller
                 $query->select(DB::raw(1))
                     ->from('detallerecibos')
                     ->whereColumn('detallerecibos.ordenid', 'ordenes.id')
+                    ->whereNull('detallerecibos.deleted_at')
                     ->groupBy('detallerecibos.ordenid')
                     ->havingRaw('SUM(CASE WHEN estado != "PAGO PROCESADO" THEN 1 ELSE 0 END) = 0');
             })
@@ -773,6 +897,7 @@ class InventarioController extends Controller
                 $query->select(DB::raw(1))
                     ->from('detallerecibos')
                     ->whereColumn('detallerecibos.ordenid', 'ordenes.id')
+                    ->whereNull('detallerecibos.deleted_at')
                     ->groupBy('detallerecibos.ordenid')
                     ->havingRaw('SUM(CASE WHEN estado != "PAGO PROCESADO" THEN 1 ELSE 0 END) = 0');
             })
@@ -1287,34 +1412,34 @@ class InventarioController extends Controller
                                                             , 'cuentaporpagar1', 'cuentaporpagar2', 'cuentaporpagar3', 'saldoanteriorcuenta1', 'saldoanteriorcuenta2', 'saldoanteriorcuenta3'
                                                             , 'programacioncuentaporpagar1', 'programacioncuentaporpagar2', 'programacioncuentaporpagar3', 'result'));
     }
-public function unificarPreordenes(Request $request)
-{
-    $request->validate([
-        'preordenes' => 'required|array|min:2',
-        'preorden_destino' => 'required|string'
-    ]);
+    public function unificarPreordenes(Request $request)
+    {
+        $request->validate([
+            'preordenes' => 'required|array|min:2',
+            'preorden_destino' => 'required|string'
+        ]);
 
-    $preordenes = $request->preordenes;
-    $preordenDestino = $request->preorden_destino;
+        $preordenes = $request->preordenes;
+        $preordenDestino = $request->preorden_destino;
 
-    DB::beginTransaction();
-    try {
-        foreach ($preordenes as $preorden) {
-            if ($preorden === $preordenDestino) continue;
+        DB::beginTransaction();
+        try {
+            foreach ($preordenes as $preorden) {
+                if ($preorden === $preordenDestino) continue;
 
-            PreOrdenes::where('preordenid', $preorden)->update([
-                'anteriorpreordenid' => DB::raw('preordenid'),
-                'preordenid' => $preordenDestino
-            ]);
+                PreOrdenes::where('preordenid', $preorden)->update([
+                    'anteriorpreordenid' => DB::raw('preordenid'),
+                    'preordenid' => $preordenDestino
+                ]);
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Preórdenes unificadas correctamente.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error al unificar: ' . $e->getMessage()], 500);
         }
-
-        DB::commit();
-        return response()->json(['message' => 'Preórdenes unificadas correctamente.']);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['message' => 'Error al unificar: ' . $e->getMessage()], 500);
     }
-}
 
    public function actualizarPrioridad(Request $request)
     {
@@ -1377,8 +1502,50 @@ public function unificarPreordenes(Request $request)
         return redirect()->route('admin.inventario.listaordenes')->with('info', 'Pagos guardados correctamente');
     }
 
+    public function opcionesinventario(Request $request)
+    {
+        $nombreopciones = $request->get('buscarpor');
 
+        $opcionesalmacen = OpcionesInventario::where('tipo', 'ALMACEN')
+            ->orderBy('seccion')
+            ->orderBy('tiposeccion')
+            ->orderBy('opcion')
+            ->get();
 
+        $opcionesactivofijo = OpcionesInventario::where('tipo', 'ACTIVO FIJO')
+            ->orderBy('tiposeccion')
+            ->orderBy('opcion')
+            ->get();
+
+        $seccionesAlmacen = OpcionesInventario::where('tipo', 'ALMACEN')->distinct()->pluck('seccion')->filter()->values();
+        $tiposeccionesAlmacen = OpcionesInventario::where('tipo', 'ALMACEN')->distinct()->pluck('tiposeccion')->filter()->values();
+        $tiposeccionesActivoFijo = OpcionesInventario::where('tipo', 'ACTIVO FIJO')->distinct()->pluck('tiposeccion')->filter()->values();
+
+        return view('admin.inventario.opcionesinventario', compact('opcionesalmacen', 'opcionesactivofijo','seccionesAlmacen', 'tiposeccionesAlmacen', 'tiposeccionesActivoFijo'));
+    }
+
+    public function guardaropcioninventario(Request $request)
+    {
+        $request->validate([
+            'tipo' => 'required',
+            'tiposeccion' => 'required|string|max:255',
+            'opcion' => 'required|string|max:255',
+            'seccion' => 'nullable|string|max:255',
+        ]);
+
+        $usuario = auth()->user();
+
+        OpcionesInventario::create([
+            'tipo' => $request->tipo,
+            'seccion' => $request->tipo === 'ALMACEN' ? $request->seccion : null,
+            'tiposeccion' => $request->tiposeccion,
+            'opcion' => $request->opcion,
+            'usuarioregistroid' => $usuario->id,
+            'usuarioregistronombre' => $usuario->name,
+        ]);
+
+        return redirect()->back()->with('info', 'Opción registrada correctamente.');
+    }
 
 
     public function actualizarFechaPagar(Request $request)
@@ -1552,6 +1719,19 @@ public function unificarPreordenes(Request $request)
             foreach ($detalleOrdenes as $detalle) {
                 $idUnico = $nuevoIdcp . 'CP';
 
+                // Buscar si hay una preorden de saldo relacionada con este detalle
+                $preordenConSaldo = PreOrdenes::where('detalle', 'LIKE', '%' . $detalle->ordenid . ')') // nombre incluye "(SALDO [ordenid])"
+                    ->where('codigo', $detalle->codigo) // opcional si el código es identificador
+                    ->where('preciounitario', '>', 0)
+                    ->first();
+
+                // Si existe una preorden de saldo, se resta del subtotal original
+                $subtotalFinal = $detalle->preciounitario;
+                if ($preordenConSaldo) {
+                    $subtotalFinal -= $preordenConSaldo->preciounitario;
+                }
+
+
                 $cuentasPagar = new CuentasPagar();
                 $cuentasPagar->id = $idUnico;
                 $cuentasPagar->proveedorid = $orden->proveedorid;
@@ -1560,7 +1740,8 @@ public function unificarPreordenes(Request $request)
                 $cuentasPagar->fechaasignada = $orden->fechapagar;
                 $cuentasPagar->fechacomprar = $orden->fechacomprar;
                 $cuentasPagar->nrobancoorigen = $detalle->nrobancoorigen;
-                $cuentasPagar->subtotal = $detalle->preciounitario;
+                /* $cuentasPagar->subtotal = $detalle->preciounitario; */
+                $cuentasPagar->subtotal = $subtotalFinal;
                 $cuentasPagar->descuento = $detalle->descuentounitario;
                 $cuentasPagar->montototal = $detalle->totalunitario;
                 $cuentasPagar->preciocompra = '0.00';
@@ -1767,6 +1948,18 @@ public function unificarPreordenes(Request $request)
             foreach ($detalleOrdenes as $detalle) {
                 $idUnico = $nuevoIdcp . 'CP';
 
+                // Buscar si hay una preorden de saldo relacionada con este detalle
+                $preordenConSaldo = PreOrdenes::where('detalle', 'LIKE', '%' . $detalle->ordenid . ')') // nombre incluye "(SALDO [ordenid])"
+                    ->where('codigo', $detalle->codigo) // opcional si el código es identificador
+                    ->where('preciounitario', '>', 0)
+                    ->first();
+
+                // Si existe una preorden de saldo, se resta del subtotal original
+                $subtotalFinal = $detalle->preciounitario;
+                if ($preordenConSaldo) {
+                    $subtotalFinal -= $preordenConSaldo->preciounitario;
+                }
+
                 $cuentasPagar = new CuentasPagar();
                 $cuentasPagar->id = $idUnico;
                 $cuentasPagar->proveedorid = $orden->proveedorid;
@@ -1775,7 +1968,8 @@ public function unificarPreordenes(Request $request)
                 $cuentasPagar->fechaasignada = $orden->fechapagar;
                 $cuentasPagar->fechacomprar = $orden->fechacomprar;
                 $cuentasPagar->nrobancoorigen = $detalle->nrobancoorigen;
-                $cuentasPagar->subtotal = $detalle->preciounitario;
+                /* $cuentasPagar->subtotal = $detalle->preciounitario; */
+                $cuentasPagar->subtotal = $subtotalFinal;
                 $cuentasPagar->descuento = $detalle->descuentounitario;
                 $cuentasPagar->montototal = $detalle->totalunitario;
                 $cuentasPagar->preciocompra = '0.00';
@@ -1979,6 +2173,18 @@ public function unificarPreordenes(Request $request)
             foreach ($detalleOrdenes as $detalle) {
                 $idUnico = $nuevoIdcp . 'CP';
 
+                // Buscar si hay una preorden de saldo relacionada con este detalle
+                $preordenConSaldo = PreOrdenes::where('detalle', 'LIKE', '%' . $detalle->ordenid . ')') // nombre incluye "(SALDO [ordenid])"
+                    ->where('codigo', $detalle->codigo) // opcional si el código es identificador
+                    ->where('preciounitario', '>', 0)
+                    ->first();
+
+                // Si existe una preorden de saldo, se resta del subtotal original
+                $subtotalFinal = $detalle->preciounitario;
+                if ($preordenConSaldo) {
+                    $subtotalFinal -= $preordenConSaldo->preciounitario;
+                }
+                
                 $cuentasPagar = new CuentasPagar();
                 $cuentasPagar->id = $idUnico;
                 $cuentasPagar->proveedorid = $orden->proveedorid;
@@ -1987,7 +2193,8 @@ public function unificarPreordenes(Request $request)
                 $cuentasPagar->fechaasignada = $orden->fechapagar;
                 $cuentasPagar->fechacomprar = $orden->fechacomprar;
                 $cuentasPagar->nrobancoorigen = $detalle->nrobancoorigen;
-                $cuentasPagar->subtotal = $detalle->preciounitario;
+                /* $cuentasPagar->subtotal = $detalle->preciounitario; */
+                $cuentasPagar->subtotal = $subtotalFinal;
                 $cuentasPagar->descuento = $detalle->descuentounitario;
                 $cuentasPagar->montototal = $detalle->totalunitario;
                 $cuentasPagar->preciocompra = '0.00';
@@ -2048,47 +2255,47 @@ public function unificarPreordenes(Request $request)
         if ($request->tipo_inventario == 'ALMACEN') {
             $prefijo = null;
             if ($request->seccion == 'ESCRITORIO') {
-                $prefijo = 'ESAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'COCINA') {
-                $prefijo = 'COAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'ALIMENTOS Y BEBIDAS') {
-                $prefijo = 'ABAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'CONTRUCCION Y FERRETERIA') {
-                $prefijo = 'CFAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'LIMPIEZA') {
-                $prefijo = 'LIAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'PLASTICO') {
-                $prefijo = 'PLAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'PROMOCIONAL') {
-                $prefijo = 'PRAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'USO MEDICO') {
-                $prefijo = 'UMAL-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'INSUMOS DECORATIVOS') {
-                $prefijo = 'IDAL-';
+                $prefijo = 'OTIN-';
             } else {
-                $prefijo = 'OTAL-';
+                $prefijo = 'OTIN-';
             }
             
         } elseif ($request->tipo_inventario == 'ACTIVO FIJO') {
             $prefijo = null;
             if ($request->seccion == 'ALMACEN') {
-                $prefijo = 'ALAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['BAÑO 1', 'BAÑO 2', 'BAÑO GERENCIAL', 'BAÑO PLANTA ALTA'])) {
-                $prefijo = 'BAAF-';
+                $prefijo = 'OTIN-';
             } elseif ($request->seccion == 'COCINA') {
-                $prefijo = 'COAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['CONSULTORIO 1', 'CONSULTORIO 2', 'CONSULTORIO 3'])) {
-                $prefijo = 'CNAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['GERENCIA COMERCIAL Y FINANCIERA', 'GERENCIA GENERAL', 'GERENCIA FINANCIERA'])) {
-                $prefijo = 'GEAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['LAVANDERIA', 'GRADAS','PASILLO PLANTA ALTA','PASILLO PLANTA BAJA','DEPOSITO SECUNDARIO','DEPOSITO PRINCIPAL'])) {
-                $prefijo = 'LAAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['OFICINA 1', 'OFICINA 2', 'ADMINISTRACION', 'AUDIOMETRIA', 'CAJA', 'ELECTROCARDIOGRAMA', 'ERGOMETRIA', 'ESPIROMETRIA', 'FISIOTERAPIA-MEDICINA LABORAL', 'LABORATORIO', 'OFICINA ADMINISTRATIVA', 'OFTALMOLOGIA', 'PRESTACIONES 1', 'PRESTACIONES 2', 'PROGRAMACION', 'PSICOLOGIA', 'SISTEMAS','OFICINA 1 PLANTA ALTA','OFICINA 2 PLANTA BAJA','OFICINA 3 PLANTA BAJA','CONSULTORIO 1 PLANTA ALTA','CONSULTORIO 2 PLANTA ALTA','CONSULTORIO 3 PLANTA ALTA','CONSULTORIO 4 PLANTA ALTA','CONSULTORIO 5 PLANTA ALTA','CONSULTORIO 6 PLANTA BAJA','CONSULTORIO 7 PLANTA BAJA','CONSULTORIO 8 PLANTA BAJA','CONSULTORIO 9 PLANTA BAJA'])) {
-                $prefijo = 'OFAF-';
+                $prefijo = 'OTIN-';
             } elseif (in_array($request->seccion, ['SALA DE ESPERA PLANTA BAJA', 'SALA 1', 'SALA DE ESPERA', 'SALA DE REUNIONES', 'ZONA DE MONITOREO','VISTA FRONTAL','ENTRADA PRINCIPAL','SALA DE ATENCION AL CLIENTE'])) {
-                $prefijo = 'SEAF-';
+                $prefijo = 'OTIN-';
             } else {
-                $prefijo = 'OTAF-';
+                $prefijo = 'OTIN-';
             }
             
         }
@@ -2204,56 +2411,124 @@ public function unificarPreordenes(Request $request)
         $nombreUsuario = $user->name;
         $sucursalUsuario = $user->sucursal;
 
-        if (in_array($nombreUsuario, ['CARLOS ALEJANDRO GUARACHI SANDOVAL', 'DENISSE MAUREN LOPEZ FLORES', 'CRISTHIAN ALAIN DURAN SULLCA', 'JHOSELINE EVA VELASQUEZ ESCOBAR', 'ROLANDO RAFAEL RAMOS TORRICO'])) {
+        /* if (in_array($nombreUsuario, ['CARLOS ALEJANDRO GUARACHI SANDOVAL', 'DENISSE MAUREN LOPEZ FLORES', 'CRISTHIAN ALAIN DURAN SULLCA', 'JHOSELINE EVA VELASQUEZ ESCOBAR', 'ROLANDO RAFAEL RAMOS TORRICO'])) {
             $solicitudinventarios = SolicitudInventario::where('sucursal', $sucursalUsuario)->orderBy('created_at', 'desc')->get();
         } else {
             $solicitudinventarios = SolicitudInventario::where('usuariosolicitante', $nombreUsuario)->orderBy('created_at', 'desc')->get();
-        }
+        } */
+       $usuariosTodos = [
+            'CARLOS ALEJANDRO GUARACHI SANDOVAL',
+            'CRISTHIAN ALAIN DURAN SULLCA',
+            'JHOSELINE EVA VELASQUEZ ESCOBAR',
+            'SERGIO ARMANDO MICHEL MAITA',
+        ];
 
-        $coincidencias = [];
-        foreach ($solicitudinventarios as $solicitud) {
-            $sucursalSolicitante = $solicitud->sucursal;
-            $productosSolicitados = $solicitud->productosolicitado;
+        $usuariosSinSucursal = [
+            'CARLOS ALEJANDRO GUARACHI SANDOVAL',
+            'JHOSELINE EVA VELASQUEZ ESCOBAR',
+        ];
 
-            $inventariosCoincidentes = Inventario::where('ciudad', $sucursalSolicitante)
-                ->get()
-                ->filter(function ($inventario) use ($productosSolicitados) {
-                    return Str::contains(strtolower($inventario->nombreproducto), strtolower($productosSolicitados)) ||
-                        Str::contains(strtolower($productosSolicitados), strtolower($inventario->nombreproducto));
-                });
-            if ($inventariosCoincidentes->isNotEmpty()) {
-                $coincidencias[$solicitud->id] = $inventariosCoincidentes;
+        if (in_array($nombreUsuario, $usuariosTodos)) {
+            if (in_array($nombreUsuario, $usuariosSinSucursal)) {
+                // No filtra por sucursal
+                $solicitudinventarios = SolicitudInventario::orderBy('created_at', 'desc')->get();
+            } else {
+                // Sí filtra por sucursal
+                $solicitudinventarios = SolicitudInventario::where('sucursal', $sucursalUsuario)->orderBy('created_at', 'desc')->get();
             }
-        }
-
-        $primerSolicitud = $solicitudinventarios->first();
-
-        if ($primerSolicitud) {
-            $productoCodigo = $primerSolicitud->codigoproducto;
         } else {
-            $productoCodigo = null;
+            // Para usuarios comunes, solo ven lo suyo
+            $solicitudinventarios = SolicitudInventario::where('usuariosolicitante', $nombreUsuario)->orderBy('created_at', 'desc')->get();
         }
 
-        $productoDetalles = Inventario::where('codigo', $productoCodigo)->first();
-        $rolusuario = auth()->user()->getRoleNames()->first();
+            $coincidencias = [];
+            foreach ($solicitudinventarios as $solicitud) {
+                $sucursalSolicitante = $solicitud->sucursal;
+                $productosSolicitados = $solicitud->productosolicitado;
 
-        // Supongamos que ya tienes estas variables antes:
-        $clientesITA = Cliente::orderBy('nombrecompleto')->get();
-        $clientesAuditoria = ClienteAuditoria::orderBy('nombrecompleto')->get();
-        $clientesComun = ClienteComun::orderBy('nombrecompleto')->get();
-        $proveedoresMedicos = Proveedor::orderBy('proveedor')->get();
-        $personal = Proveedoresservicios::whereIn('id', ['22PS', '21PS', '28PS'])
-            ->orderBy('razonsocial')
+                $inventariosCoincidentes = Inventario::where('ciudad', $sucursalSolicitante)
+                    ->get()
+                    ->filter(function ($inventario) use ($productosSolicitados) {
+                        return Str::contains(strtolower($inventario->nombreproducto), strtolower($productosSolicitados)) ||
+                            Str::contains(strtolower($productosSolicitados), strtolower($inventario->nombreproducto));
+                    });
+                if ($inventariosCoincidentes->isNotEmpty()) {
+                    $coincidencias[$solicitud->id] = $inventariosCoincidentes;
+                }
+            }
+
+            $primerSolicitud = $solicitudinventarios->first();
+
+            if ($primerSolicitud) {
+                $productoCodigo = $primerSolicitud->codigoproducto;
+            } else {
+                $productoCodigo = null;
+            }
+
+            $productoDetalles = Inventario::where('codigo', $productoCodigo)->first();
+            $rolusuario = auth()->user()->getRoleNames()->first();
+
+            // Supongamos que ya tienes estas variables antes:
+            $clientesITA = Cliente::orderBy('nombrecompleto')->get();
+            $clientesAuditoria = ClienteAuditoria::orderBy('nombrecompleto')->get();
+            $clientesComun = ClienteComun::orderBy('nombrecompleto')->get();
+            $proveedoresMedicos = Proveedor::orderBy('proveedor')->get();
+            $personal = User::where('estado', 'ACTIVO')
+            ->whereHas('roles', function ($query) {
+                $query->whereIn('name', ['ADMINISTRADOR', 'CONTABLE']);
+            })
+            ->orderBy('name')
             ->get();
+
 
             $rolesUsuario = auth()->user()->getRoleNames()->toArray();
 
+        $usuarioSucursal = Auth::user()->sucursal;
+        $productos = Inventario::where('ciudad', $usuarioSucursal)
+            ->select('id', 'nombreproducto', 'marca', 'stockactual', 'especificacionmedida', 'color')
+            ->get();
+
+
+        $solicitudesanuladas = SolicitudInventario::withTrashed()
+            ->where('estado', 'ANULADO')
+            ->get();
+
 
         return view('admin.inventario.solicitarproducto', compact('sucursalUsuario','nombreUsuario','rolusuario','solicitudinventarios', 'coincidencias', 'productoDetalles','clientesITA',
-        'clientesAuditoria',
-        'clientesComun',
-        'proveedoresMedicos','personal','rolesUsuario'));
+        'clientesAuditoria', 'clientesComun', 'proveedoresMedicos','personal','rolesUsuario','productos','solicitudesanuladas'));
     }
+    public function anularSeleccionadosinventario(Request $request)
+    {
+        $request->validate([
+            'solicitudes_json' => 'required|string',
+            'motivo_anulacion' => 'required|string|max:255',
+        ]);
+
+        $ids = json_decode($request->solicitudes_json, true);
+
+        if (!is_array($ids) || empty($ids)) {
+            return back()->withErrors(['solicitudes_json' => 'No se seleccionaron solicitudes válidas.']);
+        }
+
+        $usuario = Auth::user()->name;
+        $fechaActual = now();
+
+        foreach ($ids as $id) {
+            $solicitud = SolicitudInventario::find($id);
+
+            if ($solicitud) {
+                $solicitud->estado = 'ANULADO';
+                $solicitud->deleted_at = $fechaActual;
+                $solicitud->motivoanulacion = $request->motivo_anulacion;
+                $solicitud->usuarioanulacion = $usuario;
+                $solicitud->save();
+            }
+        }
+
+        return back()->with('info', 'Solicitudes anuladas correctamente.');
+    }
+
+
     public function guardarsolicitudproducto(Request $request)
     {
         $request->validate([
@@ -2351,6 +2626,9 @@ public function unificarPreordenes(Request $request)
     
         // Restar la cantidad del stock actual
         $producto->stockactual -= $cantidad;
+        if ($producto->stockactual <= 0) {
+            $producto->inventario = 'AGOTADO';
+        }
         $producto->save();
     
         // Obtener datos del usuario autenticado
@@ -2362,15 +2640,7 @@ public function unificarPreordenes(Request $request)
         $solicitud->estado = 'PROCESADO';
         $solicitud->save();
     
-        // Verificar si el stock es bajo y notificar
-        /* if ($producto->stockactual <= 3) {
-            $usuariosNotificar = User::whereIn('id', [1, 3, 10, 11, 25, 31])->get();
-            foreach ($usuariosNotificar as $usuarioDestino) {
-                $usuarioDestino->notify(new StockBajoNotification($producto));
-            }
-        } */
         if ($producto->stockactual <= $producto->minimocantidad) {
-            // Notificar solo a usuarios con roles específicos y misma sucursal
             $usuariosNotificar = User::role(['ADMINISTRADOR', 'CONTABLE', 'MAESTRO'])
                 ->where('sucursal', auth()->user()->sucursal)
                 ->get();
@@ -2379,32 +2649,24 @@ public function unificarPreordenes(Request $request)
                 $usuarioDestino->notify(new StockBajoNotification($solicitud));
             }
         }
-    
-        // Generar el contenido HTML de la vista
+
         $htmlContent = view('admin.inventario.comprobante', compact('fecha', 'producto', 'cantidadOfertada', 'usuarioNombre', 'solicitud'))->render();
-    
-        // Definir la carpeta de almacenamiento
+
         $folderPath = public_path("comprobanteinventario/{$solicitud->usuarioregistroid}");
         if (!file_exists($folderPath)) {
             mkdir($folderPath, 0777, true);
         }
-    
-        // Crear el nombre del archivo
+
         $fileName = "comprobante_{$solicitudId}.html";
         $filePath = $folderPath . '/' . $fileName;
-    
-        // Guardar el HTML en un archivo
+
         file_put_contents($filePath, $htmlContent);
-    
-        // Guardar el nombre del archivo en la base de datos
-        /* $solicitud->documento = $fileName; */
+
         $solicitud->save();
-    
-        // Guardar en la sesión la URL de descarga y el mensaje de confirmación
+
         session()->flash('success', 'Salida registrada exitosamente.');
         session()->flash('download_url', asset("comprobanteinventario/{$solicitud->usuarioregistroid}/{$fileName}"));
-    
-        // Redirigir de vuelta
+
         return redirect()->back();
     }
     public function generarComprobanteMasivo(Request $request)
@@ -2507,7 +2769,7 @@ public function unificarPreordenes(Request $request)
     public function subirDocumento(Request $request, $id) 
     {
         $request->validate([
-            'documento' => 'required|file|mimes:pdf,jpg,png|max:2048', // Máximo 2MB
+            'documento' => 'required|file|mimes:pdf,jpg,png|max:2048',
         ]);
 
         $solicitud = SolicitudInventario::findOrFail($id);
@@ -2530,6 +2792,7 @@ public function unificarPreordenes(Request $request)
 
             // Guardar solo el nombre del archivo en la base de datos
             $solicitud->documento = $archivo_name;
+            $solicitud->timestamps = false;
             $solicitud->save();
         }
 
@@ -2662,9 +2925,13 @@ public function unificarPreordenes(Request $request)
         $bienesalmacen = PortafolioProveedores::leftJoin('inventario', 'portafolioproveedores.id', '=', 'inventario.codigo')
             ->select('portafolioproveedores.*', 'inventario.stockactual as cantidadalmacen');
         if ($nombreproducto) {
-            $bienesalmacen = $bienesalmacen->where('portafolioproveedores.nombreproducto', 'LIKE', "%$nombreproducto%");
+        $bienesalmacen = $bienesalmacen->where(function ($query) use ($nombreproducto) {
+                $query->where('portafolioproveedores.nombreproducto', 'LIKE', "%$nombreproducto%")
+                    ->orWhere('portafolioproveedores.id', 'LIKE', "%$nombreproducto%");
+            });
         }
-        $bienesalmacen = $bienesalmacen->paginate(10);
+        $bienesalmacen = $bienesalmacen->paginate(20);
+
         if ($request->ajax()) {
             return view('admin.inventario.partials.tabla', compact('bienesalmacen'))->render();
         }

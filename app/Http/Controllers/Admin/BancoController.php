@@ -729,312 +729,312 @@ public function consolidadoegresos()
     return view('admin.banco.consolidadoegresos', compact('consolidacion','programaciones', 'recibos'));
 }
 
-public function montototalbancos() 
-{
-    /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 3000189269 */
-    $totalCuenta1Ingreso = DB::table('cajacentral')
-        ->where(function ($query) {
-            $query->where('nrocuentadestinotransferencia', '3000189269')
-                ->orWhere('nrocuentadestinodeposito', '3000189269')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('nrobancodestinoefectivo', '3000189269')
-                            ->whereNotNull('nrobancarizacionefectivo');
-                })
-                ->orWhere(function ($subquery) {
-                    $subquery->where('tipotransaccion', 'ATC')
-                            ->where('nrocuentadestinoatc', '3000189269')
-                            ->whereNotNull('nrobancarizacionatc');
-                })
+    public function montototalbancos() 
+    {
+        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 3000189269 */
+        $totalCuenta1Ingreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '3000189269')
+                    ->orWhere('nrocuentadestinodeposito', '3000189269')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('nrobancodestinoefectivo', '3000189269')
+                                ->whereNotNull('nrobancarizacionefectivo');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'ATC')
+                                ->where('nrocuentadestinoatc', '3000189269')
+                                ->whereNotNull('nrobancarizacionatc');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'CHEQUE')
+                                ->where('nrocuentadestinocheque', '3000189269')
+                                ->whereNotNull('nrobancarizacioncheque');
+                    });
+            })
+            ->where('tipomovimiento', 'INGRESO')
+            ->where('estado', '!=', 'ANULADO')
+            ->sum(DB::raw("CASE 
+                            WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
+                            THEN montototal - descuentoATC 
+                            ELSE montototal 
+        END"));
+
+        $totalCuenta1Egreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '3000189269')
                 ->orWhere(function ($subquery) {
                     $subquery->where('tipotransaccion', 'CHEQUE')
-                            ->where('nrocuentadestinocheque', '3000189269')
-                            ->whereNotNull('nrobancarizacioncheque');
+                                ->where('nrocuentadestinocheque', '3000189269')
+                                ->whereNotNull('nrobancarizacioncheque');
                 });
-        })
-        ->where('tipomovimiento', 'INGRESO')
-        ->where('estado', '!=', 'ANULADO')
-        ->sum(DB::raw("CASE 
-                        WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
-                        THEN montototal - descuentoATC 
-                        ELSE montototal 
-    END"));
+            })
+            ->where('tipomovimiento', 'EGRESO')
+            ->where('estado', '!=', 'ANULADO')
+        ->sum('montototal');
 
-    $totalCuenta1Egreso = DB::table('cajacentral')
-        ->where(function ($query) {
-            $query->where('nrocuentadestinotransferencia', '3000189269')
-            ->orWhere(function ($subquery) {
-                $subquery->where('tipotransaccion', 'CHEQUE')
-                            ->where('nrocuentadestinocheque', '3000189269')
-                            ->whereNotNull('nrobancarizacioncheque');
-            });
-        })
-        ->where('tipomovimiento', 'EGRESO')
-        ->where('estado', '!=', 'ANULADO')
-    ->sum('montototal');
-
-    /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 2505314878 */
-    $totalCuenta2Ingreso = DB::table('cajacentral')
-        ->where(function ($query) {
-            $query->where('nrocuentadestinotransferencia', '2505314878')
-                ->orWhere('nrocuentadestinodeposito', '2505314878')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('nrobancodestinoefectivo', '2505314878')
-                            ->whereNotNull('nrobancarizacionefectivo');
+        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 2505314878 */
+        $totalCuenta2Ingreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '2505314878')
+                    ->orWhere('nrocuentadestinodeposito', '2505314878')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('nrobancodestinoefectivo', '2505314878')
+                                ->whereNotNull('nrobancarizacionefectivo');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'ATC')
+                                ->where('nrocuentadestinoatc', '2505314878')
+                                ->whereNotNull('nrobancarizacionatc');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'CHEQUE')
+                                ->where('nrocuentadestinocheque', '2505314878')
+                                ->whereNotNull('nrobancarizacioncheque');
+                    });
                 })
-                ->orWhere(function ($subquery) {
-                    $subquery->where('tipotransaccion', 'ATC')
-                            ->where('nrocuentadestinoatc', '2505314878')
-                            ->whereNotNull('nrobancarizacionatc');
-                })
+                ->where('tipomovimiento', 'INGRESO')
+                ->where('estado', '!=', 'ANULADO')
+                ->sum(DB::raw("CASE 
+                    WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
+                    THEN montototal - descuentoATC 
+                    ELSE montototal 
+        END"));
+        
+        $totalCuenta2Egreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '2505314878')
                 ->orWhere(function ($subquery) {
                     $subquery->where('tipotransaccion', 'CHEQUE')
                             ->where('nrocuentadestinocheque', '2505314878')
                             ->whereNotNull('nrobancarizacioncheque');
                 });
             })
+            ->where('tipomovimiento', 'EGRESO')
+            ->where('estado', '!=', 'ANULADO')
+        ->sum('montototal');
+
+        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 4011113557 */
+        $totalCuenta3Ingreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '4011113557')
+                    ->orWhere('nrocuentadestinodeposito', '4011113557')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('nrobancodestinoefectivo', '4011113557')
+                                ->whereNotNull('nrobancarizacionefectivo');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'ATC')
+                                ->where('nrocuentadestinoatc', '4011113557')
+                                ->whereNotNull('nrobancarizacionatc');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'CHEQUE')
+                                ->where('nrocuentadestinocheque', '4011113557')
+                                ->whereNotNull('nrobancarizacioncheque');
+                    });
+            })
             ->where('tipomovimiento', 'INGRESO')
             ->where('estado', '!=', 'ANULADO')
             ->sum(DB::raw("CASE 
-                WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
-                THEN montototal - descuentoATC 
-                ELSE montototal 
-    END"));
-    
-    $totalCuenta2Egreso = DB::table('cajacentral')
-        ->where(function ($query) {
-            $query->where('nrocuentadestinotransferencia', '2505314878')
-            ->orWhere(function ($subquery) {
-                $subquery->where('tipotransaccion', 'CHEQUE')
-                        ->where('nrocuentadestinocheque', '2505314878')
-                        ->whereNotNull('nrobancarizacioncheque');
-            });
-        })
-        ->where('tipomovimiento', 'EGRESO')
-        ->where('estado', '!=', 'ANULADO')
-    ->sum('montototal');
+                            WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
+                            THEN montototal - descuentoATC 
+                            ELSE montototal 
+        END"));
 
-    /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 4011113557 */
-    $totalCuenta3Ingreso = DB::table('cajacentral')
-        ->where(function ($query) {
-            $query->where('nrocuentadestinotransferencia', '4011113557')
-                ->orWhere('nrocuentadestinodeposito', '4011113557')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('nrobancodestinoefectivo', '4011113557')
-                            ->whereNotNull('nrobancarizacionefectivo');
-                })
-                ->orWhere(function ($subquery) {
-                    $subquery->where('tipotransaccion', 'ATC')
-                            ->where('nrocuentadestinoatc', '4011113557')
-                            ->whereNotNull('nrobancarizacionatc');
-                })
+        $totalCuenta3Egreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '4011113557')
                 ->orWhere(function ($subquery) {
                     $subquery->where('tipotransaccion', 'CHEQUE')
-                            ->where('nrocuentadestinocheque', '4011113557')
-                            ->whereNotNull('nrobancarizacioncheque');
+                                ->where('nrocuentadestinocheque', '4011113557')
+                                ->whereNotNull('nrobancarizacioncheque');
                 });
-        })
-        ->where('tipomovimiento', 'INGRESO')
-        ->where('estado', '!=', 'ANULADO')
-        ->sum(DB::raw("CASE 
-                        WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
-                        THEN montototal - descuentoATC 
-                        ELSE montototal 
-    END"));
+            })
+            ->where('tipomovimiento', 'EGRESO')
+            ->where('estado', '!=', 'ANULADO')
+        ->sum('montototal');
 
-    $totalCuenta3Egreso = DB::table('cajacentral')
-        ->where(function ($query) {
-            $query->where('nrocuentadestinotransferencia', '4011113557')
-            ->orWhere(function ($subquery) {
-                $subquery->where('tipotransaccion', 'CHEQUE')
-                            ->where('nrocuentadestinocheque', '4011113557')
-                            ->whereNotNull('nrobancarizacioncheque');
-            });
-        })
-        ->where('tipomovimiento', 'EGRESO')
-        ->where('estado', '!=', 'ANULADO')
-    ->sum('montototal');
+        /* REGISTROS DE DETALLE RECIBO DE 3000189269 */
+        $ingresoscuenta1 = DB::table('detallerecibos')
+            ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
+            ->leftJoin('depositosbancarios', function($join) {
+                $join->on(DB::raw('DATE(detallerecibos.created_at)'), '=', 'depositosbancarios.fecha')
+                    ->on('detallerecibos.usuarioregistronombre', '=', 'depositosbancarios.usuarioregistronombre');
+            })
+            ->selectRaw("
+                detallerecibos.*, 
+                cajacentral.tipotransaccion, 
+                cajacentral.updated_at as cajacentral_updated_at, 
+                cajacentral.fechabancarizacionatc as cajacentral_fechabancarizacionatc, 
+                depositosbancarios.created_at AS depositosbancarios_created_at, 
+                CASE 
+                    WHEN cajacentral.tipotransaccion = 'ATC' AND cajacentral.nrobancarizacionatc IS NOT NULL 
+                    THEN cajacentral.montototal - cajacentral.descuentoATC 
+                    ELSE cajacentral.montototal 
+                END as montototal_calculado
+            ")
+            ->where(function ($query) {
+                $query->where('cajacentral.nrocuentadestinotransferencia', '3000189269')
+                    ->orWhere('cajacentral.nrocuentadestinodeposito', '3000189269')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.nrobancodestinoefectivo', '3000189269')
+                                ->whereNotNull('cajacentral.nrobancarizacionefectivo');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.tipotransaccion', 'ATC')
+                                ->where('cajacentral.nrocuentadestinoatc', '3000189269')
+                                ->whereNotNull('cajacentral.nrobancarizacionatc');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
+                                ->where('cajacentral.nrocuentadestinocheque', '3000189269')
+                                ->whereNotNull('cajacentral.nrobancarizacioncheque');
+                    });
+            })
+            ->where('detallerecibos.tipomovimiento', 'INGRESO')
+            ->where('detallerecibos.estado', '!=', 'ANULADO')
+            ->orderBy('detallerecibos.id', 'asc')
+        ->get();
 
-    /* REGISTROS DE DETALLE RECIBO DE 3000189269 */
-    $ingresoscuenta1 = DB::table('detallerecibos')
-        ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
-        ->leftJoin('depositosbancarios', function($join) {
-            $join->on(DB::raw('DATE(detallerecibos.created_at)'), '=', 'depositosbancarios.fecha')
-                 ->on('detallerecibos.usuarioregistronombre', '=', 'depositosbancarios.usuarioregistronombre');
-        })
-        ->selectRaw("
-            detallerecibos.*, 
-            cajacentral.tipotransaccion, 
-            cajacentral.updated_at as cajacentral_updated_at, 
-            cajacentral.fechabancarizacionatc as cajacentral_fechabancarizacionatc, 
-            depositosbancarios.created_at AS depositosbancarios_created_at, 
-            CASE 
-                WHEN cajacentral.tipotransaccion = 'ATC' AND cajacentral.nrobancarizacionatc IS NOT NULL 
-                THEN cajacentral.montototal - cajacentral.descuentoATC 
-                ELSE cajacentral.montototal 
-            END as montototal_calculado
-        ")
-        ->where(function ($query) {
-            $query->where('cajacentral.nrocuentadestinotransferencia', '3000189269')
-                ->orWhere('cajacentral.nrocuentadestinodeposito', '3000189269')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('cajacentral.nrobancodestinoefectivo', '3000189269')
-                            ->whereNotNull('cajacentral.nrobancarizacionefectivo');
-                })
-                ->orWhere(function ($subquery) {
-                    $subquery->where('cajacentral.tipotransaccion', 'ATC')
-                            ->where('cajacentral.nrocuentadestinoatc', '3000189269')
-                            ->whereNotNull('cajacentral.nrobancarizacionatc');
-                })
-                ->orWhere(function ($subquery) {
-                    $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
-                            ->where('cajacentral.nrocuentadestinocheque', '3000189269')
-                            ->whereNotNull('cajacentral.nrobancarizacioncheque');
-                });
-        })
-        ->where('detallerecibos.tipomovimiento', 'INGRESO')
-        ->where('detallerecibos.estado', '!=', 'ANULADO')
-        ->orderBy('detallerecibos.id', 'asc')
-    ->get();
+        $egresoscuenta1 = DB::table('detallerecibos')
+            ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
+            ->select('detallerecibos.*', 'cajacentral.tipotransaccion')
+            ->where(function ($query) {
+                $query->where('cajacentral.nrocuentadestinotransferencia', '3000189269')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
+                                ->where('cajacentral.nrocuentadestinocheque', '3000189269')
+                                ->whereNotNull('nrobancarizacioncheque');
+                    });
+            })
+            ->where('detallerecibos.tipomovimiento', 'EGRESO')
+            ->where('detallerecibos.estado', '!=', 'ANULADO')
+            ->orderBy('detallerecibos.id', 'asc')
+        ->get();
 
-    $egresoscuenta1 = DB::table('detallerecibos')
-        ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
-        ->select('detallerecibos.*', 'cajacentral.tipotransaccion')
-        ->where(function ($query) {
-            $query->where('cajacentral.nrocuentadestinotransferencia', '3000189269')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
-                            ->where('cajacentral.nrocuentadestinocheque', '3000189269')
-                            ->whereNotNull('nrobancarizacioncheque');
-                });
-        })
-        ->where('detallerecibos.tipomovimiento', 'EGRESO')
-        ->where('detallerecibos.estado', '!=', 'ANULADO')
-        ->orderBy('detallerecibos.id', 'asc')
-    ->get();
+        /* REGISTROS DE DETALLE RECIBO DE 2505314878 */
+        $ingresoscuenta2 = DB::table('detallerecibos')
+            ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
+            ->leftJoin('depositosbancarios', function($join) {
+                $join->on(DB::raw('DATE(detallerecibos.created_at)'), '=', 'depositosbancarios.fecha')
+                    ->on('detallerecibos.usuarioregistronombre', '=', 'depositosbancarios.usuarioregistronombre');
+            })
+            ->selectRaw("
+                detallerecibos.*, 
+                cajacentral.tipotransaccion, 
+                cajacentral.updated_at as cajacentral_updated_at, 
+                cajacentral.fechabancarizacionatc as cajacentral_fechabancarizacionatc, 
+                depositosbancarios.created_at AS depositosbancarios_created_at, 
+                CASE 
+                    WHEN cajacentral.tipotransaccion = 'ATC' AND cajacentral.nrobancarizacionatc IS NOT NULL 
+                    THEN cajacentral.montototal - cajacentral.descuentoATC 
+                    ELSE cajacentral.montototal 
+                END as montototal_calculado
+            ")
+            ->where(function ($query) {
+                $query->where('cajacentral.nrocuentadestinotransferencia', '2505314878')
+                    ->orWhere('cajacentral.nrocuentadestinodeposito', '2505314878')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.nrobancodestinoefectivo', '2505314878')
+                                ->whereNotNull('cajacentral.nrobancarizacionefectivo');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.tipotransaccion', 'ATC')
+                                ->where('cajacentral.nrocuentadestinoatc', '2505314878')
+                                ->whereNotNull('cajacentral.nrobancarizacionatc');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
+                                ->where('cajacentral.nrocuentadestinocheque', '2505314878')
+                                ->whereNotNull('cajacentral.nrobancarizacioncheque');
+                    });
+            })
+            ->where('detallerecibos.tipomovimiento', 'INGRESO')
+            ->where('detallerecibos.estado', '!=', 'ANULADO')
+            ->orderBy('detallerecibos.id', 'asc')
+        ->get();
 
-    /* REGISTROS DE DETALLE RECIBO DE 2505314878 */
-    $ingresoscuenta2 = DB::table('detallerecibos')
-        ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
-        ->leftJoin('depositosbancarios', function($join) {
-            $join->on(DB::raw('DATE(detallerecibos.created_at)'), '=', 'depositosbancarios.fecha')
-                 ->on('detallerecibos.usuarioregistronombre', '=', 'depositosbancarios.usuarioregistronombre');
-        })
-        ->selectRaw("
-            detallerecibos.*, 
-            cajacentral.tipotransaccion, 
-            cajacentral.updated_at as cajacentral_updated_at, 
-            cajacentral.fechabancarizacionatc as cajacentral_fechabancarizacionatc, 
-            depositosbancarios.created_at AS depositosbancarios_created_at, 
-            CASE 
-                WHEN cajacentral.tipotransaccion = 'ATC' AND cajacentral.nrobancarizacionatc IS NOT NULL 
-                THEN cajacentral.montototal - cajacentral.descuentoATC 
-                ELSE cajacentral.montototal 
-            END as montototal_calculado
-        ")
-        ->where(function ($query) {
-            $query->where('cajacentral.nrocuentadestinotransferencia', '2505314878')
-                ->orWhere('cajacentral.nrocuentadestinodeposito', '2505314878')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('cajacentral.nrobancodestinoefectivo', '2505314878')
-                            ->whereNotNull('cajacentral.nrobancarizacionefectivo');
-                })
-                ->orWhere(function ($subquery) {
-                    $subquery->where('cajacentral.tipotransaccion', 'ATC')
-                            ->where('cajacentral.nrocuentadestinoatc', '2505314878')
-                            ->whereNotNull('cajacentral.nrobancarizacionatc');
-                })
+        $egresoscuenta2 = DB::table('detallerecibos')
+            ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
+            ->select('detallerecibos.*', 'cajacentral.tipotransaccion')
+            ->where(function ($query) {
+                $query->where('cajacentral.nrocuentadestinotransferencia', '2505314878')
                 ->orWhere(function ($subquery) {
                     $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
                             ->where('cajacentral.nrocuentadestinocheque', '2505314878')
-                            ->whereNotNull('cajacentral.nrobancarizacioncheque');
-                });
-        })
-        ->where('detallerecibos.tipomovimiento', 'INGRESO')
-        ->where('detallerecibos.estado', '!=', 'ANULADO')
-        ->orderBy('detallerecibos.id', 'asc')
-    ->get();
-
-    $egresoscuenta2 = DB::table('detallerecibos')
-        ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
-        ->select('detallerecibos.*', 'cajacentral.tipotransaccion')
-        ->where(function ($query) {
-            $query->where('cajacentral.nrocuentadestinotransferencia', '2505314878')
-            ->orWhere(function ($subquery) {
-                $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
-                        ->where('cajacentral.nrocuentadestinocheque', '2505314878')
-                        ->whereNotNull('nrobancarizacioncheque');
-            });
-        })
-        ->where('detallerecibos.tipomovimiento', 'EGRESO')
-        ->where('detallerecibos.estado', '!=', 'ANULADO')
-        ->orderBy('detallerecibos.id', 'asc')
-    ->get();
-
-    /* REGISTROS DE DETALLE RECIBO DE 4011113557 */
-    $ingresoscuenta3 = DB::table('detallerecibos')
-        ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
-        ->leftJoin('depositosbancarios', function($join) {
-            $join->on(DB::raw('DATE(detallerecibos.created_at)'), '=', 'depositosbancarios.fecha')
-                 ->on('detallerecibos.usuarioregistronombre', '=', 'depositosbancarios.usuarioregistronombre');
-        })
-        ->selectRaw("
-            detallerecibos.*, 
-            cajacentral.tipotransaccion, 
-            cajacentral.updated_at as cajacentral_updated_at, 
-            cajacentral.fechabancarizacionatc as cajacentral_fechabancarizacionatc, 
-            depositosbancarios.created_at AS depositosbancarios_created_at, 
-            CASE 
-                WHEN cajacentral.tipotransaccion = 'ATC' AND cajacentral.nrobancarizacionatc IS NOT NULL 
-                THEN cajacentral.montototal - cajacentral.descuentoATC 
-                ELSE cajacentral.montototal 
-            END as montototal_calculado
-        ")
-        ->where(function ($query) {
-            $query->where('cajacentral.nrocuentadestinotransferencia', '4011113557')
-                ->orWhere('cajacentral.nrocuentadestinodeposito', '4011113557')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('cajacentral.nrobancodestinoefectivo', '4011113557')
-                            ->whereNotNull('cajacentral.nrobancarizacionefectivo');
-                })
-                ->orWhere(function ($subquery) {
-                    $subquery->where('cajacentral.tipotransaccion', 'ATC')
-                            ->where('cajacentral.nrocuentadestinoatc', '4011113557')
-                            ->whereNotNull('cajacentral.nrobancarizacionatc');
-                })
-                ->orWhere(function ($subquery) {
-                    $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
-                            ->where('cajacentral.nrocuentadestinocheque', '4011113557')
-                            ->whereNotNull('cajacentral.nrobancarizacioncheque');
-                });
-        })
-        ->where('detallerecibos.tipomovimiento', 'INGRESO')
-        ->where('detallerecibos.estado', '!=', 'ANULADO')
-        ->orderBy('detallerecibos.id', 'asc')
-    ->get();
-
-    $egresoscuenta3 = DB::table('detallerecibos')
-        ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
-        ->select('detallerecibos.*', 'cajacentral.tipotransaccion')
-        ->where(function ($query) {
-            $query->where('cajacentral.nrocuentadestinotransferencia', '4011113557')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
-                            ->where('cajacentral.nrocuentadestinocheque', '4011113557')
                             ->whereNotNull('nrobancarizacioncheque');
                 });
-        })
-        ->where('detallerecibos.tipomovimiento', 'EGRESO')
-        ->where('detallerecibos.estado', '!=', 'ANULADO')
-        ->orderBy('detallerecibos.id', 'asc')
-    ->get();
+            })
+            ->where('detallerecibos.tipomovimiento', 'EGRESO')
+            ->where('detallerecibos.estado', '!=', 'ANULADO')
+            ->orderBy('detallerecibos.id', 'asc')
+        ->get();
 
-    $saldoanteriorcuenta1 = '-174910.55';
-    $saldoanteriorcuenta2 = '34508.22';
-    $saldoanteriorcuenta3 = '3500.00';
+        /* REGISTROS DE DETALLE RECIBO DE 4011113557 */
+        $ingresoscuenta3 = DB::table('detallerecibos')
+            ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
+            ->leftJoin('depositosbancarios', function($join) {
+                $join->on(DB::raw('DATE(detallerecibos.created_at)'), '=', 'depositosbancarios.fecha')
+                    ->on('detallerecibos.usuarioregistronombre', '=', 'depositosbancarios.usuarioregistronombre');
+            })
+            ->selectRaw("
+                detallerecibos.*, 
+                cajacentral.tipotransaccion, 
+                cajacentral.updated_at as cajacentral_updated_at, 
+                cajacentral.fechabancarizacionatc as cajacentral_fechabancarizacionatc, 
+                depositosbancarios.created_at AS depositosbancarios_created_at, 
+                CASE 
+                    WHEN cajacentral.tipotransaccion = 'ATC' AND cajacentral.nrobancarizacionatc IS NOT NULL 
+                    THEN cajacentral.montototal - cajacentral.descuentoATC 
+                    ELSE cajacentral.montototal 
+                END as montototal_calculado
+            ")
+            ->where(function ($query) {
+                $query->where('cajacentral.nrocuentadestinotransferencia', '4011113557')
+                    ->orWhere('cajacentral.nrocuentadestinodeposito', '4011113557')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.nrobancodestinoefectivo', '4011113557')
+                                ->whereNotNull('cajacentral.nrobancarizacionefectivo');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.tipotransaccion', 'ATC')
+                                ->where('cajacentral.nrocuentadestinoatc', '4011113557')
+                                ->whereNotNull('cajacentral.nrobancarizacionatc');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
+                                ->where('cajacentral.nrocuentadestinocheque', '4011113557')
+                                ->whereNotNull('cajacentral.nrobancarizacioncheque');
+                    });
+            })
+            ->where('detallerecibos.tipomovimiento', 'INGRESO')
+            ->where('detallerecibos.estado', '!=', 'ANULADO')
+            ->orderBy('detallerecibos.id', 'asc')
+        ->get();
 
-    return view('admin.banco.montototalbancos', compact('saldoanteriorcuenta1','saldoanteriorcuenta2','saldoanteriorcuenta3','totalCuenta3Ingreso','totalCuenta3Egreso','ingresoscuenta3','egresoscuenta3','ingresoscuenta1','egresoscuenta1','ingresoscuenta2','egresoscuenta2','totalCuenta1Ingreso', 'totalCuenta2Ingreso', 'totalCuenta1Egreso', 'totalCuenta2Egreso'
-    ));
-}
+        $egresoscuenta3 = DB::table('detallerecibos')
+            ->join('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
+            ->select('detallerecibos.*', 'cajacentral.tipotransaccion')
+            ->where(function ($query) {
+                $query->where('cajacentral.nrocuentadestinotransferencia', '4011113557')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('cajacentral.tipotransaccion', 'CHEQUE')
+                                ->where('cajacentral.nrocuentadestinocheque', '4011113557')
+                                ->whereNotNull('nrobancarizacioncheque');
+                    });
+            })
+            ->where('detallerecibos.tipomovimiento', 'EGRESO')
+            ->where('detallerecibos.estado', '!=', 'ANULADO')
+            ->orderBy('detallerecibos.id', 'asc')
+        ->get();
+
+        $saldoanteriorcuenta1 = '-174910.55';
+        $saldoanteriorcuenta2 = '34508.22';
+        $saldoanteriorcuenta3 = '3500.00';
+
+        return view('admin.banco.montototalbancos', compact('saldoanteriorcuenta1','saldoanteriorcuenta2','saldoanteriorcuenta3','totalCuenta3Ingreso','totalCuenta3Egreso','ingresoscuenta3','egresoscuenta3','ingresoscuenta1','egresoscuenta1','ingresoscuenta2','egresoscuenta2','totalCuenta1Ingreso', 'totalCuenta2Ingreso', 'totalCuenta1Egreso', 'totalCuenta2Egreso'
+        ));
+    }
 
 
 public function detallemovimientos(Request $request)

@@ -500,7 +500,7 @@
                         </script>
                         
                     </div>
-                {!! Form::submit('ACTUALIZAR CLIENTE', ['class' => 'btn btn-crear']) !!}
+                {!! Form::submit('ACTUALIZAR', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
             </div>
          </div>
@@ -586,7 +586,7 @@ $('.dropify').dropify();
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     
     .btn-crear:hover {
@@ -680,7 +680,7 @@ $('.dropify').dropify();
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;

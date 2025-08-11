@@ -16,12 +16,34 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }
     .custom2-button:hover {
         background-color: #faa625;
+        color: #ffffff;
+    }
+    .btn-regresar {
+        background-color: #ffffff;
+        color: #2926e2;
+        border-color: #2926e2;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-regresar:hover {
+        background-color: #2926e2;
+        color: #ffffff;
+    }
+    .btn-crear {
+        background-color: #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-crear:hover {
+        background-color: #94c93b;
         color: #ffffff;
     }
 </style>
@@ -74,7 +96,7 @@
                                     <div id="acciones-container" class="mt-3">
                                         <strong>Acciones requeridas:</strong>
                                         <table id="acciones-table" class="table table-striped mt-2 compact-table" style="display: none;">
-                                            <thead>
+                                            <thead class="table-secondary">
                                                 <tr>
                                                     <th>ID</th>
                                                     <th>Acción</th>
@@ -98,53 +120,53 @@
                         </div>
                     </div>
 
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function () {
-                                const selectFechas = document.getElementById('select-fechas');
-                                const accionesTable = document.getElementById('acciones-table');
-                                const tbody = accionesTable.querySelector('tbody');
-                            
-                                const accionesPorFecha = @json($accionesPorFecha);
-                                const rolusuario = @json($rolusuario);
-                            
-                                selectFechas.addEventListener('change', function () {
-                                    const selectedDate = this.value;
-                            
-                                    tbody.innerHTML = '';
-                            
-                                    if (selectedDate && accionesPorFecha[selectedDate]) {
-                                        const acciones = accionesPorFecha[selectedDate];
-                            
-                                        acciones.forEach(item => {
-                                            const row = document.createElement('tr');
-                                            row.innerHTML = ` 
-                                                <td>${item.id}</td>
-                                                <td>${item.accion}${item.sesiones ? ' - ' + item.sesiones + ' SESIONES' : ''}</td>
-                                                <td>${item.informe}</td>
-                                                <td>${item.proveedor}</td>
-                                                <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
-                                            `;
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const selectFechas = document.getElementById('select-fechas');
+                            const accionesTable = document.getElementById('acciones-table');
+                            const tbody = accionesTable.querySelector('tbody');
+                        
+                            const accionesPorFecha = @json($accionesPorFecha);
+                            const rolusuario = @json($rolusuario);
+                        
+                            selectFechas.addEventListener('change', function () {
+                                const selectedDate = this.value;
+                        
+                                tbody.innerHTML = '';
+                        
+                                if (selectedDate && accionesPorFecha[selectedDate]) {
+                                    const acciones = accionesPorFecha[selectedDate];
+                        
+                                    acciones.forEach(item => {
+                                        const row = document.createElement('tr');
+                                        row.innerHTML = ` 
+                                            <td>${item.id}</td>
+                                            <td>${item.accion}${item.sesiones ? ' - ' + item.sesiones + ' SESIONES' : ''}</td>
+                                            <td>${item.informe}</td>
+                                            <td>${item.proveedor}</td>
+                                            <td>${rolusuario === 'PROVEEDOR' ? '' : item.precio}</td>
+                                        `;
 
-                                            tbody.appendChild(row);
-                                        });
-                                        accionesTable.style.display = 'table';
-                                    } else {
-                                        accionesTable.style.display = 'none';
-                                    }
-                                });
+                                        tbody.appendChild(row);
+                                    });
+                                    accionesTable.style.display = 'table';
+                                } else {
+                                    accionesTable.style.display = 'none';
+                                }
                             });
-                        </script>
+                        });
+                    </script>
 
-                        <style>
-                            .compact-table th, .compact-table td {
-                                padding: 4px 8px;
-                                line-height: 1.2;
-                            }
+                    <style>
+                        .compact-table th, .compact-table td {
+                            padding: 4px 8px;
+                            line-height: 1.2;
+                        }
 
-                            .compact-table {
-                                font-size: 16px;
-                            }
-                        </style>
+                        .compact-table {
+                            font-size: 16px;
+                        }
+                    </style>
 
                     <div class="form-group">
                         <strong>Fecha de Batería:</strong>
@@ -186,11 +208,7 @@
                                     fechaInformeGroup.classList.add('hidden');
                                 }
                             }
-                
-                            // Inicializa el estado del campo cuando la página carga
                             toggleFechaInforme();
-                
-                            // Añade un listener para cambios en la selección
                             informeSelect.addEventListener('change', toggleFechaInforme);
                         });
                     </script>

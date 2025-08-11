@@ -3,10 +3,10 @@
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclientecomun', $clientecomun) }}">REGRESAR</a>
 @can('admin.asociados.reprogramacionclienteita')
-<a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.reprogramacionclientecomun', $clientecomun)}}">REPROGRAMAR</a>
+<a class="btn btn-sm float-right btn-crear2" href="{{route('admin.asociados.reprogramacionclientecomun', $clientecomun)}}">REPROGRAMAR</a>
 @endcan
-<a class="btn btn-sm float-right btn-bateria" data-toggle="modal" data-target="#ventanaModal">PROGRAMACIONES DEL CLIENTE</a>
-<a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.estadoprogramacionclientecomun', $clientecomun)}}">PROGRAMACIONES</a>
+<a class="btn btn-sm float-right btn-bateria" data-toggle="modal" data-target="#ventanaModal">PROGRAMACIONES</a>
+<a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.estadoprogramacionclientecomun', $clientecomun)}}">ESTADO DE PROG.</a>
 <h5>PROGRAMAR ESTUDIOS / ESPECIALIDADES DE:</h5>
 <h3>{{$clientecomun->nombrecompleto}}</h3>
 @stop
@@ -80,7 +80,7 @@
                             </script>
                         </div>
 
-                        {!! Form::label('', 'ESTUDIOS / ESPECIALIDADES DISPONIBLES:') !!}
+                        {!! Form::label('', 'Estudios / Especialidades Disponibles') !!}
                         @error('proveedornombre')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
@@ -88,84 +88,80 @@
                             @enderror
 
                         @foreach($accionesPorFecha as $fecha => $acciones)     
-                                <div class="acciones-{{ $fecha }}" style="display:none;">
-                                    <div class="row" style="margin-top: 5px; margin-bottom: 20px; align-items: center;">
-                                        <div class="col-lg-8">
-                                            <input type="text" id="search-{{ $fecha }}" placeholder="Buscar acción..."
-                                                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); 
-                                                        transition: box-shadow 0.3s ease; outline: none;" 
-                                                onfocus="this.style.boxShadow='0 0 8px rgba(0, 0, 255, 0.3)';" 
-                                                onblur="this.style.boxShadow='none';">
-                                        </div>
-                                        <div class="col-lg-4">
-                                            <label style="font-weight: normal; display: flex; align-items: center;">
-                                                <input type="checkbox" id="select-all-{{ $fecha }}" style="margin-right: 5px;"> 
-                                                <span style="font-weight: bold; font-size: 14px;">SELECCIONAR TODO</span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <div class="row action-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
-                                        @foreach($acciones as $accion)
-                                            @php
-                                                $proveedorAjeno = 'PROVEEDOR AJENO';
-                                                $proveedor = isset($proveedoresDetalles[$accion]) ? $proveedoresDetalles[$accion] : null;
-                                                $registrada = isset($accionesRegistradas[$fecha]) && in_array($accion, $accionesRegistradas[$fecha]);
-                                                $accionSanitizada = str_replace([' ', '.'], ['_', '-'], $accion);
-                                                $sesiones = $proveedor['sesiones'] ?? 0;
-                                            @endphp
-                                            
-                                            @if(!$registrada && (!isset($proveedor) || $proveedor['proveedor'] !== $proveedorAjeno))
-                                                <div class="col-lg-6 action-item" style="flex: 0 0 48%; margin-bottom: -15px;">
-                                                    <div class="form-group">
-                                                        <div>
-                                                            <label style="font-weight: normal; margin-bottom: -15px;">
-                                                                {{-- <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }} --}}
-                                                                    <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> 
-                                                                    {{ $accion }}  
-                                                                    @if($sesiones > 0)
-                                                                        <span style="color: gray; font-size: 15px;">
-                                                                            (Sesiones: {{ $sesiones }})
-                                                                        </span>
-                                                                    @endif
-                                                            </label>
-                                                            <input type="hidden" name="proveedor_{{ $accionSanitizada }}" value="{{ $proveedor['proveedor'] ?? '' }}">
-                                                            <input type="hidden" name="areanombre_{{ $accionSanitizada }}" value="{{ $proveedor['area'] ?? '' }}">
-                                                            <input type="hidden" name="precio_{{ $accionSanitizada }}" value="{{ $proveedor['precio'] ?? '' }}">
-                                                            <input type="hidden" name="preciocompra_{{ $accionSanitizada }}" value="{{ $proveedor['preciocompra'] ?? '' }}">
-                                                            <input type="hidden" name="servicio_{{ $accionSanitizada }}" value="{{ $proveedor['servicio'] ?? '' }}">
-                                                            <input type="hidden" name="pagoservicio_{{ $accionSanitizada }}" value="{{ $proveedor['pagoservicio'] ?? '' }}">
-                                                            <input type="hidden" name="bateriaid_{{ $accionSanitizada }}" value="{{ $proveedor['bateriaid'] ?? '' }}">
-                                                            <input type="hidden" name="sesiones_{{ $accionSanitizada }}" value="{{ $proveedor['sesiones'] ?? '' }}">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        @endforeach
+                            <div class="acciones-{{ $fecha }}" style="display:none;">
+                                <div class="row" style="margin-top: 5px; margin-bottom: 20px; align-items: center;">
+                                    <div class="col-lg-12">
+                                        <input type="text" id="search-{{ $fecha }}" placeholder="Buscar estudio / especialidad..."
+                                            style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); 
+                                                    transition: box-shadow 0.3s ease; outline: none;" 
+                                            onfocus="this.style.boxShadow='0 0 8px rgba(0, 0, 255, 0.3)';" 
+                                            onblur="this.style.boxShadow='none';">
                                     </div>
                                 </div>
+                                <div class="col-lg-2" style="margin-left: -8px;">
+                                    <label style="font-weight: normal; display: flex; align-items: center;">
+                                        <input type="checkbox" id="select-all-{{ $fecha }}" style="margin-right: 5px;"> 
+                                        <span style="font-weight: bold; font-size: 14px;">SELECCIONAR TODO</span>
+                                    </label>
+                                </div>
+                                <div class="row action-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
+                                    @foreach($acciones as $accion)
+                                        @php
+                                            $proveedorAjeno = 'PROVEEDOR AJENO';
+                                            $proveedor = isset($proveedoresDetalles[$accion]) ? $proveedoresDetalles[$accion] : null;
+                                            $registrada = isset($accionesRegistradas[$fecha]) && in_array($accion, $accionesRegistradas[$fecha]);
+                                            $accionSanitizada = str_replace([' ', '.'], ['_', '-'], $accion);
+                                            $sesiones = $proveedor['sesiones'] ?? 0;
+                                        @endphp
+                                        
+                                        @if(!$registrada && (!isset($proveedor) || $proveedor['proveedor'] !== $proveedorAjeno))
+                                            <div class="col-lg-6 action-item" style="flex: 0 0 48%; margin-bottom: -15px;">
+                                                <div class="form-group">
+                                                    <div>
+                                                        <label style="font-weight: normal; margin-bottom: -15px;">
+                                                            {{-- <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }} --}}
+                                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> 
+                                                                {{ $accion }}  
+                                                                @if($sesiones > 0)
+                                                                    <span style="color: gray; font-size: 15px;">
+                                                                        (Sesiones: {{ $sesiones }})
+                                                                    </span>
+                                                                @endif
+                                                        </label>
+                                                        <input type="hidden" name="proveedor_{{ $accionSanitizada }}" value="{{ $proveedor['proveedor'] ?? '' }}">
+                                                        <input type="hidden" name="areanombre_{{ $accionSanitizada }}" value="{{ $proveedor['area'] ?? '' }}">
+                                                        <input type="hidden" name="precio_{{ $accionSanitizada }}" value="{{ $proveedor['precio'] ?? '' }}">
+                                                        <input type="hidden" name="preciocompra_{{ $accionSanitizada }}" value="{{ $proveedor['preciocompra'] ?? '' }}">
+                                                        <input type="hidden" name="servicio_{{ $accionSanitizada }}" value="{{ $proveedor['servicio'] ?? '' }}">
+                                                        <input type="hidden" name="pagoservicio_{{ $accionSanitizada }}" value="{{ $proveedor['pagoservicio'] ?? '' }}">
+                                                        <input type="hidden" name="bateriaid_{{ $accionSanitizada }}" value="{{ $proveedor['bateriaid'] ?? '' }}">
+                                                        <input type="hidden" name="sesiones_{{ $accionSanitizada }}" value="{{ $proveedor['sesiones'] ?? '' }}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
                         @endforeach
 
                         <script>
                             document.querySelectorAll('[id^="search-"]').forEach(function(searchInput) {
                                 searchInput.addEventListener('keyup', function() {
                                     var input = this.value.toLowerCase();
-                                    var fecha = this.id.split('-')[1]; // Extrae la fecha del id
+                                    var fecha = this.id.split('-')[1];
                                     var actionItems = document.querySelectorAll('.action-item');
                                     var selectAllCheckbox = document.getElementById('select-all-' + fecha);
                                     
                                     actionItems.forEach(function(item) {
                                         var actionText = item.textContent.toLowerCase();
                                         if (actionText.includes(input)) {
-                                            item.style.display = ""; // Muestra el item
+                                            item.style.display = "";
                                         } else {
-                                            item.style.display = "none"; // Oculta el item
+                                            item.style.display = "none";
                                         }
                                     });
-                                    
-                                    // Desmarcar "Seleccionar Todo" al buscar
                                     selectAllCheckbox.checked = false;
-
-                                    // Actualiza el checkbox "Seleccionar Todo"
                                     updateSelectAll(fecha);
                                 });
                             });
@@ -252,7 +248,7 @@
                             @enderror
                         </div>
                         <div class="form-group">
-                            {!! Form::label('horadesde', 'Desde:') !!}
+                            {!! Form::label('horadesde', 'Hora Desde:') !!}
                             {!! Form::time('horadesde', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'horadesde']) !!}
                             @error('horadesde')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -261,7 +257,7 @@
                             @enderror
                         </div>
                         <div class="form-group">
-                            {!! Form::label('horahasta', 'Hasta:') !!}
+                            {!! Form::label('horahasta', 'Hora Hasta:') !!}
                             {!! Form::time('horahasta', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'horahasta']) !!}
                             @error('horahasta')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -275,7 +271,7 @@
                         ESTE CLIENTE NO TIENE BATERIA
                     </div>
                 @endif 
-                {!! Form::submit('PROGRAMAR CLIENTE', ['class' => 'btn btn-crear', 'style' => 'margin-top: 30px;']) !!}
+                {!! Form::submit('PROGRAMAR', ['class' => 'btn btn-crear', 'style' => 'margin-top: 30px;']) !!}
             </div>
             {!! Form::close() !!}
         </div>
@@ -300,11 +296,11 @@
                         <option value="{{ $fecha }}">{{ $fecha }}</option>
                     @endforeach
                 </select>
-                <div id="acciones-container" class="mt-3">
+                <div id="acciones-container" class="mt-3 table-responsive">
                     <strong>Acciones programadas:</strong>
                     <div class="table-responsive">
-                        <table class="table mt-3" id="acciones-table">
-                            <thead>
+                        <table class="table mt-3 table-striped table-bordered" id="acciones-table">
+                            <thead class="table-secondary">
                                 <tr>
                                     <th>ID</th>
                                     <th>Estudio / Especialidad</th>
@@ -664,7 +660,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 5px 15px;
+        padding: 5px 10px;
         }
     .custom-button:hover {
         background-color: #faa625;
@@ -675,7 +671,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
         }
@@ -683,12 +679,25 @@
         background-color: #94c93b;
         color: #ffffff;
         }
+    .btn-crear2 {
+        background-color:  #ffffff;
+        color: #b02897;
+        border-color: #b02897;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+        }
+    .btn-crear2:hover {
+        background-color: #b02897;
+        color: #ffffff;
+        }
     .btn-bateria {
         background-color:  #ffffff;
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     .btn-bateria:hover {
         background-color: #faa625;
@@ -710,7 +719,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 5px 20px;
+        padding: 5px 10px;
         margin-top: 33px;
     }
     .custom2-button:hover {
@@ -723,7 +732,6 @@
         border-color: #e22f2f;
         border-radius: 5px;
         padding: 5px 10px;
-
     }
     .btn-cerrar:hover {
         background-color: #e22f2f;
@@ -734,7 +742,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;

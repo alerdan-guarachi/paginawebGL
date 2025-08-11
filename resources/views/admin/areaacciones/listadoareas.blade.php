@@ -9,6 +9,22 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
+<style>
+    .table td {
+        padding: 5px 10px;
+    }
+    .btn-crear {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-crear:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+</style>
 @stop
 
 @section('content')
@@ -30,7 +46,7 @@
                 <strong style="font-size: 20px;">ESTUDIOS</strong>
                 <div class="table-responsive">
                     <table class="table table-striped">
-                        <thead>
+                        <thead class="table-secondary">
                             <tr>
                                 <th>ID</th>
                                 <th>Área</th>
@@ -51,7 +67,7 @@
                 <strong style="font-size: 20px;">ESPECIALIDADES</strong>
                 <div class="table-responsive">
                     <table class="table table-striped">
-                        <thead>
+                        <thead class="table-secondary">
                             <tr>
                                 <th>ID</th>
                                 <th>Área</th>

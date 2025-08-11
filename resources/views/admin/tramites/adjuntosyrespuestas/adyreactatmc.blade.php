@@ -1,142 +1,137 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <style>
-        @page {
-            size: 8.5in 11in;
-            margin: 0;
-        }
-        body {
-            margin: 1cm 2cm 1cm 2cm;
-            background: transparent;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .tipo1 {
-            font-size: 17px;
-            margin-top: 30px;
-            margin-bottom: 10px;
-            font-family: Arial, sans-serif;
-            text-align: right;
-        }
-        .tipo2 {
-            font-size: 17px;
-            margin-top: 10px;
-            margin-bottom: 20px;
-            font-family: Arial, sans-serif;
-            text-align: left;
-        }
-        .tipo9 {
-            font-size: 17px;
-            margin-top: 10px;
-            margin-bottom: 20px;
-            font-family: Arial, sans-serif;
-            text-align: left;
-            text-decoration: underline;
-        }
-        .tipo3 {
-            font-size: 17px;
-            font-weight: 1200;
-            margin-bottom: 20px;
-            font-family: Arial, sans-serif;
-            text-align: left;
-            line-height: 0;
-        }
-        .tipo4 {
-            font-size: 17px;
-            margin-bottom: 30px;
-            font-family: Arial, sans-serif;
-            text-align: left;
-            text-decoration: underline;
-            line-height: 0;
-        }
-        .tipo5 {
-            font-size: 17px;
-            font-weight: 1200;
-            margin-bottom: 30px;
-            font-family: Arial, sans-serif;
-            text-align: right;
-            text-decoration: underline;
-            line-height: 0;
-        }
-        .tipo6 {
-            font-size: 17px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            font-family: Arial, sans-serif;
-            text-align: justify;
-        }
-        .tipo7 {
-            font-size: 17px;
-            font-weight: 1200;
-            margin-bottom: 30px;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            line-height: 0;
-            margin-bottom: 20px;
-        }
-        .tipo8 {
-            font-size: 17px;
-            margin-bottom: 30px;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            line-height: 0;
-            margin-bottom: 20px;
-        }
-        .tipo10 {
-            /* font-size: 14px;
-            font-weight: 1200;
-            margin-bottom: 30px;
-            font-family: Arial, sans-serif; */
-            text-align: center;
-            /* line-height: 0;
-            margin-bottom: 20px; */
-        }
-
-        /* Estilo general para la tabla */
-.table {
-    width: 100%;
-    border-collapse: collapse; /* Asegura que los bordes se unan */
-    line-height: 0.5;
-}
-
-/* Estilo para las celdas de encabezado */
-.table th {
-    border: 1px solid #000; /* Borde negro sólido */
-    padding: 8px;
-}
-
-/* Estilo para las celdas de datos */
-.table td {
-    border: 1px solid #000; /* Borde negro sólido */
-    padding: 8px;
-}
-
-    </style>
+<style>
+    @page {
+        size: 8.5in 11in;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+    }
+    body {
+        margin: 1cm 2cm 1cm 2cm;
+        background: transparent;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        line-height: 1.0;
+    }
+    th, td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+    }
+    .tipo1 {
+        margin-top: 30px;
+        margin-bottom: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        text-align: right;
+    }
+    .tipo2 {
+        font-size: 17px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        text-align: left;
+    }
+    .tipo9 {
+        margin-top: 10px;
+        margin-bottom: 20px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        text-align: left;
+        text-decoration: underline;
+    }
+    .tipo3 {
+        margin-bottom: 20px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        text-align: left;
+        line-height: 0;
+    }
+    .tipo4 {
+        margin-bottom: 30px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        text-align: left;
+        text-decoration: underline;
+        line-height: 0;
+    }
+    .tipo5 {
+        margin-bottom: 30px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        text-align: right;
+        text-decoration: underline;
+        line-height: 0;
+    }
+    .tipo6 {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        text-align: justify;
+    }
+    .tipo7 {
+        margin-bottom: 30px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        text-align: center;
+        line-height: 0;
+        margin-bottom: 20px;
+    }
+    .tipo8 {
+        margin-bottom: 30px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+        text-align: center;
+        line-height: 0;
+        margin-bottom: 20px;
+    }
+    .tipo10 {
+        text-align: center;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+    }
+    .table th {
+        border: 1px solid #000;
+        padding: 8px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+    }
+    .table td {
+        border: 1px solid #000;
+        padding: 8px;
+        font-family: Arial, sans-serif;
+        font-size: 11pt;
+    }
+</style>
 </head>
 <body>
     <main>
         <div class="tipo1">Santa Cruz de la Sierra, {{ $fechaactual }}</div>
         <div class="tipo2">Señores:</div>
-        <div class="tipo3">Gestora Publica de la Seguridad Social</div>
-        <div class="tipo3">de Largo Plazo.</div>
+        <div class="tipo3"><strong>Gestora Publica de la Seguridad Social</strong></div>
+        <div class="tipo3"><strong>de Largo Plazo.</strong></div>
         <div class="tipo9">Presente. -</div>
-        <div class="tipo5">REF.- ADJUNTO DOCUMENTACIÓN MEDICA RESPUESTA AL ACTA TCM</div>
-        <div class="tipo5">(TRÁMITE DE {{ $tipocartareclamo }})</div>
+        <div class="tipo5"><strong>REF.- ADJUNTO DOCUMENTACIÓN MEDICA RESPUESTA AL ACTA TCM</strong></div>
+        <div class="tipo5"><strong>(TRÁMITE DE {{ $tipocartareclamo }})</strong></div>
         <div class="tipo2">Distinguidos Señores:</div>
         <div class="tipo6">
-        Yo, el Sr. {{$personal->nombrecompleto}}, con documento de Identidad {{ $personal->ci }}. En Calidad de Apoderado con N.º de poder {{ $numeropoder }}, del Afiliado {{$cliente->nombrecompleto}} con CUA N.º {{$cliente->nuacua}}, con C.I. {{$cliente->ci}} {{$cliente->ciexp}}.
+        Yo, el Sr. <strong>{{$personal->razonsocial}}</strong>, con documento de Identidad <strong>{{ $personal->ci }}</strong>. En Calidad de Apoderado con N.º de poder <strong>{{ $numeropoder }}</strong>, del Afiliado <strong>{{$cliente->nombrecompleto}}</strong> con CUA N.º <strong>{{$cliente->nuacua}}</strong>, con C.I. <strong>{{$cliente->ci}} {{$cliente->ciexp}}</strong>.
         </div>
         <div class="tipo6">
-        Me dirijo a su Institución con la finalidad de brindar respuesta al Acta del Tribunal Medico Calificador (TCM) de la Entidad Encargada de Calificar (EEC) Habiendo sido notificado por su Institución Publica con NOTA CITE {{ $notatecnicomedico }} de fecha {{ $fechanotatecnicomedico }}. Dentro del Tramite de {{ $tipocartareclamo }}. 
+        Me dirijo a su Institución con la finalidad de brindar respuesta al Acta del Tribunal Medico Calificador (TCM) de la Entidad Encargada de Calificar (EEC) Habiendo sido notificado por su Institución Publica con NOTA CITE <strong>{{ $notatecnicomedico }}</strong> de fecha <strong>{{ $fechanotatecnicomedico }}</strong>. Dentro del Tramite de <strong>{{ $tipocartareclamo }}</strong>. 
         </div>
         <div class="tipo6">
         En respuesta Adjunto.
@@ -170,12 +165,12 @@
         Por último, deseo manifestarles mi más sentido agradecimiento por la ayuda y colaboración, esperando su pronta respuesta me despido cordialmente.
         </div>
         <div class="tipo6">
-        Atte.<br><br>
+        Atte.<br><br><br><br><br>
         </div>
-        <div class="tipo7">{{$personal->nombrecompleto}}</div>
+        <div class="tipo7"><strong>{{$personal->razonsocial}}</strong></div>
         <div class="tipo8">C.I.{{$personal->ci}}</div>
-        <div class="tipo7">APODERADO</div>
-        <div class="tipo8">Teléfono: {{ substr($cliente->celular, 3) }}</div>
+        <div class="tipo7"><strong>APODERADO</strong></div>
+        <div class="tipo8">Teléfono: {{-- {{ substr($cliente->celular, 3) }} --}}{{ $personal->celular }}</div>
     </main>
 </body>
 </html>

@@ -2,7 +2,7 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
-<a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">ESTADO DE APROB.</a>
+<a class="btn btn-aprobarcotizacion btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">ESTADO DE APROB.</a>
 <a class="btn btn-nrofactura btn-sm float-right" data-toggle="modal" data-target="#facturaModal">NRO. FACTURA</a>
 {!! Form::open(['route' => 'generar.pdf.consentimientoinformadoauditoria', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
     <a class="btn btn-consentimientoinformado btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">CONS. INFORMADO</a>
@@ -13,6 +13,10 @@
 
 <h5>APROBAR COTIZACIÓN DE PROGRAMACIÓN DE:</h5>
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>
+@stop
+
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/cotizacionmedicaclientes.css') }}">
 @stop
 
 @section('content')
@@ -111,57 +115,69 @@
                 </button>
             </div>
             <div class="modal-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Fecha de Bateria</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($fechasDisponibles as $fecha)
-                            <tr style="color:{{ $fechasRegistradas->contains($fecha) ? 'green' : 'red' }}">
-                                <td><span style="display: inline-block; width: 5px; height: 5px; background-color: black; border-radius: 50%; margin-right: 5px;"></span>
-                                    {{ $fecha }}</td>
-                                <td>
-                                    @if($fechasRegistradas->contains($fecha))
-                                        <abbr title="MODIFICAR COTIZACIÓN">
-                                            <button type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                        </abbr>
-                                        @php
-                                            $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
-                                        @endphp
-                                        @if($document)
-                                        <abbr title="VER COTIZACIÓN APROBADA">
-                                            <a href="{{ asset('/cotizacionesaprobadasauditoria/'.$clienteauditoria->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm">
-                                                <i class="fas fa-file-invoice-dollar"></i>
-                                            </a>
-                                        </abbr>
-                                        @else
-                                            {{-- <span class="text-danger">Documento no disponible</span> --}}
-                                        @endif
-                                        @php
-                                            $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
-                                        @endphp
-                                        @if($documentconsinfo)
-                                        <abbr title="VER CONSENTIMIENTO INFORMADO">
-                                            <a href="{{ asset('/cotizacionesaprobadasauditoria/'.$clienteauditoria->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm">
-                                                <i class="fas fa-clone"></i>
-                                            </a>
-                                        </abbr>
-                                        @else
-                                            {{-- <span class="text-danger">Documento cons. info no disponible</span> --}}
-                                        @endif
-                                    @else
-                                    <span style="color: red;">NO APROBADO</span>
-                                    @endif
-                                </td>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm table-striped">
+                        <thead class="text-center table-secondary">
+                            <tr>
+                                <th style="color: black; font-weight:700;">Fecha de Batería</th>
+                                <th style="color: black; font-weight:700;">Documentos</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach($fechasDisponibles as $fecha)
+                                <tr style="color:{{ $fechasRegistradas->contains($fecha) ? '#94c93b' : 'red' }}">
+                                    <td style="vertical-align: middle;">
+                                        <span style="display: inline-block; width: 8px; height: 8px; background-color: black; border-radius: 50%; margin-right: 8px;"></span>
+                                        <strong>{{ $fecha }}</strong>
+                                    </td>
+                                    <td class="text-left" style="vertical-align: middle;">
+                                        @if($fechasRegistradas->contains($fecha))
+                                            @php
+                                                $documentosMostrados = [];
+                                                $documentoDisponible = false;
+                                            @endphp
+                
+                                            @foreach ($cotizaciones as $cotizacion)
+                                                @php
+                                                    $document = $documentosPorFecha->get($fecha)->first()->document ?? null;
+                                                    $documentconsinfo = $documentosPorFecha->get($fecha)->first()->documentconsinfo ?? null;
+                                                @endphp
+                                                
+                                                @if($document && !in_array($document, $documentosMostrados))
+                                                    <a href="{{ asset('/cotizacionesaprobadasauditoria/'.$clienteauditoria->id.'/'.$document) }}" target="_blank" class="btn btn-vercotizacion btn-sm" title="VER COTIZACIÓN APROBADA">
+                                                        COTIZACIÓN
+                                                    </a>
+                                                    @php
+                                                        $documentosMostrados[] = $document;
+                                                        $documentoDisponible = true;
+                                                    @endphp
+                                                @endif
+                
+                                                @if($documentconsinfo && !in_array($documentconsinfo, $documentosMostrados))
+                                                    <a href="{{ asset('/cotizacionesaprobadasauditoria/'.$clienteauditoria->id.'/'.$documentconsinfo) }}" target="_blank" class="btn btn-verconsentimiento btn-sm" title="VER CONSENTIMIENTO INFORMADO">
+                                                        CONSENTIMIENTO
+                                                    </a>
+                                                    @php
+                                                        $documentosMostrados[] = $documentconsinfo;
+                                                        $documentoDisponible = true;
+                                                    @endphp
+                                                @endif
+                                            @endforeach
+                
+                                            @if($documentoDisponible && $loop->last)
+                                                <a type="button" class="btn btn-editar btn-sm edit-btn" data-fecha="{{ $fecha }}" data-toggle="modal" data-target="#editPdfModal" title="MODIFICAR DOCUMENTOS">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                            @endif
+                                        @else
+                                            <span class="badge badge-danger">NO APROBADO</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
@@ -189,10 +205,18 @@
                         <input type="text" name="fechabateria" id="fechabateria" value="{{ $fecha }}">
                     @endif
 
-                    <div class="form-group">
-                        <label for="archivo">Nueva cotización:</label>
-                        <input type="file" class="form-control-file dropify" name="archivo" id="archivo" accept="application/pdf" required>
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            <label for="archivo">Nueva cotización (PDF):</label>
+                            <input type="file" class="form-control-file dropify" name="archivo" id="archivo" accept="application/pdf">
+                        </div>
+                    
+                        <div class="form-group col-lg-6">
+                            <label for="archivo2">Nuevo consentimiento informado (PDF):</label>
+                            <input type="file" class="form-control-file dropify" name="archivo2" id="archivo2" accept="application/pdf">
+                        </div>
                     </div>
+
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-crear">Actualizar cotización</button>
                         <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
@@ -248,7 +272,7 @@
                     </script> 
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-guardarobservacion">Guardar</button>
+                <button type="submit" class="btn btn-crear2">Guardar</button>
                 <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
             </div>
         </form>
@@ -395,174 +419,3 @@
     }
 </script>
 @endsection
-
-@section('css')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
-<link rel="styleheet" href="/css/admin_custom.css">
-<style>
-    .btn-editar {
-    background-color:  #ffffff;
-    color: #faa625;
-    border-color: #faa625;
-    border-radius: 5px;
-    font-weight: bold;
-    padding: 5px 10px;
-}
-.btn-editar:hover {
-    background-color: #faa625;
-    color: #ffffff;
-}
-.btn-vercotizacion {
-    background-color:  #ffffff;
-    color: #1294b8d1;
-    border-color: #1294b8d1;
-    border-radius: 5px;
-    font-weight: bold;
-    padding: 5px 10px;
-}
-.btn-vercotizacion:hover {
-    background-color: #1294b8d1;
-    color: #ffffff;
-}
-.btn-verconsentimiento {
-    background-color:  #ffffff;
-    color: #1294b8d1;
-    border-color: #1294b8d1;
-    border-radius: 5px;
-    font-weight: bold;
-    padding: 5px 10px;
-}
-.btn-verconsentimiento:hover {
-    background-color: #1294b8d1;
-    color: #ffffff;
-}
-    .dropify-wrapper {
-        height: 125px !important;
-    }
-    .dropify-message p {
-        font-size: 14px;
-    }
-    h1 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-        }
-    h5 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 500;
-        margin-bottom: 0%;
-        }
-    h3 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 1000;
-        }
-    h6 {
-        font-weight: 900;
-        }
-    .btn-crear {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 5px 20px;
-        }
-    .btn-crear:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-    .mensaje-error {
-        color: #e1172b;
-        font-family: "Times New Roman";
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 5px;
-        font-size: 12.5px;
-        font-weight: bold;
-        display: inline-block;
-        margin-left: -10px;
-    }
-    .custom-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 5px 40px;
-    }
-    .custom-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .custom2-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    .custom2-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-nrofactura {
-        background-color: #ffffff;
-        color: #f04cc4;
-        border-color: #f04cc4;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin-left: 10px;
-    }
-    .btn-nrofactura:hover {
-        background-color: #f04cc4;
-        color: #ffffff;
-    }
-    .btn-consentimientoinformado {
-        background-color: #ffffff;
-        color: #5db2cd;
-        border-color: #5db2cd;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin-left: 10px;
-    }
-    .btn-consentimientoinformado:hover {
-        background-color: #5db2cd;
-        color: #ffffff;
-    }
-    .btn-cerrar {
-        background-color: #ffffff;
-        color: #e62e2e;
-        border-color: #e62e2e;
-        border-radius: 5px;
-        padding: 5px 10px;
-    }
-    .btn-cerrar:hover {
-        background-color: #e62e2e;
-        color: #ffffff;
-    }
-    .btn-guardarobservacion {
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 5px 10px;
-    }
-    .btn-guardarobservacion:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
-    .btn-regresar {
-        background-color: #ffffff;
-        color: #2926e2;
-        border-color: #2926e2;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-regresar:hover {
-        background-color: #2926e2;
-        color: #ffffff;
-    }
-</style>
-@stop

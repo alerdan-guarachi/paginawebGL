@@ -13,9 +13,10 @@ class PersonalVacaciones extends Model
     protected $table = 'personalvacaciones';
     static $rules = [
         'id' => '',
+        'nroboleta' => '',
         'proveedorid' => '',
         'proveedornombre' => '',
-        'motivo' => '',
+        'observacion' => '',
         'fechainicial' => '',
         'fechafinal' => '',
         'cantidaddias' => '',
@@ -24,13 +25,18 @@ class PersonalVacaciones extends Model
         'usuarioregistronombre' => '',
         'usuarioautorizacion' => '',
         'motivorechazo' => '',
+        'boleta' => '',
+        'boletafirmada' => '',
+        'fecharetorno' => '',
+        'adelanto' => '',
     ]; 
 
     protected $fillable = [
         'id',
+        'nroboleta',
         'proveedorid',
         'proveedornombre',
-        'motivo',
+        'observacion',
         'fechainicial',
         'fechafinal',
         'cantidaddias',
@@ -39,5 +45,9 @@ class PersonalVacaciones extends Model
         'usuarioregistronombre',
         'usuarioautorizacion',
         'motivorechazo',
+        'boleta',
+        'boletafirmada',
+        'fecharetorno',
+        'adelanto',
     ];
 }

@@ -2,13 +2,20 @@
 
 @section('content_header')
 {{-- <a class="btn float-right btn-botongris" style="margin-left: 10px;" href="{{ route('admin.inventarioW.index') }}">REGRESAR</a> --}}
-<a class="btn float-right btn-botongris" data-toggle="modal" data-target="#modalSolicitarBienes">NUEVA SOLICITUD</a>
+<a class="btn btn-sm float-right btn-botongris" data-toggle="modal" data-target="#modalSolicitarBienes">NUEVA SOLICITUD</a>
+<a class="btn btn-sm float-right btn-botonrojo" data-toggle="modal" data-target="#modalsolicitudesanulaciones">SOLIC. ANULADAS</a>
 <h1>SOLICITUDES DE PRODUCTOS</h1>
 @stop
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/opcionesmultiples.css') }}">
 <style>
+    .truncar {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
+        }
     .btn-botongris {
         background-color: #ffffff;
         color: #676767;
@@ -19,8 +26,18 @@
         background-color: #676767;
         color: #ffffff;
         }
-
-        .btn-botonaceptado {
+    .btn-botonrojo {
+        background-color: #ffffff;
+        color: #d72626;
+        border-color: #d72626;
+        border-radius: 5px;
+        margin-right: 10px;
+        }
+    .btn-botonrojo:hover {
+        background-color: #d72626;
+        color: #ffffff;
+        }
+    .btn-botonaceptado {
         background-color: #ffffff;
         color: #ff7b00;
         border-color: #ff7b00;
@@ -30,8 +47,7 @@
         background-color: #ff7b00;
         color: #ffffff;
         }
-
-        .btn-botonprocesado {
+    .btn-botonprocesado {
         background-color: #ffffff;
         color: #199442;
         border-color: #199442;
@@ -41,7 +57,17 @@
         background-color: #199442;
         color: #ffffff;
         }
-        .btn-botonofertado {
+    .btn-botonsubir {
+        background-color: #ffffff;
+        color: #3e57e5;
+        border-color: #3e57e5;
+        border-radius: 5px;
+        }
+    .btn-botonsubir:hover {
+        background-color: #3e57e5;
+        color: #ffffff;
+        }
+    .btn-botonofertado {
         background-color: #ffffff;
         color: #2661d7;
         border-color: #2661d7;
@@ -51,8 +77,8 @@
         background-color: #2661d7;
         color: #ffffff;
         }
-        .table td {
-        padding: 5px 10px;
+    .table td {
+        padding: 4px 10px;
     }
 </style>
 @stop
@@ -93,10 +119,10 @@
 @endif
 
 <div class="modal fade" id="modalSolicitarBienes" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel" style="font-weight: 900">REGISTRAR NUEVA SOLICITUD</h5>
+                <h4 class="modal-title" id="modalLabel" style="font-weight: 900">NUEVA SOLICITUD</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -171,7 +197,7 @@
                             <select class="form-control" onchange="setSolicitante(this)">
                                 <option value="">Seleccione</option>
                                 @foreach($personal as $prov)
-                                    <option value="{{ $prov->id }}" data-nombre="{{ $prov->razonsocial }}">{{ $prov->razonsocial }}</option>
+                                    <option value="{{ $prov->id }}" data-nombre="{{ $prov->name }}">{{ $prov->name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -212,22 +238,153 @@
                         }
                     </script>
     
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            <label for="buscar_producto">Buscar producto:</label>
+                            <input list="listaProductos" id="buscar_producto" class="form-control" placeholder="Buscar producto..." oninput="actualizarProducto()">
+                            {{-- <datalist id="listaProductos">
+                                @foreach($productos as $producto)
+                                    <option value="{{ $producto->nombreproducto }} - {{ $producto->marca }} - {{ $producto->especificacionmedida }} - {{ $producto->color }}"
+                                            data-nombre="{{ $producto->nombreproducto }}"
+                                            data-stock="{{ $producto->stockactual }}">
+                                    </option>
+                                @endforeach
+                            </datalist> --}}
+                            <datalist id="listaProductos">
+                                @foreach($productos as $producto)
+                                    @php
+                                        $texto = "{$producto->nombreproducto} - {$producto->marca} - {$producto->especificacionmedida} - {$producto->color}";
+                                    @endphp
+                                    <option 
+                                        value="{{ $texto }}" 
+                                        title="{{ $texto }}"
+                                        data-nombre="{{ $producto->nombreproducto }}"
+                                        data-stock="{{ $producto->stockactual }}">
+                                    </option>
+                                @endforeach
+                            </datalist>
 
-                    <div class="form-group">
-                        <label for="productosolicitado">Producto solicitado:</label>
-                        <input type="text" name="productosolicitado" class="form-control" required>
+                        </div>
+
+                        <div class="form-group col-lg-6">
+                            <label for="productosolicitado">Producto a solicitar:</label>
+                            <input type="text" name="productosolicitado" id="productosolicitado" class="form-control" placeholder="Producto seleccionado" readonly required>
+                        </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="cantidad">Cantidad (UNIDADES):</label>
-                        <input type="number" name="cantidadsolicitud" class="form-control" required min="1" step="1" onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();">
+
+                    <div class="row">
+                        <div class="form-group col-lg-6">
+                            <label for="stock_disponible">Stock Disponible:</label>
+                            <input type="number" id="stock_disponible" class="form-control" readonly>
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label for="cantidad">Cantidad a solicitar (UNIDADES):</label>
+                            <input type="number" name="cantidadsolicitud" id="cantidadsolicitud" class="form-control"
+                                required min="1" step="1"
+                                onkeydown="if(['e','E','+','-','.'].includes(event.key)) event.preventDefault();"
+                                oninput="validarCantidad()">
+                        </div>
                     </div>
+
+                    <script>
+                        function actualizarProducto() {
+                            const input = document.getElementById("buscar_producto");
+                            const datalist = document.getElementById("listaProductos");
+                            const options = datalist.querySelectorAll("option");
+
+                            const campoProducto = document.getElementById("productosolicitado");
+                            const campoStock = document.getElementById("stock_disponible");
+                            const cantidad = document.getElementById("cantidadsolicitud");
+
+                            let encontrado = false;
+
+                            options.forEach(option => {
+                                if (option.value === input.value) {
+                                    campoProducto.value = option.dataset.nombre;
+                                    campoStock.value = option.dataset.stock;
+                                    cantidad.max = option.dataset.stock;
+                                    encontrado = true;
+                                }
+                            });
+
+                            if (!encontrado) {
+                                campoProducto.value = "";
+                                campoStock.value = "";
+                                cantidad.value = "";
+                            }
+                        }
+
+                        function validarCantidad() {
+                            const cantidad = parseInt(document.getElementById("cantidadsolicitud").value);
+                            const stock = parseInt(document.getElementById("stock_disponible").value);
+
+                            if (cantidad > stock) {
+                                alert("No puedes solicitar más de lo disponible en stock.");
+                                document.getElementById("cantidadsolicitud").value = "";
+                            }
+                        }
+                    </script>
+
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-outline-secondary">SOLICITAR</button>
-                    <button type="button" class="btn btn-outline-danger" data-dismiss="modal">CERRAR</button>
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">SOLICITAR</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-dismiss="modal">CERRAR</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalsolicitudesanulaciones" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="modalLabel" style="font-weight: 900">SOLICITUDES ANULADAS</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-secondary">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Solicitante</th>
+                                    <th>Sucursal</th>
+                                    <th>Producto_Cant_Solic.</th>
+                                    <th>Solicitado</th>
+                                    <th>Motivo_Anul.</th>
+                                    <th>Usuario_Anul.</th>
+                                    <th>Fecha_Anul.</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($solicitudesanuladas as $solicitudanulada)
+                                    <tr>
+                                        <td>{{$solicitudanulada->id}}</td>
+                                        <td title="{{ $solicitudanulada->usuariosolicitante }}" class="truncar">{{$solicitudanulada->usuariosolicitante}}</td>
+                                        <td>{{$solicitudanulada->sucursal}}</td>
+                                        <td>{{$solicitudanulada->productosolicitado}} - {{$solicitudanulada->cantidad}}</td>
+                                        <td>{{ \Carbon\Carbon::parse($solicitudanulada->created_at)->format('Y-m-d') }}</td>
+                                        <td>{{$solicitudanulada->motivoanulacion}}</td>
+                                        <td title="{{ $solicitudanulada->usuarioanulacion }}" class="truncar">{{$solicitudanulada->usuarioanulacion}}</td>
+                                        <td>{{ \Carbon\Carbon::parse($solicitudanulada->deleted_at)->format('Y-m-d') }}</td>
+                                        <td>
+                                            <span class="badge badge-danger">{{ $solicitudanulada->estado }}</span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody> 
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-danger" data-dismiss="modal">CERRAR</button>
+            </div>
         </div>
     </div>
 </div>
@@ -253,17 +410,20 @@
             <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
                 <div class="row ">
                     <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-secondary">
                                 <tr>
                                     <th>ID</th>
                                     <th>Solicitante</th>
-                                    <th>Producto y cantidad solicitado</th>
+                                    <th>Sucursal</th>
+                                    <th>Producto_Cantidad_Solicitado</th>
                                     <th>Solicitado</th>
-                                    <th hidden>Sucursal</th>
-                                    <th>Producto y cantidad ofertado</th>
+                                    <th>Producto_Cantidad_Ofertado</th>
                                     <th>Estado</th>
-                                    <th>Acciones</th>
+                                    <th>Ver</th>
+                                    @can('admin.inventario.anularsolicitudinventario')
+                                    <th>{{-- <input type="checkbox" id="selectAll"> --}}Sel.</th>
+                                    @endcan
                                 </tr>
                             </thead>
                             <tbody>
@@ -273,9 +433,9 @@
                                             <tr>
                                                 <td>{{$solicitudinventario->id}}</td>
                                                 <td>{{$solicitudinventario->usuariosolicitante}}</td>
+                                                <td>{{$solicitudinventario->sucursal}}</td>
                                                 <td>{{$solicitudinventario->productosolicitado}} - {{$solicitudinventario->cantidad}}</td>
                                                 <td>{{ \Carbon\Carbon::parse($solicitudinventario->created_at)->format('Y-m-d') }}</td>
-                                                <td hidden>{{$solicitudinventario->sucursal}}</td>
                                                 <td>{{$solicitudinventario->productoofertado}} - {{$solicitudinventario->cantidadofertado}}</td>
                                                 
                                                 <td>
@@ -296,7 +456,7 @@
                                                         $usuariosAutorizados = [
                                                             'CARLOS ALEJANDRO GUARACHI SANDOVAL',
                                                             'DENISSE MAUREN LOPEZ FLORES',
-                                                            'ROLANDO RAFAEL RAMOS TORRICO',
+                                                            'SERGIO ARMANDO MICHEL MAITA',
                                                             'MARLENE ANDREA MONTELLANO ORTIZ',
                                                             'CRISTHIAN ALAIN DURAN SULLCA',
                                                             'JHOSELINE EVA VELASQUEZ ESCOBAR'
@@ -375,7 +535,6 @@
                                                         </div>
                                                     </div>
                                                     
-                                                    <!-- Script para alternar botones según se ingrese cantidad -->
                                                     <script>
                                                         function toggleButtons(coincidenciaId) {
                                                             var ofertaInput = document.getElementById('cantidadOferta' + coincidenciaId);
@@ -434,13 +593,9 @@
                                                     </script>
                                                     
                                                     @if(in_array(auth()->user()->name, $usuariosAutorizados) && $solicitudinventario->estado === 'ACEPTADO')
-                                                        {{-- <button type="button" class="btn btn-botonaceptado btn-sm" data-toggle="modal" data-target="#productoModal2{{ $solicitudinventario->id }}" title="GENERAR COMPROBANTE">
-                                                            <i class="fas fa-archive"></i>
-                                                        </button> --}}
                                                         <button type="button" class="btn btn-botonaceptado btn-sm" data-toggle="modal" data-target="#modalSolicitante{{ Str::slug($solicitudinventario->usuariosolicitante) }}">
                                                             <i class="fas fa-archive"></i>
                                                         </button>
-                                                        
                                                     @endif
 
                                                     @if(!is_null($solicitudinventario->documento))
@@ -453,51 +608,51 @@
                                                     <!-- Modal -->
                                                     <div class="modal fade" id="productoModal2{{ $solicitudinventario->id }}" tabindex="-1" role="dialog" aria-labelledby="productoModalLabel{{ $solicitudinventario->id }}" aria-hidden="true">
                                                         <div class="modal-dialog" role="document">
-                                                        <div class="modal-content shadow-sm rounded">
-                                                            <div class="modal-header">
-                                                            <h4 class="modal-title" style="font-weight: 900" id="productoModalLabel{{ $solicitudinventario->id }}">
-                                                                DETALLES DE SALIDA
-                                                            </h4>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                            <div class="mb-3">
-                                                                <p class="mb-3"><strong>Solicitante:</strong> {{ $solicitudinventario->usuariosolicitante }}</p>
-                                                                <p class="mb-3"><strong>Código de Producto:</strong> {{ $solicitudinventario->codigoproducto }}</p>
-                                                                <p class="mb-3"><strong>Producto Ofertado:</strong> {{ $solicitudinventario->productoofertado }}</p>
-                                                            </div>
-                                                            <div class="mb-3">
-                                                                @php
-                                                                    $productoDetalles = \App\Models\Inventario::whereRaw('TRIM(codigo) = ?', [trim($solicitudinventario->codigoproducto)])->first();
-                                                                @endphp
+                                                            <div class="modal-content shadow-sm rounded">
+                                                                <div class="modal-header">
+                                                                    <h4 class="modal-title" style="font-weight: 900" id="productoModalLabel{{ $solicitudinventario->id }}">
+                                                                        DETALLES DE SALIDA
+                                                                    </h4>
+                                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="mb-3">
+                                                                        <p class="mb-3"><strong>Solicitante:</strong> {{ $solicitudinventario->usuariosolicitante }}</p>
+                                                                        <p class="mb-3"><strong>Código de Producto:</strong> {{ $solicitudinventario->codigoproducto }}</p>
+                                                                        <p class="mb-3"><strong>Producto Ofertado:</strong> {{ $solicitudinventario->productoofertado }}</p>
+                                                                    </div>
+                                                                    <div class="mb-3">
+                                                                        @php
+                                                                            $productoDetalles = \App\Models\Inventario::whereRaw('TRIM(codigo) = ?', [trim($solicitudinventario->codigoproducto)])->first();
+                                                                        @endphp
 
-                                                                @if($productoDetalles)
-                                                                    <p class="mb-3"><strong>Especificaciones:</strong> {{ $productoDetalles->especificacionmedida }}</p>
-                                                                    <p class="mb-3"><strong>Marca:</strong> {{ $productoDetalles->marca }}</p>
-                                                                    <p class="mb-3"><strong>Color:</strong> {{ $productoDetalles->color }}</p>
-                                                                    <p class="mb-3"><strong>Stock Actual en Inventario:</strong> {{ $productoDetalles->stockactual }}</p>
-                                                                @else
-                                                                    <p class="text-muted">No se encontró información de inventario para este producto.</p>
-                                                                @endif
-                                                            </div>
-                                                            <hr>
-                                                            <form action="{{ route('actualizarStock', $solicitudinventario->id) }}" method="POST">
-                                                                @csrf
-                                                                @method('PUT')
-                                                                <div class="form-group">
-                                                                <label for="cantidad" class="font-weight-bold">Cantidad a Entregar:</label>
-                                                                <input type="number" class="form-control" id="cantidad" name="cantidad" value="{{ $solicitudinventario->cantidadofertado }}" required readonly>
+                                                                        @if($productoDetalles)
+                                                                            <p class="mb-3"><strong>Especificaciones:</strong> {{ $productoDetalles->especificacionmedida }}</p>
+                                                                            <p class="mb-3"><strong>Marca:</strong> {{ $productoDetalles->marca }}</p>
+                                                                            <p class="mb-3"><strong>Color:</strong> {{ $productoDetalles->color }}</p>
+                                                                            <p class="mb-3"><strong>Stock Actual en Inventario:</strong> {{ $productoDetalles->stockactual }}</p>
+                                                                        @else
+                                                                            <p class="text-muted">No se encontró información de inventario para este producto.</p>
+                                                                        @endif
+                                                                    </div>
+                                                                    <hr>
+                                                                    <form action="{{ route('actualizarStock', $solicitudinventario->id) }}" method="POST">
+                                                                        @csrf
+                                                                        @method('PUT')
+                                                                        <div class="form-group">
+                                                                            <label for="cantidad" class="font-weight-bold">Cantidad a Entregar:</label>
+                                                                            <input type="number" class="form-control" id="cantidad" name="cantidad" value="{{ $solicitudinventario->cantidadofertado }}" required readonly>
+                                                                        </div>
+                                                                        <div class="text-right">
+                                                                            <button type="submit" class="btn btn-outline-success">
+                                                                                GENERAR COMPROBANTE
+                                                                            </button>
+                                                                        </div>
+                                                                    </form>
                                                                 </div>
-                                                                <div class="text-right">
-                                                                <button type="submit" class="btn btn-outline-success">
-                                                                    GENERAR COMPROBANTE
-                                                                </button>
-                                                                </div>
-                                                            </form>
                                                             </div>
-                                                        </div>
                                                         </div>
                                                     </div>
 
@@ -551,9 +706,12 @@
                                                         </div>
                                                     </div>
                                                     @endforeach
-
-
                                                 </td>
+                                                @can('admin.inventario.anularsolicitudinventario')
+                                                <td>
+                                                    <input type="checkbox" class="check-solicitud" name="solicitudes[]" value="{{ $solicitudinventario->id }}">
+                                                </td>
+                                                @endcan
                                             </tr>
                                         @endif
                                     @endif
@@ -562,38 +720,123 @@
                         </table>
                     </div>
                 </div>
+                @can('admin.inventario.anularsolicitudinventario')
+                    {{-- <form action="{{ route('anular.solicitudes.inventario') }}" method="POST">
+                    @csrf
+                        <div class="form-group mt-3">
+                            <div class="row justify-content-end align-items-center">
+                                <div class="col-auto">
+                                    <label for="motivo_anulacion" class="mb-0">Motivo de Anulación:</label>
+                                </div>
+                                <div class="col-auto">
+                                    <input type="text" name="motivo_anulacion" id="motivo_anulacion" class="form-control form-control-sm" style="width: 250px;" required>
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">ANULAR</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form> --}}
+                    <form id="formAnulacion" action="{{ route('anular.solicitudes.inventario') }}" method="POST">
+    @csrf
+    <input type="hidden" name="solicitudes_json" id="solicitudes_json">
+    <div class="form-group mt-3">
+        <div class="row justify-content-end align-items-center">
+            <div class="col-auto">
+                <label for="motivo_anulacion" class="mb-0">Motivo de Anulación:</label>
+            </div>
+            <div class="col-auto">
+                <input type="text" name="motivo_anulacion" id="motivo_anulacion" class="form-control form-control-sm" style="width: 250px;" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-outline-danger btn-sm">ANULAR</button>
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    document.getElementById('formAnulacion').addEventListener('submit', function (e) {
+        const checkboxes = document.querySelectorAll('.check-solicitud:checked');
+        const ids = Array.from(checkboxes).map(cb => cb.value);
+        document.getElementById('solicitudes_json').value = JSON.stringify(ids);
+    });
+
+    // Checkbox select all
+    document.getElementById('selectAll')?.addEventListener('change', function () {
+        document.querySelectorAll('.check-solicitud').forEach(chk => {
+            chk.checked = this.checked;
+        });
+    });
+</script>
+
+                @endcan
+                <script>
+                    document.getElementById('selectAll').addEventListener('change', function() {
+                        document.querySelectorAll('.check-solicitud').forEach(chk => {
+                            chk.checked = this.checked;
+                        });
+                    });
+                </script>
             </div>
 
             {{-- SOLICITUDES PROCESADAS --}}
             <div class="tab-pane fade" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
-                <div class="row ">
+                <div class="card">
+                    <div class="card-body" style="background-color: #f7f7f7">
+                        <div class="row">
+                            <div class="col-lg-5">
+                                <label for="">Cliente/Proveedor:</label>
+                                <input type="text" id="buscarUsuario" class="form-control" placeholder="Buscar por solicitante...">
+                            </div>
+                            <div class="col-lg-3">
+                                <label for="">Sucursal:</label>
+                                <select id="filtroSucursal" class="form-control">
+                                    <option value="">Buscar por sucursal...</option>
+                                    <option value="SANTA CRUZ">SANTA CRUZ</option>
+                                    <option value="COCHABAMBA">COCHABAMBA</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3">
+                                <label for="">Fecha de Entrega:</label>
+                                <input type="date" id="filtroFecha" class="form-control" placeholder="Filtrar por fecha de entrega">
+                            </div>
+                            <div class="col-lg-1">
+                                <label class="d-block" style="visibility: hidden;">.</label>
+                                <button type="button" class="btn btn-secondary btn-block" onclick="limpiarFiltros()">Limpiar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-secondary">
                                 <tr>
                                     <th>ID</th>
                                     <th>Solicitante</th>
-                                    <th>Producto y cantidad solicitado</th>
+                                    <th>Sucursal</th>
+                                    <th>Producto_Cantidad_Solicitado</th>
                                     <th>Solicitado</th>
-                                    <th hidden>Sucursal</th>
-                                    <th>Producto y cantidad ofertado</th>
-                                    <th>Entregado</th>
+                                    <th>Producto_Cantidad_Ofertado</th>
+                                    <th>Encargado_Entrega</th>
+                                    <th>Fecha_Entrega</th>
                                     <th>Estado</th>
-                                    <th>Acciones</th>
+                                    <th>Ver</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="tablaSolicitudes">
                                 @foreach ($solicitudinventarios as $solicitudinventario)
                                 @if ($solicitudinventario->estado == 'PROCESADO')
                                 @if (array_intersect($rolesUsuario, ['CONTABLE', 'ADMINISTRADOR', 'MAESTRO']) || $solicitudinventario->usuariosolicitante == $nombreUsuario)
                                     <tr>
                                         <td>{{$solicitudinventario->id}}</td>
-                                        <td>{{$solicitudinventario->usuariosolicitante}}</td>
-                                        <td>{{$solicitudinventario->productosolicitado}} - {{$solicitudinventario->cantidad}}</td>
+                                        <td class="col-usuario truncar" title="{{ $solicitudinventario->usuariosolicitante }}">{{$solicitudinventario->usuariosolicitante}}</td>
+                                        <td class="col-sucursal">{{$solicitudinventario->sucursal}}</td>
+                                        <td title="{{ $solicitudinventario->productosolicitado }} - {{ $solicitudinventario->cantidad }}" class="truncar">{{$solicitudinventario->productosolicitado}} - {{$solicitudinventario->cantidad}}</td>
                                         <td>{{ \Carbon\Carbon::parse($solicitudinventario->created_at)->format('Y-m-d') }}</td>
-                                        <td hidden>{{$solicitudinventario->sucursal}}</td>
-                                        <td>{{$solicitudinventario->productoofertado}} - {{$solicitudinventario->cantidadofertado}}</td>
-                                        <td>{{ \Carbon\Carbon::parse($solicitudinventario->updated_at)->format('Y-m-d') }}</td>
+                                        <td title="{{ $solicitudinventario->productoofertado }} - {{ $solicitudinventario->cantidadofertado }}" class="truncar">{{$solicitudinventario->productoofertado}} - {{$solicitudinventario->cantidadofertado}}</td>
+                                        <td title="{{ $solicitudinventario->usuarioactualizacion }}" class="truncar">{{$solicitudinventario->usuarioactualizacion}}</td>
+                                        <td class="col-fecha">{{ \Carbon\Carbon::parse($solicitudinventario->updated_at)->format('Y-m-d') }}</td>
                                         <td>
                                             <span class="badge 
                                                 @if($solicitudinventario->estado == 'SOLICITADO') badge-warning  
@@ -609,7 +852,7 @@
                                         </td>
                                         <td>
                                             @if($solicitudinventario->estado === 'PROCESADO' && is_null($solicitudinventario->documento))
-                                            <button type="button" class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#subirDocumentoModal{{ $solicitudinventario->id }}">
+                                            <button type="button" class="btn btn-botonsubir btn-sm" data-toggle="modal" data-target="#subirDocumentoModal{{ $solicitudinventario->id }}">
                                                 <i class="fas fa-upload"></i>
                                             </button>
                                             @endif
@@ -648,6 +891,50 @@
                                     @endif
                                 @endforeach
                             </tbody> 
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function () {
+                                    const inputUsuario = document.getElementById('buscarUsuario');
+                                    const inputSucursal = document.getElementById('filtroSucursal');
+                                    const inputFecha = document.getElementById('filtroFecha');
+                                    const tabla = document.getElementById('tablaSolicitudes');
+                                    const filas = tabla.querySelectorAll('tr');
+
+                                    function filtrarTabla() {
+                                        const textoUsuario = inputUsuario.value.toLowerCase();
+                                        const sucursalSeleccionada = inputSucursal.value.toLowerCase();
+                                        const fechaSeleccionada = inputFecha.value;
+
+                                        filas.forEach(fila => {
+                                            const usuario = fila.querySelector('.col-usuario')?.textContent.toLowerCase() || '';
+                                            const sucursal = fila.querySelector('.col-sucursal')?.textContent.toLowerCase() || '';
+                                            const fecha = fila.querySelector('.col-fecha')?.textContent.trim() || '';
+
+                                            const coincideUsuario = usuario.includes(textoUsuario);
+                                            const coincideSucursal = !sucursalSeleccionada || sucursal === sucursalSeleccionada;
+                                            const coincideFecha = !fechaSeleccionada || fecha === fechaSeleccionada;
+
+                                            if (coincideUsuario && coincideSucursal && coincideFecha) {
+                                                fila.style.display = '';
+                                            } else {
+                                                fila.style.display = 'none';
+                                            }
+                                        });
+                                    }
+
+                                    inputUsuario.addEventListener('input', filtrarTabla);
+                                    inputSucursal.addEventListener('change', filtrarTabla);
+                                    inputFecha.addEventListener('change', filtrarTabla);
+                                });
+
+                                function limpiarFiltros() {
+                                    document.getElementById('buscarUsuario').value = '';
+                                    document.getElementById('filtroSucursal').value = '';
+                                    document.getElementById('filtroFecha').value = '';
+
+                                    const filas = document.querySelectorAll('#tablaSolicitudes tr');
+                                    filas.forEach(fila => fila.style.display = '');
+                                }
+                            </script>
                         </table>
                     </div>
                 </div>

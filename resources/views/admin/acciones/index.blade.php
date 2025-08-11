@@ -9,6 +9,33 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/estilogl.css') }}">
+<style>
+    .table td {
+        padding: 5px 10px;
+    }
+    .btn-regresar {
+        background-color:  #ffffff;
+        color: #252dc4;
+        border-color: #252dc4;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-regresar:hover {
+        background-color: #252dc4;
+        color: #ffffff;
+        }
+    .btn-crear {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-crear:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+</style>
 @stop
 
 @section('content')
@@ -43,7 +70,7 @@
             <div class="col-lg-12">
                 <div class="table-responsive">
                     <table class="table table-striped">
-                        <thead>
+                        <thead class="table-secondary">
                             <tr>
                                 <th>ID</th>
                                 <th>Área</th>
@@ -54,6 +81,7 @@
                                 <th>Compra</th>
                                 <th>Asociado</th>
                                 <th>Estado</th>
+                                <th>Edit.</th>
                             </tr>
                         </thead>
                         <tbody>

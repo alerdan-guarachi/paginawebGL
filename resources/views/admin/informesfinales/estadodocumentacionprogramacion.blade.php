@@ -166,7 +166,7 @@
                                     {{-- DIAGNOSTICO --}}
                                     <td width="10px"> 
                                         @if($item['diagnostico'])
-                                            <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
                                                 <p class="text-completo mb-0">COMPLETO </p>
                                                 <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
                                                     <i class="fas fa-paste"></i>
@@ -174,7 +174,7 @@
                                             </div>
                                         @else
                                             @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'YELKA MORALES VELARDE')
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
                                                     data-toggle="modal" 
@@ -187,7 +187,7 @@
                                                     </a>
                                                 </div>
                                             @else
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto disabled" 
                                                     data-toggle="modal" 
@@ -322,7 +322,7 @@
                                     {{-- DIAGNOSTICO --}}
                                     <td width="10px"> 
                                         @if($item['diagnostico'])
-                                            <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
                                                 <p class="text-completo mb-0">COMPLETO </p>
                                                 <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
                                                     <i class="fas fa-paste"></i>
@@ -330,7 +330,7 @@
                                             </div>
                                         @else
                                             @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'YELKA MORALES VELARDE')
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
                                                     data-toggle="modal" 
@@ -343,7 +343,7 @@
                                                     </a>
                                                 </div>
                                             @else
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto disabled" 
                                                     data-toggle="modal" 
@@ -467,7 +467,7 @@
                                     {{-- DIAGNOSTICO --}}
                                     <td width="10px"> 
                                         @if($item['diagnostico'])
-                                            <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
                                                 <p class="text-completo mb-0">COMPLETO </p>
                                                 <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
                                                     <i class="fas fa-paste"></i>
@@ -475,7 +475,7 @@
                                             </div>
                                         @else
                                             @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'YELKA MORALES VELARDE')
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
                                                     data-toggle="modal" 
@@ -488,7 +488,7 @@
                                                     </a>
                                                 </div>
                                             @else
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto disabled" 
                                                     data-toggle="modal" 
@@ -609,7 +609,7 @@
                                     {{-- DIAGNOSTICO --}}
                                     <td width="10px"> 
                                         @if($item['diagnostico'])
-                                            <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
                                                 <p class="text-completo mb-0">COMPLETO </p>
                                                 <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
                                                     <i class="fas fa-paste"></i>
@@ -617,7 +617,7 @@
                                             </div>
                                         @else
                                             @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'YELKA MORALES VELARDE')
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
                                                     data-toggle="modal" 
@@ -630,7 +630,7 @@
                                                     </a>
                                                 </div>
                                             @else
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto disabled" 
                                                     data-toggle="modal" 
@@ -754,7 +754,7 @@
                                     {{-- DIAGNOSTICO --}}
                                     <td width="10px"> 
                                         @if($item['diagnostico'])
-                                            <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
                                                 <p class="text-completo mb-0">COMPLETO </p>
                                                 <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
                                                     <i class="fas fa-paste"></i>
@@ -762,7 +762,7 @@
                                             </div>
                                         @else
                                             @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
                                                     data-toggle="modal" 
@@ -775,7 +775,7 @@
                                                     </a>
                                                 </div>
                                             @else
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto disabled" 
                                                     data-toggle="modal" 
@@ -910,7 +910,7 @@
                                     {{-- DIAGNOSTICO --}}
                                     <td width="10px"> 
                                         @if($item['diagnostico'])
-                                            <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
                                                 <p class="text-completo mb-0">COMPLETO </p>
                                                 <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
                                                     <i class="fas fa-paste"></i>
@@ -918,7 +918,7 @@
                                             </div>
                                         @else
                                             @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
                                                     data-toggle="modal" 
@@ -931,7 +931,7 @@
                                                     </a>
                                                 </div>
                                             @else
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto disabled" 
                                                     data-toggle="modal" 
@@ -1055,7 +1055,7 @@
                                     {{-- DIAGNOSTICO --}}
                                     <td width="10px"> 
                                         @if($item['diagnostico'])
-                                            <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
                                                 <p class="text-completo mb-0">COMPLETO </p>
                                                 <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
                                                     <i class="fas fa-paste"></i>
@@ -1063,7 +1063,7 @@
                                             </div>
                                         @else
                                             @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
                                                     data-toggle="modal" 
@@ -1076,7 +1076,7 @@
                                                     </a>
                                                 </div>
                                             @else
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto disabled" 
                                                     data-toggle="modal" 
@@ -1197,7 +1197,7 @@
                                     {{-- DIAGNOSTICO --}}
                                     <td width="10px"> 
                                         @if($item['diagnostico'])
-                                            <div class="d-flex align-items-center justify-content-between">
+                                            <div class="d-flex align-items-center">
                                                 <p class="text-completo mb-0">COMPLETO </p>
                                                 <a href="{{ asset('/diagnosticos/' . $item['clienteitaid'] . '/' .$item['diagnostico']) }}" class="btn btn-completo" target="_blank" title="VER DIAGNÓSTICO">
                                                     <i class="fas fa-paste"></i>
@@ -1205,7 +1205,7 @@
                                             </div>
                                         @else
                                             @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto" 
                                                     data-toggle="modal" 
@@ -1218,7 +1218,7 @@
                                                     </a>
                                                 </div>
                                             @else
-                                                <div class="d-flex align-items-center justify-content-between">
+                                                <div class="d-flex align-items-center">
                                                     <p class="text-incompleto mb-0 disabled">PENDIENTE </p>
                                                     <a type="button" class="btn btn-sm btn-incompleto disabled" 
                                                     data-toggle="modal" 

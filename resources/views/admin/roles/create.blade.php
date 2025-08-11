@@ -15,7 +15,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -26,7 +26,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 8px 16px;
+        padding: 5px 10px;
         }
     
     .btn-crear:hover {

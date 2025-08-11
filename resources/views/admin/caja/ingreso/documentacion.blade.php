@@ -3,12 +3,26 @@
 <link href="assets/img/logo.png" rel="icon">
 
 @section('content_header')
-    <div class="text-center mb-0">
-        <h1 class="font-weight-bold"
-            style="font-size: 1.8rem; color: #000000; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0;">
-            DOCUMENTACIÓN DE INGRESOS
-        </h1>
-    </div>
+<h2 style="font-weight: 900">DOCUMENTACIÓN DE INGRESOS</h2>
+@stop
+
+@section('css')
+<style>
+    .table td {
+        padding: 7px 10px;
+    }
+    .btn-verregistros {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 5px;
+        }
+    .btn-verregistros:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+</style>
 @stop
 
 @section('content')
@@ -23,220 +37,216 @@
     </script>
 @endif
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="table-responsive">
-            <form method="GET" action="{{ route('admin.caja.ingreso.documentacion') }}">
-                <div class="row mb-3">
-                    {{-- <div class="col-md-2">
-                        <label for="fecha">Fecha de Registro:</label>
-                        <input type="date" name="fecha" id="fecha" class="form-control" value="{{ $fecha }}">
-                    </div> --}}
-                    <div class="col-md-2">
-                        <label for="fecha">Fecha de Registro:</label>
-                        <input type="date" name="fecha" id="fecha" class="form-control" value="{{ $fecha }}"
-                            @if (!in_array($rolUsuario, ['ADMINISTRADOR', 'MAESTRO', 'ASISTENTE ADMINISTRATIVO'])) 
-                                min="{{ \Carbon\Carbon::now()->subDays(2)->toDateString() }}" 
-                            @endif
-                        >
-                    </div>
-                    
-                    @if ($rolUsuario !== 'CONTABLE')
-                        <div class="col-md-3">
-                            <label for="usuario">Usuario Registro:</label>
-                            <select name="usuario" id="usuario" class="form-control">
-                                <option value=""></option>
-                                @foreach ($usuarios as $usuario)
-                                    <option value="{{ $usuario->usuarioconsolidadoID }}" 
-                                        {{ $usuario->usuarioconsolidadoID == $usuarioSeleccionado ? 'selected' : '' }}>
-                                        {{ $usuario->usuarioconsolidadoNombre }}
-                                    </option>
-                                @endforeach
-                            </select>
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="GET" action="{{ route('admin.caja.ingreso.documentacion') }}">
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <label for="fecha">Fecha de Registro:</label>
+                            <input type="date" name="fecha" id="fecha" class="form-control" value="{{ $fecha }}"
+                                @if (!in_array($rolUsuario, ['ADMINISTRADOR', 'MAESTRO', 'ASISTENTE ADMINISTRATIVO'])) 
+                                    min="{{ \Carbon\Carbon::now()->subDays(2)->toDateString() }}" 
+                                @endif
+                            >
                         </div>
-                    @endif
-                    <div class="col-md-4 d-flex align-items-end">
-                        <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+                        
+                        @if ($rolUsuario !== 'CONTABLE')
+                            <div class="col-md-3">
+                                <label for="usuario">Usuario Registro:</label>
+                                <select name="usuario" id="usuario" class="form-control">
+                                    <option value=""></option>
+                                    @foreach ($usuarios as $usuario)
+                                        <option value="{{ $usuario->usuarioconsolidadoID }}" 
+                                            {{ $usuario->usuarioconsolidadoID == $usuarioSeleccionado ? 'selected' : '' }}>
+                                            {{ $usuario->usuarioconsolidadoNombre }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+                        </div>
                     </div>
-                </div>
-            </form>
-            <form id="documentacionForm" method="POST" enctype="multipart/form-data" action="{{ route('guardar.respaldo') }}">
-                @csrf
-                <table class="table table-bordered table-striped">
-                    <thead class="table-secondary">
-                        <tr>
-                            <th>ID</th>
-                            <th>Cliente</th>
-                            <th>Área</th>
-                            <th>Transac.</th>
-                            <th>Subtotal</th>
-                            <th>Desc.</th>
-                            <th>Total</th>
-                            <th>Saldo</th>
-                            <th>Estado_Pago</th>
-                            <th>N.Rec.</th>
-                            <th>N.Banc.</th>
-                            <th>Recibo</th>
-                            <th>Factura</th>
-                            <th>Comp.</th>
-                            <th>Selec.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($registros as $registro)
+                </form>
+                <form id="documentacionForm" method="POST" enctype="multipart/form-data" action="{{ route('guardar.respaldo') }}">
+                    @csrf
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-secondary">
                             <tr>
-                                <td>{{ $registro->id }}</td>
-                                <td>{{ $registro->clientenombre }} {{ $registro->proveedornombre }}</td>
-                                <td>{{ $registro->area }}</td>
-                                <td>{{ $registro->tipotransaccion }}</td>
-                                <td>{{ number_format($registro->subtotal, 2) }}</td>
-                                <td>{{ number_format($registro->descuento, 2) }}</td>
-                                <td>
-                                    {{ number_format($registro->montototal, 2) }}
-                                    @if ($registro->descuentoatc !== null && $registro->descuentoatc != 0.00)
-                                        - {{ number_format($registro->descuentoatc, 2) }} =
-                                        {{ number_format($registro->montototal - $registro->descuentoatc, 2) }}
-                                    @endif
-                                </td>
-                                
-                                <td>{{ number_format($registro->saldo, 2) }}</td>
-                                <td>{{ $registro->estado }}</td>
-                                <td>{{ $registro->nrorecibo }}</td>
-                                <td>
-                                    @if ($registro->tipotransaccion === 'ATC')
-                                        @if (!empty($registro->nrobancarizacionatc))
-                                            <span>{{ $registro->nrobancarizacionatc }}</span>
-                                        @else
-                                            <input type="text" name="nrobancarizacion[{{ $registro->id }}]" 
-                                                   class="form-control" 
-                                                   placeholder="Ingrese Nro. Bancarización">
-                                        @endif
-                                    @else
-                                    {{ $registro->nrobancarizaciontransferencia }} {{ $registro->nrobancarizaciondeposito }} {{ $registro->nrobancarizacionefectivo }}
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($registro->documentorespaldo)
-                                        <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->documentorespaldo) }}" class="btn btn-sm btn-outline-success" target="_blank" title="VER RECIBO"><i class="fas fa-eye"></i></a>
-                                    @else
-                                        <span class="badge badge-danger">VACIO</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($registro->docfactura)
-                                        <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura) }}" class="btn btn-sm btn-outline-success" target="_blank" title="VER FACTURA"><i class="fas fa-eye"></i></a>
-                                    @else
-                                        <span class="badge badge-danger">VACIO</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($registro->doccomprobante)
-                                        <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante) }}" class="btn btn-sm btn-outline-success" target="_blank" title="VER COMPROBANTE"><i class="fas fa-eye"></i></a>
-                                    @else
-                                        <span class="badge badge-danger">VACIO</span>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    @if ($rolUsuario === 'ADMINISTRADOR' || $rolUsuario === 'CONTABLE' || $rolUsuario === 'OPERATIVO' || $rolUsuario === 'ASISTENTE ADMINISTRATIVO')
-                                        @if (!$registro->documentorespaldo || !$registro->docfactura || !$registro->doccomprobante)
-                                            <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox">
-                                        @endif
-                                    @endif
-                                    @can('admin.caja.ingresos.editarrespaldosingresos')
-                                        <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox">
-                                    @endcan
-                                </td>
+                                <th>ID</th>
+                                <th>Cliente</th>
+                                <th>Área</th>
+                                <th>Transac.</th>
+                                <th>Subtotal</th>
+                                <th>Desc.</th>
+                                <th>Total</th>
+                                <th>Saldo</th>
+                                <th>Estado_Pago</th>
+                                <th>N.Rec.</th>
+                                <th>N.Banc.</th>
+                                <th>Recibo</th>
+                                <th>Factura</th>
+                                <th>Comp.</th>
+                                <th>Selec.</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            
+                        </thead>
+                        <tbody>
+                            @foreach ($registros as $registro)
+                                <tr>
+                                    <td>{{ $registro->id }}</td>
+                                    <td>{{ $registro->clientenombre }} {{ $registro->proveedornombre }}</td>
+                                    <td>{{ $registro->area }}</td>
+                                    <td>{{ $registro->tipotransaccion }}</td>
+                                    <td>{{ number_format($registro->subtotal, 2) }}</td>
+                                    <td>{{ number_format($registro->descuento, 2) }}</td>
+                                    <td>
+                                        {{ number_format($registro->montototal, 2) }}
+                                        @if ($registro->descuentoatc !== null && $registro->descuentoatc != 0.00)
+                                            - {{ number_format($registro->descuentoatc, 2) }} =
+                                            {{ number_format($registro->montototal - $registro->descuentoatc, 2) }}
+                                        @endif
+                                    </td>
+                                    
+                                    <td>{{ number_format($registro->saldo, 2) }}</td>
+                                    <td>{{ $registro->estado }}</td>
+                                    <td>{{ $registro->nrorecibo }}</td>
+                                    <td>
+                                        @if ($registro->tipotransaccion === 'ATC')
+                                            @if (!empty($registro->nrobancarizacionatc))
+                                                <span>{{ $registro->nrobancarizacionatc }}</span>
+                                            @else
+                                                <input type="text" name="nrobancarizacion[{{ $registro->id }}]" 
+                                                    class="form-control" 
+                                                    placeholder="Ingrese Nro. Bancarización">
+                                            @endif
+                                        @else
+                                        {{ $registro->nrobancarizaciontransferencia }} {{ $registro->nrobancarizaciondeposito }} {{ $registro->nrobancarizacionefectivo }}
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($registro->documentorespaldo)
+                                            <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->documentorespaldo) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER RECIBO"><i class="fas fa-eye"></i></a>
+                                        @else
+                                            <span class="badge badge-danger">VACIO</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($registro->docfactura)
+                                            <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA"><i class="fas fa-eye"></i></a>
+                                        @else
+                                            <span class="badge badge-danger">VACIO</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($registro->doccomprobante)
+                                            <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER COMPROBANTE"><i class="fas fa-eye"></i></a>
+                                        @else
+                                            <span class="badge badge-danger">VACIO</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        @if ($rolUsuario === 'ADMINISTRADOR' || $rolUsuario === 'CONTABLE' || $rolUsuario === 'OPERATIVO' || $rolUsuario === 'ASISTENTE ADMINISTRATIVO')
+                                            @if (!$registro->documentorespaldo || !$registro->docfactura || !$registro->doccomprobante)
+                                                <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox">
+                                            @endif
+                                        @endif
+                                        @can('admin.caja.ingresos.editarrespaldosingresos')
+                                            <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox">
+                                        @endcan
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                
+                    <div class="card"> 
+                        <div class="card-body" style="background-color: #f7f7f7">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-4">
+                                <div class="d-flex align-items-center flex-wrap gap-4">
+                                    <!-- Recibo -->
+                                    <div class="d-flex align-items-center">
+                                        <label for="archivo" class="form-label fs-5 fw-semibold">Recibo:</label>
+                                        <div class="d-flex align-items-center">
+                                            <input type="file" name="archivo" id="archivo" class="form-control me-2" accept=".pdf,.jpg,.png" onchange="validateInputs()" style="width: 250px;">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="verVistaPrevia" onclick="previewFile()"><i class="fas fa-eye"></i></button>
+                                        </div>
+                                    </div>
+                
+                                    <!-- Factura -->
+                                    <div class="d-flex align-items-center" style="margin-left: 20px;">
+                                        <label for="archivo3" class="form-label fs-5 fw-semibold">Factura:</label>
+                                        <div class="d-flex align-items-center">
+                                            <input type="file" name="archivo3" id="archivo3" class="form-control me-2" accept=".pdf,.jpg,.png" onchange="validateInputs()" style="width: 250px;">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="verVistaPrevia" onclick="previewFile3()"><i class="fas fa-eye"></i></button>
+                                        </div>
+                                    </div>
 
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="row">
-                            <!-- Respaldo -->
-                            <div class="col-md-4 mb-4">
-                                <label for="archivo" class="form-label fs-5 fw-semibold">Recibo:</label>
-                                <div class="d-flex align-items-center">
-                                    <input type="file" name="archivo" id="archivo" class="form-control me-3" accept=".pdf,.jpg,.png" onchange="validateInputs()">
-                                    <button type="button" class="btn btn-outline-primary me-3" id="verVistaPrevia" onclick="previewFile()"><i class="fas fa-eye"></i></button>
+                                    <!-- Comprobante -->
+                                    <div class="d-flex align-items-center" style="margin-left: 20px;">
+                                        <label for="archivo2" class="form-label fs-5 fw-semibold">Comprobante:</label>
+                                        <div class="d-flex align-items-center">
+                                            <input type="file" name="archivo2" id="archivo2" class="form-control me-2" accept=".pdf,.jpg,.png" onchange="validateInputs()" style="width: 250px;">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="verVistaPrevia" onclick="previewFile2()"><i class="fas fa-eye"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    {{-- @can('admin.caja.ingresos.editarrespaldosingresos')
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm" id="actualizarEstadoButton" style="margin-right: 10px;" formaction="{{ route('actualizar.estado') }}" formmethod="POST" disabled>ACTUALIZAR ESTADO</button>
+                                    @endcan --}}
+                                    <button type="submit" class="btn btn-sm btn-secondary" {{-- id="guardarRespaldo" disabled --}}>GUARDAR RESPALDO</button>
                                 </div>
                             </div>
-                
-                            <!-- Factura -->
-                            <div class="col-md-4 mb-4">
-                                <label for="archivo3" class="form-label fs-5 fw-semibold">Factura:</label>
-                                <div class="d-flex align-items-center">
-                                    <input type="file" name="archivo3" id="archivo3" class="form-control me-3" accept=".pdf,.jpg,.png" onchange="validateInputs()">
-                                    <button type="button" class="btn btn-outline-primary me-3" id="verVistaPrevia" onclick="previewFile3()"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    {{-- <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <label for="archivo" class="form-label mb-0 me-3">RESPALDO:</label>
+                                <input type="file" name="archivo" id="archivo" class="form-control me-3" accept=".pdf,.jpg,.png" onchange="validateInputs()">
+                                <button type="button" class="btn btn-outline-secondary btn-sm me-3" id="verVistaPrevia" onclick="previewFile()" style="margin-left:100px;">VISTA PREVIA RESPALDO</button>
+                                <button type="submit" class="btn btn-outline-secondary btn-sm me-3" id="guardarRespaldo" style="margin-left:5px; margin-right:5px;" disabled>GUARDAR RESPALDO</button>
+                    
+                                @can('admin.caja.ingresos.editarrespaldosingresos')
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm" id="actualizarEstadoButton" formaction="{{ route('actualizar.estado') }}" formmethod="POST" disabled>ACTUALIZAR ESTADO</button>
+                                @endcan
+                            </div>
+                        </div>
+                        <div class="card-body" style="margin-top: -30px;">
+                            <div class="d-flex align-items-left">
+                                <label for="archivo" class="form-label mb-0 me-3">FACTURA:</label>
+                                <input type="file" name="archivo3" id="archivo3" class="form-control me-3 btn-sm" accept=".pdf,.jpg,.png" onchange="validateInputs()">
+                                <button type="button" class="btn btn-outline-secondary btn-sm me-3" id="verVistaPrevia" onclick="previewFile3()" style="margin-left:100px;">VISTA PREVIA FACTURA</button>
+                            </div>
+                        </div>
+                    </div> --}}
+                    
+                    <!-- Modal Vista Previa-->
+                    <div class="modal fade" id="modalVistaPrevia" tabindex="-1" aria-labelledby="modalVistaPreviaLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalVistaPreviaLabel">Vista Previa del Archivo</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <img id="previewImage" src="#" alt="Vista previa de imagen" style="display:none; max-width: 100%;" />
+                                    <iframe id="previewPdf" src="#" style="display:none; width: 100%; height: 600px;" frameborder="0"></iframe>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
-
-                            <!-- Comprobante -->
-                            <div class="col-md-4 mb-4">
-                                <label for="archivo2" class="form-label fs-5 fw-semibold">Comprobante:</label>
-                                <div class="d-flex align-items-center">
-                                    <input type="file" name="archivo2" id="archivo2" class="form-control me-3" accept=".pdf,.jpg,.png" onchange="validateInputs()">
-                                    <button type="button" class="btn btn-outline-primary me-3" id="verVistaPrevia" onclick="previewFile2()"><i class="fas fa-eye"></i></button>
-                                </div>
-                            </div>
                         </div>
-                        <div class="d-flex justify-content-end">
-                            @can('admin.caja.ingresos.editarrespaldosingresos')
-                                <button type="submit" class="btn btn-outline-secondary btn-sm" id="actualizarEstadoButton" style="margin-right: 10px;" formaction="{{ route('actualizar.estado') }}" formmethod="POST" disabled>ACTUALIZAR ESTADO</button>
-                            @endcan
-                            <button type="submit" class="btn btn-outline-secondary" {{-- id="guardarRespaldo" disabled --}}>GUARDAR</button>
-                        </div>
-                    </div>
-                </div>
-
-
-
-                {{-- <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <label for="archivo" class="form-label mb-0 me-3">RESPALDO:</label>
-                            <input type="file" name="archivo" id="archivo" class="form-control me-3" accept=".pdf,.jpg,.png" onchange="validateInputs()">
-                            <button type="button" class="btn btn-outline-secondary btn-sm me-3" id="verVistaPrevia" onclick="previewFile()" style="margin-left:100px;">VISTA PREVIA RESPALDO</button>
-                            <button type="submit" class="btn btn-outline-secondary btn-sm me-3" id="guardarRespaldo" style="margin-left:5px; margin-right:5px;" disabled>GUARDAR RESPALDO</button>
-                
-                            @can('admin.caja.ingresos.editarrespaldosingresos')
-                                <button type="submit" class="btn btn-outline-secondary btn-sm" id="actualizarEstadoButton" formaction="{{ route('actualizar.estado') }}" formmethod="POST" disabled>ACTUALIZAR ESTADO</button>
-                            @endcan
-                        </div>
-                    </div>
-                    <div class="card-body" style="margin-top: -30px;">
-                        <div class="d-flex align-items-left">
-                            <label for="archivo" class="form-label mb-0 me-3">FACTURA:</label>
-                            <input type="file" name="archivo3" id="archivo3" class="form-control me-3 btn-sm" accept=".pdf,.jpg,.png" onchange="validateInputs()">
-                            <button type="button" class="btn btn-outline-secondary btn-sm me-3" id="verVistaPrevia" onclick="previewFile3()" style="margin-left:100px;">VISTA PREVIA FACTURA</button>
-                        </div>
-                    </div>
-                </div> --}}
-                
-                <!-- Modal Vista Previa-->
-                <div class="modal fade" id="modalVistaPrevia" tabindex="-1" aria-labelledby="modalVistaPreviaLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="modalVistaPreviaLabel">Vista Previa del Archivo</h5>
-                            </div>
-                            <div class="modal-body">
-                                <img id="previewImage" src="#" alt="Vista previa de imagen" style="display:none; max-width: 100%;" />
-                                <iframe id="previewPdf" src="#" style="display:none; width: 100%; height: 600px;" frameborder="0"></iframe>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>               
-            </form>
+                    </div>               
+                </form>
+            </div>
         </div>
     </div>
 </div>
-
 @stop
 
 @section('js')

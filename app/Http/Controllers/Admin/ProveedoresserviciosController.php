@@ -26,11 +26,15 @@ use App\Models\PersonalViajes;
 use App\Models\PersonalViajesItinerario;
 use App\Models\PersonalViajesCronograma;
 use App\Models\PersonalVacaciones;
+use App\Models\PermisoCodigo;
 use App\Models\Departamento;
 use App\Models\PlanesServiciosProv;
 use App\Notifications\VacacionNotificacion;
 use App\Notifications\RespuestaVacacionNotificacion;
 use Illuminate\Support\Facades\DB;
+use App\Models\OpcionesInventario;
+use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ProveedoresserviciosController extends Controller
 {
@@ -72,7 +76,9 @@ class ProveedoresserviciosController extends Controller
         $inventarios = PortafolioProveedores::whereIn('proveedorid', $todosproveedoresservicios->pluck('id'))->orderBy('nombreproducto', 'asc')->get();
         $bateriaproveedorservicios = Bateriaproveedorservicios::whereIn('proveedorid', $todosproveedoresservicios->pluck('id'))->get();
 
-        return view('admin.proveedoresservicios.listaproveedoresservicios', compact('todosproveedoresservicios', 'soloproveedorservicio', 'inventarios', 'bateriaproveedorservicios', 'proveedores'));
+        $opcionesInventario = DB::table('opcionesinventario')->get();
+
+        return view('admin.proveedoresservicios.listaproveedoresservicios', compact('todosproveedoresservicios', 'soloproveedorservicio', 'inventarios', 'bateriaproveedorservicios', 'proveedores', 'opcionesInventario'));
     }
     public function guardarnuevoproducto(Request $request)  
     {
@@ -163,6 +169,7 @@ class ProveedoresserviciosController extends Controller
             'marca' => $request->marca,
             'unidadmedida' => $request->unidad_medida,
             'modelo' => $request->modelo,
+            'estado' => 'ACTIVO',
             'usuarioregistroid' => $usuarioAutenticado->id,
             'usuarioregistronombre' => $usuarioAutenticado->name,
         ]);
@@ -440,7 +447,7 @@ class ProveedoresserviciosController extends Controller
             return response()->json(['error' => 'Proveedor no encontrado'], 404);
         }
     
-        $proveedor->categoria = 'PERSONAL';
+        $proveedor->categoria = 'PROVEEDOR INTERNO';
         $proveedor->save();
     
         return response()->json(['success' => true, 'id' => $proveedor->id]);
@@ -943,16 +950,50 @@ class ProveedoresserviciosController extends Controller
                           ->orderBy('created_at', 'asc')
                           ->simplePaginate(1000);
 
-        return view('admin.proveedoresservicios.vacacionespersonal', compact('proveedoresservicios','id','personalvacaciones'));
+        $fechaIngreso = Carbon::parse($proveedoresservicios->fechaingreso);
+        $hoy = Carbon::now();
+        $aniosTrabajados = $fechaIngreso->diffInYears($hoy);
+
+        $diasAcumulados = 0;
+        for ($i = 1; $i <= $aniosTrabajados; $i++) {
+            $diasAcumulados += ($i < 5) ? 15 : 20;
+        }
+
+        $diasUsados = PersonalVacaciones::where('proveedorid', $proveedoresservicios->id)
+            ->where('estado', 'APROBADO')
+            ->sum('cantidaddias');
+
+        $diasDisponibles = $diasAcumulados - $diasUsados;
+
+        $usuarioAutenticado = auth()->user()->name;
+        $fechaActual = now()->toDateString();
+        $codigoAprobacion = PermisoCodigo::where('usuarioSolicitante', $usuarioAutenticado)
+            ->whereDate('fechaSolicitada', $fechaActual)
+            ->where('permisoSolicitado', 'admin.proveedoresservicios.adelantovacaciones')
+            ->where('estado', 'expirado')
+            ->first();
+
+        if ($codigoAprobacion) {
+            $hayVacacionesPosteriores = PersonalVacaciones::where('proveedorid', $proveedoresservicios->id)
+                ->where('created_at', '>', $codigoAprobacion->created_at)
+                ->exists();
+
+            if ($hayVacacionesPosteriores) {
+                $codigoAprobacion = null;
+            }
+        }
+
+
+        return view('admin.proveedoresservicios.vacacionespersonal', compact('codigoAprobacion','proveedoresservicios','id','personalvacaciones', 'diasDisponibles', 'fechaIngreso'));
     }
-    public function guardarvacacionespersonal(Request $request, $id)
+    /* public function guardarvacacionespersonal(Request $request, $id)
     {
         $proveedorid = $request->input('proveedorid');
         $proveedornombre = $request->input('proveedornombre');
         $fechainicio = $request->input('fecha_salida');
         $fechafinal = $request->input('fecha_retorno');
         $cantidaddias = $request->input('cantidad_dias');
-        $detallemotivo = $request->input('motivo');
+        $observacion = $request->input('observacion');
         $usuarioAutenticadoid = Auth::user()->id;
         $usuarioAutenticadonombre = Auth::user()->name;
 
@@ -962,7 +1003,7 @@ class ProveedoresserviciosController extends Controller
             'fechainicial' => $fechainicio,
             'fechafinal' => $fechafinal,
             'cantidaddias' => $cantidaddias,
-            'motivo' => $detallemotivo,
+            'observacion' => $observacion,
             'estado' => 'PENDIENTE',
             'usuarioregistroid' => $usuarioAutenticadoid,
             'usuarioregistronombre' => $usuarioAutenticadonombre,
@@ -979,7 +1020,166 @@ class ProveedoresserviciosController extends Controller
 
         return redirect()->route('admin.proveedoresservicios.vacacionespersonal', $id)
             ->with('info', 'La solicitud se creó con éxito');
+    } */
+
+    /* public function guardarvacacionespersonal(Request $request, $id)
+    {
+        $proveedoresservicios = ProveedoresServicios::findOrFail($id);
+
+        $proveedorid = $request->input('proveedorid');
+        $proveedornombre = $request->input('proveedornombre');
+        $fechainicio = $request->input('fecha_salida');
+        $fechafinal = $request->input('fecha_retorno');
+        $cantidaddias = $request->input('cantidad_dias');
+        $observacion = $request->input('observacion');
+        $usuarioAutenticadoid = Auth::user()->id;
+        $usuarioAutenticadonombre = Auth::user()->name;
+
+        // Calcular NRO BOLETA: cuenta de solicitudes anteriores por proveedor
+        $contador = PersonalVacaciones::where('proveedorid', $proveedorid)->count() + 1;
+        $nroBoleta = str_pad($contador, 3, '0', STR_PAD_LEFT); // Ej. 001, 002...
+
+        $solicitudvacacion = PersonalVacaciones::create([
+            'nroboleta' => $nroBoleta,
+            'proveedorid' => $proveedorid,
+            'proveedornombre' => $proveedornombre,
+            'fechainicial' => $fechainicio,
+            'fechafinal' => $fechafinal,
+            'cantidaddias' => $cantidaddias,
+            'observacion' => $observacion,
+            'estado' => 'PENDIENTE',
+            'usuarioregistroid' => $usuarioAutenticadoid,
+            'usuarioregistronombre' => $usuarioAutenticadonombre,
+        ]);
+
+        if ($solicitudvacacion) {
+            $usuariosNotificar = User::role(['MAESTRO', 'ADMINISTRADOR'])->get();
+            foreach ($usuariosNotificar as $usuario) {
+                $usuario->notify(new VacacionNotificacion($solicitudvacacion));
+            }
+
+            // Generar PDF
+            $pdf = PDF::loadView('admin.proveedoresservicios.boletavacacion', [
+                'vacacion' => $solicitudvacacion,
+                'cargo' => $proveedoresservicios->cargo ?? '---',
+                'fechaingreso' => $proveedoresservicios->fechaingreso ?? '---'
+            ]);
+
+            return $pdf->download('boleta_vacacion_' . $nroBoleta . '.pdf');
+        }
+
+        return redirect()->route('admin.proveedoresservicios.vacacionespersonal', $id)
+            ->with('error', 'Error al crear la solicitud');
+    } */
+    public function guardarvacacionespersonal(Request $request, $id)
+    {
+        $proveedoresservicios = ProveedoresServicios::findOrFail($id);
+
+        $proveedorid = $request->input('proveedorid');
+        $proveedornombre = $request->input('proveedornombre');
+        $fechainicio = $request->input('fecha_salida');
+        $fechafinal = $request->input('fecha_retorno');
+        $cantidaddias = (int) $request->input('cantidad_dias');
+        $observacion = $request->input('observacion');
+        $usuarioAutenticadoid = Auth::user()->id;
+        $usuarioAutenticadonombre = Auth::user()->name;
+
+        $fechaIngreso = Carbon::parse($proveedoresservicios->fechaingreso);
+        $fechaHoy = Carbon::now();
+        $aniosServicio = $fechaIngreso->diffInYears($fechaHoy);
+        $diasQueCorresponden = $aniosServicio >= 5 ? 20 : 15;
+
+        $diasUsados = PersonalVacaciones::where('proveedorid', $proveedorid)
+                        ->where('estado', 'APROBADO')
+                        ->sum('cantidaddias');
+
+        $diasDisponiblesAntes = $diasQueCorresponden - $diasUsados;
+        $diasPendientes = $diasDisponiblesAntes - $cantidaddias;
+
+        $contador = PersonalVacaciones::where('proveedorid', $proveedorid)->count() + 1;
+        $nroBoleta = str_pad($contador, 3, '0', STR_PAD_LEFT);
+
+        $fechaRetorno = Carbon::parse($fechafinal)->addDay();
+        if ($fechaRetorno->isSunday()) {
+            $fechaRetorno->addDay();
+        }
+
+        $solicitudvacacion = PersonalVacaciones::create([
+            'nroboleta' => $nroBoleta,
+            'proveedorid' => $proveedorid,
+            'proveedornombre' => $proveedornombre,
+            'fechainicial' => $fechainicio,
+            'fechafinal' => $fechafinal,
+            'fecharetorno' => $fechaRetorno->format('Y-m-d'),
+            'cantidaddias' => $cantidaddias,
+            'observacion' => $observacion,
+            'estado' => 'PENDIENTE',
+            'adelanto' => 'NO',
+            'usuarioregistroid' => $usuarioAutenticadoid,
+            'usuarioregistronombre' => $usuarioAutenticadonombre,
+        ]);
+
+        if ($solicitudvacacion) {
+            $usuariosNotificar = User::role(['MAESTRO'])->get();
+            foreach ($usuariosNotificar as $usuario) {
+                $usuario->notify(new VacacionNotificacion($solicitudvacacion));
+            }
+
+            $nombreArchivo = 'Boleta_Vacacion_' . $nroBoleta . '.pdf';
+            $solicitudvacacion->boleta = $nombreArchivo;
+            $solicitudvacacion->save();
+
+            $pdf = PDF::loadView('admin.proveedoresservicios.boletavacacion', [
+                'vacacion' => $solicitudvacacion,
+                'cargo' => $proveedoresservicios->cargo ?? '---',
+                'fechaingreso' => $fechaIngreso,
+                'fechaRetorno' => $fechaRetorno,
+                'aniosServicio' => $aniosServicio,
+                'diasQueCorresponden' => $diasQueCorresponden,
+                'diasUsados' => $diasUsados,
+                'diasDisponiblesAntes' => $diasDisponiblesAntes,
+                'diasPendientes' => $diasPendientes
+            ]);
+
+            $rutaCarpeta = public_path('vacaciones/' . $proveedorid);
+            if (!file_exists($rutaCarpeta)) {
+                mkdir($rutaCarpeta, 0777, true);
+            }
+            $pdf->save($rutaCarpeta . '/' . $nombreArchivo);
+
+            return redirect()->route('admin.proveedoresservicios.vacacionespersonal', $id)->with('info', 'Solicitud de vacaciones registrada y boleta generada correctamente.');
+        }
+
+        return redirect()->route('admin.proveedoresservicios.vacacionespersonal', $id)->with('error', 'Error al crear la solicitud');
     }
+    public function verificarCodigoAdelantovacaciones(Request $request)
+    {
+        $codigoIngresado = $request->input('codigo');
+        $id = $request->input('id');
+        $usuarioAutenticado = auth()->user()->name;
+        $fechaActual = now()->toDateString();
+
+        $codigoAprobacion = PermisoCodigo::where('usuarioSolicitante', $usuarioAutenticado)
+            ->whereDate('fechaSolicitada', $fechaActual)
+            ->where('permisoSolicitado', 'admin.proveedoresservicios.adelantovacaciones')
+            ->where('codigo', $codigoIngresado)
+            ->first();
+
+        if ($codigoAprobacion && $codigoAprobacion->estado != 'expirado') {
+            $codigoAprobacion->horaActivacion = now(); 
+            $codigoAprobacion->estado = 'expirado';
+            $codigoAprobacion->save();
+
+            return redirect()->route('admin.proveedoresservicios.vacacionespersonal', $id)
+                            ->with('info', 'CÓDIGO VÁLIDO, AHORA SI PUEDES CONTINUAR');
+
+        } elseif ($codigoAprobacion && $codigoAprobacion->estado == 'expirado') {
+            return back()->with('error', 'EL CÓDIGO YA HA SIDO USADO, EL ACCESO ESTÁ BLOQUEADO');
+        } else {
+            return back()->with('error', 'CÓDIGO INVÁLIDO O NO AUTORIZADO');
+        }
+    }
+
     public function aprobarsolicitudvacacion($id, Request $request)
     {
         try {

@@ -42,8 +42,11 @@ class Detallerecibo extends Model
         'sucursalgasto' => '',
         'comprobante' => '',
         'factura' => '',
+        'nrofactura' => '',
+        'cheque' => '',
         'created_at' => '',
         'updated_at' => '',
+        'codautorizacion' => '',
     ]; 
 
     protected $fillable = [
@@ -77,7 +80,10 @@ class Detallerecibo extends Model
         'sucursalgasto',
         'comprobante',
         'factura',
+        'nrofactura',
+        'cheque',
         'created_at',
         'updated_at',
+        'codautorizacion',
     ];
 }

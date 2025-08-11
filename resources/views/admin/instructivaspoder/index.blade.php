@@ -1,11 +1,7 @@
 @extends('adminlte::page')
     
 @section('content_header')
-{{-- <a class="btn btn-sm float-right btn-regresar" href="{{route('admin.asociados.index')}}">REGRESAR</a>
-@can('admin.asociados.crearclienteita')
-<a class="btn btn-sm float-right btn-crearcliente" href="{{ route('admin.asociados.crearclienteita', 6) }}">CREAR CLIENTE</a>
-@endcan --}}
-<h1>CLIENTES ITA</h1>
+<h1>INSTRUCTIVAS DE PODER</h1>
 @stop 
 
 @section('content')
@@ -16,7 +12,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 
@@ -25,7 +21,7 @@
         <nav class="navbar navbar-expand-lg float-right">
             <div class="container-fluid">
                 <div class="d-flex flex-wrap align-items-center">
-                    <form action="{{ route('buscarclientesita') }}" method="get" class="form-inline">
+                    <form action="{{ route('buscarclientesitainstructiva') }}" method="get" class="form-inline">
                         <div class="flex-grow-1">
                             <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="Nombre  /  CI  / ID" aria-label="Search">
                         </div>
@@ -34,38 +30,39 @@
                 </div>
             </div>
         </nav>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombres y Apellidos</th>
-                    <th>CI</th>
-                    <th>Edad</th>
-                    <th>Sucursal</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($clientes as $cliente)
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td class="align-middle">{{$cliente->id}}</td>
-                        <td class="align-middle">{{$cliente->nombrecompleto}}</td>
-                        <td class="align-middle">{{$cliente->ci}}</td>
-                        <td class="align-middle">{{$cliente->edad}}</td>
-                        <td class="align-middle">{{$cliente->sucursal}}</td>
-                        {{-- @can('admin.asociados.verclienteita') --}}
-                        <td width="10px">
-                            <abbr title="Instructiva de Poder">
-                                <a class="btn btn-sm btn-bateria" href="{{ route('admin.instructivaspoder.crearinspoderinvalidez', $cliente) }}">
-                                    <i class="fas fa-file"></i>
-                                </a>
-                            </abbr>
-                        </td>
-                        {{-- @endcan --}}
+                        <th>ID</th>
+                        <th>Nombres y Apellidos</th>
+                        <th>CI</th>
+                        <th>Edad</th>
+                        <th>Sucursal</th>
+                        <th>Ver</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach ($clientes as $cliente)
+                        <tr>
+                            <td class="align-middle">{{$cliente->id}}</td>
+                            <td class="align-middle">{{$cliente->nombrecompleto}}</td>
+                            <td class="align-middle">{{$cliente->ci}}</td>
+                            <td class="align-middle">{{$cliente->edad}}</td>
+                            <td class="align-middle">{{$cliente->sucursal}}</td>
+                            <td width="10px">
+                                <abbr title="CREAR INSTRUCTIVA DE PODER">
+                                    <a class="btn btn-sm btn-bateria" href="{{ route('admin.instructivaspoder.crearinstructivapoder', $cliente) }}">
+                                        <i class="fas fa-file"></i>
+                                    </a>
+                                </abbr>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        {{ $clientes->links() }}
     </div>
 </div>
 
@@ -74,63 +71,13 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
-    .custom-select-wrapper {
-        position: relative;
-        display: inline-block;
-        width: 150px;
-    }
-    .custom-select-wrapper select {
-        width: 100%;
-        padding: 6px 26px 6px 10px;
-        font-size: 14px;
-        border: none;
-        border-radius: 3px;
-        background-color: #f8f9fa;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        cursor: pointer;
-    }
-    .custom-select-wrapper select:focus {
-        outline: none;
-    }
-    .custom-select-icon {
-        position: absolute;
-        top: 50%;
-        right: 10px;
-        transform: translateY(-50%);
-        pointer-events: none;
-        color: #000000;
-    }
-    .custom-select-wrapper select {
-        background-color:  #eff9df;
-        color: #000000;
-        border-color: #000000;
-        border-radius: 5px;
-        padding: 10px 20px;
-    }
-    .custom-select-wrapper select:hover {
-        background-color: #f4e1c6;
-        color: #000000;
-    }
-    .custom-select-wrapper select option {
-        background-color: #ffffff;
+    .table td {
+        padding: 5px 10px;
     }
     h1, th {
         color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 900;
-    }
-    .btn-crear {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 10px 20px;
-    }
-    .btn-crear:hover {
-        background-color: #94c93b;
-        color: #ffffff;
     }
     .btn-buscar { 
         background-color:  #ffffff;
@@ -142,74 +89,15 @@
         background-color: #faa625;
         color: #ffffff;
     }  
-    .btn-mostrartodo { 
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-    }
-    .btn-mostrartodo:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
     .btn-bateria {
         background-color:  #ffffff;
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
+        padding: 3px 7px;
     }
     .btn-bateria:hover {
         background-color: #94c93b;
-        color: #ffffff;
-    }
-    .btn-programar {
-        background-color:  #ffffff;
-        color: #2136bd;
-        border-color: #2136bd;
-        border-radius: 5px;
-    }
-    .btn-programar:hover {
-        background-color: #2136bd;
-        color: #ffffff;
-    }
-    .btn-estadoprogramacion {
-        background-color:  #ffffff;
-        color: #58a6f4;
-        border-color: #58a6f4;
-        border-radius: 5px;
-    }
-    .btn-estadoprogramacion:hover {
-        background-color: #58a6f4;
-        color: #ffffff;
-    }
-    .btn-subirdocumentacion {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-    }
-    .btn-subirdocumentacion:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-verdocumentacion {
-        background-color:  #ffffff;
-        color: #8721f3;
-        border-color: #8721f3;
-        border-radius: 5px;
-    }
-    .btn-verdocumentacion:hover {
-        background-color: #8721f3;
-        color: #ffffff;
-    }
-    .btn-formulario {
-        background-color:  #ffffff;
-        color: #ea3ab8;
-        border-color: #ea3ab8;
-        border-radius: 5px;
-    }
-    .btn-formulario:hover {
-        background-color: #ea3ab8;
         color: #ffffff;
     }
     .btn-regresar {
@@ -217,23 +105,10 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
-        color: #ffffff;
-    }
-    .btn-crearcliente {
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 10px 10px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    .btn-crearcliente:hover {
-        background-color: #94c93b;
         color: #ffffff;
     }
 </style>
@@ -248,14 +123,14 @@
 <script>
 $('.dropify').dropify();
 </script>
-    @if (session('eliminar')=='ok')
-    <script>
-        Swal.fire(
-      '¡Eliminado!',
-      'El perfil se eliminó con éxito',
-      'success')
-    </script>
-    @endif
+@if (session('eliminar')=='ok')
+<script>
+    Swal.fire(
+    '¡Eliminado!',
+    'El perfil se eliminó con éxito',
+    'success')
+</script>
+@endif
 <script>
     $('.formulario-eliminar').submit(function(e){
         e.preventDefault();

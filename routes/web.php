@@ -84,6 +84,15 @@ Route::resource('caja', MovimientosCajaController::class)->middleware('can:admin
 Route::resource('inventario', InventarioController::class)->middleware('can:admin.inventario.index')->names('admin.inventario');
 Route::resource('banco', BancoController::class)->middleware('can:admin.banco.index')->names('admin.banco');
 Route::resource('facturasegreso', FacturasEgresoController::class)/* ->middleware('can:admin.banco.index') */->names('admin.facturasegreso');
+Route::post('/saldocreditofiscal/guardar', [FacturasEgresoController::class, 'guardarsaldocreditofiscal'])->name('saldocreditofiscal.guardar');
+Route::post('/registro-impuestos/doble', [FacturasEgresoController::class, 'guardarAmbosFormularios'])->name('registro-impuestos.doble');
+
+Route::get('facturascontadorexterno', [FacturasEgresoController::class, 'facturascontadorexterno'])->name('admin.facturasegreso.facturascontadorexterno');
+Route::post('/guardarfacturacontaext', [FacturasEgresoController::class, 'guardarfacturacontaext'])->name('admin.facturasegreso.guardarfacturacontaext');
+Route::post('/compras/actualizar-estado', [FacturasEgresoController::class, 'actualizarEstado'])->name('compras.actualizar.estado');
+
+Route::post('/permisoscodigo/cambiofacturacambiorsocial', [FacturasEgresoController::class, 'codigocambiofacturacambiorsocial'])->name('permisoscodigo.codigocambiofacturacambiorsocial');
+Route::put('/facturasegreso/actualizarfacturaimpuestos/{id}', [FacturasEgresoController::class, 'actualizarfacturaimpuestos'])->name('facturasegreso.actualizarfacturaimpuestos');
 
 /* Route::get('/notifications/check', function () {
     $user = auth()->user();
@@ -141,6 +150,11 @@ Route::get('/upload', function () {
 
 Route::post('/permisoscodigo/expirar', [MovimientosCajaController::class, 'expirar'])->name('permisoscodigo.expirar');
 
+Route::post('/permisoscodigo/cajaegresos', [MovimientosCajaController::class, 'codigocajaegresos'])->name('permisoscodigo.cajaegresos');
+
+Route::post('/permisoscodigo/cambiarstock', [InventarioController::class, 'permisoscodigocambiarstock'])->name('permisoscodigo.cambiarstock');
+Route::put('/inventario/actualizarStockcodigo/{codigo}', [InventarioController::class, 'actualizarStockcodigo'])->name('inventario.actualizarStockcodigo');
+
 Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('upload.excel');
 //BANCOS
     Route::get('montototalbancos', [BancoController::class, 'montototalbancos'])->name('admin.banco.montototalbancos');
@@ -195,6 +209,11 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::put('/ordenes/{id}/aprobar', [InventarioController::class, 'aprobar'])->name('ordenes.aprobar');
     Route::put('/ordenes/{id}/rechazar', [InventarioController::class, 'rechazar'])->name('ordenes.rechazar');
     Route::get('planillatercerinter', [InventarioController::class, 'planillatercerinter'])->name('admin.inventario.planillatercerinter');
+    Route::get('opcionesinventario', [InventarioController::class, 'opcionesinventario'])->name('admin.inventario.opcionesinventario');
+    Route::post('/guardaropcioninventario', [InventarioController::class, 'guardaropcioninventario'])->name('admin.opcionesinventario.guardaropcioninventario');
+
+    Route::post('/anular-solicitudes-inventario', [InventarioController::class, 'anularSeleccionadosinventario'])->name('anular.solicitudes.inventario');
+
 //
 
 //PROVEEDORES DE SERVICIOS
@@ -233,6 +252,8 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::post('/vacaciones/aprobarsolicitudviaje/{id}', [ProveedoresserviciosController::class, 'aprobarsolicitudviaje'])->name('admin.proveedoresservicios.aprobarsolicitudviaje');
     Route::post('/vacaciones/rechazarsolicitudviaje/{id}', [ProveedoresserviciosController::class, 'rechazarsolicitudviaje'])->name('admin.proveedoresservicios.rechazarsolicitudviaje');
     Route::post('/guardarrendicionviajespersonal/{id}', [ProveedoresserviciosController::class, 'guardarrendicionviajespersonal'])->name('admin.proveedoresservicios.guardarrendicionviajespersonal');
+
+    Route::post('/verificar-codigo-adelantovacaciones', [ProveedoresserviciosController::class, 'verificarCodigoAdelantovacaciones'])->name('verificar.codigo.adelantovacaciones'); 
 //
 
 //CARTAS POLIZAS
@@ -247,7 +268,10 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::post('/buscar-cliente', [MovimientosCajaController::class, 'buscarPorCliente'])->name('buscar.cliente');
     Route::post('/guardar-cajacentral', [MovimientosCajaController::class, 'guardarCajaCentral'])->name('guardar.cajacentral');
     Route::post('/guardar-arqueo', [MovimientosCajaController::class, 'guardarArqueo'])->name('guardar.arqueo');
-    Route::post('/verificar-codigo', [MovimientosCajaController::class, 'verificarCodigo'])->name('verificar.codigo');  
+    Route::post('/verificar-codigo', [MovimientosCajaController::class, 'verificarCodigo'])->name('verificar.codigo'); 
+    Route::post('/verificar-codigo2', [MovimientosCajaController::class, 'verificarCodigo2'])->name('verificar.codigo2'); 
+    Route::post('/verificar-codigo3', [MovimientosCajaController::class, 'verificarCodigo3'])->name('verificar.codigo3');
+    Route::post('/verificar-codigo4', [MovimientosCajaController::class, 'verificarCodigo4'])->name('verificar.codigo4');  
     Route::post('/apertura/guardar', [MovimientosCajaController::class, 'storeAperturaCaja'])->name('apertura.guardar');
     
     Route::get('caja/ingreso/ingresosexternos/', [MovimientosCajaController::class, 'ingresosexternos'])->name('admin.caja.ingreso.ingresosexternos');
@@ -258,6 +282,8 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
 
     Route::get('/admin/caja/ingreso/siguiente-idexterno', function () {$ultimoId = Recibo::max('id');$siguienteId = $ultimoId ? $ultimoId + 1 : 1;return response()->json(['siguienteId' => $siguienteId]);})->name('actualizar_id_externo');
     Route::post('/obtener-creditos', [MovimientosCajaController::class, 'obtenerCreditos'])->name('obtener.creditos');
+
+    Route::get('caja/ingreso/historialcierrescaja/', [MovimientosCajaController::class, 'historialcierrescaja'])->name('admin.caja.ingreso.historialcierrescaja');
 
 //
 
@@ -331,7 +357,11 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::post('/aprobar-registros', [MovimientosCajaController::class, 'aprobarSeleccionados'])->name('aprobar.registros');
     Route::post('/rechazar-registros', [MovimientosCajaController::class, 'rechazarSeleccionados'])->name('rechazar.registros');
     Route::post('/cambiarfecha-registros', [MovimientosCajaController::class, 'cambiarfechaSeleccionados'])->name('cambiarfecha.registros');
+    Route::post('/sugerir-pagos', [MovimientosCajaController::class, 'sugerirpagosSeleccionados'])->name('sugerir.pagos');
+    Route::post('/sugerir-pagos-nomora', [MovimientosCajaController::class, 'sugerirpagosSeleccionadosnomora'])->name('sugerir.pagos.nomora');
     Route::post('/cuentas/marcar-cargado', [MovimientosCajaController::class, 'marcarComoCargado'])->name('marcar.cargado');
+
+    Route::post('/cuentasporpagar/facturas/otrosprov', [MovimientosCajaController::class, 'subirFacturasOtrosProv'])->name('cuentasporpagar.facturas.otrosprov');
 
     // routes/web.php
     Route::post('/guardar-qr', [MovimientosCajaController::class, 'guardarQR'])->name('guardar.qr');
@@ -342,6 +372,7 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::post('/informar-subida', [MovimientosCajaController::class, 'informarSubida'])->name('informar.subida');
     Route::post('/informar-subida-cxplistas', [MovimientosCajaController::class, 'informarSubidaCxPlistas'])->name('informar.subida.cxplistas');
 
+    Route::post('/cuentasporpagar/actualizar-monto/{id}', [MovimientosCajaController::class, 'actualizarMonto'])->name('cuentasporpagar.actualizar.monto');
 
 
 
@@ -442,6 +473,14 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::post('tramites/guardartramitesclienteitaseguimiento/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardartramitesclienteitaseguimiento')->name('admin.tramites.guardartramitesclienteitaseguimiento');
 
     Route::get('tramites/modelocartareclamo/1', 'App\Http\Controllers\Admin\TramitesController@modelocartareclamo')->name('admin.tramites.modelocartareclamo');
+
+    Route::post('/permisoscodigo/cambiofechaarchivoprestaciones', [TramitesController::class, 'codigocambiofechaarchivoprestaciones'])->name('permisoscodigo.cambiofechaarchivoprestaciones');
+
+    Route::post('/tramites/reemplazar-archivo', [TramitesController::class, 'reemplazarArchivo'])->name('tramites.reemplazarArchivo');
+    Route::put('tramites/actualizardatoscliente/{cliente}', [TramitesController::class, 'actualizardatoscliente'])->name('admin.tramites.actualizardatoscliente');
+
+    Route::post('tramites/guardarrespuesta/{cliente}', [TramitesController::class, 'guardarrespuesta'])->name('admin.tramites.guardarrespuesta');
+    Route::post('tramites/guardarcriterios/{cliente}', [TramitesController::class, 'guardarcriterios'])->name('admin.tramites.guardarcriterios');
 //
 
 
@@ -485,8 +524,15 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
 //
 
 //INSTRUCTIVAS DE PODER
-    Route::get('instructivaspoder/crearinspoderinvalidez/{cliente}', 'App\Http\Controllers\Admin\InstructivaPoderController@crearinspoderinvalidez')->name('admin.instructivaspoder.crearinspoderinvalidez');
-    Route::get('instructivaspoder/generarpdfinspoderinvalidez/{cliente}', 'App\Http\Controllers\Admin\InstructivaPoderController@generarpdfinspoderinvalidez')->name('admin.instructivaspoder.generarpdfinspoderinvalidez');
+    Route::get('instructivaspoder/crearinstructivapoder/{cliente}', 'App\Http\Controllers\Admin\InstructivaPoderController@crearinstructivapoder')->name('admin.instructivaspoder.crearinstructivapoder');
+    Route::get('instructivaspoder/generarpdfinstructivaspoder/{cliente}', 'App\Http\Controllers\Admin\InstructivaPoderController@generarpdfinstructivaspoder')->name('admin.instructivaspoder.generarpdfinstructivaspoder');
+
+    Route::get('instructivaspoder/crearinstructivapoderauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\InstructivaPoderController@crearinstructivapoderauditoria')->name('admin.instructivaspoder.crearinstructivapoderauditoria');
+    Route::get('instructivaspoder/generarpdfinstructivaspoderauditoria/{clienteauditoria}', 'App\Http\Controllers\Admin\InstructivaPoderController@generarpdfinstructivaspoderauditoria')->name('admin.instructivaspoder.generarpdfinstructivaspoderauditoria');
+
+    Route::get('/buscarclientesitainstructiva', 'App\Http\Controllers\Admin\InstructivaPoderController@buscarclientesitainstructiva')->name('buscarclientesitainstructiva');
+
+    Route::get('instructivaspoder/nuevainstructiva/1', [InstructivaPoderController::class, 'nuevainstructiva'])->name('admin.instructivaspoder.nuevainstructiva');
 //
 
 //CLIENTES ITA
@@ -602,6 +648,10 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
 
         Route::get('asociados/anulaciones/anularcuentacobrar/', [AsociadoController::class, 'anularcuentacobrar'])->name('admin.asociados.anulaciones.anularcuentacobrar');
         Route::post('/anular-regitro-cuentacobrar', [AsociadoController::class, 'anularregitrocuentacobrar'])->name('anularregitrocuentacobrar');
+
+    //DICTAMEN
+        Route::post('asociados/guardardictamenita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardardictamenita')->name('admin.asociados.guardardictamenita');
+        Route::post('asociados/guardarcartaclienteauditoriaita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardarcartaclienteauditoriaita')->name('admin.asociados.guardarcartaclienteauditoriaita');
 //
 
 //CLIENTES COMUNES

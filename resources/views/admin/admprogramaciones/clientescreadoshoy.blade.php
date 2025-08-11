@@ -456,6 +456,13 @@
                                                     <i class="fas fa-file"></i>
                                                 </a>
                                                 @endif
+                                            @elseif ($informes->accion === 'DIAGNÓSTICO MÉDICO')
+                                                @if ($informes->document)
+                                                <a href="{{ asset('/diagnosticos/' . $informes->clienteitaid . '/' . $informes->document) }}" class="btn btn-verinforme btn-sm" target="_blank" title="VER DIAGNOSTICO MEDICO">
+                                                    <i class="fas fa-file"></i>
+                                                </a>
+                                                @endif
+
                                             @else
                                                 @if ($informes->document)
                                                 <a href="{{ asset('/documentacionclientesita/' . $informes->clienteitaid . '/' . $informes->document) }}" class="btn btn-verinforme btn-sm" target="_blank" title="VER INFORME">

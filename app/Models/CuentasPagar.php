@@ -39,9 +39,12 @@ class CuentasPagar extends Model
         'nrobancoorigen' => '',
         'estadoaprobacion' => '',
         'comprobante' => '',
+        'cheque' => '',
         'factura' => '',
         'usuariocomprobante' => '',
         'fechamora' => '',
+        'nrofactura' => '',
+        'codautorizacion' => '',
     ]; 
 
     protected $fillable = [
@@ -68,9 +71,12 @@ class CuentasPagar extends Model
         'nrobancoorigen',
         'estadoaprobacion',
         'comprobante',
+        'cheque',
         'factura',
         'usuariocomprobante',
         'fechamora',
+        'nrofactura',
+        'codautorizacion',
     ];
 
     public function proveedorServicio()

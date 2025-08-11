@@ -13,16 +13,14 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 <div class="card">
     <div class="card-body">
         <div class="row ">
             <div class="col-lg-12">
-
                 {!! Form::model($asociado, ['route' => ['admin.asociados.guardarclientecomun', $asociado], 'method' => 'POST']) !!}
-        
                     {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                     {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                     <div class="row">
@@ -292,7 +290,7 @@ document.getElementById('fecha_nacimiento').addEventListener('change', function(
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     
     .btn-crear:hover {
@@ -315,7 +313,7 @@ document.getElementById('fecha_nacimiento').addEventListener('change', function(
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;

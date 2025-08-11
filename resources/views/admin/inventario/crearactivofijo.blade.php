@@ -181,17 +181,17 @@
                             </div> --}}
                             <div class="col-md-2 form-group">
                                 <label>Stock Inicial</label>
-                                <input type="number" class="form-control" id="stockinicial" name="stockinicial">
+                                <input type="number" class="form-control" id="stockinicial" name="stockinicial" required>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-2 form-group">
                                 <label>Stock Actual</label>
-                                <input type="number" class="form-control" id="stockactual" name="stockactual">
+                                <input type="number" class="form-control" id="stockactual" name="stockactual" required>
                             </div>
                             <div class="col-md-2 form-group">
                                 <label>Presentación</label>
-                                <input type="text" class="form-control" id="presentacion" name="presentacion">
+                                <input type="number" class="form-control" id="presentacion" name="presentacion" required>
                             </div>
                             <div class="col-md-2 form-group">
                                 <label>Unidades</label>
@@ -232,6 +232,75 @@
                                 precioTotalInput.addEventListener("input", calcularPrecioUnitario);
                             });
                         </script>
+
+                        <script>
+                            const opcionesInventario = @json($opcionesInventario);
+
+                            const tipoInventario = document.getElementById('tipo_inventario');
+                            const seccionSelect = document.getElementById('seccion');
+                            const unidadSelect = document.getElementById('unidad_medida');
+                            const marcaSelect = document.getElementById('marca');
+                            const materiaSelect = document.getElementById('materia_prima');
+
+                            const ordenar = arr => arr.sort((a, b) => a.localeCompare(b));
+
+                            const limpiarSelect = select => {
+                                select.innerHTML = '<option value="" disabled selected></option>';
+                            };
+
+                            tipoInventario.addEventListener('change', () => {
+                                const tipo = tipoInventario.value;
+
+                                limpiarSelect(seccionSelect);
+                                limpiarSelect(unidadSelect);
+                                limpiarSelect(marcaSelect);
+                                limpiarSelect(materiaSelect);
+
+                                if (tipo === 'ALMACEN') {
+                                    const secciones = ordenar([...new Set(opcionesInventario
+                                        .filter(o => o.tipo === 'ALMACEN')
+                                        .map(o => o.seccion))]);
+
+                                    secciones.forEach(seccion => {
+                                        seccionSelect.innerHTML += `<option value="${seccion}">${seccion}</option>`;
+                                    });
+                                } else if (tipo === 'ACTIVO FIJO') {
+                                    const filtrado = opcionesInventario.filter(o => o.tipo === 'ACTIVO FIJO');
+
+                                    const secciones = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'SECCION').map(f => f.opcion))]);
+                                    const unidades = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'UNIDAD MEDIDA').map(f => f.opcion))]);
+                                    const marcas = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'MARCA').map(f => f.opcion))]);
+                                    const materias = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'MATERIA PRIMA').map(f => f.opcion))]);
+
+                                    secciones.forEach(s => seccionSelect.innerHTML += `<option value="${s}">${s}</option>`);
+                                    unidades.forEach(u => unidadSelect.innerHTML += `<option value="${u}">${u}</option>`);
+                                    marcas.forEach(m => marcaSelect.innerHTML += `<option value="${m}">${m}</option>`);
+                                    materias.forEach(mp => materiaSelect.innerHTML += `<option value="${mp}">${mp}</option>`);
+                                }
+                            });
+
+                            seccionSelect.addEventListener('change', () => {
+                                const tipo = tipoInventario.value;
+                                const seccion = seccionSelect.value;
+
+                                if (tipo !== 'ALMACEN') return;
+
+                                const filtrado = opcionesInventario.filter(o => o.tipo === tipo && o.seccion === seccion);
+
+                                const unidades = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'UNIDAD MEDIDA').map(f => f.opcion))]);
+                                const marcas = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'MARCA').map(f => f.opcion))]);
+                                const materias = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'MATERIA PRIMA').map(f => f.opcion))]);
+
+                                limpiarSelect(unidadSelect);
+                                limpiarSelect(marcaSelect);
+                                limpiarSelect(materiaSelect);
+
+                                unidades.forEach(u => unidadSelect.innerHTML += `<option value="${u}">${u}</option>`);
+                                marcas.forEach(m => marcaSelect.innerHTML += `<option value="${m}">${m}</option>`);
+                                materias.forEach(mp => materiaSelect.innerHTML += `<option value="${mp}">${mp}</option>`);
+                            });
+                        </script>
+                        
                         {!! Form::submit('REGISTRAR PRODUCTO', ['class' => 'btn btn-sm btn-outline-secondary']) !!}
                     {!! Form::close() !!}
                 </div>
@@ -273,7 +342,7 @@
 </script>
 
 {{-- RELLENAR SEGUN LO SELECCIONADO --}}
-<script>
+{{-- <script>
     const opciones = {
         "ALMACEN": {
             "seccion": ["ESCRITORIO", "COCINA", "USO MEDICO", "PROMOCIONAL", "LIMPIEZA", "CONSTRUCCION Y FERRETERIA", "INSUMOS DECORATIVOS"],
@@ -415,7 +484,7 @@
         document.getElementById("tipo_inventario").dispatchEvent(new Event("change"));
     });
 
-</script>
+</script> --}}
 <style>
     .color-box {
         width: 35px;

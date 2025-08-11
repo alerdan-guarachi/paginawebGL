@@ -49,13 +49,39 @@
                                                     <th>Género</th>
                                                     <td>{{$clienteauditoria->genero}}</td>
                                                 </tr>
-                                                <tr>
+                                                <style>
+                                                    @keyframes heartbeat {
+                                                    0%, 100% {
+                                                        transform: scale(1);
+                                                    }
+                                                    50% {
+                                                        transform: scale(1.3);
+                                                    }
+                                                    }
+                                                    .icon-pulse {
+                                                    animation: heartbeat 1s infinite;
+                                                    }
+                                                </style>
+
+                                                @php
+                                                    use Carbon\Carbon;
+
+                                                    $fechaNacimiento = $clienteauditoria->fechanacimiento;
+                                                    $edadCalculada = $fechaNacimiento ? Carbon::parse($fechaNacimiento)->age : null;
+                                                @endphp
+
+                                                <tr> 
                                                     <th>Fecha de nacimiento</th>
-                                                    <td>{{$clienteauditoria->fechanacimiento}}</td>
-                                                </tr>
+                                                    <td>{{ $fechaNacimiento ?? 'NINGUNO' }}</td>
+                                                </tr>      
                                                 <tr>
                                                     <th>Edad</th>
-                                                    <td>{{$clienteauditoria->edad}}</td>
+                                                    <td>
+                                                        {{ $clienteauditoria->edad }}
+                                                        @if ($fechaNacimiento && $clienteauditoria->edad != $edadCalculada)
+                                                            <i class="fas fa-exclamation-triangle text-danger icon-pulse" title="SE DEBE ACTUALIZAR SU EDAD DEL CLIENTE"></i>
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <th>Lugar de nacimiento</th>
@@ -552,8 +578,8 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="titulo">
-                <h5 class="modal-title" id="dictamenModalLabel">DICTAMEN DE</h5>
-                <h3>{{$clienteauditoria->nombrecompleto}}</h3>
+                    <h5 class="modal-title" id="dictamenModalLabel">DICTAMEN DE</h5>
+                    <h3>{{$clienteauditoria->nombrecompleto}}</h3>
                 </div>
                 {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardardictamenauditoria', $clienteauditoria], 'method' => 'POST', 'enctype' => 'multipart/form-data']) !!}
                 {!! Form::hidden('usuarioregistroid', auth()->user()->id) !!}
@@ -562,8 +588,8 @@
                 {!! Form::hidden('clienteauditorianombre', $clienteauditoria->nombrecompleto) !!}
             
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-body">
                             <div class="row">
                                 <div class="form-group col-lg-4">
                                     {!! Form::label('nrodictamen', 'Nro. Dictamen:') !!}
@@ -574,7 +600,6 @@
                                         </small>
                                     @enderror
                                 </div>
-
                                 <div class="form-group col-lg-4">
                                     {!! Form::label('fechadictamen', 'Fecha Dictamen:') !!}
                                     {!! Form::date('fechadictamen', null, ['class' => 'form-control', 'placeholder' => '', 'required' => 'required']) !!}
@@ -584,7 +609,6 @@
                                         </small>
                                     @enderror
                                 </div>
-
                                 <div class="form-group col-lg-4"> 
                                     {!! Form::label('porcentajeinvalidez', 'Porcentaje de Invalidez:') !!}
                                     <div class="input-group">
@@ -604,61 +628,66 @@
                                     @enderror
                                 </div>
                             </div>
-                            
-                            <div class="form-group">
-                                <div class="mb-3">
-                                    {!! Form::label('documento', 'Documento:', ['class' => 'form-label']) !!}
-                                    <input type="file" name="documento" id="documento" accept=".pdf" required/>
-                                    @error('documento')
-                                        <div class="text-danger">
-                                            <i class="fas fa-exclamation-circle"></i>
-                                            {{$message}}
-                                        </div>
-                                    @enderror
+                            <div class="row">
+                                <div class="form-group col-lg-8">
+                                    <div class="mb-3">
+                                        {!! Form::label('documento', 'Documento:', ['class' => 'form-label']) !!}
+                                        <input type="file" name="documento" id="documento" accept=".pdf" class="form-control" required/>
+                                        @error('documento')
+                                            <div class="text-danger">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                                {{$message}}
+                                            </div>
+                                        @enderror
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="modal-footer" style="margin-top: 30px;">
-                                <button type="submit" class="btn btn-si">GUARDAR</button>
-                                <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">CERRAR</button>
+                                <div class="form-group col-lg-4 d-flex justify-content-end align-items-end">
+                                    <div>
+                                        <button type="submit" class="btn btn-si">GUARDAR</button>
+                                        <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">CERRAR</button>
+                                    </div>
+                                </div>
                             </div>
                             {!! Form::close() !!}
                         </div>
+                    </div>
 
-                        <div class="table-responsive">
-                            <div class="col-lg-12">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th style="color: black">ID Reg.</th>
-                                            <th style="color: black">Nro. Dictamen</th>
-                                            <th style="color: black">Fecha Dictamen</th>
-                                            <th style="color: black">Porcentaje Invalidez</th>
-                                            <th style="color: black">Archivo</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($dictamenauditorias as $dictamenauditoria)
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <div class="col-lg-12">
+                                    <table class="table table-striped table-sm">
+                                        <thead class="table-secondary">
                                             <tr>
-                                                <td style="text-align: left">{{ $dictamenauditoria->id }}</td>
-                                                <td style="text-align: left">{{ $dictamenauditoria->nrodictamen }}</td>
-                                                <td style="text-align: left">{{ $dictamenauditoria->fechadictamen }}</td>
-                                                <td style="text-align: left">{{ $dictamenauditoria->porcentajeinvalidez }}</td>
-                                                <td style="text-align: left">
-                                                    @if($dictamenauditoria->documento)
-                                                        <a href="{{ asset('dictamenauditoria/' . $dictamenauditoria->clienteauditoriaid . '/' . $dictamenauditoria->documento) }}" 
-                                                           target="_blank" class="btn btn-outline-success btn-sm">
-                                                           <i class="fas fa-eye"></i>
-                                                        </a>
-                                                    @else
-                                                        VACIO
-                                                    @endif
-                                                </td>
-                                                
+                                                <th style="color: black">ID Reg.</th>
+                                                <th style="color: black">Nro. Dictamen</th>
+                                                <th style="color: black">Fecha Dictamen</th>
+                                                <th style="color: black">Porcentaje Invalidez</th>
+                                                <th style="color: black">Archivo</th>
                                             </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($dictamenauditorias as $dictamenauditoria)
+                                                <tr>
+                                                    <td style="text-align: left">{{ $dictamenauditoria->id }}</td>
+                                                    <td style="text-align: left">{{ $dictamenauditoria->nrodictamen }}</td>
+                                                    <td style="text-align: left">{{ $dictamenauditoria->fechadictamen }}</td>
+                                                    <td style="text-align: left">{{ $dictamenauditoria->porcentajeinvalidez }}</td>
+                                                    <td style="text-align: left">
+                                                        @if($dictamenauditoria->documento)
+                                                            <a href="{{ asset('dictamenauditoria/' . $dictamenauditoria->clienteauditoriaid . '/' . $dictamenauditoria->documento) }}" 
+                                                                target="_blank" class="btn btn-vercarta btn-sm">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                        @else
+                                                            VACIO
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>

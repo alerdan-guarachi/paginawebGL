@@ -1017,7 +1017,7 @@
                             <td>${item.unidadmedida}</td>
                             <td>${item.marca}</td>
                             <td>${item.color}</td>
-                            <td>${item.modelo}</td>
+                            <td>${item.modelo ?? 0}</td>
                             <td>${item.presentacion}</td>
                             <td>${item.unidades}</td>
                             <td>${item.cantidad}</td>
@@ -1179,8 +1179,75 @@
     });
 
 </script>
-{{-- RELLENAR SEGUN LO SELECCIONADO --}}
 <script>
+    const opcionesInventario = @json($opcionesInventario);
+
+    const tipoInventario = document.getElementById('tipo_inventario');
+    const seccionSelect = document.getElementById('seccion');
+    const unidadSelect = document.getElementById('unidad_medida');
+    const marcaSelect = document.getElementById('marca');
+    const materiaSelect = document.getElementById('materia_prima');
+
+    const ordenar = arr => arr.sort((a, b) => a.localeCompare(b));
+
+    const limpiarSelect = select => {
+        select.innerHTML = '<option value="" disabled selected></option>';
+    };
+
+    tipoInventario.addEventListener('change', () => {
+        const tipo = tipoInventario.value;
+
+        limpiarSelect(seccionSelect);
+        limpiarSelect(unidadSelect);
+        limpiarSelect(marcaSelect);
+        limpiarSelect(materiaSelect);
+
+        if (tipo === 'ALMACEN') {
+            const secciones = ordenar([...new Set(opcionesInventario
+                .filter(o => o.tipo === 'ALMACEN')
+                .map(o => o.seccion))]);
+
+            secciones.forEach(seccion => {
+                seccionSelect.innerHTML += `<option value="${seccion}">${seccion}</option>`;
+            });
+        } else if (tipo === 'ACTIVO FIJO') {
+            const filtrado = opcionesInventario.filter(o => o.tipo === 'ACTIVO FIJO');
+
+            const secciones = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'SECCION').map(f => f.opcion))]);
+            const unidades = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'UNIDAD MEDIDA').map(f => f.opcion))]);
+            const marcas = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'MARCA').map(f => f.opcion))]);
+            const materias = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'MATERIA PRIMA').map(f => f.opcion))]);
+
+            secciones.forEach(s => seccionSelect.innerHTML += `<option value="${s}">${s}</option>`);
+            unidades.forEach(u => unidadSelect.innerHTML += `<option value="${u}">${u}</option>`);
+            marcas.forEach(m => marcaSelect.innerHTML += `<option value="${m}">${m}</option>`);
+            materias.forEach(mp => materiaSelect.innerHTML += `<option value="${mp}">${mp}</option>`);
+        }
+    });
+
+    seccionSelect.addEventListener('change', () => {
+        const tipo = tipoInventario.value;
+        const seccion = seccionSelect.value;
+
+        if (tipo !== 'ALMACEN') return;
+
+        const filtrado = opcionesInventario.filter(o => o.tipo === tipo && o.seccion === seccion);
+
+        const unidades = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'UNIDAD MEDIDA').map(f => f.opcion))]);
+        const marcas = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'MARCA').map(f => f.opcion))]);
+        const materias = ordenar([...new Set(filtrado.filter(f => f.tiposeccion === 'MATERIA PRIMA').map(f => f.opcion))]);
+
+        limpiarSelect(unidadSelect);
+        limpiarSelect(marcaSelect);
+        limpiarSelect(materiaSelect);
+
+        unidades.forEach(u => unidadSelect.innerHTML += `<option value="${u}">${u}</option>`);
+        marcas.forEach(m => marcaSelect.innerHTML += `<option value="${m}">${m}</option>`);
+        materias.forEach(mp => materiaSelect.innerHTML += `<option value="${mp}">${mp}</option>`);
+    });
+</script>
+{{-- RELLENAR SEGUN LO SELECCIONADO --}}
+{{-- <script>
     const opciones = {
         "ALMACEN": {
             "seccion": ["ESCRITORIO", "COCINA", "USO MEDICO", "PROMOCIONAL", "LIMPIEZA", "CONSTRUCCION Y FERRETERIA", "INSUMOS DECORATIVOS"],
@@ -1317,7 +1384,7 @@
             });
         }
     });
-</script>
+</script> --}}
 
 {{-- COLORES --}}
 <script>

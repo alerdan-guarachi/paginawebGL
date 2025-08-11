@@ -114,11 +114,15 @@
                             <td class="align-middle">{{$cliente->id}}</td>
                             <td class="align-middle">{{$cliente->nombrecompleto}}</td>
                             <td class="align-middle"> 
-                                {{ implode(', ', $cliente->servicios->pluck('tramite')->unique()->toArray()) }}
-                            </td>                        
+                                @if ($cliente->servicios->isNotEmpty())
+                                    {{ implode(', ', $cliente->servicios->pluck('tramite')->unique()->toArray()) }}
+                                @else
+                                    NINGUNO
+                                @endif
+                            </td>                      
                             <td class="align-middle">{{$cliente->ci}}</td>
                             <td class="align-middle">{{$cliente->edad}}</td>
-                            <td class="align-middle">{{$cliente->celular}}</td>
+                            <td class="align-middle">{{$cliente->celular ?? 0 }}</td>
                             <td class="align-middle">{{$cliente->sucursal}}</td>
                             @can('admin.asociados.verclienteita')
                             <td width="10px">

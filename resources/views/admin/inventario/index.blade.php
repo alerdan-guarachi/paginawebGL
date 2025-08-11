@@ -6,9 +6,11 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title" id="crearProductoModalLabel" style="font-weight: 900;">ELIGE UN TIPO DE INVENTARIO</h3>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
-            <div class="modal-body text-center" style="margin-top: 30px;">
+            <div class="modal-body text-center" style="margin-top: 30px; margin-bottom: 30px;">
                 <div class="row">
                     <div class="col-12 col-md-6 mb-3 d-flex justify-content-center">
                         <button type="button" class="btn btn-custom2" style="width: 80%;" onclick="redirectTo('almacen')">
@@ -41,9 +43,69 @@
     }
 </script>
 <!-- Botón para abrir el modal -->
-<a type="button" class="btn float-right btn-outline-secondary btn-sm" data-toggle="modal" data-target="#crearProductoModal">
+{{-- <a type="button" class="btn float-right btn-outline-secondary btn-sm" data-toggle="modal" data-target="#crearProductoModal">
     AGREGAR INVENTARIO
+</a> --}}
+
+<a class="btn float-right btn-outline-secondary btn-sm" data-toggle="modal" data-target="#modalCodigo">
+    CODIGO CAMBIO DE STOCK
 </a>
+
+<div class="modal fade" id="modalCodigo" tabindex="-1" role="dialog" aria-labelledby="modalCodigoLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="formCodigo">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modalCodigoLabel" style="font-weight: 900;">Ingresar Código</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="codigoInput" name="codigo" class="form-control" placeholder="Ingrese el código" required>
+                    <div id="codigoMensaje" class="mt-2 text-danger" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">VALIDAR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('formCodigo').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const codigo = document.getElementById('codigoInput').value.trim();
+        const mensaje = document.getElementById('codigoMensaje');
+        mensaje.style.display = 'none';
+
+        fetch('{{ route("permisoscodigo.cambiarstock") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            },
+            body: JSON.stringify({ codigo: codigo })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                $('#modalCodigo').modal('hide');
+                alert('Código validado correctamente');
+                location.reload(); // Recarga la página después de validar
+            } else {
+                mensaje.textContent = data.message;
+                mensaje.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mensaje.textContent = 'Ocurrió un error al procesar la solicitud.';
+            mensaje.style.display = 'block';
+        });
+    });
+</script>
+
 <h1>ADMINISTRACION DE INVENTARIO</h1>
 @stop
 
@@ -122,6 +184,25 @@
         color: #a0a0a0;
         cursor: not-allowed;
     }
+    .circle {
+        display: inline-block;
+        width: 30px;
+        height: 20px;
+        line-height: 20px;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+        margin-left: 8px;
+    }
+    .nav-link.active .circle {
+        background-color: #6e6e6e;
+        color: #fff;
+    }
+    .nav-link .circle {
+        background-color: #6e6e6e;
+        color: #fff;
+    }
 </style>
 @stop
 
@@ -133,14 +214,14 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 <div class="card">
     <nav class="navbar float-right" style="margin-top: 10px;">
         <form class="form-inline">
-            <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="Nombre del producto" aria-label="Search">
-            <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Buscar</button>
+            <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="NOMBRE DEL PRODUCTO..." style="width: 400px;" aria-label="Search">
+            <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">BUSCAR</button>
         </form>
     </nav>
 
@@ -150,32 +231,118 @@
             <li class="nav-item">
                 <a class="nav-link active" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
                     STOCK BAJO
+                    <?php if ($stockbajoCount > 0): ?>
+                        <span class="circle"><?= $stockbajoCount ?></span>
+                    <?php endif; ?>
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
                     PENDIENTES POR INGRESAR
+                    <?php if ($detalleOrdenesCount > 0): ?>
+                        <span class="circle"><?= $detalleOrdenesCount ?></span>
+                    <?php endif; ?>
                 </a>
             </li>   
             <li class="nav-item">
+                <a class="nav-link" id="tab-5" data-toggle="tab" href="#tab-content-5" role="tab" aria-controls="tab-content-5" aria-selected="true">
+                    DIRECTO A INGRESAR
+                    <?php if ($detalleingresodirectoCount > 0): ?>
+                        <span class="circle"><?= $detalleingresodirectoCount ?></span>
+                    <?php endif; ?>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
                     ALMACEN
+                    <?php if ($almacenCount > 0): ?>
+                        <span class="circle"><?= $almacenCount ?></span>
+                    <?php endif; ?>
                 </a>
             </li>     
             <li class="nav-item">
                 <a class="nav-link" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
                     ACTIVOS FIJOS
+                    <?php if ($activosfijosCount > 0): ?>
+                        <span class="circle"><?= $activosfijosCount ?></span>
+                    <?php endif; ?>
                 </a>
             </li>     
         </ul>
     </div>
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
+            {{-- STOCK BAJO --}}
+            <div class="tab-pane fade show active" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>Cod.Prod.</th>
+                                <th>Tipo_Inv.</th>
+                                <th>Producto</th>
+                                <th>Mat.prima</th>
+                                <th>Especif_Medida</th>
+                                <th>Color</th>
+                                <th>Marca</th>
+                                <th>Pres.</th>
+                                <th>Uni.</th>
+                                <th>U.medida</th>
+                                <th>Stock_Ini.</th>
+                                <th>Stock_Act.</th>
+                                <th>Cant.Min.</th>
+                                <th>Ciudad_Invent.</th>
+                                <th>Inventario</th>
+                                <th>Depósito</th>
+                                <th>Sección</th>
+                                <th>Precio</th>
+                                <th>Registros</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($bienesalmacenstockbajo as $bienes)
+                                <tr>
+                                    <td>{{$bienes->codigo}}</td>
+                                    <td>{{$bienes->tipoinventario}}</td>
+                                    <td title="{{ $bienes->nombreproducto }}" class="truncar">{{$bienes->nombreproducto}}</td>
+                                    <td title="{{ $bienes->materiaprima }}" class="truncar2">{{$bienes->materiaprima}}</td>
+                                    <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
+                                    <td>{{$bienes->color}}</td>
+                                    <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
+                                    <td>{{$bienes->presentacion}}</td>
+                                    <td>{{$bienes->unidades}}</td>
+                                    <td>{{$bienes->unidadmedida}}</td>
+                                    <td>{{$bienes->stockinicial}}</td>
+                                    <td>{{$bienes->stockactual}}</td>
+                                    <td>{{$bienes->minimocantidad}}</td>
+                                    <td>{{$bienes->ciudad}}</td>
+                                    <td title="{{ $bienes->inventario }}" class="truncar2">{{$bienes->inventario}}</td>
+                                    <td title="{{ $bienes->deposito }}" class="truncar">{{$bienes->deposito}}</td>
+                                    <td title="{{ $bienes->seccion }}" class="truncar2">{{$bienes->seccion}}</td>
+                                    <td>{{$bienes->precio}}</td>
+                                    <td class="justify-content-start">
+                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
+                                            <i class="fas fa-arrow-down"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
+                                            <i class="fas fa-arrow-up"></i> 
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody> 
+                    </table>
+                </div>
+                <div class="d-flex justify-content-center mt-3">
+                    {{ $bienesalmacenstockbajo->withQueryString()->fragment('tab-content-4')->links() }}
+                </div>
+            </div>
+
             {{-- PENDIENTES POR INGRESAR --}}
             <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-secondary">
                             <tr>
                                 <th>ID</th>
                                 <th>Cod.</th>
@@ -193,7 +360,6 @@
                                         <td>{{$detalles->id}}</td>
                                         <td>{{$detalles->codigo}}</td>
                                         <td>{{$detalles->detalle}}</td>
-                                        <td>{{$detalles->proveedorid}}</td>
                                         <td>{{$detalles->proveedornombre}}</td>
                                         <td>{{$detalles->cantidad}}</td>
                                         @php
@@ -390,7 +556,6 @@
                     </div>
                 </div>
             </div>
-
             <script> 
                 $(document).ready(function() {
                     $('#registroProductoModal').on('show.bs.modal', function(event) {
@@ -440,7 +605,6 @@
                     });
                 });
             </script>
-
             <script>
                 $(document).ready(function() {
                     $('#registroProductoModal').on('show.bs.modal', function(event) {
@@ -467,7 +631,6 @@
                     });
                 });
             </script>
-            
             <script>
                 function actualizarStock(codigoProducto, cantidad) {
                     $.ajax({
@@ -488,72 +651,294 @@
                     });
                 }
             </script>
-            
-            {{-- STOCK BAJO --}}
-            <div class="tab-pane fade show active" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
+
+            {{-- DIRECTO A INGRESAR --}}
+            <div class="tab-pane fade" id="tab-content-5" role="tabpanel" aria-labelledby="tab-5">
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-secondary">
                             <tr>
-                                <th>Cod.Prod.</th>
-                                <th>Tipo_Inv.</th>
-                                <th>Producto</th>
-                                <th>Mat.prima</th>
-                                <th>Especif_Medida</th>
-                                <th>Color</th>
-                                <th>Marca</th>
-                                <th>U.medida</th>
-                                <th>Stock_Ini.</th>
-                                <th>Stock_Act.</th>
-                                <th>Cant.Min.</th>
-                                <th>Ciudad_Invent.</th>
-                                <th>Inventario</th>
-                                <th>Depósito</th>
-                                <th>Sección</th>
-                                <th>Precio</th>
-                                <th>Registros</th>
+                                <th>Cod.</th>
+                                <th>Detalle</th>
+                                <th>Proveedor</th>
+                                <th hidden>Proveedor ID</th>
+                                <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($bienesalmacenstockbajo as $bienes)
+                            @foreach ($detalleingresodirecto as $detalles)
+                                @php
+                                    $productoEnInventario = \App\Models\Inventario::where('codigo', $detalles->codigo)->first();
+                                    $proveedor = \DB::table('proveedoresservicios')->where('id', $detalles->proveedorid)->first();
+                                @endphp
                                 <tr>
-                                    <td>{{$bienes->codigo}}</td>
-                                    <td>{{$bienes->tipoinventario}}</td>
-                                    <td title="{{ $bienes->nombreproducto }}" class="truncar">{{$bienes->nombreproducto}}</td>
-                                    <td title="{{ $bienes->materiaprima }}" class="truncar2">{{$bienes->materiaprima}}</td>
-                                    <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
-                                    <td>{{$bienes->color}}</td>
-                                    <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
-                                    <td>{{$bienes->unidadmedida}}</td>
-                                    <td>{{$bienes->stockinicial}}</td>
-                                    <td>{{$bienes->stockactual}}</td>
-                                    <td>{{$bienes->minimocantidad}}</td>
-                                    <td>{{$bienes->ciudad}}</td>
-                                    <td title="{{ $bienes->inventario }}" class="truncar2">{{$bienes->inventario}}</td>
-                                    <td title="{{ $bienes->deposito }}" class="truncar">{{$bienes->deposito}}</td>
-                                    <td title="{{ $bienes->seccion }}" class="truncar2">{{$bienes->seccion}}</td>
-                                    <td>{{$bienes->precio}}</td>
-                                    <td class="justify-content-start">
-                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
-                                            <i class="fas fa-arrow-down"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
-                                            <i class="fas fa-arrow-up"></i> 
-                                        </button>
+                                    <td>{{$detalles->id}}</td>
+                                    <td>{{$detalles->nombreproducto}}</td>
+                                    <td>{{$detalles->proveedornombre}}</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-registrar" data-toggle="modal" data-target="#registroProductoModal2" 
+                                            data-detalleordenid="{{$detalles->id}}" data-codigo="{{$detalles->id}}" data-nombreproducto="{{$detalles->nombreproducto}}"
+                                            data-cantidad="{{$detalles->cantidad}}" data-preciounitario="{{$detalles->preciounitario}}" data-proveedorid="{{$detalles->proveedorid}}" 
+                                            data-proveedornombre="{{$detalles->proveedornombre}}" data-fechacomprar="{{$detalles->fechacomprar}}" data-totalunitario="{{$detalles->totalunitario}}"
+                                            data-emision="{{ $proveedor ? $proveedor->emision : '' }}">
+                                            AGREGAR
+                                        </a>
                                     </td>
                                 </tr>
                             @endforeach
-                        </tbody> 
+                        </tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- MODAL DIRECTO INGRESO NUEVO PRODUCTO -->
+            <div class="modal fade" id="registroProductoModal2" tabindex="-1" role="dialog" aria-labelledby="registroProductoModal2Label" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="registroProductoModal2Label" style="font-weight: 900">REGISTRAR PRODUCTO DIRECTO A INVENTARIO</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form action="{{ route('inventario.registrarProducto') }}" method="POST">
+                                @csrf
+                                <input type="hidden" id="detalleordenid" name="detalleordenid">
+                                <input type="hidden" id="proveedorid" name="proveedorid" onchange="toggleNroFactura()">
+                                <input type="hidden" id="proveedornombre" name="proveedornombre">
+                                
+                                <div class="row">
+                                    <div class="form-group col-lg-2">
+                                        <label for="codigo">Código:</label>
+                                        <input type="text" class="form-control" id="codigo" name="codigo" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-4">
+                                        <label for="nombreproducto">Producto:</label>
+                                        <input type="text" class="form-control" id="nombreproducto" name="nombreproducto" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="preciounitario">Precio Uni.:</label>
+                                        <input type="number" class="form-control" id="preciounitario" name="preciounitario" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="cantidad">Cantidad:</label>
+                                        <input type="number" class="form-control" id="cantidad" name="cantidad" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="totalunitario">Total:</label>
+                                        <input type="number" class="form-control" id="precio" name="totalunitario" required readonly>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="form-group col-lg-2">
+                                        <label for="tipoinventario">Tipo Inv.:</label>
+                                        <input type="text" class="form-control" id="tipoinventario" name="tipoinventario" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="seccion">Sección:</label>
+                                        <input type="text" class="form-control" id="seccion" name="seccion" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="materiaprima">Mat. Prima:</label>
+                                        <input type="text" class="form-control" id="materiaprima" name="materiaprima" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="especificacionmedida">Esp. Medida:</label>
+                                        <input type="text" class="form-control" id="especificacionmedida" name="especificacionmedida" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="color">Color:</label>
+                                        <input type="text" class="form-control" id="color" name="color" required readonly>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="form-group col-lg-3">
+                                        <label for="marca">Marca:</label>
+                                        <input type="text" class="form-control" id="marca" name="marca" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="unidadmedida">Unidad medida:</label>
+                                        <input type="text" class="form-control" id="unidadmedida" name="unidadmedida" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="presentacion">Present.:</label>
+                                        <input type="text" class="form-control" id="presentacion" name="presentacion" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="unidades">Unidades:</label>
+                                        <input type="text" class="form-control" id="unidades" name="unidades" required readonly>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="precio">Precio:</label>
+                                        <input type="text" class="form-control" id="precio" name="precio" required readonly>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-lg-3">
+                                        <label for="fechacompra">Fecha Compra:</label>
+                                        <input type="date" class="form-control" id="fechacomprar" name="fechacompra" required>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="fecha">Fecha Entrada:</label>
+                                        <input type="date" class="form-control" id="fecha" name="fecha" required>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="inventario">Inventario:</label>
+                                        <select class="form-control" id="inventario" name="inventario" required>
+                                            <option value=""></option>
+                                            <option value="PRINCIPAL">PRINCIPAL</option>
+                                            <option value="ACTIVOS FIJOS">ACTIVOS FIJOS</option>
+                                            <option value="AGOTADO">AGOTADO</option>
+                                            <option value="ASIGNACION Y DEVOLUCION">ASIGNACION Y DEVOLUCION</option>
+                                            <option value="STOCK DEPURADO">STOCK DEPURADO</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="deposito">Depósito:</label>
+                                        <select class="form-control" id="deposito" name="deposito" required>
+                                            <option value=""></option>
+                                            <option value="PRINCIPAL">PRINCIPAL</option>
+                                            <option value="SECUNDARIO">SECUNDARIO</option>
+                                            <option value="N/A">N/A</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-lg-2">
+                                        <label for="nrofactura">Nro. Factura:</label>
+                                        <input type="number" class="form-control" id="nrofactura" name="nrofactura" required>
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="nrorecibo">Nro. Recibo:</label>
+                                        <input type="number" class="form-control" id="nrorecibo" name="nrorecibo" required>
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="modelo">Modelo:</label>
+                                        <input type="text" class="form-control" id="modelo" name="modelo">
+                                    </div>
+                                    <div class="form-group col-lg-3">
+                                        <label for="serie">Serie:</label>
+                                        <input type="text" class="form-control" id="serie" name="serie">
+                                    </div>
+                                    <div class="form-group col-lg-2">
+                                        <label for="minimacantidad">Cant. Min.:</label>
+                                        <input type="text" class="form-control" id="minimacantidad" name="minimacantidad" required>
+                                    </div>
+                                </div>
+                                <script>  
+                                    function toggleField(id) {
+                                        let campo = document.getElementById(id);
+                                        if (campo) {
+                                            if (campo.style.display === "none") {
+                                                campo.style.display = "block";
+                                            } else {
+                                                campo.style.display = "none";
+                                                campo.value = "";
+                                            }
+                                        }
+                                    }
+                                </script>
+                                
+                                <div class="row">
+                                    <div class="form-group col-lg-6">
+                                        <a class="btn btn-sm btn-outline-secondary mb-2" onclick="toggleField('fechavencimiento')">AÑADIR FECHA DE VENCIMIENTO</a>
+                                        <input type="date" id="fechavencimiento" name="fechavencimiento" class="form-control mb-2" style="display: none;">
+                                    </div>
+                                    <div class="form-group col-lg-6">
+                                        <a class="btn btn-sm btn-outline-secondary mb-2" onclick="toggleField('garantia')">AÑADIR FECHA DE GARANTIA</a>
+                                        <input type="date" id="garantia" name="garantia" class="form-control mb-2" style="display: none;">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-registrar">REGISTRAR PRODUCTO</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script> 
+                $(document).ready(function() {
+                    $('#registroProductoModal2').on('show.bs.modal', function(event) {
+                        var button = $(event.relatedTarget);
+                        var detalleordenId = button.data('detalleordenid');
+                        var codigo = button.data('codigo');
+                        var proveedorid = button.data('proveedorid'); // Obtener el proveedorid
+                        var emision = button.data('emision');  // Obtener el valor de emision
+            
+                        var modal = $(this);
+                        modal.find('#detalleordenid').val(detalleordenId);
+                        modal.find('#codigo').val(codigo);
+                        modal.find('#proveedorid').val(proveedorid);
+            
+                        var urlTemplate = '{{ route("portfolioProveedores.getByCodigo", ":codigo") }}';
+                        var url = urlTemplate.replace(':codigo', codigo);
+                        
+                        $.ajax({
+                            url: url,
+                            method: 'GET',
+                            dataType: 'json',
+                            success: function(data) {
+                                modal.find('#tipoinventario').val(data.tipoinventario);
+                                modal.find('#materiaprima').val(data.materiaprima);
+                                modal.find('#especificacionmedida').val(data.especificacionmedida);
+                                modal.find('#color').val(data.color);
+                                modal.find('#marca').val(data.marca);
+                                modal.find('#unidadmedida').val(data.unidadmedida);
+                                modal.find('#presentacion').val(data.presentacion);
+                                modal.find('#unidades').val(data.unidades);
+                                modal.find('#precio').val(data.precio);
+                                modal.find('#seccion').val(data.seccion);
+                            },
+                            error: function(err) {
+                                console.error('Error al obtener los datos del portafolio:', err);
+                            }
+                        });
+            
+                        // Lógica para mostrar/ocultar el campo de Nro. Factura
+                        if (emision === 'FACTURA') {
+                            modal.find('#nrofactura-group').show();
+                            modal.find('#nrofactura').prop('required', true); // Hacer obligatorio el campo
+                        } else {
+                            modal.find('#nrofactura-group').hide();
+                            modal.find('#nrofactura').prop('required', false); // Quitar obligatoriedad
+                        }
+                    });
+                });
+            </script>
+            <script>
+                $(document).ready(function() {
+                    $('#registroProductoModal2').on('show.bs.modal', function(event) {
+                        var button = $(event.relatedTarget);
+                        var detalleordenId = button.data('detalleordenid');
+                        var codigo = button.data('codigo');
+                        var nombreproducto = button.data('nombreproducto');
+                        var cantidad = button.data('cantidad');
+                        var preciounitario = button.data('preciounitario');
+                        var totalunitario = button.data('totalunitario');
+                        var proveedorid = button.data('proveedorid');
+                        var proveedornombre = button.data('proveedornombre');
+                        var fechacomprar = button.data('fechacomprar');
+                        var modal = $(this);
+                        modal.find('#detalleordenid').val(detalleordenId);
+                        modal.find('#codigo').val(codigo);
+                        modal.find('#nombreproducto').val(nombreproducto);
+                        modal.find('#cantidad').val(cantidad);
+                        modal.find('#preciounitario').val(preciounitario);
+                        modal.find('#totalunitario').val(totalunitario);
+                        modal.find('#proveedorid').val(proveedorid);
+                        modal.find('#proveedornombre').val(proveedornombre);
+                        modal.find('#fechacomprar').val(fechacomprar);
+                    });
+                });
+            </script>
+            
             {{-- ALMACEN --}}
             <div class="tab-pane fade" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
-                
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-secondary">
                             <tr>
                                 <th>Cod.Prod.</th>
                                 <th>Producto</th>
@@ -561,6 +946,8 @@
                                 <th>Especif_Medida</th>
                                 <th>Color</th>
                                 <th>Marca</th>
+                                <th>Pres.</th>
+                                <th>Uni.</th>
                                 <th>U.medida</th>
                                 <th>Stock_Ini.</th>
                                 <th>Stock_Act.</th>
@@ -582,9 +969,31 @@
                                     <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
                                     <td>{{$bienes->color}}</td>
                                     <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
+                                    <td>{{$bienes->presentacion}}</td>
+                                    <td>{{$bienes->unidades}}</td>
                                     <td>{{$bienes->unidadmedida}}</td>
                                     <td>{{$bienes->stockinicial}}</td>
-                                    <td>{{$bienes->stockactual}}</td>
+                                    {{-- <td>{{$bienes->stockactual}}</td> --}}
+                                    @php
+                                        $updated = $bienes->updated_at;
+                                        $esEditable = in_array($bienes->codigo, $codigosPermitidos) &&
+                                                    (is_null($updated) || !\Carbon\Carbon::parse($updated)->isToday());
+                                    @endphp
+                                    <td>
+                                        @if($esEditable)
+                                            <form method="POST" action="{{ route('inventario.actualizarStockcodigo', $bienes->codigo) }}" class="d-flex align-items-center">
+                                                @csrf
+                                                @method('PUT')
+                                                <input type="number" name="stockactual" value="{{ $bienes->stockactual }}" class="form-control form-control-sm w-50 me-1">
+                                                <button type="submit" class="btn btn-success btn-sm" title="Actualizar Stock">
+                                                    <i class="fas fa-save"></i>
+                                                </button>
+                                            </form>
+                                        @else
+                                            {{ $bienes->stockactual }}
+                                        @endif
+                                    </td>
+
                                     <td>{{$bienes->minimocantidad}}</td>
                                     <td>{{$bienes->ciudad}}</td>
                                     <td title="{{ $bienes->inventario }}" class="truncar2">{{$bienes->inventario}}</td>
@@ -611,10 +1020,9 @@
 
             {{-- ACTIVOS FIJOS --}}
             <div class="tab-pane fade" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
-                
                 <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
+                    <table class="table table-striped table-bordered">
+                        <thead class="table-secondary">
                             <tr>
                                 <th>Cod.Prod.</th>
                                 <th>Producto</th>
@@ -622,6 +1030,8 @@
                                 <th>Especif_Medida</th>
                                 <th>Color</th>
                                 <th>Marca</th>
+                                <th>Pres.</th>
+                                <th>Uni.</th>
                                 <th>Modelo</th>
                                 <th>Serie</th>
                                 <th>Sección</th>
@@ -642,12 +1052,33 @@
                                     <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
                                     <td>{{$bienes->color}}</td>
                                     <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
+                                    <td>{{$bienes->presentacion}}</td>
+                                    <td>{{$bienes->unidades}}</td>
                                     <td title="{{ $bienes->modelo }}" class="truncar">{{$bienes->modelo}}</td>
                                     <td title="{{ $bienes->serie }}" class="truncar">{{$bienes->serie}}</td>
                                     <td title="{{ $bienes->seccion }}" class="truncar2">{{$bienes->seccion}}</td>
                                     <td>{{$bienes->unidadmedida}}</td>
                                     <td>{{$bienes->stockinicial}}</td>
-                                    <td>{{$bienes->stockactual}}</td>
+                                    {{-- <td>{{$bienes->stockactual}}</td> --}}
+                                    @php
+                                        $updated = $bienes->updated_at;
+                                        $esEditable = in_array($bienes->codigo, $codigosPermitidos) &&
+                                                    (is_null($updated) || !\Carbon\Carbon::parse($updated)->isToday());
+                                    @endphp
+                                    <td>
+                                        @if($esEditable)
+                                            <form method="POST" action="{{ route('inventario.actualizarStockcodigo', $bienes->codigo) }}" class="d-flex align-items-center">
+                                                @csrf
+                                                @method('PUT')
+                                                <input type="number" name="stockactual" value="{{ $bienes->stockactual }}" class="form-control form-control-sm w-50 me-1">
+                                                <button type="submit" class="btn btn-success btn-sm" title="Actualizar Stock">
+                                                    <i class="fas fa-save"></i>
+                                                </button>
+                                            </form>
+                                        @else
+                                            {{ $bienes->stockactual }}
+                                        @endif
+                                    </td>
                                     <td>{{$bienes->ciudad}}</td>
                                     <td>{{$bienes->precio}}</td>
                                     <td class="justify-content-start">
@@ -1002,14 +1433,14 @@
 
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    @if (session('eliminar')=='ok')
-    <script>
-        Swal.fire(
-      '¡Eliminado!',
-      'El rol se eliminó con éxito',
-      'success')
-    </script>
-    @endif
+@if (session('eliminar')=='ok')
+<script>
+    Swal.fire(
+    '¡Eliminado!',
+    'El rol se eliminó con éxito',
+    'success')
+</script>
+@endif
 
 <script>
     $('.formulario-eliminar').submit(function(e){

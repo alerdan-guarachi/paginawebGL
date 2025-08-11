@@ -62,35 +62,33 @@
                                         <div style="text-align: center;padding: 1.5px;">
                                             <strong style="color: #26a1c0; font-size:20px;">ETAPA 1</strong>
                                         </div>
-                                        
-                                            <div class="row text-center">
-                                                @can('admin.asociados.crearbateriaclientecomun')
-                                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                                    <a href="{{ route('admin.asociados.crearbateriaclientecomun', $clientecomun) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
-                                                        <i class="fas fa-charging-station"></i>
-                                                        <strong>BATERIA</strong>
-                                                    </a>
-                                                </div>
-                                                @endcan
-                                                {{-- @can('admin.asociados.aprobacioncotizacionclientecomun')
-                                                    @if ($tieneBateria)
-                                                        <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                                            <a href="{{ route('admin.asociados.aprobacioncotizacionclientecomun', $clientecomun) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
-                                                                <i class="fas fa-donate"></i>
-                                                                <strong>COTIZACIÓN</strong>
-                                                            </a>
-                                                        </div>
-                                                        @else
-                                                        <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                                            <a href="#" class="btn btn-etapa1 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
-                                                                <i class="fas fa-donate"></i>
-                                                                <strong>COTIZACIÓN</strong>
-                                                            </a>
-                                                        </div>
-                                                    @endif
-                                                @endcan --}}
+                                        <div class="row text-center">
+                                            @can('admin.asociados.crearbateriaclientecomun')
+                                            <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                                <a href="{{ route('admin.asociados.crearbateriaclientecomun', $clientecomun) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
+                                                    <i class="fas fa-charging-station"></i>
+                                                    <strong>BATERIA</strong>
+                                                </a>
                                             </div>
-                                        
+                                            @endcan
+                                            {{-- @can('admin.asociados.aprobacioncotizacionclientecomun')
+                                                @if ($tieneBateria)
+                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                        <a href="{{ route('admin.asociados.aprobacioncotizacionclientecomun', $clientecomun) }}" class="btn btn-etapa1 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
+                                                            <i class="fas fa-donate"></i>
+                                                            <strong>COTIZACIÓN</strong>
+                                                        </a>
+                                                    </div>
+                                                    @else
+                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                        <a href="#" class="btn btn-etapa1 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
+                                                            <i class="fas fa-donate"></i>
+                                                            <strong>COTIZACIÓN</strong>
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            @endcan --}}
+                                        </div>
                                     </div>
                                     <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
                                         <div style="text-align: center; padding: 1.5px;">
@@ -195,13 +193,34 @@
                                                     <th>CI</th>
                                                     <td>{{$clientecomun->ci}}</td>
                                                 </tr>
-                                                <tr>
+                                                {{-- <tr>
                                                     <th>Fecha de nacimiento</th>
                                                     <td>{{$clientecomun->fechanacimiento}}</td>
                                                 </tr>
                                                 <tr>
                                                     <th>Edad</th>
                                                     <td>{{$clientecomun->edad}}</td>
+                                                </tr> --}}
+
+                                                @php
+                                                    use Carbon\Carbon;
+
+                                                    $fechaNacimiento = $clientecomun->fechanacimiento;
+                                                    $edadCalculada = $fechaNacimiento ? Carbon::parse($fechaNacimiento)->age : null;
+                                                @endphp
+
+                                                <tr> 
+                                                    <th>Fecha de nacimiento</th>
+                                                    <td>{{ $fechaNacimiento ?? 'NINGUNO' }}</td>
+                                                </tr>      
+                                                <tr>
+                                                    <th>Edad</th>
+                                                    <td>
+                                                        {{ $clientecomun->edad }}
+                                                        @if ($fechaNacimiento && $clientecomun->edad != $edadCalculada)
+                                                            <i class="fas fa-exclamation-triangle text-danger icon-pulse" title="SE DEBE ACTUALIZAR SU EDAD DEL CLIENTE"></i>
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -298,7 +317,7 @@ $('.dropify').dropify();
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -309,7 +328,7 @@ $('.dropify').dropify();
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }

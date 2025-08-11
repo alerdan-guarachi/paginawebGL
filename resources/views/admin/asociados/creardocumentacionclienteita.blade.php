@@ -5,8 +5,6 @@
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
 @endif
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">INFORMES DEL CLIENTE</a>
-{{-- <a class="btn btn-sm float-right btn-listainformes" href="{{ route('admin.asociados.listadodocumentacionclienteita', $cliente) }}">LISTA DE INFORMES</a> --}}
-{{-- <a class="btn btn-sm float-right btn-multiple" href="{{ route('admin.asociados.documentacionmultipleclienteita', 6) }}">DOC. MÚLTIPLE</a> --}}
 
 <h5>SUBIR INFORMES DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
@@ -20,7 +18,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 <div class="card">
@@ -89,41 +87,38 @@
                             </small>
                             @enderror
                         </div>
-                    <button type="button" class="btn btn-regresar" data-toggle="modal" data-target="#previewModal">VISTA PREVIA</button>
+                    <button type="button" class="btn btn-sm btn-regresar" data-toggle="modal" data-target="#previewModal">VISTA PREVIA</button>
                     </div>
 
                     <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                            <h5 class="modal-title" id="previewModalLabel">Vista Previa del Informe</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                            </div>
-                            {{-- <div class="modal-body">
-                            <iframe id="document-preview" style="width: 100%; height: 500px; border: none;"></iframe>
-                            </div> --}}
-                            <div class="modal-body">
-                                <object id="document-preview" type="application/pdf" style="width: 100%; height: 500px;">
-                                    <p><a id="pdf-download" href="#" target="_blank">Descargar</a></p>
-                                </object>
-                            </div>
-                            <script>
-                                document.getElementById("archivo").addEventListener("change", function(event) {
-                                let file = event.target.files[0];
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="previewModalLabel">Vista Previa del Informe</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <object id="document-preview" type="application/pdf" style="width: 100%; height: 500px;">
+                                        <p><a id="pdf-download" href="#" target="_blank">Descargar</a></p>
+                                    </object>
+                                </div>
+                                <script>
+                                    document.getElementById("archivo").addEventListener("change", function(event) {
+                                        let file = event.target.files[0];
 
-                                if (file) {
-                                    let objectURL = URL.createObjectURL(file);
-                                    let preview = document.getElementById("document-preview");
-                                    let downloadLink = document.getElementById("pdf-download");
+                                        if (file) {
+                                            let objectURL = URL.createObjectURL(file);
+                                            let preview = document.getElementById("document-preview");
+                                            let downloadLink = document.getElementById("pdf-download");
 
-                                    preview.data = objectURL;
-                                    downloadLink.href = objectURL;
-                                }
-                            });
-                            </script>                            
-                        </div>
+                                            preview.data = objectURL;
+                                            downloadLink.href = objectURL;
+                                        }
+                                    });
+                                </script>                            
+                            </div>
                         </div>
                     </div>
   
@@ -167,7 +162,7 @@
                         
                                     <div id="acciones-container" class="mt-3">
                                         <table class="table table-bordered" id="acciones-table">
-                                            <thead>
+                                            <thead class="table-secondary table-sm">
                                                 <tr>
                                                     <th>ID</th>
                                                     <th>Estudio/Especialidad</th>
@@ -523,7 +518,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     .btn-crear:hover {
         background-color: #94c93b;
@@ -556,7 +551,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -566,13 +561,13 @@
     }
     .btn-cerrar {
         background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
+        color: #d62323;
+        border-color: #d62323;
         border-radius: 5px;
         padding: 5px 10px;
     }
     .btn-cerrar:hover {
-        background-color: #94c93b;
+        background-color: #d62323;
         color: #ffffff;
     }
     .btn-regresar {
@@ -580,7 +575,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -591,7 +586,7 @@
         color: #26b0e2;
         border-color: #26b0e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-multiple:hover {
         background-color: #26b0e2;
@@ -602,7 +597,7 @@
         color: #493535;
         border-color: #493535;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         margin-left: 10px;
 
     }

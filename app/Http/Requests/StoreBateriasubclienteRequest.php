@@ -82,6 +82,7 @@ class StoreBateriasubclienteRequest extends FormRequest
             'fechapago' => '',
             'estadoaprobacion' => '',
             'comprobante' => '',
+            'cheque' => '',
             'usuariocomprobante' => '',
             'ordenid' => '',
             'fechamora' => '',

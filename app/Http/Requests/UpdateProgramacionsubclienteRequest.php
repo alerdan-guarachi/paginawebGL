@@ -63,6 +63,9 @@ class UpdateProgramacionsubclienteRequest extends FormRequest
         'usuarioanulacion' => '',
         'medicoderivante' => '',
         'usuariocomprobante' => '',
+        'comprobante' => '',
+        'cheque' => '',
+        'codautorizacion' => '',
     ]; 
     return $rules;
 }

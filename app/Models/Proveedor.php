@@ -45,6 +45,7 @@ class Proveedor extends Model
         'ci' => '',
         'ciudad3' => '',
         'imagenqr' => '',
+        'nombreproveedor' => '',
     ]; 
 
     protected $fillable = [
@@ -80,6 +81,7 @@ class Proveedor extends Model
         'ci',
         'ciudad3',
         'imagenqr',
+        'nombreproveedor',
     ];
     public function departamento()
     {

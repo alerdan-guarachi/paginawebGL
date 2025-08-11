@@ -9,6 +9,12 @@
     <a class="btn btn-sm float-right btn-auditoriamedica" data-toggle="modal" data-target="#ventanaModalauditoriamedica">SERVICIOS ADICIONALES</a>
 @endif
 
+@can('admin.asociados.subirdocumentacionextra')
+@if ($tieneAuditoriaMedica)
+<a class="btn btn-sm float-right btn-cartas" data-toggle="modal" data-target="#cartasclientes">DOCUMENTACIÓN AUDITORIA</a>
+@endif
+@endcan
+
 <h5>DATOS DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
 @stop
@@ -96,24 +102,51 @@
                                                 </tr>
                                                 <tr>
                                                     <th>Complemento</th>
-                                                    <td>{{$cliente->cicomplemento}}</td>
+                                                    <td>{{$cliente->cicomplemento ?? 0}}</td>
                                                 </tr>
                                                 <tr>
                                                     <th>C/exp.</th>
-                                                    <td>{{$cliente->ciexp}}</td>
+                                                    <td>{{$cliente->ciexp ?? 0}}</td>
                                                 </tr>
                                                 <tr> 
                                                     <th>Fecha Ven/CI</th>
                                                     <td>{{ $cliente->fechavencci ? $cliente->fechavencci : 'INDEFINIDO' }}</td>
                                                 </tr>      
+                                                <style>
+                                                    @keyframes heartbeat {
+                                                    0%, 100% {
+                                                        transform: scale(1);
+                                                    }
+                                                    50% {
+                                                        transform: scale(1.3);
+                                                    }
+                                                    }
+                                                    .icon-pulse {
+                                                    animation: heartbeat 1s infinite;
+                                                    }
+                                                </style>
+
+                                                @php
+                                                    use Carbon\Carbon;
+
+                                                    $fechaNacimiento = $cliente->fechanacimiento;
+                                                    $edadCalculada = $fechaNacimiento ? Carbon::parse($fechaNacimiento)->age : null;
+                                                @endphp
+
                                                 <tr> 
                                                     <th>Fecha Nac.</th>
-                                                    <td>{{ $cliente->fechanacimiento ? $cliente->fechanacimiento : 'NINGUNO' }}</td>
+                                                    <td>{{ $fechaNacimiento ?? 'NINGUNO' }}</td>
                                                 </tr>      
                                                 <tr>
                                                     <th>Edad</th>
-                                                    <td>{{$cliente->edad}}</td>
+                                                    <td>
+                                                        {{ $cliente->edad }}
+                                                        @if ($fechaNacimiento && $cliente->edad != $edadCalculada)
+                                                            <i class="fas fa-exclamation-triangle text-danger icon-pulse" title="SE DEBE ACTUALIZAR SU EDAD DEL CLIENTE"></i>
+                                                        @endif
+                                                    </td>
                                                 </tr>
+
                                                 <tr>
                                                     <th>Lugar nac.</th>
                                                     <td>{{$cliente->paisnacimiento}} - {{$cliente->lugarnacimiento}}</td>
@@ -212,7 +245,7 @@
                                                 </tr>
                                                 <tr>
                                                     <th>Alertas</th>
-                                                    <td>{{$cliente->alertas}}</td>
+                                                    <td>{{$cliente->alertas ?? 0}}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -472,7 +505,7 @@
                         @can('admin.asociados.generarchecklistclienteita')
                             @if ($tieneContactos)
                                 {{-- @if (!$tienerequisitosauditoria) --}}
-                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                     <a href="{{ route('admin.asociados.generarchecklistclienteitaaudi', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                         <i class="fas fa-tasks"></i>
                                         <strong>DERIV. Y REQ.</strong>
@@ -487,7 +520,7 @@
                                 </div>
                                 @endif --}}
                             @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
                                     <i class="fas fa-tasks"></i>
                                     <strong>DERIV. Y REQ.</strong>
@@ -497,14 +530,14 @@
                         @endcan
                         @can('admin.asociados.creardocumentacionclienteita')
                             @if ($tienerequisitosauditoria)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
                                     <i class="fas fa-list-alt"></i>
                                     <strong>INFORMES</strong>
                                 </a>
                             </div>
                             @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                 <a href="#" class="btn btn-subirdocumento2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
                                     <i class="fas fa-list-alt"></i>
                                     <strong>INFORMES</strong>
@@ -512,6 +545,13 @@
                             </div>
                             @endif
                         @endcan
+
+                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                            <button type="button" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="modal" data-target="#dictamenModal" data-placement="top" title="DICTAMEN">
+                                <i class="fas fa-file-archive"></i>
+                                <strong>DICTAMEN</strong>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -675,6 +715,221 @@
     </div>
 </div>
 
+<!-- CARTAS -->
+    <div class="modal fade" id="cartasclientes" tabindex="-1" role="dialog" aria-labelledby="cartasclientesLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <strong style="text-align: center; font-size:20px; margin-top: 20px;">DOCUMENTOS DE {{ $cliente->nombrecompleto }} </strong>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    {!! Form::model($cliente, ['route' => ['admin.asociados.guardarcartaclienteauditoriaita', $cliente], 'method' => 'POST', 'files' => true]) !!}
+                                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                    {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
+
+                                    <strong style="color: #94c93b">SUBIR DOCUMENTOS</strong>
+                                    <div class="form-group">
+                                        {!! Form::label('detalle', 'Detalle:') !!}
+                                        {!! Form::text('detalle', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                                        @error('detalle')
+                                            <small class="text-danger fas fa-exclamation-circle">
+                                                {{ $message }}
+                                            </small>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        {!! Form::label('fecha', 'Fecha_Reg:') !!}
+                                        {!! Form::date('fecha', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                                        @error('fecha')
+                                            <small class="text-danger fas fa-exclamation-circle">
+                                                {{ $message }}
+                                            </small>
+                                        @enderror
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="mb-3">
+                                            {!! Form::label('carta', 'Documento:', ['class' => 'form-label']) !!}
+                                            <input type="file" name="carta" id="carta" class="dropify" accept=".pdf"/>
+                                            @error('carta')
+                                                <small class="text-danger fas fa-exclamation-circle">
+                                                    {{ $message }}
+                                                </small>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-sm btn-si">GUARDAR</button>
+                                        <button type="button" class="btn btn-sm btn-no" data-dismiss="modal">CERRAR</button>
+                                    </div>
+                                    {!! Form::close() !!}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <strong style="color: #94c93b">LISTADO DE DOCUMENTOS</strong>
+                                    <div class="table-responsive"></div>
+                                        <table class="table table-striped">
+                                            <thead class="table-secondary">
+                                                <tr>
+                                                    <th style="color: black; padding: 5px;">ID</th>
+                                                    <th style="color: black; padding: 5px;">Detalle</th>
+                                                    <th style="color: black; padding: 5px;">Fecha</th>
+                                                    <th style="color: black; padding: 5px;">Doc.</th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($cartasclientes as $cartascliente)
+                                                    <tr>
+                                                        <td style="text-align: left; padding: 5px;">{{ $cartascliente->id }}</td>
+                                                        <td style="text-align: left; padding: 5px;">{{ $cartascliente->detalle }}</td>
+                                                        <td style="text-align: left; padding: 5px;">{{ $cartascliente->fecha }}</td>
+                                                        <td style="text-align: left; padding: 5px;">
+                                                            <a href="{{ asset('/cartasclientesita/' . $cliente->id . '/' . $cartascliente->documento) }}" class="btn btn-vercarta" target="_blank" title="VER DOCUMENTO">
+                                                                <i class="fas fa-file-alt"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{{-- DICTAMEN --}}
+<div class="modal fade modal-custom-height" id="dictamenModal" tabindex="-1" aria-labelledby="dictamenModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="titulo">
+                <h5 class="modal-title" id="dictamenModalLabel">DICTAMEN DE</h5>
+                <h3>{{$cliente->nombrecompleto}}</h3>
+            </div>
+            {!! Form::model($cliente, ['route' => ['admin.asociados.guardardictamenita', $cliente], 'method' => 'POST', 'enctype' => 'multipart/form-data']) !!}
+            {!! Form::hidden('usuarioregistroid', auth()->user()->id) !!}
+            {!! Form::hidden('usuarioregistronombre', auth()->user()->name) !!}
+            {!! Form::hidden('clienteitaid', $cliente->id) !!}
+            {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
+        
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="form-group col-lg-4">
+                                {!! Form::label('nrodictamen', 'Nro. Dictamen:') !!}
+                                {!! Form::text('nrodictamen', null, ['class' => 'form-control', 'placeholder' => '', 'required' => 'required']) !!}
+                                @error('nrodictamen')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+                            </div>
+                            <div class="form-group col-lg-4">
+                                {!! Form::label('fechadictamen', 'Fecha Dictamen:') !!}
+                                {!! Form::date('fechadictamen', null, ['class' => 'form-control', 'placeholder' => '', 'required' => 'required']) !!}
+                                @error('fechadictamen')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+                            </div>
+                            <div class="form-group col-lg-4"> 
+                                {!! Form::label('porcentajeinvalidez', 'Porcentaje de Invalidez:') !!}
+                                <div class="input-group">
+                                    {!! Form::text('porcentajeinvalidez', null, [
+                                        'class' => 'form-control',
+                                        'placeholder' => '',
+                                        'required' => 'required'
+                                    ]) !!}
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                                @error('porcentajeinvalidez')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-lg-8">
+                                {!! Form::label('documento', 'Documento:', ['class' => 'form-label']) !!}
+                                <input type="file" name="documento" id="documento" accept=".pdf" class="form-control" required/>
+                                @error('documento')
+                                    <div class="text-danger">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{$message}}
+                                    </div>
+                                @enderror
+                            </div>
+                            <div class="form-group col-lg-4 d-flex justify-content-end align-items-end">
+                                <div>
+                                    <button type="submit" class="btn btn-si">GUARDAR</button>
+                                    <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">CERRAR</button>
+                                </div>
+                            </div>
+                        </div>
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <div class="col-lg-12">
+                                <table class="table table-striped table-sm">
+                                    <thead class="table-secondary">
+                                        <tr>
+                                            <th style="color: black">ID Reg.</th>
+                                            <th style="color: black">Nro. Dictamen</th>
+                                            <th style="color: black">Fecha Dictamen</th>
+                                            <th style="color: black">Porcentaje Invalidez</th>
+                                            <th style="color: black">Archivo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($dictamenitas as $dictamenita)
+                                            <tr>
+                                                <td style="text-align: left">{{ $dictamenita->id }}</td>
+                                                <td style="text-align: left">{{ $dictamenita->nrodictamen }}</td>
+                                                <td style="text-align: left">{{ $dictamenita->fechadictamen }}</td>
+                                                <td style="text-align: left">{{ $dictamenita->porcentajeinvalidez }}</td>
+                                                <td style="text-align: left">
+                                                    @if($dictamenita->documento)
+                                                        <a href="{{ asset('dictamenita/' . $dictamenita->clienteitaid . '/' . $dictamenita->documento) }}" 
+                                                            target="_blank" class="btn btn-vercarta btn-sm">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    @else
+                                                        VACIO
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- PROVEEDOR INFORME FINAL --}}
 <div class="modal fade modal-custom-height" id="proveedorinformeModal" tabindex="-1" aria-labelledby="proveedorinformeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
@@ -797,13 +1052,13 @@
                                         tramiteInput.value = tramiteAutorellenado;
 
                                         if (tramiteAutorellenado === 'AUDITORIA MEDICA' || tramiteAutorellenado === 'INVALIDEZ') {
-                                            precioInput.value = '2100.00';
+                                            precioInput.value = '2500.00';
                                         } else if (tramiteAutorellenado === 'APELACION') {
-                                            precioInput.value = '1100.00';
+                                            precioInput.value = '1300.00';
                                         } else if (tramiteAutorellenado === 'SEGUNDA SOLICITUD') {
-                                            precioInput.value = clienteConInvalidez ? '1100.00' : '2100.00';
+                                            precioInput.value = clienteConInvalidez ? '1300.00' : '2500.00';
                                         } else {
-                                            precioInput.value = '1100.00';
+                                            precioInput.value = '1300.00';
                                         }
                                     } else {
                                         tramiteInput.value = '';
@@ -1054,6 +1309,30 @@
     }
 </style>
 <style>
+    .btn-vercarta {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-vercarta:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-cartas {
+        background-color: #ffffff;
+        color: #9c3bc9;
+        border-color: #9c3bc9;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    .btn-cartas:hover {
+        background-color: #9c3bc9;
+        color: #ffffff;
+    }
     .btn-no {
     color: #fd1d1d;
     border-color: #fd1d1d;

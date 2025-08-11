@@ -5,7 +5,7 @@
 @can('admin.empresas.create')
 <a class="btn btn-sm float-right btn-crear" href="{{route('admin.empresas.create')}}">NUEVA EMPRESA</a>
 @endcan
-<h1>EMPRESAS</h1>
+<h1>LISTA DE EMPRESAS</h1>
 @stop
 
 @section('content')
@@ -16,61 +16,48 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 <div class="card">
     <div class="card-body">
         <nav class="navbar float-right">
             <form class="form-inline">
-                <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="Nombre de la empresa" aria-label="Search">
-                <button class="btn btn-buscar my-2 my-sm-0" type="submit">Buscar</button>
+                <input name="buscarpor" class="form-control mr-sm-2" type="search" placeholder="NOMBRE DE LA EMPRESA..." style="width: 250px;" aria-label="Search">
+                <button class="btn btn-buscar my-2 my-sm-0" type="submit">BUSCAR</button>
             </form>
         </nav>
         <div class="table-responsive">
         <table class="table table-striped">
             <thead>
                 <tr>
+                    <th>ID</th>
                     <th>Empresa</th>
                     <th>Contacto</th>
                     <th>Celular</th>
-                    <th>Telefono</th>
-                    <th>Direccion</th>
-                    <th colspan="2"></th>
+                    <th>Teléfono</th>
+                    <th>Editar</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($empresas as $empresa)
                     <tr>
+                        <td>{{$empresa->id}}</td>
                         <td>{{$empresa->nombreempresa}}</td>
                         <td>{{$empresa->contacto}}</td>
                         <td>{{$empresa->celular}}</td>
                         <td>{{$empresa->telefono}}</td>
-                        <td>{{$empresa->direccion}}</td>
                         <td width="10px">
                             @can('admin.empresas.edit')
-                            <abbr title="Editar Empresa">
+                            <abbr title="EDITAR EMPRESA">
                                 <a class="btn btn-sm fas fa-edit btn-editar" href="{{route('admin.empresas.edit', $empresa)}}" ></a>
                             </abbr>
                             @endcan
-                        </td>
-
-                        <td width="10px">
-                            {{-- @can('admin.roles.destroy') --}}
-                            {{-- <abbr title="Eliminar Empresa">
-                                <form action="{{route('admin.empresas.destroy', $empresa)}}" class="d-inline formulario-eliminar" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm fas fa-trash-alt btn-eliminar"></button>
-                                </form>
-                            </abbr> --}}
-                                {{-- @endcan --}}
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
-    </div>
     </div>
 </div>
 @stop
@@ -82,47 +69,50 @@
         font-family: "Segoe UI";
         font-weight: 900;
         }
-        .btn-editar {
-                background-color:  #ffffff;
-                color: #94c93b;
-                border-color: #94c93b;
-                border-radius: 5px;
-            }
-        .btn-editar:hover {
-                background-color: #94c93b;
-                color: #ffffff;
-            }
-        .btn-eliminar {
-                background-color:  #ffffff;
-                color: #ff0000;
-                border-color: #ff0000;
-                border-radius: 5px;
-            }
-        .btn-eliminar:hover {
-                background-color: #ff0000;
-                color: #ffffff;
-            }
-        .btn-crear {
-                background-color:  #ffffff;
-                color: #94c93b;
-                border-color: #94c93b;
-                border-radius: 5px;
-                padding: 10px 20px;
-            }
-        .btn-crear:hover {
-                background-color: #94c93b;
-                color: #ffffff;
-            }
-        .btn-buscar { 
-                background-color:  #ffffff;
-                color: #faa625;
-                border-color: #faa625;
-                border-radius: 5px;
-            }
-        .btn-buscar:hover {
-                background-color: #faa625;
-                color: #ffffff;
-            }
+    .btn-editar {
+            background-color:  #ffffff;
+            color: #94c93b;
+            border-color: #94c93b;
+            border-radius: 5px;
+        }
+    .btn-editar:hover {
+            background-color: #94c93b;
+            color: #ffffff;
+        }
+    .btn-eliminar {
+            background-color:  #ffffff;
+            color: #ff0000;
+            border-color: #ff0000;
+            border-radius: 5px;
+        }
+    .btn-eliminar:hover {
+            background-color: #ff0000;
+            color: #ffffff;
+        }
+    .btn-crear {
+            background-color:  #ffffff;
+            color: #94c93b;
+            border-color: #94c93b;
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+    .btn-crear:hover {
+            background-color: #94c93b;
+            color: #ffffff;
+        }
+    .btn-buscar { 
+            background-color:  #ffffff;
+            color: #faa625;
+            border-color: #faa625;
+            border-radius: 5px;
+        }
+    .btn-buscar:hover {
+            background-color: #faa625;
+            color: #ffffff;
+        }
+    .table td {
+        padding: 5px 10px;
+    }
 </style>
 @stop
 

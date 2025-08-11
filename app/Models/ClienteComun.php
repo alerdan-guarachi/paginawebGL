@@ -32,6 +32,7 @@ class ClienteComun extends Model
         'usuarioregistro' => '',
         'celular' => '',
         'sucursal' =>'',
+        'cicomplemento' => '',
     ]; 
 
     protected $fillable = [
@@ -47,7 +48,8 @@ class ClienteComun extends Model
         'usuarioid',
         'usuarioregistro',
         'celular',
-        'sucursal'
+        'sucursal',
+        'cicomplemento',
     ];
 
     public function user(){

@@ -29,7 +29,7 @@
         border-color: #2821f3d1;
         border-radius: 5px;
         font-weight: bold;
-        padding: 5px 10px;
+        padding: 5px 8px;
     }
     .btn-listaclientes:hover {
         background-color: #2821f3d1;
@@ -88,14 +88,14 @@
                 @if($rolusuario !== 'ASOCIADO')
                 <thead>
                     <tr>
-                        <th>Clientes Good Life</th>
+                        <th>CLIENTES GOOD LIFE</th>
                         <th colspan="2"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($grupoclientes as $grupocliente)
                         <tr>
-                            <td style="padding: 10 10px;">{{$grupocliente->asociado}}</td>
+                            <td style="padding: 10 13px;">{{$grupocliente->asociado}}</td>
                             <td width="10px">
                                 <abbr title="CREAR CARTA DE SOLICITUD DE POLIZAS">
                                     @if($grupocliente->asociado === 'AUDITORIA MEDICA')
@@ -209,7 +209,7 @@
 
                 <thead>
                     <tr>
-                        <th>Asociados</th>
+                        <th>ASOCIADOS</th>
                         <th colspan="2"></th>
                     </tr>
                 </thead>
@@ -218,7 +218,7 @@
                         @if($rolusuario === 'ASOCIADO')
                             @if($asociado->asociado === $empresaUsuario)
                                 <tr>
-                                    <td style="padding: 10 10px;">{{ $asociado->asociado }}</td>
+                                    <td style="padding: 10 13px;">{{ $asociado->asociado }}</td>
                                     <td width="10px">
 
                                     </td>

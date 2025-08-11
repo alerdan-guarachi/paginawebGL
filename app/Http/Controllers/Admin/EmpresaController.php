@@ -25,8 +25,9 @@ class EmpresaController extends Controller
     {
         $nombreempresa = $request->get('buscarpor');
 
-        $empresas = Empresa::where('nombreempresa','Like',"%$nombreempresa%")->simplePaginate(1000);
-       
+        $empresas = Empresa::where('nombreempresa', 'like', "%$nombreempresa%")
+        ->orderBy('nombreempresa')
+        ->simplePaginate(1000);
 
         return view('admin.empresas.index', compact('empresas'));
     }

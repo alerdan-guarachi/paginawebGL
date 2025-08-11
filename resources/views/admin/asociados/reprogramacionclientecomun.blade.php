@@ -40,7 +40,7 @@
         </nav>
 
         <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-dialog modal-xl" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="exampleModalLabel">REPROGRAMACIONES:</h5>
@@ -197,13 +197,13 @@
     <style>
         .btn-cerrar {
             background-color: #ffffff;
-            color: #94c93b;
-            border-color: #94c93b;
+            color: #d82b2b;
+            border-color: #d82b2b;
             border-radius: 5px;
             padding: 5px 10px;
         }
         .btn-cerrar:hover {
-            background-color: #94c93b;
+            background-color: #d82b2b;
             color: #ffffff;
         }
         .btn-reprogramacion {

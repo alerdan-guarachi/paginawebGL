@@ -27,6 +27,8 @@ class SolicitudInventario extends Model
         'cantidadrecibido' => '',
         'cantidadofertado' => '',
         'documento' => '',
+        'motivoanulacion' => '',
+        'usuarioanulacion' => '',
     ]; 
 
     protected $fillable = [
@@ -45,6 +47,8 @@ class SolicitudInventario extends Model
         'cantidadrecibido',
         'cantidadofertado',
         'documento',
+        'motivoanulacion',
+        'usuarioanulacion',
     ];
 
 }

@@ -48,7 +48,7 @@
                             </small>
                         @enderror
                     </div>
-                    <div class="form-group col-lg-2">
+                    <div class="form-group col-lg-1">
                         {!! Form::label('ci', 'CI:') !!}
                         {!! Form::text('ci', null, ['class' => 'form-control', 'maxlength' => '45']) !!}
                         @error('ci')
@@ -56,6 +56,17 @@
                                 {{$message}}
                             </small>
                         @enderror
+                    </div>
+                    <div class="form-group col-lg-1">
+                        <div class="form-group">
+                            {!! Form::label('ciexp', 'C/ exp.:') !!}
+                            {!! Form::select('ciexp', $ciudadexp, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                            @error('ciexp')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
                     </div>
                     <div class="form-group col-lg-2">
                         {!! Form::label('celular', 'Celular Personal:') !!}
@@ -141,6 +152,7 @@
                             'PAGO INTERBANCARIO' => 'PAGO INTERBANCARIO',
                             'PAGO EN LINEA' => 'PAGO EN LINEA',
                             'PAGO QR' => 'PAGO QR',
+                            'PAGO CHEQUE' => 'PAGO CHEQUE',
                         ], null, ['class' => 'form-control', 'maxlength' => '45', 'placeholder' => '']) !!}
                         @error('tipoplanilla')
                             <small class="text-danger fas fa-exclamation-circle">

@@ -589,6 +589,7 @@
                                                             <input type="hidden" name="cliente" value="{{ $item['clienteitanombre'] }}">
                                                             <input type="hidden" name="fechabateria" value="{{ $item['fechabateria'] }}">
                                                             <input type="hidden" name="tramite" value="{{ $item['tramite'] }}">
+                                                            <input type="hidden" name="proveedornombre" value="{{ $item['proveedornombre'] }}">
                                                             <input type="hidden" name="estado" value="EN REVISIÓN">
                                                             {!! Form::label('file', 'INFORME PDF:') !!}
                                                             <input type="file" name="document" id="document" accept=".pdf"/>
@@ -735,6 +736,7 @@
                                                             <input type="hidden" name="cliente" value="{{ $item['clienteitanombre'] }}">
                                                             <input type="hidden" name="fechabateria" value="{{ $item['fechabateria'] }}">
                                                             <input type="hidden" name="tramite" value="{{ $item['tramite'] }}">
+                                                            <input type="hidden" name="proveedornombre" value="{{ $item['proveedornombre'] }}">
                                                             <input type="hidden" name="estado" value="EN REVISIÓN">
                                                             {!! Form::label('file', 'INFORME PDF:') !!}
                                                             <input type="file" name="document" id="document" accept=".pdf"/>
@@ -1808,6 +1810,7 @@
                             @endphp
 
                             <input type="hidden" name="tramite" value="{{ $ultimoTramite }}">
+                            <input type="hidden" name="proveedornombre" value="{{ $item['proveedornombre'] }}">
 
                             <input type="hidden" name="estado" value="EN REVISIÓN">
                             {!! Form::label('file', 'INFORME PDF (OBLIGATORIO):') !!}

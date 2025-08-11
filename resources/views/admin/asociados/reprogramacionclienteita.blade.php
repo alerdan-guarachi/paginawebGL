@@ -58,7 +58,7 @@
                                         <tr>
                                             <th>Responsable</th>
                                             <th>Proveedor</th>
-                                            <th>Acción</th>
+                                            <th>Estudio/Especialidad</th>
                                             <th>Motivo</th>
                                             <th>Fecha de Batería</th>
                                             <th>Fecha y hora de reprog.</th>
@@ -90,7 +90,7 @@
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Accion</th>
+                            <th>Estudio/Especialidad</th>
                             <th>Proveedor</th>
                             <th>Fecha programada</th>
                             <th>Hora programada</th>
@@ -205,15 +205,18 @@
 @section('css')
     <link rel="styleheet" href="/css/admin_custom.css">
     <style>
+        .table td {
+            padding: 3px 10px;
+        }
         .btn-cerrar {
             background-color: #ffffff;
-            color: #94c93b;
-            border-color: #94c93b;
+            color: #d12a2a;
+            border-color: #d12a2a;
             border-radius: 5px;
             padding: 5px 10px;
         }
         .btn-cerrar:hover {
-            background-color: #94c93b;
+            background-color: #d12a2a;
             color: #ffffff;
         }
         .btn-reprogramacion {

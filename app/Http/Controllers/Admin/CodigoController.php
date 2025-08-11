@@ -11,6 +11,12 @@ use Carbon\Carbon;
 use Illuminate\Support\Str;
 use App\Notifications\CodigoPermiso;
 use App\Notifications\CodigoPermisoCaja;
+use App\Notifications\CodigoPermisoInventario;
+use App\Notifications\CodigoPermisoFechaPres;
+use App\Notifications\CodigoPermisoArchivoPres;
+use App\Notifications\CodigoPermisoContinuidadPres;
+use App\Notifications\CodigoPermisoAdelantoVacacion;
+use App\Notifications\CodigoPermisoFacturaRazonSocial;
 
 class CodigoController extends Controller
 {
@@ -44,14 +50,28 @@ class CodigoController extends Controller
             'admin.ingreso.index',
             'admin.asociados.crearbateriaclienteauditoria',
             'admin.caja.ingresos.concederdescuentosingresos',
-            'admin.caja.ingresos.cambiarfecharegistro'
+            'admin.caja.ingresos.cambiarfecharegistro',
+            'admin.caja.egresos.cambiarfecharegistro',
+            'admin.inventario.cambiarstockinventario',
+            'admin.tramites.cambiarfechaprestaciones',
+            'admin.tramites.editararchivoprestaciones',
+            'admin.tramites.continuidadtramiteprestaciones',
+            'admin.proveedoresservicios.adelantovacaciones',
+            'admin.facturasegreso.cambiarrazonsocial'
         ])->get()->mapWithKeys(function ($permiso) {
             $nombresPersonalizados = [
                 'admin.asociados.crearbateriaclienteita' => 'CREAR BATERIA CLIENTE ITA',
                 'admin.asociados.crearbateriaclienteauditoria' => 'CREAR BATERIA CLIENTE AUDITORIA',
                 'admin.caja.ingresos.concederdescuentosingresos' => 'CONCEDER DESCUENTO INGRESO',
                 'admin.caja.ingresos.cambiarfecharegistro' => 'CAMBIAR FECHA DE CAJA INGRESO',
+                'admin.caja.egresos.cambiarfecharegistro' => 'CAMBIAR FECHA DE CAJA EGRESO',
                 'admin.ingreso.index' => 'DESBLOQUEAR CAJA',
+                'admin.inventario.cambiarstockinventario' => 'CAMBIAR STOCK DE INVENTARIO',
+                'admin.tramites.cambiarfechaprestaciones' => 'MODIFICAR FECHA DE PROCEDIMIENTO TRAMITE',
+                'admin.tramites.editararchivoprestaciones' => 'EDITAR ARCHIVO DE PROCEDIMIENTO TRAMITE',
+                'admin.tramites.continuidadtramiteprestaciones' => 'DAR CONTINUIDAD DE PROCEDIMIENTO TRAMITE',
+                'admin.proveedoresservicios.adelantovacaciones' => 'ADELANTO DE VACACIONES',
+                'admin.facturasegreso.cambiarrazonsocial' => 'MODIFICAR RAZON SOCIAL DE FACTURAS IMPUESTOS'
             ];
 
             return [$permiso->id => $nombresPersonalizados[$permiso->name] ?? $permiso->name];
@@ -62,7 +82,14 @@ class CodigoController extends Controller
             'admin.asociados.crearbateriaclienteauditoria' => 'CREAR BATERIA CLIENTE AUDITORIA',
             'admin.caja.ingresos.concederdescuentosingresos' => 'CONCEDER DESCUENTO INGRESO',
             'admin.caja.ingresos.cambiarfecharegistro' => 'CAMBIAR FECHA DE CAJA INGRESO',
+            'admin.caja.egresos.cambiarfecharegistro' => 'CAMBIAR FECHA DE CAJA EGRESO',
             'admin.ingreso.index' => 'DESBLOQUEAR CAJA',
+            'admin.inventario.cambiarstockinventario' => 'CAMBIAR STOCK DE INVENTARIO',
+            'admin.tramites.cambiarfechaprestaciones' => 'MODIFICAR FECHA DE PROCEDIMIENTO TRAMITE',
+            'admin.tramites.editararchivoprestaciones' => 'EDITAR ARCHIVO DE PROCEDIMIENTO TRAMITE',
+            'admin.tramites.continuidadtramiteprestaciones' => 'DAR CONTINUIDAD DE PROCEDIMIENTO TRAMITE',
+            'admin.proveedoresservicios.adelantovacaciones' => 'ADELANTO DE VACACIONES',
+            'admin.facturasegreso.cambiarrazonsocial' => 'MODIFICAR RAZON SOCIAL DE FACTURAS IMPUESTOS'
         ];
 
 
@@ -101,7 +128,8 @@ class CodigoController extends Controller
             'admin.asociados.crearbateriaclienteita',
             'admin.asociados.crearbateriaclienteauditoria',
             'admin.caja.ingresos.concederdescuentosingresos',
-            'admin.caja.ingresos.cambiarfecharegistro'
+            'admin.caja.ingresos.cambiarfecharegistro',
+            'admin.caja.egresos.cambiarfecharegistro'
         ])) {
             if ($usuarioSolicitante) {
                 $usuarioSolicitante->notify(new CodigoPermiso($permisoCodigo));
@@ -113,6 +141,54 @@ class CodigoController extends Controller
         ])) {
             if ($usuarioSolicitante) {
                 $usuarioSolicitante->notify(new CodigoPermisoCaja($permisoCodigo));
+            }
+        }
+
+        if (in_array($permisoSolicitado->name, [
+            'admin.inventario.cambiarstockinventario',
+        ])) {
+            if ($usuarioSolicitante) {
+                $usuarioSolicitante->notify(new CodigoPermisoInventario($permisoCodigo));
+            }
+        }
+
+        if (in_array($permisoSolicitado->name, [
+            'admin.tramites.cambiarfechaprestaciones',
+        ])) {
+            if ($usuarioSolicitante) {
+                $usuarioSolicitante->notify(new CodigoPermisoFechaPres($permisoCodigo));
+            }
+        }
+
+        if (in_array($permisoSolicitado->name, [
+            'admin.tramites.editararchivoprestaciones',
+        ])) {
+            if ($usuarioSolicitante) {
+                $usuarioSolicitante->notify(new CodigoPermisoArchivoPres($permisoCodigo));
+            }
+        }
+
+        if (in_array($permisoSolicitado->name, [
+            'admin.tramites.continuidadtramiteprestaciones',
+        ])) {
+            if ($usuarioSolicitante) {
+                $usuarioSolicitante->notify(new CodigoPermisoContinuidadPres($permisoCodigo));
+            }
+        }
+
+        if (in_array($permisoSolicitado->name, [
+            'admin.proveedoresservicios.adelantovacaciones',
+        ])) {
+            if ($usuarioSolicitante) {
+                $usuarioSolicitante->notify(new CodigoPermisoAdelantoVacacion($permisoCodigo));
+            }
+        }
+
+        if (in_array($permisoSolicitado->name, [
+            'admin.facturasegreso.cambiarrazonsocial',
+        ])) {
+            if ($usuarioSolicitante) {
+                $usuarioSolicitante->notify(new CodigoPermisoFacturaRazonSocial($permisoCodigo));
             }
         }
 

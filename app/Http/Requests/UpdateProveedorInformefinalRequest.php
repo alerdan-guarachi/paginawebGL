@@ -47,6 +47,9 @@ class UpdateClienteComunRequest extends FormRequest
         'usuarioregistro' => 'max:45',
         'nrofactura' => '',
         'usuariocomprobante' => '',
+        'comprobante' => '',
+        'cheque' => '',
+        'codautorizacion' => '',
         ]; 
         return $rules;
     }

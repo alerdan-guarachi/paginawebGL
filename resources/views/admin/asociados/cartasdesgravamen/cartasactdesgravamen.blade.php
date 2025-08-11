@@ -871,7 +871,7 @@ function updateDocumentoPreview() {
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -882,7 +882,7 @@ function updateDocumentoPreview() {
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         }
     .btn-otraopcion:hover {
         background-color: #faa625;

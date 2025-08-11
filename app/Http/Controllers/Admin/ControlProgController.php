@@ -29,7 +29,13 @@ class ControlProgController extends Controller
     public function index()
     {
         // Obtener todos los usuarios
-        $usuarios = DB::table('users')->select('id', 'name')->get();
+        $usuarios = DB::table('users')
+        ->select('id', 'name')
+        ->where('estado', 'ACTIVO')
+        ->orderBy('name')
+        ->get();
+
+
 
         // Listado de tablas a combinar (esto es para el gráfico unificado)
         $tablas = [

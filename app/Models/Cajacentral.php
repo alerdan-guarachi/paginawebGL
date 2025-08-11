@@ -74,6 +74,8 @@ class Cajacentral extends Model
         'montorealatc' => '',
         'nrobancarizacionatc' => '',
         'docfactura' => '',
+        'docfactura2' => '',
+        'docfactura3' => '',
         'doccomprobante' => '',
         'nrobancarizacionefectivo' => '',
         'nrobancodestinoefectivo' => '',
@@ -85,6 +87,7 @@ class Cajacentral extends Model
         'updated_at' => '',
         'fecharegistroreal' => '',
         'nrobancarizacioncheque' => '',
+        'codautorizacion' => '',
     ]; 
 
     protected $fillable = [
@@ -150,6 +153,8 @@ class Cajacentral extends Model
         'montorealatc',
         'nrobancarizacionatc',
         'docfactura',
+        'docfactura2',
+        'docfactura3',
         'doccomprobante',
         'nrobancarizacionefectivo',
         'nrobancodestinoefectivo',
@@ -161,5 +166,6 @@ class Cajacentral extends Model
         'updated_at',
         'fecharegistroreal',
         'nrobancarizacioncheque',
+        'codautorizacion',
     ];
 }

@@ -1,14 +1,18 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
+<a class="btn btn-sm float-right btn-azulgrande" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
 @can('admin.asociados.reprogramacionclienteita')
-<a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.reprogramacionclienteauditoria', $clienteauditoria)}}">REPROGRAMAR</a>
+<a class="btn btn-sm float-right btn-lilagrande" href="{{route('admin.asociados.reprogramacionclienteauditoria', $clienteauditoria)}}">REPROGRAMAR</a>
 @endcan
-<a class="btn btn-sm float-right btn-bateria" data-toggle="modal" data-target="#ventanaModal">PROGRAMACIONES DEL CLIENTE</a>
-<a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.estadoprogramacionclienteauditoria', $clienteauditoria)}}">PROGRAMACIONES</a>
+<a class="btn btn-sm float-right btn-naranjagrande" data-toggle="modal" data-target="#ventanaModal">PROGRAMACIONES</a>
+<a class="btn btn-sm float-right btn-verdegrande" href="{{route('admin.asociados.estadoprogramacionclienteauditoria', $clienteauditoria)}}">ESTADO DE PROG.</a>
 <h5>PROGRAMAR ESTUDIOS / ESPECIALIDADES DE:</h5>
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>
+@stop
+
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/programacionesmedicas.css') }}">
 @stop
 
 @section('content')
@@ -85,24 +89,24 @@
                                     {{$message}}
                                 </small>
                             @enderror
-                            {!! Form::label('', 'ESTUDIOS / ESPECIALIDADES DISPONIBLES:') !!}
+                            {!! Form::label('', 'Estudios / Especialidades Disponibles:') !!}
                         @foreach($accionesPorFecha as $fecha => $acciones)     
                             {{-- <div class="row"> --}}
                                 <div class="acciones-{{ $fecha }}" style="display:none;">
                                     <div class="row" style="margin-top: 5px; margin-bottom: 20px; align-items: center;">
-                                        <div class="col-lg-8">
-                                            <input type="text" id="search-{{ $fecha }}" placeholder="Buscar acción..."
+                                        <div class="col-lg-12">
+                                            <input type="text" id="search-{{ $fecha }}" placeholder="Buscar estudio / especialidad..."
                                                 style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); 
                                                         transition: box-shadow 0.3s ease; outline: none;" 
                                                 onfocus="this.style.boxShadow='0 0 8px rgba(0, 0, 255, 0.3)';" 
                                                 onblur="this.style.boxShadow='none';">
                                         </div>
-                                        <div class="col-lg-4">
-                                            <label style="font-weight: normal; display: flex; align-items: center;">
-                                                <input type="checkbox" id="select-all-{{ $fecha }}" style="margin-right: 5px;"> 
-                                                <span style="font-weight: bold; font-size: 14px;">SELECCIONAR TODO</span>
-                                            </label>
-                                        </div>
+                                    </div>
+                                    <div class="col-lg-2" style="margin-left: -8px;">
+                                        <label style="font-weight: normal; display: flex; align-items: center;">
+                                            <input type="checkbox" id="select-all-{{ $fecha }}" style="margin-right: 5px;"> 
+                                            <span style="font-weight: bold; font-size: 14px;">SELECCIONAR TODO</span>
+                                        </label>
                                     </div>
                                     <div class="row action-container" style="display: flex; flex-wrap: wrap; gap: 20px;">
                                         @foreach($acciones as $accion)
@@ -120,7 +124,7 @@
                                                     <div class="form-group">
                                                         <div>
                                                             <label style="font-weight: normal; margin-bottom: -15px;">
-                                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }}
+                                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}"> {{ $accion }} - {{ $proveedor['proveedor'] }}
                                                             </label>
                                                             <input type="hidden" name="proveedor_{{ $accionSanitizada }}" value="{{ $proveedor['proveedor'] ?? '' }}">
                                                             <input type="hidden" name="areanombre_{{ $accionSanitizada }}" value="{{ $proveedor['area'] ?? '' }}">
@@ -250,7 +254,7 @@
                             @enderror
                         </div>
                         <div class="form-group">
-                            {!! Form::label('horadesde', 'Desde:') !!}
+                            {!! Form::label('horadesde', 'Hora Desde:') !!}
                             {!! Form::time('horadesde', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'horadesde']) !!}
                             @error('horadesde')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -259,7 +263,7 @@
                             @enderror
                         </div>
                         <div class="form-group">
-                            {!! Form::label('horahasta', 'Hasta:') !!}
+                            {!! Form::label('horahasta', 'Hora Hasta:') !!}
                             {!! Form::time('horahasta', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'horahasta']) !!}
                             @error('horahasta')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -274,7 +278,7 @@
                         ESTE CLIENTE NO TIENE BATERIA
                     </div>
                 @endif 
-                {!! Form::submit('PROGRAMAR CLIENTE', ['class' => 'btn btn-crear', 'style' => 'margin-top: 30px;']) !!}
+                {!! Form::submit('PROGRAMAR', ['class' => 'btn btn-verdegrande', 'style' => 'margin-top: 30px;']) !!}
             </div>
             {!! Form::close() !!}
         </div>
@@ -299,10 +303,10 @@
                         <option value="{{ $fecha }}">{{ $fecha }}</option>
                     @endforeach
                 </select>
-                <div id="acciones-container" class="mt-3">
+                <div id="acciones-container" class="mt-3 table-responsive">
                     <strong>Acciones programadas:</strong>
-                    <table class="table mt-3" id="acciones-table">
-                        <thead>
+                    <table class="table mt-3 table-striped table-bordered" id="acciones-table">
+                        <thead class="table-secondary">
                             <tr>
                                 <th>ID</th>
                                 <th>Estudio / Especialidad</th>
@@ -383,7 +387,7 @@
             </style>
             
             <div class="modal-footer">
-                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-rojogrande" data-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
@@ -561,109 +565,3 @@
     });
 </script>
 @endsection
-
-@section('css')
-<link rel="styleheet" href="/css/admin_custom.css">
-<style>
-    .hidden-field {
-        display: none;
-    }
-    h1 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-        }
-    h5 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 500;
-        margin-bottom: 0%;
-        }
-    h3 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 1000;
-        }
-    .custom-button {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 5px 15px;
-        }
-    .custom-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .btn-crear {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 10px 20px;
-        margin-left: 10px;
-        margin-right: 10px;
-        }
-    .btn-crear:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-        }
-    .btn-bateria {
-        background-color:  #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 10px 20px;
-        }
-    .btn-bateria:hover {
-        background-color: #faa625;
-        color: #ffffff;
-        }
-    .mensaje-error {
-        color: #e1172b;
-        font-family: "Times New Roman";
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 5px;
-        font-size: 12.5px;
-        font-weight: bold;
-        display: inline-block;
-        margin-left: -10px;
-    }
-    .custom2-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 5px 20px;
-        margin-top: 33px;
-    }
-    .custom2-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-cerrar {
-        background-color: #ffffff;
-        color: #e22f2f;
-        border-color: #e22f2f;
-        border-radius: 5px;
-        padding: 5px 10px;
-
-    }
-    .btn-cerrar:hover {
-        background-color: #e22f2f;
-        color: #ffffff;
-    }
-    .btn-regresar {
-        background-color: #ffffff;
-        color: #2926e2;
-        border-color: #2926e2;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-regresar:hover {
-        background-color: #2926e2;
-        color: #ffffff;
-    }
-</style>
-@stop

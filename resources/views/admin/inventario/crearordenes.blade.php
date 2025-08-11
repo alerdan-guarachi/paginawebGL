@@ -502,7 +502,7 @@
                             </div>
                             <div class="form-group col-lg-4">
                                 {!! Form::label('totalunitario', 'Total Unitario:') !!}
-                                {!! Form::number('totalunitario', null, ['class' => 'form-control', 'id' => 'totalunitario']) !!}
+                                {!! Form::number('totalunitario', null, ['class' => 'form-control', 'id' => 'totalunitario', 'readonly']) !!}
                             </div>
                             <script> 
                                 function calcularTotalUnitario() {
@@ -1072,8 +1072,8 @@
                                         const fixed = this.dataset.fixedPart || '';
                                         if (!this.value.startsWith(fixed)) {
                                             this.value = fixed;
-                                        } else if (this.value.length > fixed.length + 10) {
-                                            this.value = this.value.substring(0, fixed.length + 10);
+                                        } else if (this.value.length > fixed.length + 1000) {
+                                            this.value = this.value.substring(0, fixed.length + 1000);
                                         }
                                     });
                                     // 👉 Lógica de asignación de precio según razon social y motivo
@@ -1085,7 +1085,7 @@
                                         if (razonsocial === 'DENISSE MAUREN LOPEZ FLORES') {
                                             precioUnitario2.value = (7000).toFixed(2);
                                         } else {
-                                            precioUnitario2.value = (2500).toFixed(2);
+                                            precioUnitario2.value = (2750).toFixed(2);
                                         }
                                         precioUnitario2.setAttribute('readonly', true);
                                     } else {

@@ -175,7 +175,7 @@
                         
                                     <div id="acciones-container" class="mt-3">
                                         <table class="table table-bordered" id="acciones-table">
-                                            <thead>
+                                            <thead class="table-secondary table-sm">
                                                 <tr>
                                                     <th>ID</th>
                                                     <th>Estudio/Especialidad</th>
@@ -576,7 +576,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     .btn-crear:hover {
         background-color: #94c93b;
@@ -609,7 +609,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -619,13 +619,13 @@
     }
     .btn-cerrar {
         background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
+        color: #d62323;
+        border-color: #d62323;
         border-radius: 5px;
         padding: 5px 10px;
     }
     .btn-cerrar:hover {
-        background-color: #94c93b;
+        background-color: #d62323;
         color: #ffffff;
     }
     .btn-regresar {
@@ -633,7 +633,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -644,7 +644,7 @@
         color: #26b0e2;
         border-color: #26b0e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-multiple:hover {
         background-color: #26b0e2;
@@ -655,7 +655,7 @@
         color: #493535;
         border-color: #493535;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         margin-left: 10px;
 
     }

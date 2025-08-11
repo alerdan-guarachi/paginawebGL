@@ -3,12 +3,51 @@
 <link href="assets/img/logo.png" rel="icon">
 
 @section('content_header')
-    <div class="text-center mb-0">
-        <h1 class="font-weight-bold"
-            style="font-size: 1.8rem; color: #000000; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0;">
-            DEPOSITOS BANCARIOS
-        </h1>
+@php
+    $rolUsuario = auth()->user()->getRoleNames()->first();
+@endphp
+@php
+    $tieneRolContable = auth()->user()->getRoleNames()->contains('CONTABLE');
+@endphp
+
+{{-- @if (!$mostrarVista && $rolUsuario === 'CONTABLE') --}}
+@if (!$mostrarVista && $tieneRolContable)
+    <div class="alert alert-danger text-center py-4" style="border-radius: 10px; background-color: #f8d7da; color: #842029; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
+        <h4 class="font-weight-bold mb-3" style="text-transform: uppercase; letter-spacing: 1px;">Caja Bloqueada</h4>
+        <p class="mb-4" style="font-size: 1.1rem;">
+            {{ $motivoBloqueo ?? 'TU CAJA ESTA BLOQUEADA, SOLICITA UN CÓDIGO DE DESBLOQUEO A ADMINISTRACIÓN.' }}
+        </p>
+        <form action="{{ route('verificar.codigo4') }}" method="POST" style="max-width: 500px; margin: 0 auto;">
+            @csrf
+            <div class="form-group mb-3">
+                <label for="codigo" class="font-weight-bold" style="font-size: 1rem;">Ingresa el código para continuar:</label>
+                <input type="text" id="codigo" name="codigo" class="form-control" placeholder="Código de autorización" required style="border-radius: 5px;">
+            </div>
+            <button type="submit" class="btn btn-sm btn-success btn-block" style="padding: 5px 10px; font-size: 1rem; border-radius: 5px;">VALIDAR CÓDIGO</button>
+        </form>
     </div>
+@else
+<h2 style="font-weight: 900">DEPÓSITOS BANCARIOS</h2>
+@endif
+@stop
+
+@section('css')
+<style>
+    .table td {
+        padding: 7px 10px;
+    }
+    .btn-verregistros {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 5px;
+        }
+    .btn-verregistros:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+</style>
 @stop
 
 @section('content')
@@ -23,163 +62,163 @@
     </script>
 @endif
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="table-responsive">
-            <form method="GET" action="{{ route('admin.caja.ingreso.depositosbancarios') }}">
-                <div class="row mb-3">
-                    {{-- <div class="col-md-2">
-                        <label for="fecha">Fecha de Registro:</label>
-                        <input type="date" name="fecha" id="fecha" class="form-control" value="{{ $fecha }}">
-                    </div> --}}
-                    @if ($rolUsuario !== 'CONTABLE')
-                        <div class="col-md-3">
-                            <label for="usuario">Usuario Registro:</label>
-                            <select name="usuario" id="usuario" class="form-control">
-                                <option value=""></option>
-                                @foreach ($usuarios as $usuario)
-                                    <option value="{{ $usuario->usuarioconsolidadoID }}" 
-                                        {{ $usuario->usuarioconsolidadoID == $usuarioSeleccionado ? 'selected' : '' }}>
-                                        {{ $usuario->usuarioconsolidadoNombre }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-outline-secondary">Buscar</button>
-                        </div>
-                    @endif
-                </div>
-            </form>
-            <form id="documentacionForm" method="POST" enctype="multipart/form-data" action="{{ route('guardardepositobancario') }}">
-                @csrf
-                <input type="hidden" name="fecha" id="fechaSeleccionada">
-                <input type="hidden" name="monto" id="montoSeleccionado">
-                <input type="hidden" name="usuarioregistro" id="usuarioregistro">
-
-                <table class="table table-bordered table-striped">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Fecha Mov.</th>
-                            <th>Usuario Registro</th>
-                            <th>Total Efectivo</th>
-                            <th>Respaldo</th>
-                            <th>Comprob.</th>
-                            <th>Bancarizacion</th>
-                            <th>Banco Destino</th>
-                            <th>Selec.</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($registros as $registro)
-                            <tr>
-                                <td>{{ $registro->fecha }}</td>
-                                <td>{{ $registro->usuarioRegistroNombre }}</td>
-                                <td>{{ number_format($registro->total, 2) }}</td>
-                                <td>
-                                    @if ($registro->documentorespaldo)
-                                        <a href="{{ asset('documentacioncaja/depositosbancarios/' . $registro->usuarioregistroid . '/' . $registro->documentorespaldo) }}" 
-                                           class="btn btn-sm btn-outline-success" target="_blank" title="VER RESPALDO">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    @else
-                                        <span class="badge badge-danger">VACIO</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if ($registro->documentofactura)
-                                        <a href="{{ asset('documentacioncaja/depositosbancarios/' . $registro->usuarioregistroid . '/' . $registro->documentofactura) }}" 
-                                           class="btn btn-sm btn-outline-success" target="_blank" title="VER COMPROBANTE">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    @else
-                                        <span class="badge badge-danger">VACIO</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    {{ $registro->bancarizacion ?? 'N/A' }}
-                                </td>
-                                <td>
-                                    {{ $registro->bancodestino ?? 'N/A' }}
-                                </td>
-                                <td class="text-center">
-                                    <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox">
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-                
-                
-            
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="row">
-                            <!-- Respaldo -->
-                            <div class="col-md-3 mb-4">
-                                <label for="archivo" class="form-label fs-5 fw-semibold">Respaldo:</label>
-                                <div class="d-flex align-items-center">
-                                    <input type="file" name="archivo" id="archivo" class="form-control me-3" accept=".pdf,.jpg,.png" onchange="validateInputs()">
-                                    <button type="button" class="btn btn-outline-primary me-3" id="verVistaPrevia" onclick="previewFile()"><i class="fas fa-eye"></i></button>
-                                    
-                                </div>
-                            </div>
-                
-                            <!-- Comprobante -->
-                            <div class="col-md-3 mb-4">
-                                <label for="archivo3" class="form-label fs-5 fw-semibold">Comprobante:</label>
-                                <div class="d-flex align-items-center">
-                                    <input type="file" name="archivo3" id="archivo3" class="form-control me-3" accept=".pdf,.jpg,.png" onchange="validateInputs()">
-                                    <button type="button" class="btn btn-outline-primary me-3" id="verVistaPrevia" onclick="previewFile3()"><i class="fas fa-eye"></i></button>
-                                </div>
-                            </div>
-                
-                            <!-- Bancarización -->
-                            <div class="col-md-3 mb-4">
-                                <label for="bancarizacion" class="form-label fs-5 fw-semibold">Bancarización</label>
-                                <input type="text" id="bancarizacion" name="bancarizacion" class="form-control">
-                            </div>
-
-                            <!-- Banco Destino -->
-                            <div class="col-md-3 mb-4">
-                                <label for="bancodestino" class="form-label fs-5 fw-semibold">Nro. Banco Destino</label>
-                                <select name="bancodestino" id="bancodestino" class="form-control">
+@if (!$mostrarVista && $tieneRolContable)
+@else
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-12">
+                <form method="GET" action="{{ route('admin.caja.ingreso.depositosbancarios') }}">
+                    <div class="row mb-3">
+                        @if ($rolUsuario !== 'CONTABLE')
+                            <div class="col-md-3">
+                                <label for="usuario">Usuario Registro:</label>
+                                <select name="usuario" id="usuario" class="form-control">
                                     <option value=""></option>
-                                    @foreach ($cuentas as $cuenta)
-                                        <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                    @foreach ($usuarios as $usuario)
+                                        <option value="{{ $usuario->usuarioconsolidadoID }}" 
+                                            {{ $usuario->usuarioconsolidadoID == $usuarioSeleccionado ? 'selected' : '' }}>
+                                            {{ $usuario->usuarioconsolidadoNombre }}
+                                        </option>
                                     @endforeach
                                 </select>
                             </div>
-                        </div>
-                        <div class="d-flex justify-content-end">
-                            <button type="submit" class="btn btn-outline-secondary" id="guardarRespaldo" disabled>GUARDAR DEPOSITO</button>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+                            </div>
+                        @endif
+                    </div>
+                </form>
+                <form id="documentacionForm" method="POST" enctype="multipart/form-data" action="{{ route('guardardepositobancario') }}">
+                    @csrf
+                    <input type="hidden" name="fecha" id="fechaSeleccionada">
+                    <input type="hidden" name="monto" id="montoSeleccionado">
+                    <input type="hidden" name="usuarioregistro" id="usuarioregistro">
+
+                    <div class="card"> 
+                        <div class="card-body" style="background-color: #f7f7f7;">
+                            <div class="row" style="margin-top: -10px; margin-bottom: -20px;">
+                                <!-- Respaldo -->
+                                <div class="col-md-3 mb-4">
+                                    <label for="archivo" class="form-label fs-5 fw-semibold">Respaldo:</label>
+                                    <div class="d-flex align-items-center">
+                                        <input type="file" name="archivo" id="archivo" class="form-control me-3" accept=".pdf,.jpg,.png" onchange="validateInputs()">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary me-3" id="verVistaPrevia" onclick="previewFile()"><i class="fas fa-eye"></i></button>
+                                        
+                                    </div>
+                                </div>
+                    
+                                <!-- Comprobante -->
+                                <div class="col-md-3 mb-4">
+                                    <label for="archivo3" class="form-label fs-5 fw-semibold">Comprobante:</label>
+                                    <div class="d-flex align-items-center">
+                                        <input type="file" name="archivo3" id="archivo3" class="form-control me-3" accept=".pdf,.jpg,.png" onchange="validateInputs()">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary me-3" id="verVistaPrevia" onclick="previewFile3()"><i class="fas fa-eye"></i></button>
+                                    </div>
+                                </div>
+                    
+                                <!-- Bancarización -->
+                                <div class="col-md-2 mb-4">
+                                    <label for="bancarizacion" class="form-label fs-5 fw-semibold">Bancarización</label>
+                                    <input type="text" id="bancarizacion" name="bancarizacion" class="form-control">
+                                </div>
+
+                                <!-- Banco Destino -->
+                                <div class="col-md-2 mb-4">
+                                    <label for="bancodestino" class="form-label fs-5 fw-semibold">Nro. Banco Destino</label>
+                                    <select name="bancodestino" id="bancodestino" class="form-control">
+                                        <option value=""></option>
+                                        @foreach ($cuentas as $cuenta)
+                                            <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-2 mb-4 d-flex flex-column justify-content-end">
+                                    <label class="form-label fs-5 fw-semibold invisible">.</label>
+                                    <button type="submit" class="btn btn-secondary" id="guardarRespaldo" disabled>GUARDAR DEPÓSITO</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                
-                
-                <!-- Modal Vista Previa-->
-                <div class="modal fade" id="modalVistaPrevia" tabindex="-1" aria-labelledby="modalVistaPreviaLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="modalVistaPreviaLabel">VISTA PREVIA</h5>
-                            </div>
-                            <div class="modal-body">
-                                <img id="previewImage" src="#" alt="Vista previa de imagen" style="display:none; max-width: 100%;" />
-                                <iframe id="previewPdf" src="#" style="display:none; width: 100%; height: 600px;" frameborder="0"></iframe>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
+
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th>Fecha Mov.</th>
+                                <th>Usuario Registro</th>
+                                <th>Total Efectivo</th>
+                                <th>Respaldo</th>
+                                <th>Comprob.</th>
+                                <th>Bancarizacion</th>
+                                <th>Banco Destino</th>
+                                <th>Selec.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($registros as $registro)
+                                <tr>
+                                    <td>{{ $registro->fecha }}</td>
+                                    <td>{{ $registro->usuarioRegistroNombre }}</td>
+                                    <td>{{ number_format($registro->total, 2) }}</td>
+                                    <td>
+                                        @if ($registro->documentorespaldo)
+                                            <a href="{{ asset('documentacioncaja/depositosbancarios/' . $registro->usuarioregistroid . '/' . $registro->documentorespaldo) }}" 
+                                            class="btn btn-sm btn-verregistros" target="_blank" title="VER RESPALDO">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        @else
+                                            <span class="badge badge-danger">VACIO</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($registro->documentofactura)
+                                            <a href="{{ asset('documentacioncaja/depositosbancarios/' . $registro->usuarioregistroid . '/' . $registro->documentofactura) }}" 
+                                            class="btn btn-sm btn-verregistros" target="_blank" title="VER COMPROBANTE">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        @else
+                                            <span class="badge badge-danger">VACIO</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        {{ $registro->bancarizacion ?? 'N/A' }}
+                                    </td>
+                                    <td>
+                                        {{ $registro->bancodestino ?? 'N/A' }}
+                                    </td>
+                                    <td>
+                                        @if (!$registro->documentorespaldo || !$registro->documentofactura)
+                                            <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox">
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+
+                    <!-- Modal Vista Previa-->
+                    <div class="modal fade" id="modalVistaPrevia" tabindex="-1" aria-labelledby="modalVistaPreviaLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalVistaPreviaLabel">VISTA PREVIA</h5>
+                                </div>
+                                <div class="modal-body">
+                                    <img id="previewImage" src="#" alt="Vista previa de imagen" style="display:none; max-width: 100%;" />
+                                    <iframe id="previewPdf" src="#" style="display:none; width: 100%; height: 600px;" frameborder="0"></iframe>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>               
-            </form>
+                    </div>               
+                </form>
+            </div>
         </div>
     </div>
 </div>
-
+@endif
 @stop
 
 @section('js')
