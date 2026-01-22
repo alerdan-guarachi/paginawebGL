@@ -2,7 +2,7 @@
 
 @section('content_header')
 
-<h1>NUEVAS PRE-ÓRDENES</h1>
+<h1>NUEVAS ÓRDENES</h1>
 @stop
 
 @section('css')
@@ -28,6 +28,28 @@
         background-color: #e71717;
         color: #ffffff;
         }
+    .btn-crear2 {
+        background-color: #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+        }
+    .btn-crear2:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-crear3 {
+        background-color: #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 5px;
+        }
+    .btn-crear3:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
 </style>
 @stop
 
@@ -47,17 +69,17 @@
         <ul class="nav nav-tabs card-header-tabs" id="mainTabs">
             <li class="nav-item">
                 <a class="nav-link active tab-rounded" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
-                    <i class="fas fa-box"></i> PRE-ÓRDENES DE COMPRA
+                    <i class="fas fa-shopping-cart"></i> ÓRDENES DE COMPRA
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link tab-rounded" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
-                    <i class="fas fa-box"></i> PRE-ÓRDENES DE SERVICIO
+                    <i class="fas fa-tools"></i> ÓRDENES DE SERVICIO
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link tab-rounded" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
-                    <i class="fas fa-cogs"></i> PRE-ÓRDENES DE PERSONAL
+                    <i class="fas fa-users-cog"></i> ÓRDENES DE PERSONAL
                 </a>
             </li>
             {{-- <li class="nav-item">
@@ -80,7 +102,7 @@
 
     <div class="card-body">
         <div class="tab-content">
-            {{-- PREORDENES DE COMPRA --}}
+            {{-- ORDENES DE COMPRA --}}
             <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
                 <div class="card">
                     <div class="card-body bg-light">
@@ -98,7 +120,6 @@
                             $(document).ready(function() {
                                 $("#buscarpor").on("keyup", function() {
                                     let query = $(this).val();
-        
                                     $.ajax({
                                         url: "{{ route('admin.inventario.adquisicioninventario') }}",
                                         type: "GET",
@@ -110,10 +131,69 @@
                                 });
                             });
                         </script>
+                        <script>
+                            $(document).ready(function() {
+                                $(document).on("change", ".select-item", function() {
+                                    console.log("Banco Origen:", $(this).data('bancoorigen'));
+                                    if($(this).is(":checked")) {
+                                        let tipocuentaTexto = $(this).data('bancoorigen'); 
+                                        $("#tipocuenta").val(tipocuentaTexto);
+                                        let tipocuentaBD = '';
+                                        if (tipocuentaTexto === 'CUENTA FACTURADA') {
+                                            tipocuentaBD = 'FACTURADA';
+                                        } else if (tipocuentaTexto === 'CUENTA NO FACTURADA') {
+                                            tipocuentaBD = 'NO FACTURADA';
+                                        }
+                                        $("#nrocuenta option").each(function() {
+                                            if($(this).data('tipocuenta') === tipocuentaBD) {
+                                                $(this).show();
+                                            } else {
+                                                $(this).hide();
+                                            }
+                                        });
+                                        $("#nrocuenta").val($("#nrocuenta option:visible:first").val());
+                                    } else {
+                                        $("#tipocuenta").val('');
+                                        $("#nrocuenta option").show();
+                                        $("#nrocuenta").val($("#nrocuenta option:first").val());
+                                    }
+                                });
+                            });
+                            /* $(document).ready(function() {
+                                // Cuando cambia el select tipocuenta
+                                $("#tipocuenta").on("change", function() {
+                                    let tipocuentaBD = '';
+
+                                    if ($(this).val() === 'CUENTA FACTURADA') {
+                                        tipocuentaBD = 'FACTURADA';
+                                    } else if ($(this).val() === 'CUENTA NO FACTURADA') {
+                                        tipocuentaBD = 'NO FACTURADA';
+                                    } else {
+                                        // Si no seleccionó nada, mostramos todas las cuentas
+                                        $("#nrocuenta option").show();
+                                        $("#nrocuenta").val($("#nrocuenta option:first").val());
+                                        return;
+                                    }
+
+                                    // Filtrar opciones del Nro. de cuenta según tipocuenta seleccionado
+                                    $("#nrocuenta option").each(function() {
+                                        if($(this).data('tipocuenta') === tipocuentaBD) {
+                                            $(this).show();
+                                        } else {
+                                            $(this).hide();
+                                        }
+                                    });
+
+                                    // Seleccionar automáticamente la primera visible
+                                    $("#nrocuenta").val($("#nrocuenta option:visible:first").val());
+                                });
+                            }); */
+                        </script>
+                        <br>
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="table-responsive">
-                                    <table class="table table-bordered table-striped">
+                                    <table class="table table-bordered table-striped table-sm">
                                         <thead style="background-color: white">
                                             <tr>
                                                 <th>Código</th>
@@ -143,14 +223,14 @@
                     <div class="card">
                         <div class="card-body bg-light">
                             <div class="container-fluid text-center p-1 bg-light">
-                                <h4 class="fw-bold text-dark" style="font-weight: 900">PRE - ÓRDEN DE COMPRA</h4>
+                                <h4 class="fw-bold text-dark" style="font-weight: 900">ÓRDEN DE COMPRA</h4>
                             </div>
                             <div class="row">
                                 <div class="col-lg-9">
                                     <div class="card">
                                         <div class="card-body">
                                             <div class="table-responsive">
-                                                <table class="table table-bordered table-striped" id="selected-items-table">
+                                                <table class="table table-bordered table-striped table-sm" id="selected-items-table">
                                                     <thead>
                                                         <tr>
                                                             <th>Cod.</th>
@@ -214,7 +294,6 @@
                                                     <label for="tipotransaccion" style="margin-bottom: -10px;">Tipo_transac:</label>
                                                     <select class="form-control" id="tipotransaccion" name="tipotransaccion" required>
                                                         <option value="TRANSFERENCIA BANCARIA">TRANSFERENCIA BANCARIA</option>
-                                                        {{-- <option value="EFECTIVO">EFECTIVO</option> --}}
                                                         <option value="DEPOSITO BANCARIO">DEPOSITO BANCARIO</option>
                                                     </select>
                                                 </div>
@@ -234,13 +313,47 @@
                                                 </div>
                                             </div>
                                             <div class="row">
+                                                <div class="form-group col-lg-6">
+                                                    <label for="tipocuenta" style="margin-bottom: -10px;">Tipo Cuenta:</label>
+                                                    <input type="text" class="form-control" id="tipocuenta" name="tipocuenta" readonly>
+                                                </div>
+                                                <div class="form-group col-lg-6">
+                                                    <label for="nrocuenta" style="margin-bottom: -10px;">Nro. Cuenta:</label>
+                                                    <select class="form-control" id="nrocuenta" name="nrocuenta" required>
+                                                        @foreach ($cuentas as $cuenta)
+                                                            <option value="{{ $cuenta->numerocuenta }}" data-tipocuenta="{{ $cuenta->tipocuenta }}">
+                                                                {{ $cuenta->numerocuenta }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                {{-- <div class="form-group col-lg-6">
+                                                    <label for="tipocuenta" style="margin-bottom: -10px;">Tipo Cuenta:</label>
+                                                    <select class="form-control" id="tipocuenta" name="tipocuenta" required>
+                                                        <option value="">Seleccione...</option>
+                                                        <option value="CUENTA FACTURADA">CUENTA FACTURADA</option>
+                                                        <option value="CUENTA NO FACTURADA">CUENTA NO FACTURADA</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group col-lg-6">
+                                                    <label for="nrocuenta" style="margin-bottom: -10px;">Nro. Cuenta:</label>
+                                                    <select class="form-control" id="nrocuenta" name="nrocuenta" required>
+                                                        @foreach ($cuentas as $cuenta)
+                                                            <option value="{{ $cuenta->numerocuenta }}" data-tipocuenta="{{ $cuenta->tipocuenta }}">
+                                                                {{ $cuenta->numerocuenta }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div> --}}
+                                            </div>
+                                            <div class="row">
                                                 <div class="form-group col-lg-12">
                                                     <label for="observacion" style="margin-bottom: -10px;">Observaciones:</label>
                                                     <input type="text" class="form-control" id="observacion" name="observacion">
                                                 </div>
                                             </div>
                                             <input type="hidden" name="ordenes_compra" id="ordenesCompraInput">
-                                            <button type="submit" class="btn btn-outline-success">GENERAR PRE-ORDEN</button>
+                                            <button type="submit" class="btn btn-crear3">GENERAR ÓRDEN Y CxP</button>
                                         </div>
                                     </div>
                                 </div>
@@ -276,14 +389,14 @@
                         localStorage.removeItem("selectedProducts");
                     }
         
-                            document.addEventListener("DOMContentLoaded", function () {
-                                let storedProducts = JSON.parse(localStorage.getItem("selectedProducts")) || [];
-                                if (storedProducts.length > 0) {
-                                    proveedorPermitido = storedProducts[0].proveedorid;
-                                    document.querySelector("#proveedorNombre").value = storedProducts[0].proveedornombre;
-                                    document.querySelector("#proveedorId").value = storedProducts[0].proveedorid;
-                                    storedProducts.forEach(item => agregarProductoATabla(item));
-                                }
+                        document.addEventListener("DOMContentLoaded", function () {
+                            let storedProducts = JSON.parse(localStorage.getItem("selectedProducts")) || [];
+                            if (storedProducts.length > 0) {
+                                proveedorPermitido = storedProducts[0].proveedorid;
+                                document.querySelector("#proveedorNombre").value = storedProducts[0].proveedornombre;
+                                document.querySelector("#proveedorId").value = storedProducts[0].proveedorid;
+                                storedProducts.forEach(item => agregarProductoATabla(item));
+                            }
                         });
                         document.addEventListener("change", function (e) {
                             if (e.target.classList.contains("select-item")) {
@@ -331,7 +444,6 @@
                                 eliminarProductoDeTabla(productoId);
                             }
                         });
-        
                         document.addEventListener("input", function (e) {
                             let row = e.target.closest("tr");
                             if (!row) return;
@@ -348,7 +460,6 @@
 
                             updateTotals();
                         });
-
                     });
                 
                     function agregarProductoATabla(producto) {
@@ -376,7 +487,6 @@
                         updateTotals();
                     }
 
-                
                     function eliminarProductoDeTabla(productoId) {
                         let rows = document.querySelectorAll("#selected-items-table tbody tr");
                         rows.forEach(row => {
@@ -436,12 +546,12 @@
                 </script>
             </div>
 
-            {{-- PREORDENES DE SERVICIO --}}
+            {{-- ORDENES DE SERVICIO --}}
             <div class="tab-pane fade" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
                 <div class="card">
                     <div class="card-body bg-light">
                         <div class="container-fluid text-center p-1 bg-light">
-                            <h4 class="fw-bold text-dark" style="font-weight: 900">NUEVA PRE - ÓRDEN DE SERVICIO</h4>
+                            <h4 class="fw-bold text-dark" style="font-weight: 900">NUEVA ÓRDEN DE SERVICIO</h4>
                         </div>
                         <div class="row">
                             <div class="form-group col-lg-2">
@@ -449,23 +559,12 @@
                                 <select id="proveedor-select" class="form-control">
                                     <option value=""></option>
                                     @foreach ($proveedores as $proveedor)
-                                        <option value="{{ $proveedor->id }}" data-razon="{{ $proveedor->razonsocial }}" data-tipotrans="{{ $proveedor->tipotransaccion }}" data-ciudad="{{ $proveedor->ciudad }}" data-ciudad2="{{ $proveedor->ciudad2 }}">
+                                        <option value="{{ $proveedor->id }}" data-razon="{{ $proveedor->razonsocial }}" data-tipotrans="{{ $proveedor->tipotransaccion }}" data-ciudad="{{ $proveedor->ciudad }}" data-ciudad2="{{ $proveedor->ciudad2 }}" data-bancoorigen="{{ $proveedor->bancoorigen }}">
                                             {{ $proveedor->razonsocial }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-                            <script>
-                                document.addEventListener("DOMContentLoaded", function () {
-                                    let proveedorSelect = document.getElementById("proveedor-select");
-                                    proveedorSelect.addEventListener("change", function () {
-                                        if (this.value) {
-                                            this.setAttribute("disabled", "disabled");
-                                        }
-                                    });
-                                });
-                            </script>
-                            
                             <div class="form-group col-lg-2" hidden>
                                 {!! Form::label('proveedorid', 'ID Proveedor:') !!}
                                 {!! Form::text('proveedorid', null, ['class' => 'form-control', 'readonly', 'id' => 'proveedorid']) !!}
@@ -517,7 +616,6 @@
                                 document.getElementById('preciounitario').addEventListener('input', calcularTotalUnitario);
                                 document.getElementById('descuentounitario').addEventListener('input', calcularTotalUnitario);
                             </script>
-                            
                             <script>
                                 const planesPorProveedor = @json($planes->groupBy('proveedorid'));
                             
@@ -628,10 +726,9 @@
                                     }
                                 });
                             </script>
-
                             <div class="form-group col-lg-1 d-flex flex-column align-items-center">
                                 {!! Form::label('agregar', 'Agregar:') !!}
-                                <button type="button" id="btn-add" class="btn btn-outline-success">
+                                <button type="button" id="btn-add" class="btn btn-crear2">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
@@ -643,14 +740,14 @@
                     <div class="card">
                         <div class="card-body bg-light">
                             <div class="container-fluid text-center p-1 bg-light">
-                                <h4 class="fw-bold text-dark" style="font-weight: 900">PRE - ÓRDEN DE SERVICIO</h4>
+                                <h4 class="fw-bold text-dark" style="font-weight: 900">ÓRDEN DE SERVICIO</h4>
                             </div>
                             <div class="row">
                                 <div class="col-lg-9">
                                     <div class="card">
                                         <div class="card-body">
                                             <div class="table-responsive">
-                                                <table class="table table-bordered" id="data-table">
+                                                <table class="table table-bordered table-striped table-sm" id="data-table">
                                                     <thead>
                                                         <tr>
                                                             <th>Detalle</th>
@@ -677,17 +774,10 @@
                                                     <label for="sucursal2" style="margin-bottom: -10px;">Ciudad_Reg.:</label>
                                                     <input type="text" class="form-control" id="sucursal2" name="sucursal2" value="{{ $sucursal }}">
                                                 </div>
-                                                {{-- <div class="form-group col-lg-12">
-                                                    <label for="sucursalgasto2" style="margin-bottom: -10px;">Sucursal.:</label>
-                                                    <select class="form-control" id="sucursalgasto2" name="sucursalgasto2" required>
-                                                        <option value="SANTA CRUZ">SANTA CRUZ</option>
-                                                        <option value="COCHABAMBA">COCHABAMBA</option>
-                                                    </select>
-                                                </div> --}}
                                                 <div class="form-group col-lg-12">
                                                     <label for="sucursalgasto2" style="margin-bottom: -10px;">Sucursal.:</label>
                                                     <select class="form-control" id="sucursalgasto2" name="sucursalgasto2" required readonly>
-                                                        <!-- Las opciones se llenarán dinámicamente -->
+
                                                     </select>
                                                 </div>
                                                 
@@ -731,13 +821,29 @@
                                                 </div>
                                             </div>
                                             <div class="row">
+                                                <div class="form-group col-lg-6">
+                                                    <label for="tipocuenta2" style="margin-bottom: -10px;">Tipo Cuenta:</label>
+                                                    <input type="text" class="form-control" id="tipocuenta2" name="tipocuenta2" readonly>
+                                                </div>
+                                                <div class="form-group col-lg-6">
+                                                    <label for="nrocuenta2" style="margin-bottom: -10px;">Nro. Cuenta:</label>
+                                                    <select class="form-control" id="nrocuenta2" name="nrocuenta2" required>
+                                                        @foreach ($cuentas as $cuenta)
+                                                            <option value="{{ $cuenta->numerocuenta }}" data-tipocuenta="{{ $cuenta->tipocuenta }}">
+                                                                {{ $cuenta->numerocuenta }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="row">
                                                 <div class="form-group col-lg-12">
                                                     <label for="observacion" style="margin-bottom: -10px;">Observaciones:</label>
                                                     <input type="text" class="form-control" id="observacion" name="observacion">
                                                 </div>
                                             </div>
                                             <input type="hidden" name="ordenes_venta" id="ordenesVentaInput">
-                                            <button type="submit" class="btn btn-outline-success">GENERAR PRE-ORDEN</button>
+                                            <button type="submit" class="btn btn-crear3">GENERAR ÓRDEN Y CxP</button>
                                         </div>
                                     </div>
                                 </div>
@@ -751,6 +857,7 @@
                                     let proveedorNombre = selectedOption.getAttribute('data-razon');
                                     let tipoTransaccion = selectedOption.getAttribute('data-tipotrans');
                                     let ciudad1 = selectedOption.getAttribute('data-ciudad');
+                                    let bancoorigen = selectedOption.getAttribute('data-bancoorigen');
 
                                     //RELLENAR SUCURSAL DE GASTO
                                         let ciudad2 = selectedOption.getAttribute('data-ciudad2');
@@ -771,6 +878,7 @@
                                     //
                             
                                     document.getElementById('proveedorid').value = proveedorId;
+                                    document.getElementById('tipocuenta2').value = bancoorigen;
                                     document.getElementById('proveedorNombre2').value = proveedorNombre;
                                     document.getElementById('proveedorId2').value = proveedorId;
                                     document.getElementById('tipotransaccion2').value = tipoTransaccion;
@@ -779,6 +887,36 @@
                                     if (primerProveedor === null) {
                                         primerProveedor = proveedorId;
                                     }
+
+
+                                    let tipocuentaTexto = document.getElementById('tipocuenta2').value;
+                                    let tipocuentaBD = '';
+                                    if (tipocuentaTexto === 'CUENTA FACTURADA') {
+                                        tipocuentaBD = 'FACTURADA';
+                                    } else if (tipocuentaTexto === 'CUENTA NO FACTURADA') {
+                                        tipocuentaBD = 'NO FACTURADA';
+                                    }
+                                    let selectCuentas = document.getElementById('nrocuenta2');
+                                    let opciones = selectCuentas.querySelectorAll('option');
+                                    opciones.forEach(op => {
+                                        if (op.getAttribute('data-tipocuenta') === tipocuentaBD) {
+                                            op.style.display = 'block';
+                                        } else {
+                                            op.style.display = 'none';
+                                        }
+                                    });
+                                    let visibles = Array.from(opciones).filter(op => op.style.display === 'block');
+                                    if (visibles.length === 1) {
+                                        selectCuentas.value = visibles[0].value;
+                                        /* selectCuentas.disabled = true; */
+                                        selectCuentas.setAttribute('readonly', true);
+                                        selectCuentas.removeAttribute('disabled');
+                                    } else {
+                                        selectCuentas.disabled = false;
+                                        selectCuentas.value = visibles.length > 0 ? visibles[0].value : '';
+                                    }
+
+    
                                 });
                                 document.getElementById('btn-add').addEventListener('click', function () {
                                     let proveedorId = document.getElementById('proveedorid').value;
@@ -791,10 +929,10 @@
                                         alert("Por favor, seleccione un proveedor.");
                                         return;
                                     }
-                                    if (primerProveedor !== proveedorId) {
+                                    /* if (primerProveedor !== proveedorId) {
                                         alert("Solo puede agregar productos del mismo proveedor.");
                                         return;
-                                    }
+                                    } */
                                     let tableBody = document.getElementById('data-table').getElementsByTagName('tbody')[0];
                                     let newRow = document.createElement('tr');
                             
@@ -868,12 +1006,12 @@
                 </script>
             </div>
         
-            {{-- PREORDENES DE PERSONAL --}}
+            {{-- ORDENES DE PERSONAL --}}
             <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
                 <div class="card">
                     <div class="card-body bg-light">
                         <div class="container-fluid text-center p-1 bg-light">
-                            <h4 class="fw-bold text-dark" style="font-weight: 900">NUEVA PRE - ÓRDEN DE PERSONAL</h4>
+                            <h4 class="fw-bold text-dark" style="font-weight: 900">NUEVA ÓRDEN DE PERSONAL</h4>
                         </div>
                         <div class="row">
                             <div class="form-group col-lg-2">
@@ -881,22 +1019,12 @@
                                 <select id="proveedor-select2" class="form-control">
                                     <option value=""></option>
                                     @foreach ($proveedorespersonal as $proveedor2)
-                                        <option value="{{ $proveedor2->id }}" data-razon="{{ $proveedor2->razonsocial }}" data-tipotrans="{{ $proveedor2->tipotransaccion }}" data-categoria="{{ $proveedor2->categoria }}" data-ciudad="{{ $proveedor2->ciudad }}" data-ciudad2="{{ $proveedor2->ciudad2 }}">
+                                        <option value="{{ $proveedor2->id }}" data-razon="{{ $proveedor2->razonsocial }}" data-tipotrans="{{ $proveedor2->tipotransaccion }}" data-categoria="{{ $proveedor2->categoria }}" data-ciudad="{{ $proveedor2->ciudad }}" data-ciudad2="{{ $proveedor2->ciudad2 }}"  data-bancoorigen2="{{ $proveedor2->bancoorigen }}">
                                             {{ $proveedor2->razonsocial }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-                            <!-- <script>
-                                document.addEventListener("DOMContentLoaded", function () {
-                                    let proveedorSelect = document.getElementById("proveedor-select2");
-                                    proveedorSelect.addEventListener("change", function () {
-                                        if (this.value) {
-                                            this.setAttribute("disabled", "disabled");
-                                        }
-                                    });
-                                });
-                            </script> -->
                             <div class="form-group col-lg-2" hidden>
                                 {!! Form::label('proveedorid2', 'ID Proveedor:') !!}
                                 {!! Form::text('proveedorid2', null, ['class' => 'form-control', 'readonly', 'id' => 'proveedorid2']) !!}
@@ -1098,7 +1226,7 @@
                             </script>
                             <div class="form-group col-lg-1 d-flex flex-column align-items-center">
                                 {!! Form::label('agregar', 'Agregar:') !!}
-                                <button type="button" id="btn-add2" class="btn btn-outline-success">
+                                <button type="button" id="btn-add2" class="btn btn-crear2">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
@@ -1110,14 +1238,14 @@
                     <div class="card">
                         <div class="card-body bg-light">
                             <div class="container-fluid text-center p-1 bg-light">
-                                <h4 class="fw-bold text-dark" style="font-weight: 900">PRE - ÓRDEN DE PERSONAL</h4>
+                                <h4 class="fw-bold text-dark" style="font-weight: 900">ÓRDEN DE PERSONAL</h4>
                             </div>
                             <div class="row">
                                 <div class="col-lg-9">
                                     <div class="card">
                                         <div class="card-body">
                                             <div class="table-responsive">
-                                                <table class="table table-bordered" id="data-table2">
+                                                <table class="table table-bordered table-striped table-sm" id="data-table2">
                                                     <thead>
                                                         <tr>
                                                             <th>Detalle</th>
@@ -1144,17 +1272,10 @@
                                                     <label for="sucursal22" style="margin-bottom: -10px;">Ciudad_Reg.:</label>
                                                     <input type="text" class="form-control" id="sucursal22" name="sucursal22" value="{{ $sucursal }}">
                                                 </div>
-                                                {{-- <div class="form-group col-lg-12">
-                                                    <label for="sucursalgasto22" style="margin-bottom: -10px;">Sucursal.:</label>
-                                                    <select class="form-control" id="sucursalgasto22" name="sucursalgasto22" required>
-                                                        <option value="SANTA CRUZ">SANTA CRUZ</option>
-                                                        <option value="COCHABAMBA">COCHABAMBA</option>
-                                                    </select>
-                                                </div> --}}
                                                 <div class="form-group col-lg-12">
                                                     <label for="sucursalgasto22" style="margin-bottom: -10px;">Sucursal.:</label>
                                                     <select class="form-control" id="sucursalgasto22" name="sucursalgasto22" required readonly>
-                                                        <!-- Las opciones se llenarán dinámicamente -->
+
                                                     </select>
                                                 </div>
                                             </div>
@@ -1197,13 +1318,29 @@
                                                 </div>
                                             </div>
                                             <div class="row">
+                                                <div class="form-group col-lg-6">
+                                                    <label for="tipocuenta3" style="margin-bottom: -10px;">Tipo Cuenta:</label>
+                                                    <input type="text" class="form-control" id="tipocuenta3" name="tipocuenta3" readonly>
+                                                </div>
+                                                <div class="form-group col-lg-6">
+                                                    <label for="nrocuenta3" style="margin-bottom: -10px;">Nro. Cuenta:</label>
+                                                    <select class="form-control" id="nrocuenta3" name="nrocuenta3" required>
+                                                        @foreach ($cuentas as $cuenta2)
+                                                            <option value="{{ $cuenta2->numerocuenta }}" data-tipocuenta2="{{ $cuenta2->tipocuenta }}">
+                                                                {{ $cuenta2->numerocuenta }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="row">
                                                 <div class="form-group col-lg-12">
                                                     <label for="observacion2" style="margin-bottom: -10px;">Observaciones:</label>
                                                     <input type="text" class="form-control" id="observacion2" name="observacion2">
                                                 </div>
                                             </div>
                                             <input type="hidden" name="ordenes_venta" id="ordenesVentaInput22">
-                                            <button type="submit" class="btn btn-outline-success">GENERAR PRE-ORDEN</button>
+                                            <button type="submit" class="btn btn-crear3">GENERAR ÓRDEN Y CxP</button>
                                         </div>
                                     </div>
                                 </div>
@@ -1220,7 +1357,8 @@
                                     //RELLENAR SUCURSAL DE GASTO
                                     let ciudad1 = selectedOption.getAttribute('data-ciudad');
                                     let ciudad2 = selectedOption.getAttribute('data-ciudad2');
-                                        let sucursalSelect = document.getElementById('sucursalgasto22');
+                                    let sucursalSelect = document.getElementById('sucursalgasto22');
+                                    let bancoorigen = selectedOption.getAttribute('data-bancoorigen2');
                                         sucursalSelect.innerHTML = "";
                                         if (ciudad1) {
                                             let option1 = document.createElement('option');
@@ -1238,12 +1376,40 @@
 
                                     document.getElementById('proveedorid2').value = proveedorId;
                                     document.getElementById('proveedorNombre22').value = proveedorNombre;
+                                    document.getElementById('tipocuenta3').value = bancoorigen;
                                     document.getElementById('proveedorId22').value = proveedorId;
                                     document.getElementById('tipotransaccion22').value = tipoTransaccion;
                                     document.getElementById('tipotransaccion32').value = tipoTransaccion;
                             
                                     if (primerProveedor2 === null) {
                                         primerProveedor2 = proveedorId;
+                                    }
+
+                                    let tipocuentaTexto = document.getElementById('tipocuenta3').value;
+                                    let tipocuentaBD = '';
+                                    if (tipocuentaTexto === 'CUENTA FACTURADA') {
+                                        tipocuentaBD = 'FACTURADA';
+                                    } else if (tipocuentaTexto === 'CUENTA NO FACTURADA') {
+                                        tipocuentaBD = 'NO FACTURADA';
+                                    }
+                                    let selectCuentas = document.getElementById('nrocuenta3');
+                                    let opciones = selectCuentas.querySelectorAll('option');
+                                    opciones.forEach(op => {
+                                        if (op.getAttribute('data-tipocuenta2') === tipocuentaBD) {
+                                            op.style.display = 'block';
+                                        } else {
+                                            op.style.display = 'none';
+                                        }
+                                    });
+                                    let visibles = Array.from(opciones).filter(op => op.style.display === 'block');
+                                    if (visibles.length === 1) {
+                                        selectCuentas.value = visibles[0].value;
+                                        /* selectCuentas.disabled = true; */
+                                        selectCuentas.setAttribute('readonly', true);
+                                        selectCuentas.removeAttribute('disabled');
+                                    } else {
+                                        selectCuentas.disabled = false;
+                                        selectCuentas.value = visibles.length > 0 ? visibles[0].value : '';
                                     }
                                 });
                             
@@ -1258,10 +1424,10 @@
                                         alert("Por favor, seleccione un proveedor.");
                                         return;
                                     }
-                                    if (primerProveedor2 !== proveedorId) {
+                                    /* if (primerProveedor2 !== proveedorId) {
                                         alert("Solo puede agregar productos del mismo proveedor.");
                                         return;
-                                    }
+                                    } */
                                     let tableBody = document.getElementById('data-table2').getElementsByTagName('tbody')[0];
                                     let newRow = document.createElement('tr');
                                     newRow.innerHTML = `
@@ -1330,357 +1496,25 @@
 
                 </script>
             </div>
-
-            {{-- PREORDENES DE VENTA --}}
-            {{-- <div class="tab-pane fade" id="tab-content-3">
-                <div class="card">
-                    <div class="card-body bg-light">
-                        <div class="container-fluid text-center p-1 bg-light">
-                            <h4 class="fw-bold text-dark" style="font-weight: 900">NUEVA PRE - ÓRDEN DE VENTA</h4>
-                        </div>
-                        <div class="row">
-                            <div class="form-group col-lg-2">
-                                {!! Form::label('proveedornombre22', 'Proveedor:') !!}
-                                <select id="proveedor-select22" class="form-control">
-                                    <option value=""></option>
-                                    @foreach ($proveedorespersonal as $proveedor22)
-                                        <option value="{{ $proveedor22->id }}" data-razon="{{ $proveedor22->razonsocial }}" data-tipotrans="{{ $proveedor22->tipotransaccion }}" data-categoria="{{ $proveedor22->categoria }}">
-                                            {{ $proveedor22->razonsocial }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <script>
-                                document.addEventListener("DOMContentLoaded", function () {
-                                    let proveedorSelect = document.getElementById("proveedor-select22");
-                                    proveedorSelect.addEventListener("change", function () {
-                                        if (this.value) {
-                                            this.setAttribute("disabled", "disabled");
-                                        }
-                                    });
-                                });
-                            </script>
-                            <div class="form-group col-lg-2" hidden>
-                                {!! Form::label('proveedorid22', 'ID Proveedor:') !!}
-                                {!! Form::text('proveedorid22', null, ['class' => 'form-control', 'readonly', 'id' => 'proveedorid22']) !!}
-                            </div>
-                            <div class="form-group col-lg-2">
-                                {!! Form::label('tipotransaccion22', 'Tipo Transacción:') !!}
-                                {!! Form::text('tipotransaccion222', null, ['class' => 'form-control', 'readonly', 'id' => 'tipotransaccion222']) !!}
-                            </div>
-                            <div class="form-group col-lg-8">
-                                {!! Form::label('detalle22', 'Detalle:') !!}
-                                {!! Form::text('detalle22', null, ['class' => 'form-control', 'id' => 'detalle22']) !!}
-                            </div>
-                            <div class="form-group col-lg-2">
-                                {!! Form::label('cantidad22', 'Cantidad:') !!}
-                                {!! Form::number('cantidad22', null, ['class' => 'form-control', 'id' => 'cantidad22']) !!}
-                            </div>
-                            <div class="form-group col-lg-3">
-                                {!! Form::label('preciounitario22', 'Precio Unitario:') !!}
-                                {!! Form::number('preciounitario22', null, ['class' => 'form-control', 'id' => 'preciounitario22']) !!}
-                            </div>
-                            <div class="form-group col-lg-3">
-                                {!! Form::label('descuentounitario22', 'Descuento Unitario:') !!}
-                                {!! Form::number('descuentounitario22', null, ['class' => 'form-control', 'id' => 'descuentounitario22']) !!}
-                            </div>
-                            <div class="form-group col-lg-3">
-                                {!! Form::label('totalunitario22', 'Total Unitario:') !!}
-                                {!! Form::number('totalunitario22', null, ['class' => 'form-control', 'id' => 'totalunitario22']) !!}
-                            </div>
-                            <script>
-                                function calcularTotalUnitario() {
-                                    let cantidad = parseFloat(document.getElementById('cantidad22').value) || 0;
-                                    let precioUnitario = parseFloat(document.getElementById('preciounitario22').value) || 0;
-                                    let descuentoUnitario = parseFloat(document.getElementById('descuentounitario22').value) || 0;
-                                    let totalUnitario = (cantidad * precioUnitario) - descuentoUnitario;
-                                    totalUnitario = totalUnitario < 0 ? 0 : totalUnitario;
-                                    document.getElementById('totalunitario22').value = totalUnitario.toFixed(2);
-                                }
-                                document.getElementById('cantidad22').addEventListener('input', calcularTotalUnitario);
-                                document.getElementById('preciounitario22').addEventListener('input', calcularTotalUnitario);
-                                document.getElementById('descuentounitario22').addEventListener('input', calcularTotalUnitario);
-                            </script>
-                            <script>
-                                const proveedorSelect2 = document.getElementById('proveedor-select22');
-                                const motivoSelect = document.getElementById('motivo');
-                                const mesInput2 = document.getElementById('mes22');
-                                const detalle2Input = document.getElementById('detalle22');
-                                proveedorSelect2.addEventListener('change', function () {
-                                    const selectedOption = this.options[this.selectedIndex];
-                                    const categoria = selectedOption.getAttribute('data-categoria');
-                                    motivoSelect.innerHTML = '';
-                                    if (categoria === 'PROVEEDOR EXTERNO') {
-                                        motivoSelect.innerHTML = `
-                                            <option value=""></option>
-                                            <option value="PAGO DE SERVICIOS PRESTADOS">PAGO DE SERVICIOS PRESTADOS</option>
-                                        `;
-                                    } else if (categoria === 'PROVEEDOR INTERNO') {
-                                        motivoSelect.innerHTML = `
-                                            <option value=""></option>
-                                            <option value="SUELDO">SUELDO</option>
-                                            <option value="TRANSPORTE">TRANSPORTE</option>
-                                            <option value="AGUINALDO">AGUINALDO</option>
-                                        `;
-                                    }
-                                    actualizarDetalle2();
-                                });
-                                motivoSelect.addEventListener('change', actualizarDetalle2);
-                                mesInput2.addEventListener('change', actualizarDetalle2);
-                                function actualizarDetalle2() {
-                                    const motivo = motivoSelect.value;
-                                    const mesValor = mesInput2.value;
-                                    let partes = [];
-                                    if (motivo) {
-                                        partes.push(motivo);
-                                    }
-                                    if (mesValor) {
-                                        const [anio, mes] = mesValor.split('-');
-                                        const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
-                                        const mesTexto = meses[parseInt(mes, 10) - 1];
-                                        partes.push(`MES DE ${mesTexto} ${anio}`);
-                                    }
-                                    detalle2Input.value = partes.join(', ');
-                                }
-                            </script>
-                            <div class="form-group col-lg-1 d-flex flex-column align-items-center">
-                                {!! Form::label('agregar', 'Agregar:') !!}
-                                <button type="button" id="btn-add2" class="btn btn-outline-success">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <form id="pdf-form-22" action="{{ route('generar.preordenpersonal') }}" method="POST">
-                    @csrf
-                    <div class="card">
-                        <div class="card-body bg-light">
-                            <div class="container-fluid text-center p-1 bg-light">
-                                <h4 class="fw-bold text-dark" style="font-weight: 900">PRE - ÓRDEN DE VENTA</h4>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-9">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-                                                <table class="table table-bordered" id="data-table2">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Detalle</th>
-                                                            <th>Cantidad</th>
-                                                            <th>Precio_P/U</th>
-                                                            <th>Desc_P/U</th>
-                                                            <th>Total_P/U</th>
-                                                            <th>X</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-3">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="form-group col-lg-12">
-                                                    <label for="sucursal222" style="margin-bottom: -10px;">Sucursal:</label>
-                                                    <select class="form-control" id="sucursal222" name="sucursal222" required>
-                                                        <option value="SANTA CRUZ">SANTA CRUZ</option>
-                                                        <option value="COCHABAMBA">COCHABAMBA</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="form-group col-lg-6">
-                                                    <label for="formapago222" style="margin-bottom: -10px;">Forma_Pago:</label>
-                                                    <select class="form-control" id="formapago222" name="formapago222" required>
-                                                        <option value="CONTADO">CONTADO</option>
-                                                        <option value="CREDITO">CREDITO</option>
-                                                    </select>
-                                                </div>
-                                                <div class="form-group col-lg-6">
-                                                    <label for="fechapagar222" style="margin-bottom: -10px;">Fecha_Pago:</label>
-                                                    <input type="date" class="form-control" id="fechapagar222" name="fechapagar222" required>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="form-group col-lg-6">
-                                                    <label for="proveedorNombre222" style="margin-bottom: -10px;">Proveedor:</label>
-                                                    <input type="text" class="form-control" id="proveedorNombre222" name="proveedorNombre222" readonly>
-                                                    <input type="hidden" class="form-control" id="proveedorId222" name="proveedorId222" readonly>
-                                                </div>
-                                                <div class="form-group col-lg-6">
-                                                    <label for="tipotransaccion322" style="margin-bottom: -10px;">Tipo_Transac:</label>
-                                                    <input type="text" class="form-control" id="tipotransaccion322" name="tipotransaccion322" readonly>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="form-group col-lg-4">
-                                                    <label for="subtotalgeneral22" style="margin-bottom: -10px;">Subtotal:</label>
-                                                    <input type="number" class="form-control" id="subtotalgeneral22" name="subtotalgeneral22" readonly>
-                                                </div>
-                                                <div class="form-group col-lg-4">
-                                                    <label for="descuentogeneral22" style="margin-bottom: -10px;">Desc.:</label>
-                                                    <input type="number" class="form-control" id="descuentogeneral22" name="descuentogeneral22" readonly>
-                                                </div>
-                                                <div class="form-group col-lg-4">
-                                                    <label for="montototalgeneral22" style="margin-bottom: -10px;">Total:</label>
-                                                    <input type="number" class="form-control" id="montototalgeneral22" name="montototalgeneral22" readonly>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="form-group col-lg-12">
-                                                    <label for="observacion22" style="margin-bottom: -10px;">Observaciones:</label>
-                                                    <input type="text" class="form-control" id="observacion22" name="observacion22">
-                                                </div>
-                                            </div>
-                                            <input type="hidden" name="ordenes_venta2" id="ordenesVentaInput222">
-                                            <button type="submit" class="btn btn-outline-success">GENERAR PRE-ORDEN</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <script>
-                                let primerProveedor2 = null;
-                            
-                                document.getElementById('proveedor-select22').addEventListener('change', function () {
-                                    let selectedOption = this.options[this.selectedIndex];
-                                    let proveedorId = selectedOption.value;
-                                    let proveedorNombre = selectedOption.getAttribute('data-razon');
-                                    let tipoTransaccion = selectedOption.getAttribute('data-tipotrans');
-                            
-                                    document.getElementById('proveedorid22').value = proveedorId;
-                                    document.getElementById('proveedorNombre222').value = proveedorNombre;
-                                    document.getElementById('proveedorId222').value = proveedorId;
-                                    document.getElementById('tipotransaccion222').value = tipoTransaccion;
-                                    document.getElementById('tipotransaccion322').value = tipoTransaccion;
-                            
-                                    if (primerProveedor22 === null) {
-                                        primerProveedor22 = proveedorId;
-                                    }
-                                });
-                            
-                                document.getElementById('btn-add22').addEventListener('click', function () {
-                                    let proveedorId = document.getElementById('proveedorid22').value;
-                                    let detalle = document.getElementById('detalle22').value;
-                                    let cantidad = parseFloat(document.getElementById('cantidad22').value) || 0;
-                                    let precioUnitario = parseFloat(document.getElementById('preciounitario22').value) || 0;
-                                    let descuentoUnitario = parseFloat(document.getElementById('descuentounitario22').value) || 0;
-                                    let totalUnitario = parseFloat(document.getElementById('totalunitario22').value) || 0;
-                                    if (!proveedorId) {
-                                        alert("Por favor, seleccione un proveedor.");
-                                        return;
-                                    }
-                                    if (primerProveedor22 !== proveedorId) {
-                                        alert("Solo puede agregar productos del mismo proveedor.");
-                                        return;
-                                    }
-                                    let tableBody = document.getElementById('data-table22').getElementsByTagName('tbody')[0];
-                                    let newRow = document.createElement('tr');
-                                    newRow.innerHTML = `
-                                        <td>${detalle}</td>
-                                        <td>${cantidad}</td>
-                                        <td class="precio-unitario22">${precioUnitario.toFixed(2)}</td>
-                                        <td class="descuento-unitario22">${descuentoUnitario.toFixed(2)}</td>
-                                        <td class="total-unitario22">${totalUnitario.toFixed(2)}</td>
-                                        <td>
-                                            <button type="button" class="btn btn-quitar btn-sm btn-remove remove-item">X</button>
-                                        </td>
-                                    `;
-                                    tableBody.appendChild(newRow);
-                                    actualizarTotales2();
-                                    newRow.querySelector('.btn-remove').addEventListener('click', function () {
-                                        newRow.remove();
-                                        actualizarTotales2();
-                                    });
-                            
-                                    limpiarCampos2();
-                                });
-                                function actualizarTotales2() {
-                                    let precios = document.querySelectorAll(".precio-unitario22");
-                                    let descuentos = document.querySelectorAll(".descuento-unitario22");
-                                    let totales = document.querySelectorAll(".total-unitario22");
-                                    let subtotal = 0, descuento = 0, montototal = 0;
-                            
-                                    precios.forEach(p => subtotal += parseFloat(p.textContent) || 0);
-                                    descuentos.forEach(d => descuento += parseFloat(d.textContent) || 0);
-                                    totales.forEach(t => montototal += parseFloat(t.textContent) || 0);
-                                    document.getElementById("subtotalgeneral22").value = (montototal + descuento).toFixed(2);
-                                    document.getElementById("descuentogeneral22").value = descuento.toFixed(2);
-                                    document.getElementById("montototalgeneral22").value = montototal.toFixed(2);
-                                }
-                                function limpiarCampos2() {
-                                    document.getElementById('detalle').value = "";
-                                    document.getElementById('cantidad').value = "";
-                                    document.getElementById('preciounitario').value = "";
-                                    document.getElementById('descuentounitario').value = "";
-                                    document.getElementById('totalunitario').value = "";
-                                }
-                            </script>
-                        </div>
-                    </div>
-                </form> 
-                <script>
-                    document.getElementById('pdf-form-222').addEventListener('submit', function (event) {
-                        let ordenesVenta = [];
-                        let tableRows = document.querySelectorAll("#data-table22 tbody tr");
-                        tableRows.forEach(row => {
-                            let detalle = row.cells[0].textContent;
-                            let cantidad = parseFloat(row.cells[1].textContent);
-                            let precio_unitario = parseFloat(row.cells[2].textContent);
-                            let descuento = parseFloat(row.cells[3].textContent);
-                            let subtotal = parseFloat(row.cells[4].textContent);
-                            ordenesVenta.push({
-                                detalle,
-                                cantidad,
-                                precio_unitario,
-                                descuento,
-                                subtotal
-                            });
-                        });
-                        document.getElementById('ordenesVentaInput222').value = JSON.stringify(ordenesVenta);
-                    });
-
-                </script>
-            </div> --}}
         </div> 
     </div>
 </div>
 
-<script>
-    // Función para limpiar los campos después de agregar
-        /* function limpiarCampos() {
-            document.getElementById('proveedor-select').selectedIndex = 0;
-            document.getElementById('proveedorid').value = '';
-            document.getElementById('tipotransaccion2').value = '';
-            document.getElementById('detalle').value = '';
-            document.getElementById('cantidad').value = '';
-            document.getElementById('preciounitario').value = '';
-            document.getElementById('descuentounitario').value = '';
-            document.getElementById('totalunitario').value = '';
-        } */
-</script>
 @stop
 
 @section('js')
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    @if (session('eliminar')=='ok')
-    <script>
-        Swal.fire(
-      '¡Eliminado!',
-      'El rol se eliminó con éxito',
-      'success')
-    </script>
-    @endif
+@if (session('eliminar')=='ok')
+<script>
+    Swal.fire(
+    '¡Eliminado!',
+    'El rol se eliminó con éxito',
+    'success')
+</script>
+@endif
 
 <script>
-
     $('.formulario-eliminar').submit(function(e){
         e.preventDefault();
 

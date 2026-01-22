@@ -63,22 +63,26 @@ class InventarioController extends Controller
         // Buscar y paginar los bienes del ALMACÉN
         $bienesalmacen = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
             ->where('tipoinventario', 'ALMACEN')
+            ->where('inventario', '!=', 'ANULADO')
             ->simplePaginate(20);
 
         // Contar todos los que coinciden (sin paginar)
         $almacenCount = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
             ->where('tipoinventario', 'ALMACEN')
+            ->where('inventario', '!=', 'ANULADO')
             ->count();
 
 
         // Buscar y paginar los bienes de ACTIVOS FIJOS
         $bienesactivosfijos = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
             ->where('tipoinventario', 'ACTIVO FIJO')
+            ->where('inventario', '!=', 'ANULADO')
             ->simplePaginate(20);
 
         // Contar todos los que coinciden (sin paginar)
         $activosfijosCount = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
             ->where('tipoinventario', 'ACTIVO FIJO')
+            ->where('inventario', '!=', 'ANULADO')
             ->count();
 
 
@@ -86,14 +90,15 @@ class InventarioController extends Controller
         $bienesalmacenstockbajo = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
             ->where('tipoinventario', 'ALMACEN')
             ->whereColumn('stockactual', '<', 'minimocantidad')
+            ->where('inventario', '!=', 'ANULADO')
             ->simplePaginate(20);
 
         // Contar total de registros con stock bajo (sin paginación)
         $stockbajoCount = Inventario::where('nombreproducto', 'LIKE', "%$nombreproducto%")
             ->where('tipoinventario', 'ALMACEN')
             ->whereColumn('stockactual', '<', 'minimocantidad')
+            ->where('inventario', '!=', 'ANULADO')
             ->count();
-
 
         $usuarios = User::has('roles')
                         ->orderBy('name', 'asc')
@@ -101,22 +106,6 @@ class InventarioController extends Controller
 
         $historiales = EntradaSalidaInventario::where('tipo','ENTRADA')->orderBy('created_at', 'desc')->get();
         $historialessalidas = EntradaSalidaInventario::where('tipo','SALIDA')->orderBy('created_at', 'desc')->get();
-
-        /* $detalleOrdenes = DB::table('detalleordenes')
-            ->whereIn('id', function ($query) {
-                $query->select('detalleordenid')
-                    ->from('cuentasporpagar');
-            })
-            ->whereIn('id', function ($query) {
-                $query->select('detalleordenid')
-                    ->from('cuentasporpagar')
-                    ->whereIn('id', function ($subquery) {
-                        $subquery->select('cuentapagarid')
-                            ->from('detallerecibos')
-                            ->where('estado', 'PAGO PROCESADO');
-                    });
-            })
-            ->get(); */
         
         $detalleOrdenes = DB::table('detalleordenes') 
             ->whereNull('estado')
@@ -136,7 +125,7 @@ class InventarioController extends Controller
             })
             ->get();
 
-        $detalleOrdenesCount = $detalleOrdenes->count(); // ahora serán exactamente iguales
+        $detalleOrdenesCount = $detalleOrdenes->count();
             
         // Traer todos los códigos como strings
         $codigosInventario = Inventario::pluck('codigo')->map(fn($c) => (string) $c)->toArray();
@@ -163,6 +152,21 @@ class InventarioController extends Controller
 
         return view('admin.inventario.index', compact('codigosPermitidos','detalleingresodirectoCount','detalleOrdenesCount','stockbajoCount','almacenCount','activosfijosCount','detalleingresodirecto','bienesalmacenstockbajo','detalleOrdenes', 'bienesalmacen', 'bienesactivosfijos', 'usuarios', 'historiales', 'historialessalidas'));
     }
+
+    public function anularproductoinventario(Request $request)
+    {
+        $codigos = $request->input('codigos', []);
+
+        if (!empty($codigos)) {
+            Inventario::whereIn('codigo', $codigos)
+                ->update(['inventario' => 'ANULADO']);
+            
+            return back()->with('info', 'Los productos han sido de baja correctamente.');
+        }
+
+        return back()->with('error', 'No seleccionó ningún producto.');
+    }
+
     public function permisoscodigocambiarstock(Request $request)
     {
         $codigo = $request->input('codigo');
@@ -489,8 +493,18 @@ class InventarioController extends Controller
     {
         $nombreproducto = $request->get('buscarpor');
 
+        /* $bienesalmacen = PortafolioProveedores::leftJoin('inventario', 'portafolioproveedores.id', '=', 'inventario.codigo')
+            ->select('portafolioproveedores.*',
+                    'inventario.stockactual as cantidadalmacen'); */
+
+        
         $bienesalmacen = PortafolioProveedores::leftJoin('inventario', 'portafolioproveedores.id', '=', 'inventario.codigo')
-            ->select('portafolioproveedores.*', 'inventario.stockactual as cantidadalmacen');
+            ->leftJoin('proveedoresservicios', 'portafolioproveedores.proveedorid', '=', 'proveedoresservicios.id')
+            ->select(
+                'portafolioproveedores.*',
+                'inventario.stockactual as cantidadalmacen',
+                'proveedoresservicios.bancoorigen'
+            );
 
         if ($nombreproducto) {
             $bienesalmacen = $bienesalmacen->where(function ($query) use ($nombreproducto) {
@@ -508,7 +522,7 @@ class InventarioController extends Controller
     }
     
 //PRE ORDENES
-    public function generarpreordencompra(Request $request)  
+    /* public function generarpreordencompra(Request $request)  
     {
         $ordenesCompra = json_decode($request->input('ordenes_compra'), true);
         $tipotransaccion = $request->input('tipotransaccion');
@@ -560,7 +574,468 @@ class InventarioController extends Controller
         
         return redirect()->route('admin.inventario.crearordenes')->with('info', 'Pre - Orden de compra registrada con éxito.');
     }
-    public function generarpreordenservicio(Request $request)  
+    public function generarOrdenCompra(Request $request)
+    {
+        $tipotransaccion = $request->input('tipotransaccion');
+        $formapago = $request->input('formapago');
+        $fechacomprar = $request->input('fechacomprar');
+        $sucursalgasto = $request->input('sucursalgasto');
+        $fechapagar = $request->input('fechapagar');
+        $proveedorid = $request->input('proveedorid');
+        $proveedornombre = $request->input('proveedornombre');
+        $observacion = $request->input('observacion');
+        $montototal = $request->input('montototal');
+        $subtotal = $request->input('subtotal');
+        $descuento = $request->input('descuento');
+        $usuariopreorden = $request->input('usuariopreorden');
+        $usuarioAutenticado = auth()->user()->id;
+        $usuarioAutenticadonombre = auth()->user()->name;
+        $sucursal = auth()->user()->sucursal;
+        $bancosDestino = $request->input('bancodestino');
+        $totalunitariosEditados = $request->input('totalunitario');
+
+        $proveedor = Proveedoresservicios::find($proveedorid);
+        if (!$proveedor) {
+            return redirect()->back()->with('error', 'Proveedor no encontrado');
+        }
+
+        $ultimoNumero = Ordenes::where('tipoorden', 'ORDEN DE COMPRA')
+            ->where('id', 'LIKE', '%C')
+            ->select(DB::raw('MAX(CAST(SUBSTRING(id, 1, LENGTH(id) - 1) AS UNSIGNED)) as max_id'))
+            ->value('max_id');
+
+        $nuevoIdConSufijo = (($ultimoNumero ?? 0) + 1) . 'C';
+
+        $ordenData = [
+            'id' => $nuevoIdConSufijo,
+            'observacion' => $observacion,
+            'tipotransaccion' => $tipotransaccion,
+            'formapago' => $formapago,
+            'sucursalgasto' => $sucursalgasto,
+            'sucursal' => $sucursal,
+            'fechacomprar' => $fechacomprar,
+            'fechapagar' => $fechapagar,
+            'proveedorid' => $proveedorid,
+            'proveedornombre' => $proveedornombre,
+            'montototal' => $montototal,
+            'subtotal' => $subtotal,
+            'descuento' => $descuento,
+            'observacion' => $observacion,
+            'usuarioregistroid' => $usuarioAutenticado,
+            'usuarioregistronombre' => $usuarioAutenticadonombre,
+            'tipoorden' => 'ORDEN DE COMPRA',
+            'estado' => 'APROBADO',
+            'usuariopreorden' => $usuariopreorden,
+        ];
+
+        $orden = Ordenes::create($ordenData);
+        $ordenesCompra = $request->input('ordenes');
+        $preOrdenesSeleccionadas = PreOrdenes::whereIn('id', $ordenesCompra)->get();
+        $agrupadosPorPreordenId = $preOrdenesSeleccionadas->groupBy('preordenid');
+        foreach ($agrupadosPorPreordenId as $preordenid => $preOrdenes) {
+            $codigosSeleccionados = $preOrdenes->pluck('id')->toArray();
+
+            PreOrdenes::where('preordenid', $preordenid)->update([
+                'estado' => 'RECHAZADO' 
+            ]);
+
+            PreOrdenes::whereIn('id', $codigosSeleccionados)->update([
+                'estado' => 'APROBADO'
+            ]);
+        }
+            if ($ordenesCompra) {
+                $detallesPreOrdenes = [];
+                foreach ($ordenesCompra as $id) {
+                    $detalleOrden = PreOrdenes::where('id', $id)->first();
+                    $totalUnitarioFinal = $totalunitariosEditados[$id] ?? $detalleOrden->totalunitario;
+                    $totalUnitarioFinal = str_replace(',', '', $totalUnitarioFinal);
+                    $totalUnitarioFinal = floatval($totalUnitarioFinal);
+
+                    if ($detalleOrden) {
+                        $detallesPreOrdenes[] = $detalleOrden;
+                        $cuentaSeleccionada = $bancosDestino[$id] ?? null;
+                
+                        DetalleOrdenes::create([
+                            'detalle' => $detalleOrden->detalle,
+                            'cantidad' => $detalleOrden->cantidad,
+                            'preciounitario' => $detalleOrden->preciounitario,
+                            'codigo' => $detalleOrden->codigo,
+                            'descuentounitario' => $detalleOrden->descuentounitario,
+                            'totalunitario' => $totalUnitarioFinal,
+                            'tipoorden' => 'ORDEN DE COMPRA',
+                            'ordenid' => $orden->id,
+                            'observacion' => $observacion,
+                            'nrobancoorigen' => $cuentaSeleccionada,
+                            'tipotransaccion' => $tipotransaccion,
+                            'formapago' => $formapago,
+                            'fechacomprar' => $fechacomprar,
+                            'fechapagar' => $fechapagar,
+                            'proveedorid' => $proveedorid,
+                            'proveedornombre' => $proveedornombre,
+                            'usuarioregistroid' => $usuarioAutenticado,
+                            'usuarioregistronombre' => $usuarioAutenticadonombre,
+                            'usuariopreorden' => $usuariopreorden,
+                        ]);
+
+                    }
+                }
+            }
+            $detalleOrdenes = DetalleOrdenes::where('ordenid', $orden->id)->get(); 
+
+            $ultimacp = CuentasPagar::orderByRaw("LENGTH(id) DESC, id DESC")
+                ->first();
+            $nuevoIdcp = $ultimacp ? ((int) filter_var($ultimacp->id, FILTER_SANITIZE_NUMBER_INT)) + 1 : 1;
+
+            foreach ($detalleOrdenes as $detalle) {
+                $idUnico = $nuevoIdcp . 'CP';
+
+                $preordenConSaldo = PreOrdenes::where('detalle', 'LIKE', '%' . $detalle->ordenid . ')')
+                    ->where('codigo', $detalle->codigo)
+                    ->where('preciounitario', '>', 0)
+                    ->first();
+
+                $subtotalFinal = $detalle->preciounitario;
+                if ($preordenConSaldo) {
+                    $subtotalFinal -= $preordenConSaldo->preciounitario;
+                }
+
+                $cuentasPagar = new CuentasPagar();
+                $cuentasPagar->id = $idUnico;
+                $cuentasPagar->proveedorid = $orden->proveedorid;
+                $cuentasPagar->proveedornombre = $orden->proveedornombre;
+                $cuentasPagar->detalleproducto = $detalle->detalle;
+                $cuentasPagar->fechaasignada = $orden->fechapagar;
+                $cuentasPagar->fechacomprar = $orden->fechacomprar;
+                $cuentasPagar->nrobancoorigen = $detalle->nrobancoorigen;
+                $cuentasPagar->subtotal = $subtotalFinal;
+                $cuentasPagar->descuento = $detalle->descuentounitario;
+                $cuentasPagar->montototal = $detalle->totalunitario;
+                $cuentasPagar->preciocompra = '0.00';
+                $cuentasPagar->sucursalgasto = $orden->sucursalgasto;
+                $cuentasPagar->ciudad = $sucursal;
+                $cuentasPagar->tipoorden = $orden->tipoorden;
+                $cuentasPagar->tipoproveedorservicio = $proveedor->categoria;
+                $cuentasPagar->ordenid = $orden->id;
+                $cuentasPagar->cantidad = $detalle->cantidad;
+                $cuentasPagar->estado = 'PENDIENTE';
+                $cuentasPagar->usuarioregistroid = $orden->usuarioregistroid;
+                $cuentasPagar->usuarioregistronombre = $orden->usuarioregistronombre;
+                $cuentasPagar->detalleordenid = $detalle->id;
+                $cuentasPagar->save();
+                $nuevoIdcp++;
+            }
+
+            $pdfData = [
+                'ordenesCompra' => $detalleOrdenes,
+                'tipotransaccion' => $tipotransaccion,
+                'formapago' => $formapago,
+                'fechacomprar' => $fechacomprar,
+                'fechapagar' => $fechapagar,
+                'proveedor' => $proveedornombre,
+                'observacion' => $observacion,
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'montototal' => $montototal,
+                'saldo' => $subtotal - ($descuento + $montototal),
+                'usuarioAutenticado' => $usuarioAutenticado,
+                'usuarioAutenticadonombre' => $usuarioAutenticadonombre,
+                'ordenId' => $orden->id,
+                'proveedor' => $proveedor,
+                'usuarioregistro' => $usuariopreorden,
+            ];
+
+            $pdf = PDF::loadView('admin.inventario.pdfgenerarordencompra', $pdfData);
+            $nombreArchivo = 'ORDEN_COMPRA_' . $orden->id . '.pdf';
+            
+            $directorio = public_path('ordenesaprobadas/' . $usuarioAutenticado);
+            if (!is_dir($directorio)) {
+                mkdir($directorio, 0777, true);
+            }
+            
+            $rutaArchivo = $directorio . '/' . $nombreArchivo;
+            $pdf->save($rutaArchivo);
+
+            $orden->update([
+                'documentoorden' => $nombreArchivo,
+            ]);
+
+        return redirect()->route('admin.inventario.listaordenes')->with('info', 'Orden de compra generada con éxito.');
+    } */
+
+        /* NUEVAS ORDENES */
+    public function crearordenes(Request $request)  
+    {
+        $nombreproducto = $request->get('buscarpor');
+        $sucursal = auth()->user()->sucursal;
+        $bienesalmacen = PortafolioProveedores::leftJoin('inventario', 'portafolioproveedores.id', '=', 'inventario.codigo')
+            ->leftJoin('proveedoresservicios', 'portafolioproveedores.proveedorid', '=', 'proveedoresservicios.id')
+            ->select(
+                'portafolioproveedores.*',
+                'inventario.stockactual as cantidadalmacen',
+                'proveedoresservicios.bancoorigen'
+            );
+        if ($nombreproducto) {
+        $bienesalmacen = $bienesalmacen->where(function ($query) use ($nombreproducto) {
+                $query->where('portafolioproveedores.nombreproducto', 'LIKE', "%$nombreproducto%")
+                    ->orWhere('portafolioproveedores.id', 'LIKE', "%$nombreproducto%");
+            });
+        }
+        $bienesalmacen = $bienesalmacen->paginate(20);
+
+        if ($request->ajax()) {
+            return view('admin.inventario.partials.tabla', compact('bienesalmacen'))->render();
+        }
+
+        $proveedores = ProveedoresServicios::where(function($query) {
+            $query->where('tipoorden1', 'ORDEN DE SERVICIO')
+                  ->orWhere('tipoorden2', 'ORDEN DE SERVICIO')
+                  ->orWhere('tipoorden3', 'ORDEN DE SERVICIO');
+        })
+        ->select('id', 'razonsocial', 'tipotransaccion', 'ciudad', 'ciudad2', 'bancoorigen')
+        ->orderBy('razonsocial')
+        ->get();
+
+
+        /* $proveedoresServicios = ProveedoresServicios::where(function($query) {
+                $query->where('tipoorden1', 'ORDEN DE SERVICIO')
+                    ->orWhere('tipoorden2', 'ORDEN DE SERVICIO')
+                    ->orWhere('tipoorden3', 'ORDEN DE SERVICIO');
+            })
+            ->select(
+                'id',
+                'razonsocial',
+                'tipotransaccion',
+                'ciudad',
+                'ciudad2',
+                'bancoorigen'
+            )
+            ->get();
+
+        $proveedorExtra = Proveedor::where('id', 13)
+            ->selectRaw("
+                id,
+                proveedor as razonsocial,
+                mododepago as tipotransaccion,
+                ciudad,
+                ciudad2,
+                bancoorigen
+            ")
+            ->get();
+
+        $proveedores = $proveedoresServicios->merge($proveedorExtra)
+                                    ->sortBy('razonsocial')
+                                    ->values(); */
+
+    
+        $proveedorespersonal = ProveedoresServicios::whereIn('categoria', ['PROVEEDOR EXTERNO', 'PROVEEDOR INTERNO'])->select('id', 'razonsocial', 'tipotransaccion', 'categoria', 'ciudad', 'ciudad2', 'bancoorigen')->get();
+
+        $planes = PlanesServiciosProv::select('id', 'plan', 'proveedorid', 'contrato', 'linea', 'cuenta', 'servicio', 'codigo', 'montofijo', 'ciudad', 'motivo')->get();
+
+        $cuentas = CuentasBancos::where('estado', 'ACTIVO')->get();
+
+        return view('admin.inventario.crearordenes', compact('cuentas','bienesalmacen', 'proveedores', 'planes', 'proveedorespersonal', 'sucursal'));
+    }
+    
+    public function generarpreordencompra(Request $request)
+    {
+        DB::beginTransaction(); // Iniciamos transacción para evitar datos inconsistentes
+        try {
+            // === DATOS DEL REQUEST ===
+            $ordenesCompra = json_decode($request->input('ordenes_compra'), true);
+            $tipotransaccion = $request->input('tipotransaccion');
+            $formapago = $request->input('formapago');
+            $sucursal = $request->input('sucursal');
+            $sucursalgasto = $request->input('sucursalgasto');
+            $fechacomprar = $request->input('fechacomprar');
+            $fechapagar = $request->input('fechapagar');
+            $proveedorid = $request->input('proveedorId');
+            $observacion = $request->input('observacion');
+            $montototal = $request->input('montototal');
+            $subtotal = $request->input('subtotal');
+            $descuento = $request->input('descuento');
+            $nroBancoOrigen = $request->input('nrocuenta');
+            $bancosDestino = $request->input('bancodestino');
+            $usuarioAutenticado = auth()->user()->id;
+            $usuarioAutenticadonombre = auth()->user()->name;
+
+            // === VALIDAR PROVEEDOR ===
+            $proveedor = Proveedoresservicios::find($proveedorid);
+            if (!$proveedor) {
+                return redirect()->back()->with('error', 'Proveedor no encontrado');
+            }
+
+            // === GENERAR ID PREORDEN ===
+            $ultimoNumeroPre = PreOrdenes::select(DB::raw('MAX(CAST(SUBSTRING(preordenid, 1, LENGTH(preordenid) - 2) AS UNSIGNED)) as max_num'))
+                ->where('preordenid', 'LIKE', '%PO')
+                ->value('max_num');
+            $nuevoPreOrdenId = ($ultimoNumeroPre ? ($ultimoNumeroPre + 1) : 1) . 'PO';
+
+            $idsPreOrdenes = [];
+
+            // === CREAR PREORDENES ===
+            foreach ($ordenesCompra as $detalle) {
+                $preOrden = PreOrdenes::create([
+                    'detalle' => $detalle['detalle'],
+                    'cantidad' => $detalle['cantidad'],
+                    'tipotransaccion' => $tipotransaccion,
+                    'preciounitario' => $detalle['subtotal'],
+                    'codigo' => $detalle['id'],
+                    'descuentounitario' => $detalle['descuento'],
+                    'totalunitario' => $detalle['subtotal'] - $detalle['descuento'],
+                    'proveedorid' => $proveedorid,
+                    'proveedornombre' => $proveedor->razonsocial,
+                    'fechacomprar' => $fechacomprar,
+                    'fechapagar' => $fechapagar,
+                    'tipoorden' => 'ORDEN DE COMPRA',
+                    'estado' => 'PENDIENTE',
+                    'formapago' => $formapago,
+                    'sucursal' => $sucursal,
+                    'sucursalgasto' => $sucursalgasto,
+                    'observacion' => $observacion,
+                    'preordenid' => $nuevoPreOrdenId,
+                    'usuarioregistroid' => $usuarioAutenticado,
+                    'usuarioregistronombre' => $usuarioAutenticadonombre,
+                ]);
+                $idsPreOrdenes[] = $preOrden->id;
+            }
+
+            // === GENERAR ID ORDEN ===
+            $ultimoNumeroOrden = Ordenes::where('tipoorden', 'ORDEN DE COMPRA')
+                ->where('id', 'LIKE', '%C')
+                ->select(DB::raw('MAX(CAST(SUBSTRING(id, 1, LENGTH(id) - 1) AS UNSIGNED)) as max_id'))
+                ->value('max_id');
+            $nuevoIdOrden = (($ultimoNumeroOrden ?? 0) + 1) . 'C';
+
+            // === CREAR ORDEN DE COMPRA ===
+            $orden = Ordenes::create([
+                'id' => $nuevoIdOrden,
+                'observacion' => $observacion,
+                'tipotransaccion' => $tipotransaccion,
+                'formapago' => $formapago,
+                'sucursalgasto' => $sucursalgasto,
+                'sucursal' => $sucursal,
+                'fechacomprar' => $fechacomprar,
+                'fechapagar' => $fechapagar,
+                'proveedorid' => $proveedorid,
+                'proveedornombre' => $proveedor->razonsocial,
+                'montototal' => $montototal,
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'usuarioregistroid' => $usuarioAutenticado,
+                'usuarioregistronombre' => $usuarioAutenticadonombre,
+                'tipoorden' => 'ORDEN DE COMPRA',
+                'estado' => 'APROBADO',
+                'usuariopreorden' => $usuarioAutenticadonombre,
+            ]);
+
+            // === CREAR DETALLE ORDEN Y CUENTAS POR PAGAR ===
+            $detallePreOrdenes = PreOrdenes::whereIn('id', $idsPreOrdenes)->get();
+            $ultimacp = CuentasPagar::orderByRaw("LENGTH(id) DESC, id DESC")->first();
+            $nuevoIdcp = $ultimacp ? ((int) filter_var($ultimacp->id, FILTER_SANITIZE_NUMBER_INT)) + 1 : 1;
+
+            foreach ($detallePreOrdenes as $detalle) {
+                $cuentaDestino = $bancosDestino[$detalle->id] ?? null;
+
+                // Crear DetalleOrden
+                $detalleOrden = DetalleOrdenes::create([
+                    'detalle' => $detalle->detalle,
+                    'cantidad' => $detalle->cantidad,
+                    'preciounitario' => $detalle->preciounitario,
+                    'codigo' => $detalle->codigo,
+                    'descuentounitario' => $detalle->descuentounitario,
+                    'totalunitario' => $detalle->totalunitario,
+                    'tipoorden' => 'ORDEN DE COMPRA',
+                    'ordenid' => $orden->id,
+                    'observacion' => $observacion,
+                    'nrobancoorigen' => $cuentaDestino,
+                    'tipotransaccion' => $tipotransaccion,
+                    'formapago' => $formapago,
+                    'fechacomprar' => $fechacomprar,
+                    'fechapagar' => $fechapagar,
+                    'proveedorid' => $proveedorid,
+                    'proveedornombre' => $proveedor->razonsocial,
+                    'usuarioregistroid' => $usuarioAutenticado,
+                    'usuarioregistronombre' => $usuarioAutenticadonombre,
+                    'usuariopreorden' => $usuarioAutenticadonombre,
+                ]);
+
+                /* $proveedorBanco = Proveedoresservicios::find($orden->proveedorid);
+                $nroBancoOrigen = 0;
+                if ($proveedorBanco) {
+                    if ($proveedorBanco->bancoorigen === 'CUENTA FACTURADA') {
+                        $nroBancoOrigen = '3000189269';
+                    } elseif ($proveedorBanco->bancoorigen === 'CUENTA NO FACTURADA') {
+                        $nroBancoOrigen = '2505314878';
+                    }
+                } */
+
+                // Crear CuentasPagar
+                $idUnicoCP = $nuevoIdcp . 'CP';
+                CuentasPagar::create([
+                    'id' => $idUnicoCP,
+                    'proveedorid' => $orden->proveedorid,
+                    'nrobancoorigen'=> $nroBancoOrigen,
+                    'proveedornombre' => $orden->proveedornombre,
+                    'detalleproducto' => $detalleOrden->detalle,
+                    'fechaasignada' => $orden->fechapagar,
+                    'fechacomprar' => $orden->fechacomprar,
+                    'subtotal' => $detalleOrden->preciounitario,
+                    'descuento' => $detalleOrden->descuentounitario,
+                    'montototal' => $detalleOrden->totalunitario,
+                    'preciocompra' => '0.00',
+                    'sucursalgasto' => $orden->sucursalgasto,
+                    'ciudad' => $sucursal,
+                    'tipoorden' => $orden->tipoorden,
+                    'tipoproveedorservicio' => $proveedor->categoria,
+                    'ordenid' => $orden->id,
+                    'cantidad' => $detalleOrden->cantidad,
+                    'estado' => 'PENDIENTE',
+                    'usuarioregistroid' => $orden->usuarioregistroid,
+                    'usuarioregistronombre' => $orden->usuarioregistronombre,
+                    'detalleordenid' => $detalleOrden->id,
+                ]);
+                $nuevoIdcp++;
+            }
+
+            // === GENERAR PDF ===
+            $pdfData = [
+                'ordenesCompra' => $detallePreOrdenes,
+                'tipotransaccion' => $tipotransaccion,
+                'formapago' => $formapago,
+                'fechacomprar' => $fechacomprar,
+                'fechapagar' => $fechapagar,
+                'proveedor' => $proveedor,
+                'observacion' => $observacion,
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'montototal' => $montototal,
+                'saldo' => $subtotal - ($descuento + $montototal),
+                'usuarioAutenticado' => $usuarioAutenticado,
+                'usuarioAutenticadonombre' => $usuarioAutenticadonombre,
+                'ordenId' => $orden->id,
+                'usuarioregistro' => $usuarioAutenticadonombre,
+            ];
+
+            $pdf = PDF::loadView('admin.inventario.pdfgenerarordencompra', $pdfData);
+            $nombreArchivo = 'ORDEN_COMPRA_' . $orden->id . '.pdf';
+            $directorio = public_path('ordenesaprobadas/' . $usuarioAutenticado);
+            if (!is_dir($directorio)) {
+                mkdir($directorio, 0777, true);
+            }
+            $rutaArchivo = $directorio . '/' . $nombreArchivo;
+            $pdf->save($rutaArchivo);
+
+            $orden->update(['documentoorden' => $nombreArchivo]);
+
+            DB::commit();
+            return redirect()->route('admin.inventario.listaordenes')->with('info', 'Pre-orden y orden de compra generadas con éxito.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /* public function generarpreordenservicio(Request $request)  
     {
         $ordenesVenta = json_decode($request->input('ordenes_venta'), true);
         $tipotransaccion = $request->input('tipotransaccion3');
@@ -576,12 +1051,6 @@ class InventarioController extends Controller
         $usuarioAutenticado = auth()->user()->id;
         $usuarioAutenticadonombre = auth()->user()->name;
 
-        /* $ultimoPreOrden = PreOrdenes::latest('preordenid')->first();
-        if ($ultimoPreOrden && preg_match('/^(\d+)PO$/', $ultimoPreOrden->preordenid, $matches)) {
-            $nuevoPreOrdenId = ((int)$matches[1] + 1) . 'PO';
-        } else {
-            $nuevoPreOrdenId = '1PO';
-        } */
         $ultimoNumero = PreOrdenes::select(DB::raw('MAX(CAST(SUBSTRING(preordenid, 1, LENGTH(preordenid) - 2) AS UNSIGNED)) as max_num'))
             ->where('preordenid', 'LIKE', '%PO')
             ->value('max_num');
@@ -594,7 +1063,6 @@ class InventarioController extends Controller
                 'cantidad' => $detalle['cantidad'],
                 'tipotransaccion' => $tipotransaccion,
                 'preciounitario' => $detalle['precio_unitario'],
-                /* 'codigo' => $detalle['id'], */
                 'descuentounitario' => $detalle['descuento'],
                 'totalunitario' => $detalle['subtotal'],
                 'proveedorid' => $proveedorid,
@@ -615,7 +1083,395 @@ class InventarioController extends Controller
         
         return redirect()->route('admin.inventario.crearordenes')->with('info', 'Pre - Orden de servicio registrada con éxito.');
     }
-    public function generarpreordenpersonal(Request $request)  
+    public function generarOrdenServicio(Request $request)
+    {
+        $tipotransaccion = $request->input('tipotransaccion');
+        $formapago = $request->input('formapago');
+        $sucursalgasto = $request->input('sucursalgasto2');
+        $fechacomprar = $request->input('fechacomprar');
+        $fechapagar = $request->input('fechapagar');
+        $proveedorid = $request->input('proveedorid');
+        $proveedornombre = $request->input('proveedornombre');
+        $observacion = $request->input('observacion');
+        $montototal = $request->input('montototal');
+        $subtotal = $request->input('subtotal');
+        $descuento = $request->input('descuento');
+        $usuariopreorden = $request->input('usuariopreorden');
+        $usuarioAutenticado = auth()->user()->id;
+        $usuarioAutenticadonombre = auth()->user()->name;
+        $sucursal = auth()->user()->sucursal;
+        $bancosDestino = $request->input('bancodestino2');
+        $totalunitariosEditados = $request->input('totalunitario2');
+
+        $proveedor = Proveedoresservicios::find($proveedorid);
+        if (!$proveedor) {
+            return redirect()->back()->with('error', 'Proveedor no encontrado');
+        }
+
+        $ultimoNumero = Ordenes::where('tipoorden', 'ORDEN DE SERVICIO')
+            ->where('id', 'LIKE', '%S')
+            ->select(DB::raw('MAX(CAST(SUBSTRING(id, 1, LENGTH(id) - 1) AS UNSIGNED)) as max_id'))
+            ->value('max_id');
+
+        $nuevoIdConSufijo = (($ultimoNumero ?? 0) + 1) . 'S';
+
+        $ordenData = [
+            'id' => $nuevoIdConSufijo,
+            'observacion' => $observacion,
+            'tipotransaccion' => $tipotransaccion,
+            'formapago' => $formapago,
+            'sucursalgasto' => $sucursalgasto,
+            'sucursal' => $sucursal,
+            'fechacomprar' => $fechacomprar,
+            'fechapagar' => $fechapagar,
+            'proveedorid' => $proveedorid,
+            'proveedornombre' => $proveedornombre,
+            'montototal' => $montototal,
+            'subtotal' => $subtotal,
+            'descuento' => $descuento,
+            'observacion' => $observacion,
+            'usuarioregistroid' => $usuarioAutenticado,
+            'usuarioregistronombre' => $usuarioAutenticadonombre,
+            'tipoorden' => 'ORDEN DE SERVICIO',
+            'estado' => 'APROBADO',
+            'usuariopreorden' => $usuariopreorden,
+        ];
+
+        $orden = Ordenes::create($ordenData);
+        $ordenesServicio = $request->input('ordenes2');
+        $preOrdenesSeleccionadas = PreOrdenes::whereIn('id', $ordenesServicio)->get();
+        $agrupadosPorPreordenId = $preOrdenesSeleccionadas->groupBy('preordenid');
+        foreach ($agrupadosPorPreordenId as $preordenid => $preOrdenes) {
+            $codigosSeleccionados = $preOrdenes->pluck('id')->toArray();
+
+            PreOrdenes::where('preordenid', $preordenid)->update([
+                'estado' => 'RECHAZADO'
+            ]);
+
+            PreOrdenes::whereIn('id', $codigosSeleccionados)->update([
+                'estado' => 'APROBADO'
+            ]);
+        }
+            if ($ordenesServicio) {
+                $detallesPreOrdenes = [];
+                foreach ($ordenesServicio as $id) {
+                    $detalleOrden = PreOrdenes::where('id', $id)->first();
+
+                    $totalUnitarioFinal = $totalunitariosEditados[$id] ?? $detalleOrden->totalunitario;
+                    $totalUnitarioFinal = str_replace(',', '', $totalUnitarioFinal);
+                    $totalUnitarioFinal = floatval($totalUnitarioFinal);
+
+                    if ($detalleOrden) {
+                        $detallesPreOrdenes[] = $detalleOrden;
+                        $cuentaSeleccionada = $bancosDestino[$id] ?? null;
+                
+                        DetalleOrdenes::create([
+                            'detalle' => $detalleOrden->detalle,
+                            'cantidad' => $detalleOrden->cantidad,
+                            'preciounitario' => $detalleOrden->preciounitario,
+                            'codigo' => $detalleOrden->codigo,
+                            'descuentounitario' => $detalleOrden->descuentounitario,
+                            'totalunitario' => $totalUnitarioFinal,
+                            'tipoorden' => 'ORDEN DE SERVICIO',
+                            'ordenid' => $orden->id,
+                            'observacion' => $observacion,
+                            'nrobancoorigen' => $cuentaSeleccionada,
+                            'tipotransaccion' => $tipotransaccion,
+                            'formapago' => $formapago,
+                            'fechacomprar' => $fechacomprar,
+                            'fechapagar' => $fechapagar,
+                            'proveedorid' => $proveedorid,
+                            'proveedornombre' => $proveedornombre,
+                            'usuarioregistroid' => $usuarioAutenticado,
+                            'usuarioregistronombre' => $usuarioAutenticadonombre,
+                            'usuariopreorden' => $usuariopreorden,
+                            'sucursal' => $detalleOrden->sucursal,
+                            'sucursalgasto' => $detalleOrden->sucursalgasto,
+                        ]);
+                    }
+                }
+            }
+            $detalleOrdenes = DetalleOrdenes::where('ordenid', $orden->id)->get(); 
+
+            $ultimacp = CuentasPagar::orderByRaw("LENGTH(id) DESC, id DESC")
+                ->first();
+            $nuevoIdcp = $ultimacp ? ((int) filter_var($ultimacp->id, FILTER_SANITIZE_NUMBER_INT)) + 1 : 1;
+
+            foreach ($detalleOrdenes as $detalle) {
+                $idUnico = $nuevoIdcp . 'CP';
+
+                $preordenConSaldo = PreOrdenes::where('detalle', 'LIKE', '%' . $detalle->ordenid . ')')
+                    ->where('codigo', $detalle->codigo)
+                    ->where('preciounitario', '>', 0)
+                    ->first();
+
+                $subtotalFinal = $detalle->preciounitario;
+                if ($preordenConSaldo) {
+                    $subtotalFinal -= $preordenConSaldo->preciounitario;
+                }
+
+                $cuentasPagar = new CuentasPagar();
+                $cuentasPagar->id = $idUnico;
+                $cuentasPagar->proveedorid = $orden->proveedorid;
+                $cuentasPagar->proveedornombre = $orden->proveedornombre;
+                $cuentasPagar->detalleproducto = $detalle->detalle;
+                $cuentasPagar->fechaasignada = $orden->fechapagar;
+                $cuentasPagar->fechacomprar = $orden->fechacomprar;
+                $cuentasPagar->nrobancoorigen = $detalle->nrobancoorigen;
+                $cuentasPagar->subtotal = $subtotalFinal;
+                $cuentasPagar->descuento = $detalle->descuentounitario;
+                $cuentasPagar->montototal = $detalle->totalunitario;
+                $cuentasPagar->preciocompra = '0.00';
+                $cuentasPagar->sucursalgasto = $detalle->sucursalgasto;
+                $cuentasPagar->ciudad = $detalle->sucursal;
+                $cuentasPagar->tipoorden = $orden->tipoorden;
+                $cuentasPagar->tipoproveedorservicio = $proveedor->categoria;
+                $cuentasPagar->ordenid = $orden->id;
+                $cuentasPagar->cantidad = $detalle->cantidad;
+                $cuentasPagar->estado = 'PENDIENTE';
+                $cuentasPagar->usuarioregistroid = $orden->usuarioregistroid;
+                $cuentasPagar->usuarioregistronombre = $orden->usuarioregistronombre;
+                $cuentasPagar->detalleordenid = $detalle->id;
+                $cuentasPagar->save();
+                $nuevoIdcp++;
+            }
+
+            $pdfData = [
+                'ordenesServicio' => $detalleOrdenes,
+                'tipotransaccion' => $tipotransaccion,
+                'formapago' => $formapago,
+                'fechacomprar' => $fechacomprar,
+                'fechapagar' => $fechapagar,
+                'proveedor' => $proveedornombre,
+                'observacion' => $observacion,
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'montototal' => $montototal,
+                'saldo' => $subtotal - ($descuento + $montototal),
+                'usuarioAutenticado' => $usuarioAutenticado,
+                'usuarioAutenticadonombre' => $usuarioAutenticadonombre,
+                'ordenId' => $orden->id,
+                'proveedor' => $proveedor,
+                'usuarioregistro' => $usuariopreorden,
+            ];
+
+            $pdf = PDF::loadView('admin.inventario.pdfgenerarordenservicio', $pdfData);
+            $nombreArchivo = 'ORDEN_SERVICIO_' . $orden->id . '.pdf';
+
+            $directorio = public_path('ordenesaprobadas/' . $usuarioAutenticado);
+            if (!is_dir($directorio)) {
+                mkdir($directorio, 0777, true);
+            }
+            
+            $rutaArchivo = $directorio . '/' . $nombreArchivo;
+            $pdf->save($rutaArchivo);
+
+            $orden->update([
+                'documentoorden' => $nombreArchivo,
+            ]);
+
+        return redirect()->route('admin.inventario.listaordenes')->with('info', 'Orden de servicio generada con éxito.');
+    } */
+    public function generarpreordenservicio(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+
+            $ordenesVenta = json_decode($request->input('ordenes_venta'), true);
+            $tipotransaccion = $request->input('tipotransaccion3');
+            $formapago = $request->input('formapago2');
+            $sucursal = $request->input('sucursal2');
+            $sucursalgasto = $request->input('sucursalgasto2');
+            $fechacomprar = $request->input('fechacomprar2');
+            $fechapagar = $request->input('fechapagar2');
+            $proveedorid = $request->input('proveedorId2');
+            $proveedornombre = $request->input('proveedorNombre2');
+            $observacion = $request->input('observacion2');
+            $montototal = $request->input('montototalgeneral');
+            $subtotal = $request->input('subtotalgeneral');
+            $descuento = $request->input('descuentogeneral');
+            $bancosDestino = $request->input('bancodestino2');
+            $nroBancoOrigen = $request->input('nrocuenta2');
+            $usuarioAutenticado = auth()->user()->id;
+            $usuarioAutenticadonombre = auth()->user()->name;
+
+            // === VALIDAR PROVEEDOR ===
+            $proveedor = Proveedoresservicios::find($proveedorid);
+            if (!$proveedor) {
+                return redirect()->back()->with('error', 'Proveedor no encontrado');
+            }
+
+            // === GENERAR ID PREORDEN ===
+            $ultimoNumeroPre = PreOrdenes::select(DB::raw('MAX(CAST(SUBSTRING(preordenid, 1, LENGTH(preordenid) - 2) AS UNSIGNED)) as max_num'))
+                ->where('preordenid', 'LIKE', '%PO')
+                ->value('max_num');
+            $nuevoPreOrdenId = ($ultimoNumeroPre ? ($ultimoNumeroPre + 1) : 1) . 'PO';
+
+            $idsPreOrdenes = [];
+
+            // === CREAR PREORDENES ===
+            foreach ($ordenesVenta as $detalle) {
+                $preOrden = PreOrdenes::create([
+                    'detalle' => $detalle['detalle'],
+                    'cantidad' => $detalle['cantidad'],
+                    'tipotransaccion' => $tipotransaccion,
+                    'preciounitario' => $detalle['precio_unitario'],
+                    'descuentounitario' => $detalle['descuento'],
+                    'totalunitario' => $detalle['subtotal'],
+                    'proveedorid' => $proveedorid,
+                    'proveedornombre' => $proveedornombre,
+                    'fechacomprar' => $fechacomprar,
+                    'fechapagar' => $fechapagar,
+                    'tipoorden' => 'ORDEN DE SERVICIO',
+                    'estado' => 'PENDIENTE',
+                    'formapago' => $formapago,
+                    'sucursal' => $sucursal,
+                    'sucursalgasto' => $sucursalgasto,
+                    'observacion' => $observacion,
+                    'preordenid' => $nuevoPreOrdenId,
+                    'usuarioregistroid' => $usuarioAutenticado,
+                    'usuarioregistronombre' => $usuarioAutenticadonombre,
+                ]);
+                $idsPreOrdenes[] = $preOrden->id;
+            }
+
+            // === GENERAR ID ORDEN ===
+            $ultimoNumeroOrden = Ordenes::where('tipoorden', 'ORDEN DE SERVICIO')
+                ->where('id', 'LIKE', '%S')
+                ->select(DB::raw('MAX(CAST(SUBSTRING(id, 1, LENGTH(id) - 1) AS UNSIGNED)) as max_id'))
+                ->value('max_id');
+            $nuevoIdOrden = (($ultimoNumeroOrden ?? 0) + 1) . 'S';
+
+            // === CREAR ORDEN DE SERVICIO ===
+            $orden = Ordenes::create([
+                'id' => $nuevoIdOrden,
+                'observacion' => $observacion,
+                'tipotransaccion' => $tipotransaccion,
+                'formapago' => $formapago,
+                'sucursalgasto' => $sucursalgasto,
+                'sucursal' => $sucursal,
+                'fechacomprar' => $fechacomprar,
+                'fechapagar' => $fechapagar,
+                'proveedorid' => $proveedorid,
+                'proveedornombre' => $proveedor->razonsocial,
+                'montototal' => $montototal,
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'usuarioregistroid' => $usuarioAutenticado,
+                'usuarioregistronombre' => $usuarioAutenticadonombre,
+                'tipoorden' => 'ORDEN DE SERVICIO',
+                'estado' => 'APROBADO',
+                'usuariopreorden' => $usuarioAutenticadonombre,
+            ]);
+
+            // === CREAR DETALLE ORDEN Y CUENTAS POR PAGAR ===
+            $detallePreOrdenes = PreOrdenes::whereIn('id', $idsPreOrdenes)->get();
+            $ultimacp = CuentasPagar::orderByRaw("LENGTH(id) DESC, id DESC")->first();
+            $nuevoIdcp = $ultimacp ? ((int) filter_var($ultimacp->id, FILTER_SANITIZE_NUMBER_INT)) + 1 : 1;
+
+            foreach ($detallePreOrdenes as $detalle) {
+                $cuentaDestino = $bancosDestino[$detalle->id] ?? null;
+
+                // Crear DetalleOrden
+                $detalleOrden = DetalleOrdenes::create([
+                    'detalle' => $detalle->detalle,
+                    'cantidad' => $detalle->cantidad,
+                    'preciounitario' => $detalle->preciounitario,
+                    'codigo' => $detalle->codigo,
+                    'descuentounitario' => $detalle->descuentounitario,
+                    'totalunitario' => $detalle->totalunitario,
+                    'tipoorden' => 'ORDEN DE SERVICIO',
+                    'ordenid' => $orden->id,
+                    'observacion' => $observacion,
+                    'nrobancoorigen' => $cuentaDestino,
+                    'tipotransaccion' => $tipotransaccion,
+                    'formapago' => $formapago,
+                    'fechacomprar' => $fechacomprar,
+                    'fechapagar' => $fechapagar,
+                    'proveedorid' => $proveedorid,
+                    'proveedornombre' => $proveedor->razonsocial,
+                    'usuarioregistroid' => $usuarioAutenticado,
+                    'usuarioregistronombre' => $usuarioAutenticadonombre,
+                    'usuariopreorden' => $usuarioAutenticadonombre,
+                ]);
+
+                /* $proveedorBanco = Proveedoresservicios::find($orden->proveedorid);
+                $nroBancoOrigen = 0;
+                if ($proveedorBanco) {
+                    if ($proveedorBanco->bancoorigen === 'CUENTA FACTURADA') {
+                        $nroBancoOrigen = '3000189269';
+                    } elseif ($proveedorBanco->bancoorigen === 'CUENTA NO FACTURADA') {
+                        $nroBancoOrigen = '2505314878';
+                    }
+                } */
+
+                // Crear CuentasPagar
+                $idUnicoCP = $nuevoIdcp . 'CP';
+                CuentasPagar::create([
+                    'id' => $idUnicoCP,
+                    'proveedorid' => $orden->proveedorid,
+                    'nrobancoorigen'=> $nroBancoOrigen,
+                    'proveedornombre' => $orden->proveedornombre,
+                    'detalleproducto' => $detalleOrden->detalle,
+                    'fechaasignada' => $orden->fechapagar,
+                    'fechacomprar' => $orden->fechacomprar,
+                    'subtotal' => $detalleOrden->preciounitario,
+                    'descuento' => $detalleOrden->descuentounitario,
+                    'montototal' => $detalleOrden->totalunitario,
+                    'preciocompra' => '0.00',
+                    'sucursalgasto' => $orden->sucursalgasto,
+                    'ciudad' => $sucursal,
+                    'tipoorden' => $orden->tipoorden,
+                    'tipoproveedorservicio' => $proveedor->categoria,
+                    'ordenid' => $orden->id,
+                    'cantidad' => $detalleOrden->cantidad,
+                    'estado' => 'PENDIENTE',
+                    'usuarioregistroid' => $orden->usuarioregistroid,
+                    'usuarioregistronombre' => $orden->usuarioregistronombre,
+                    'detalleordenid' => $detalleOrden->id,
+                ]);
+                $nuevoIdcp++;
+            }
+
+            // === GENERAR PDF ===
+            $pdfData = [
+                'ordenesServicio' => $detallePreOrdenes,
+                'tipotransaccion' => $tipotransaccion,
+                'formapago' => $formapago,
+                'fechacomprar' => $fechacomprar,
+                'fechapagar' => $fechapagar,
+                'proveedor' => $proveedor,
+                'observacion' => $observacion,
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'montototal' => $montototal,
+                'saldo' => $subtotal - ($descuento + $montototal),
+                'usuarioAutenticado' => $usuarioAutenticado,
+                'usuarioAutenticadonombre' => $usuarioAutenticadonombre,
+                'ordenId' => $orden->id,
+                'usuarioregistro' => $usuarioAutenticadonombre,
+            ];
+
+            $pdf = PDF::loadView('admin.inventario.pdfgenerarordenservicio', $pdfData);
+            $nombreArchivo = 'ORDEN_SERVICIO_' . $orden->id . '.pdf';
+            $directorio = public_path('ordenesaprobadas/' . $usuarioAutenticado);
+            if (!is_dir($directorio)) {
+                mkdir($directorio, 0777, true);
+            }
+            $rutaArchivo = $directorio . '/' . $nombreArchivo;
+            $pdf->save($rutaArchivo);
+
+            $orden->update(['documentoorden' => $nombreArchivo]);
+
+            DB::commit();
+            return redirect()->route('admin.inventario.crearordenes')->with('info', 'Pre-orden y orden de compra generadas con éxito.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+    
+    /* public function generarpreordenpersonal(Request $request)  
     {
         $ordenesVenta = json_decode($request->input('ordenes_venta'), true);
         $tipotransaccion = $request->input('tipotransaccion32');
@@ -662,6 +1518,426 @@ class InventarioController extends Controller
         }
         
         return redirect()->route('admin.inventario.crearordenes')->with('info', 'Pre - Orden de servicio registrada con éxito.');
+    }
+    public function generarOrdenpersonal(Request $request)
+    {
+        $tipotransaccion = $request->input('tipotransaccion');
+        $formapago = $request->input('formapago');
+        $sucursalgasto = $request->input('sucursalgasto3');
+        $fechacomprar = $request->input('fechacomprar');
+        $fechapagar = $request->input('fechapagar');
+        $proveedorid = $request->input('proveedorid');
+        $proveedornombre = $request->input('proveedornombre');
+        $observacion = $request->input('observacion');
+        $montototal = $request->input('montototal');
+        $subtotal = $request->input('subtotal');
+        $descuento = $request->input('descuento');
+        $usuariopreorden = $request->input('usuariopreorden');
+        $usuarioAutenticado = auth()->user()->id;
+        $usuarioAutenticadonombre = auth()->user()->name;
+        $bancosDestino = $request->input('bancodestino3');
+        $sucursal = auth()->user()->sucursal;
+        $totalunitariosEditados = $request->input('totalunitario3');
+
+        $proveedor = Proveedoresservicios::find($proveedorid);
+        if (!$proveedor) {
+            return redirect()->back()->with('error', 'Proveedor no encontrado');
+        }
+
+        $ultimoNumero = Ordenes::where('tipoorden', 'ORDEN DE PERSONAL')
+            ->where('id', 'LIKE', '%P')
+            ->select(DB::raw('MAX(CAST(SUBSTRING(id, 1, LENGTH(id) - 1) AS UNSIGNED)) as max_id'))
+            ->value('max_id');
+        $nuevoIdConSufijo = (($ultimoNumero ?? 0) + 1) . 'P';
+
+        $ordenData = [
+            'id' => $nuevoIdConSufijo,
+            'observacion' => $observacion,
+            'tipotransaccion' => $tipotransaccion,
+            'formapago' => $formapago,
+            'sucursalgasto' => $sucursalgasto,
+            'sucursal' => $sucursal,
+            'fechacomprar' => $fechacomprar,
+            'fechapagar' => $fechapagar,
+            'proveedorid' => $proveedorid,
+            'proveedornombre' => $proveedornombre,
+            'montototal' => $montototal,
+            'subtotal' => $subtotal,
+            'descuento' => $descuento,
+            'observacion' => $observacion,
+            'usuarioregistroid' => $usuarioAutenticado,
+            'usuarioregistronombre' => $usuarioAutenticadonombre,
+            'tipoorden' => 'ORDEN DE PERSONAL',
+            'estado' => 'APROBADO',
+            'usuariopreorden' => $usuariopreorden,
+        ];
+
+        $orden = Ordenes::create($ordenData);
+        $ordenesPersonal = $request->input('ordenes3');
+        $preOrdenesSeleccionadas = PreOrdenes::whereIn('id', $ordenesPersonal)->get();
+        $agrupadosPorPreordenId = $preOrdenesSeleccionadas->groupBy('preordenid');
+        foreach ($agrupadosPorPreordenId as $preordenid => $preOrdenes) {
+            $codigosSeleccionados = $preOrdenes->pluck('id')->toArray();
+
+            PreOrdenes::where('preordenid', $preordenid)->update([
+                'estado' => 'RECHAZADO'
+            ]);
+
+            PreOrdenes::whereIn('id', $codigosSeleccionados)->update([
+                'estado' => 'APROBADO'
+            ]);
+        }
+            if ($ordenesPersonal) {
+                $detallesPreOrdenes = [];
+
+                foreach ($ordenesPersonal as $id) {
+                    $detalleOrden = PreOrdenes::where('id', $id)->first();
+
+                    $totalUnitarioFinal = $totalunitariosEditados[$id] ?? $detalleOrden->totalunitario;
+                    $totalUnitarioFinal = str_replace(',', '', $totalUnitarioFinal);
+                    $totalUnitarioFinal = floatval($totalUnitarioFinal);
+
+                    if ($detalleOrden) {
+                        $detallesPreOrdenes[] = $detalleOrden;
+                        $cuentaSeleccionada = $bancosDestino[$id] ?? null;
+
+                        DetalleOrdenes::create([
+                            'detalle' => $detalleOrden->detalle,
+                            'cantidad' => $detalleOrden->cantidad,
+                            'preciounitario' => $detalleOrden->preciounitario,
+                            'codigo' => $detalleOrden->codigo,
+                            'descuentounitario' => $detalleOrden->descuentounitario,
+                            'totalunitario' => $totalUnitarioFinal,
+                            'tipoorden' => 'ORDEN DE PERSONAL',
+                            'ordenid' => $orden->id,
+                            'observacion' => $observacion,
+                            'nrobancoorigen' => $cuentaSeleccionada,
+                            'tipotransaccion' => $tipotransaccion,
+                            'formapago' => $formapago,
+                            'fechacomprar' => $fechacomprar,
+                            'fechapagar' => $fechapagar,
+                            'proveedorid' => $proveedorid,
+                            'proveedornombre' => $proveedornombre,
+                            'usuarioregistroid' => $usuarioAutenticado,
+                            'usuarioregistronombre' => $usuarioAutenticadonombre,
+                            'usuariopreorden' => $usuariopreorden,
+                        ]);
+
+                        $sumaTotalYDescuento = floatval($detalleOrden->descuentounitario) + $totalUnitarioFinal;
+                        $precioOriginal = floatval($detalleOrden->preciounitario);
+
+                        if (round($sumaTotalYDescuento, 2) < round($precioOriginal, 2)) {
+                            $saldoFaltante = $precioOriginal - $sumaTotalYDescuento;
+                            $ultimoNumero = PreOrdenes::select(DB::raw('MAX(CAST(SUBSTRING(preordenid, 1, LENGTH(preordenid) - 2) AS UNSIGNED)) as max_num'))
+                                ->where('preordenid', 'LIKE', '%PO')
+                                ->value('max_num');
+
+                            $nuevoPreOrdenId = (($ultimoNumero ? $ultimoNumero + 1 : 1) . 'PO');
+
+                            PreOrdenes::create([
+                                'detalle' => $detalleOrden->detalle . ' (SALDO ' . $orden->id .')',
+                                'cantidad' => 0,
+                                'tipotransaccion' => $tipotransaccion,
+                                'preciounitario' => $saldoFaltante,
+                                'descuentounitario' => 0,
+                                'totalunitario' => $saldoFaltante,
+                                'proveedorid' => $proveedorid,
+                                'proveedornombre' => $proveedornombre,
+                                'fechacomprar' => $fechacomprar,
+                                'fechapagar' => $fechapagar,
+                                'tipoorden' => 'ORDEN DE PERSONAL',
+                                'estado' => 'PENDIENTE',
+                                'formapago' => $formapago,
+                                'sucursal' => $sucursal,
+                                'sucursalgasto' => $sucursalgasto,
+                                'observacion' => $observacion,
+                                'preordenid' => $nuevoPreOrdenId,
+                                'usuarioregistroid' => $usuarioAutenticado,
+                                'usuarioregistronombre' => $usuarioAutenticadonombre,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            $detalleOrdenes = DetalleOrdenes::where('ordenid', $orden->id)->get(); 
+
+            $ultimacp = CuentasPagar::orderByRaw("LENGTH(id) DESC, id DESC")
+                ->first();
+            $nuevoIdcp = $ultimacp ? ((int) filter_var($ultimacp->id, FILTER_SANITIZE_NUMBER_INT)) + 1 : 1;
+
+            foreach ($detalleOrdenes as $detalle) {
+                $idUnico = $nuevoIdcp . 'CP';
+
+                $preordenConSaldo = PreOrdenes::where('detalle', 'LIKE', '%' . $detalle->ordenid . ')')
+                    ->where('codigo', $detalle->codigo)
+                    ->where('preciounitario', '>', 0)
+                    ->first();
+
+                $subtotalFinal = $detalle->preciounitario;
+                if ($preordenConSaldo) {
+                    $subtotalFinal -= $preordenConSaldo->preciounitario;
+                }
+                
+                $cuentasPagar = new CuentasPagar();
+                $cuentasPagar->id = $idUnico;
+                $cuentasPagar->proveedorid = $orden->proveedorid;
+                $cuentasPagar->proveedornombre = $orden->proveedornombre;
+                $cuentasPagar->detalleproducto = $detalle->detalle;
+                $cuentasPagar->fechaasignada = $orden->fechapagar;
+                $cuentasPagar->fechacomprar = $orden->fechacomprar;
+                $cuentasPagar->nrobancoorigen = $detalle->nrobancoorigen;
+                $cuentasPagar->subtotal = $subtotalFinal;
+                $cuentasPagar->descuento = $detalle->descuentounitario;
+                $cuentasPagar->montototal = $detalle->totalunitario;
+                $cuentasPagar->preciocompra = '0.00';
+                $cuentasPagar->sucursalgasto = $orden->sucursalgasto;
+                $cuentasPagar->ciudad = $sucursal;
+                $cuentasPagar->tipoorden = $orden->tipoorden;
+                $cuentasPagar->tipoproveedorservicio = $proveedor->categoria;
+                $cuentasPagar->ordenid = $orden->id;
+                $cuentasPagar->cantidad = $detalle->cantidad;
+                $cuentasPagar->estado = 'PENDIENTE';
+                $cuentasPagar->usuarioregistroid = $orden->usuarioregistroid;
+                $cuentasPagar->usuarioregistronombre = $orden->usuarioregistronombre;
+                $cuentasPagar->detalleordenid = $detalle->id;
+                $cuentasPagar->save();
+                $nuevoIdcp++;
+            }
+
+            $pdfData = [
+                'ordenesPersonal' => $detalleOrdenes,
+                'tipotransaccion' => $tipotransaccion,
+                'formapago' => $formapago,
+                'fechacomprar' => $fechacomprar,
+                'fechapagar' => $fechapagar,
+                'proveedor' => $proveedornombre,
+                'observacion' => $observacion,
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'montototal' => $montototal,
+                'saldo' => $subtotal - ($descuento + $montototal),
+                'usuarioAutenticado' => $usuarioAutenticado,
+                'usuarioAutenticadonombre' => $usuarioAutenticadonombre,
+                'ordenId' => $orden->id,
+                'proveedor' => $proveedor,
+                'usuarioregistro' => $usuariopreorden,
+            ];
+
+            $pdf = PDF::loadView('admin.inventario.pdfgenerarordenpersonal', $pdfData);
+            $nombreArchivo = 'ORDEN_PERSONAL_' . $orden->id . '.pdf';
+
+            $directorio = public_path('ordenesaprobadas/' . $usuarioAutenticado);
+            if (!is_dir($directorio)) {
+                mkdir($directorio, 0777, true);
+            }
+            
+            $rutaArchivo = $directorio . '/' . $nombreArchivo;
+            $pdf->save($rutaArchivo);
+
+            $orden->update([
+                'documentoorden' => $nombreArchivo,
+            ]);
+
+        return redirect()->route('admin.inventario.listaordenes')->with('info', 'Orden de personal generada con éxito.');
+    } */
+    public function generarpreordenpersonal(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+
+            $ordenesVenta = json_decode($request->input('ordenes_venta'), true);
+            $tipotransaccion = $request->input('tipotransaccion32');
+            $formapago = $request->input('formapago22');
+            $sucursal = $request->input('sucursal22');
+            $sucursalgasto = $request->input('sucursalgasto22');
+            $fechacomprar = $request->input('fechacomprar22');
+            $fechapagar = $request->input('fechapagar22');
+            $proveedorid = $request->input('proveedorId22');
+            $proveedornombre = $request->input('proveedorNombre22');
+            $observacion = $request->input('observacion22');
+            $montototal = $request->input('montototalgeneral2');
+            $subtotal = $request->input('subtotalgeneral2');
+            $descuento = $request->input('descuentogeneral2');
+            $bancosDestino = $request->input('bancodestino3');
+            $nroBancoOrigen = $request->input('nrocuenta3');
+            $usuarioAutenticado = auth()->user()->id;
+            $usuarioAutenticadonombre = auth()->user()->name;
+
+            // === VALIDAR PROVEEDOR ===
+            $proveedor = Proveedoresservicios::find($proveedorid);
+            if (!$proveedor) {
+                return redirect()->back()->with('error', 'Proveedor no encontrado');
+            }
+
+            // === GENERAR ID PREORDEN ===
+            $ultimoNumeroPre = PreOrdenes::select(DB::raw('MAX(CAST(SUBSTRING(preordenid, 1, LENGTH(preordenid) - 2) AS UNSIGNED)) as max_num'))
+                ->where('preordenid', 'LIKE', '%PO')
+                ->value('max_num');
+            $nuevoPreOrdenId = ($ultimoNumeroPre ? ($ultimoNumeroPre + 1) : 1) . 'PO';
+
+            $idsPreOrdenes = [];
+
+            // === CREAR PREORDENES ===
+            foreach ($ordenesVenta as $detalle) {
+                $preOrden = PreOrdenes::create([
+                    'detalle' => $detalle['detalle'],
+                    'cantidad' => $detalle['cantidad'],
+                    'tipotransaccion' => $tipotransaccion,
+                    'preciounitario' => $detalle['precio_unitario'],
+                    'descuentounitario' => $detalle['descuento'],
+                    'totalunitario' => $detalle['subtotal'],
+                    'proveedorid' => $proveedorid,
+                    'proveedornombre' => $proveedornombre,
+                    'fechacomprar' => $fechacomprar,
+                    'fechapagar' => $fechapagar,
+                    'tipoorden' => 'ORDEN DE PERSONAL',
+                    'estado' => 'PENDIENTE',
+                    'formapago' => $formapago,
+                    'sucursal' => $sucursal,
+                    'sucursalgasto' => $sucursalgasto,
+                    'observacion' => $observacion,
+                    'preordenid' => $nuevoPreOrdenId,
+                    'usuarioregistroid' => $usuarioAutenticado,
+                    'usuarioregistronombre' => $usuarioAutenticadonombre,
+                ]);
+                $idsPreOrdenes[] = $preOrden->id;
+            }
+
+            // === GENERAR ID ORDEN ===
+            $ultimoNumeroOrden = Ordenes::where('tipoorden', 'ORDEN DE PERSONAL')
+                ->where('id', 'LIKE', '%P')
+                ->select(DB::raw('MAX(CAST(SUBSTRING(id, 1, LENGTH(id) - 1) AS UNSIGNED)) as max_id'))
+                ->value('max_id');
+            $nuevoIdOrden = (($ultimoNumeroOrden ?? 0) + 1) . 'P';
+
+            // === CREAR ORDEN DE SERVICIO ===
+            $orden = Ordenes::create([
+                'id' => $nuevoIdOrden,
+                'observacion' => $observacion,
+                'tipotransaccion' => $tipotransaccion,
+                'formapago' => $formapago,
+                'sucursalgasto' => $sucursalgasto,
+                'sucursal' => $sucursal,
+                'fechacomprar' => $fechacomprar,
+                'fechapagar' => $fechapagar,
+                'proveedorid' => $proveedorid,
+                'proveedornombre' => $proveedor->razonsocial,
+                'montototal' => $montototal,
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'usuarioregistroid' => $usuarioAutenticado,
+                'usuarioregistronombre' => $usuarioAutenticadonombre,
+                'tipoorden' => 'ORDEN DE PERSONAL',
+                'estado' => 'APROBADO',
+                'usuariopreorden' => $usuarioAutenticadonombre,
+            ]);
+
+            // === CREAR DETALLE ORDEN Y CUENTAS POR PAGAR ===
+            $detallePreOrdenes = PreOrdenes::whereIn('id', $idsPreOrdenes)->get();
+            $ultimacp = CuentasPagar::orderByRaw("LENGTH(id) DESC, id DESC")->first();
+            $nuevoIdcp = $ultimacp ? ((int) filter_var($ultimacp->id, FILTER_SANITIZE_NUMBER_INT)) + 1 : 1;
+
+            foreach ($detallePreOrdenes as $detalle) {
+                $cuentaDestino = $bancosDestino[$detalle->id] ?? null;
+
+                // Crear DetalleOrden
+                $detalleOrden = DetalleOrdenes::create([
+                    'detalle' => $detalle->detalle,
+                    'cantidad' => $detalle->cantidad,
+                    'preciounitario' => $detalle->preciounitario,
+                    'codigo' => $detalle->codigo,
+                    'descuentounitario' => $detalle->descuentounitario,
+                    'totalunitario' => $detalle->totalunitario,
+                    'tipoorden' => 'ORDEN DE PERSONAL',
+                    'ordenid' => $orden->id,
+                    'observacion' => $observacion,
+                    'nrobancoorigen' => $cuentaDestino,
+                    'tipotransaccion' => $tipotransaccion,
+                    'formapago' => $formapago,
+                    'fechacomprar' => $fechacomprar,
+                    'fechapagar' => $fechapagar,
+                    'proveedorid' => $proveedorid,
+                    'proveedornombre' => $proveedor->razonsocial,
+                    'usuarioregistroid' => $usuarioAutenticado,
+                    'usuarioregistronombre' => $usuarioAutenticadonombre,
+                    'usuariopreorden' => $usuarioAutenticadonombre,
+                ]);
+
+                /* $proveedorBanco = Proveedoresservicios::find($orden->proveedorid);
+                $nroBancoOrigen = 0;
+                if ($proveedorBanco) {
+                    if ($proveedorBanco->bancoorigen === 'CUENTA FACTURADA') {
+                        $nroBancoOrigen = '3000189269';
+                    } elseif ($proveedorBanco->bancoorigen === 'CUENTA NO FACTURADA') {
+                        $nroBancoOrigen = '2505314878';
+                    }
+                } */
+                
+                // Crear CuentasPagar
+                $idUnicoCP = $nuevoIdcp . 'CP';
+                CuentasPagar::create([
+                    'id' => $idUnicoCP,
+                    'proveedorid' => $orden->proveedorid,
+                    'nrobancoorigen'=> $nroBancoOrigen,
+                    'proveedornombre' => $orden->proveedornombre,
+                    'detalleproducto' => $detalleOrden->detalle,
+                    'fechaasignada' => $orden->fechapagar,
+                    'fechacomprar' => $orden->fechacomprar,
+                    'subtotal' => $detalleOrden->preciounitario,
+                    'descuento' => $detalleOrden->descuentounitario,
+                    'montototal' => $detalleOrden->totalunitario,
+                    'preciocompra' => '0.00',
+                    'sucursalgasto' => $orden->sucursalgasto,
+                    'ciudad' => $sucursal,
+                    'tipoorden' => $orden->tipoorden,
+                    'tipoproveedorservicio' => $proveedor->categoria,
+                    'ordenid' => $orden->id,
+                    'cantidad' => $detalleOrden->cantidad,
+                    'estado' => 'PENDIENTE',
+                    'usuarioregistroid' => $orden->usuarioregistroid,
+                    'usuarioregistronombre' => $orden->usuarioregistronombre,
+                    'detalleordenid' => $detalleOrden->id,
+                ]);
+                $nuevoIdcp++;
+            }
+
+            // === GENERAR PDF ===
+            $pdfData = [
+                'ordenesPersonal' => $detallePreOrdenes,
+                'tipotransaccion' => $tipotransaccion,
+                'formapago' => $formapago,
+                'fechacomprar' => $fechacomprar,
+                'fechapagar' => $fechapagar,
+                'proveedor' => $proveedornombre,
+                'observacion' => $observacion,
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'montototal' => $montototal,
+                'saldo' => $subtotal - ($descuento + $montototal),
+                'usuarioAutenticado' => $usuarioAutenticado,
+                'usuarioAutenticadonombre' => $usuarioAutenticadonombre,
+                'ordenId' => $orden->id,
+                'usuarioregistro' => $usuarioAutenticadonombre,
+            ];
+
+            $pdf = PDF::loadView('admin.inventario.pdfgenerarordenpersonal', $pdfData);
+            $nombreArchivo = 'ORDEN_PERSONAL_' . $orden->id . '.pdf';
+            $directorio = public_path('ordenesaprobadas/' . $usuarioAutenticado);
+            if (!is_dir($directorio)) {
+                mkdir($directorio, 0777, true);
+            }
+            $rutaArchivo = $directorio . '/' . $nombreArchivo;
+            $pdf->save($rutaArchivo);
+
+            $orden->update(['documentoorden' => $nombreArchivo]);
+
+            DB::commit();
+            return redirect()->route('admin.inventario.crearordenes')->with('info', 'Pre-orden y orden de compra generadas con éxito.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
     }
 //
     /* APROBAR CON FIRMA Y SELLO */
@@ -1412,7 +2688,7 @@ class InventarioController extends Controller
                                                             , 'cuentaporpagar1', 'cuentaporpagar2', 'cuentaporpagar3', 'saldoanteriorcuenta1', 'saldoanteriorcuenta2', 'saldoanteriorcuenta3'
                                                             , 'programacioncuentaporpagar1', 'programacioncuentaporpagar2', 'programacioncuentaporpagar3', 'result'));
     }
-    public function unificarPreordenes(Request $request)
+    /* public function unificarPreordenes(Request $request)
     {
         $request->validate([
             'preordenes' => 'required|array|min:2',
@@ -1439,9 +2715,72 @@ class InventarioController extends Controller
             DB::rollBack();
             return response()->json(['message' => 'Error al unificar: ' . $e->getMessage()], 500);
         }
+    } */
+
+    /* public function unificarPreordenes(Request $request)
+    {
+        $request->validate([
+            'preordenes' => 'required|array|min:2',
+            'preorden_destino' => 'required|string'
+        ]);
+
+        $preordenes = $request->preordenes;
+        $preordenDestino = $request->preorden_destino;
+
+        DB::beginTransaction();
+        try {
+            foreach ($preordenes as $preorden) {
+                if ($preorden === $preordenDestino) continue;
+
+                Ordenes::where('id', $preorden)->update([
+                    'ordenunificado' => $preordenDestino
+                ]);
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Preórdenes unificadas correctamente.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error al unificar: ' . $e->getMessage()], 500);
+        }
+    } */
+
+    public function unificarPreordenes(Request $request)
+    {
+        $request->validate([
+            'preordenes' => 'required|array|min:2',
+            'preorden_destino' => 'required|string'
+        ]);
+
+        $preordenes = $request->preordenes;
+        $preordenDestino = $request->preorden_destino;
+
+        DB::beginTransaction();
+        try {
+            foreach ($preordenes as $preorden) {
+                if ($preorden === $preordenDestino) continue;
+
+                // 🔹 Actualizar en la tabla ORDENES
+                Ordenes::where('id', $preorden)->update([
+                    'ordenunificado' => $preordenDestino
+                ]);
+
+                // 🔹 Actualizar en la tabla CUENTASPAGAR
+                DB::table('cuentasporpagar')
+                    ->where('ordenid', $preorden)
+                    ->update(['ordenid' => $preordenDestino]);
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Órdenes unificadas correctamente.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error al unificar: ' . $e->getMessage()], 500);
+        }
     }
 
-   public function actualizarPrioridad(Request $request)
+
+    public function actualizarPrioridad(Request $request)
     {
         foreach ($request->prioridades as $item) {
             PreOrdenes::where('preordenid', $item['preordenid'])
@@ -1475,13 +2814,11 @@ class InventarioController extends Controller
         $selectedCuenta = $request->input('bancoorigenprogramacion');
         $fechapago = $request->input('fechapago');
 
-        // Obtener el último ordenid que sigue el patrón número + 'M'
         $ultimoOrden = BateriaSubCliente::whereNotNull('ordenid')
             ->where('ordenid', 'LIKE', '%M')
             ->orderByRaw("CAST(SUBSTRING_INDEX(ordenid, 'M', 1) AS UNSIGNED) DESC")
             ->first();
 
-        // Calcular nuevo ordenid
         $nuevoNumero = 1;
         if ($ultimoOrden && preg_match('/^(\d+)M$/', $ultimoOrden->ordenid, $matches)) {
             $nuevoNumero = intval($matches[1]) + 1;
@@ -1569,685 +2906,8 @@ class InventarioController extends Controller
     }
 
 
-    public function generarOrdenCompra(Request $request)
-    {
-        $tipotransaccion = $request->input('tipotransaccion');
-        $formapago = $request->input('formapago');
-        $fechacomprar = $request->input('fechacomprar');
-        $sucursalgasto = $request->input('sucursalgasto');
-        $fechapagar = $request->input('fechapagar');
-        $proveedorid = $request->input('proveedorid');
-        $proveedornombre = $request->input('proveedornombre');
-        $observacion = $request->input('observacion');
-        $montototal = $request->input('montototal');
-        $subtotal = $request->input('subtotal');
-        $descuento = $request->input('descuento');
-        $usuariopreorden = $request->input('usuariopreorden');
-        $usuarioAutenticado = auth()->user()->id;
-        $usuarioAutenticadonombre = auth()->user()->name;
-        $sucursal = auth()->user()->sucursal;
-        $bancosDestino = $request->input('bancodestino');
-        $totalunitariosEditados = $request->input('totalunitario');
-
-        $proveedor = Proveedoresservicios::find($proveedorid);
-        if (!$proveedor) {
-            return redirect()->back()->with('error', 'Proveedor no encontrado');
-        }
-
-        $ultimoNumero = Ordenes::where('tipoorden', 'ORDEN DE COMPRA')
-            ->where('id', 'LIKE', '%C')
-            ->select(DB::raw('MAX(CAST(SUBSTRING(id, 1, LENGTH(id) - 1) AS UNSIGNED)) as max_id'))
-            ->value('max_id');
-
-        $nuevoIdConSufijo = (($ultimoNumero ?? 0) + 1) . 'C';
-
-        $ordenData = [
-            'id' => $nuevoIdConSufijo,
-            'observacion' => $observacion,
-            'tipotransaccion' => $tipotransaccion,
-            'formapago' => $formapago,
-            'sucursalgasto' => $sucursalgasto,
-            'sucursal' => $sucursal,
-            'fechacomprar' => $fechacomprar,
-            'fechapagar' => $fechapagar,
-            'proveedorid' => $proveedorid,
-            'proveedornombre' => $proveedornombre,
-            'montototal' => $montototal,
-            'subtotal' => $subtotal,
-            'descuento' => $descuento,
-            'observacion' => $observacion,
-            'usuarioregistroid' => $usuarioAutenticado,
-            'usuarioregistronombre' => $usuarioAutenticadonombre,
-            'tipoorden' => 'ORDEN DE COMPRA',
-            'estado' => 'APROBADO',
-            'usuariopreorden' => $usuariopreorden,
-        ];
-
-        $orden = Ordenes::create($ordenData);
-        $ordenesCompra = $request->input('ordenes');
-        $preOrdenesSeleccionadas = PreOrdenes::whereIn('id', $ordenesCompra)->get();
-        $agrupadosPorPreordenId = $preOrdenesSeleccionadas->groupBy('preordenid');
-        foreach ($agrupadosPorPreordenId as $preordenid => $preOrdenes) {
-            $codigosSeleccionados = $preOrdenes->pluck('id')->toArray();
-
-            PreOrdenes::where('preordenid', $preordenid)->update([
-                'estado' => 'RECHAZADO' 
-            ]);
-
-            PreOrdenes::whereIn('id', $codigosSeleccionados)->update([
-                'estado' => 'APROBADO'
-            ]);
-        }
-            if ($ordenesCompra) {
-                $detallesPreOrdenes = [];
-                foreach ($ordenesCompra as $id) {
-                    $detalleOrden = PreOrdenes::where('id', $id)->first();
-
-                    $totalUnitarioFinal = $totalunitariosEditados[$id] ?? $detalleOrden->totalunitario;
-                    $totalUnitarioFinal = str_replace(',', '', $totalUnitarioFinal);
-                    $totalUnitarioFinal = floatval($totalUnitarioFinal);
-
-                    if ($detalleOrden) {
-                        $detallesPreOrdenes[] = $detalleOrden;
-                        $cuentaSeleccionada = $bancosDestino[$id] ?? null;
-                
-                        DetalleOrdenes::create([
-                            'detalle' => $detalleOrden->detalle,
-                            'cantidad' => $detalleOrden->cantidad,
-                            'preciounitario' => $detalleOrden->preciounitario,
-                            'codigo' => $detalleOrden->codigo,
-                            'descuentounitario' => $detalleOrden->descuentounitario,
-                            'totalunitario' => $totalUnitarioFinal,
-                            'tipoorden' => 'ORDEN DE COMPRA',
-                            'ordenid' => $orden->id,
-                            'observacion' => $observacion,
-                            'nrobancoorigen' => $cuentaSeleccionada,
-                            'tipotransaccion' => $tipotransaccion,
-                            'formapago' => $formapago,
-                            'fechacomprar' => $fechacomprar,
-                            'fechapagar' => $fechapagar,
-                            'proveedorid' => $proveedorid,
-                            'proveedornombre' => $proveedornombre,
-                            'usuarioregistroid' => $usuarioAutenticado,
-                            'usuarioregistronombre' => $usuarioAutenticadonombre,
-                            'usuariopreorden' => $usuariopreorden,
-                        ]);
-
-                        $sumaTotalYDescuento = floatval($detalleOrden->descuentounitario) + $totalUnitarioFinal;
-                        $precioOriginal = floatval($detalleOrden->preciounitario);
-
-                        if (round($sumaTotalYDescuento, 2) < round($precioOriginal, 2)) {
-                            $saldoFaltante = $precioOriginal - $sumaTotalYDescuento;
-                            $ultimoNumero = PreOrdenes::select(DB::raw('MAX(CAST(SUBSTRING(preordenid, 1, LENGTH(preordenid) - 2) AS UNSIGNED)) as max_num'))
-                                ->where('preordenid', 'LIKE', '%PO')
-                                ->value('max_num');
-
-                            $nuevoPreOrdenId = (($ultimoNumero ? $ultimoNumero + 1 : 1) . 'PO');
-
-                            PreOrdenes::create([
-                                'detalle' => $detalleOrden->detalle . ' (SALDO ' . $orden->id .')',
-                                'cantidad' => $detalleOrden->cantidad,
-                                'codigo' => $detalleOrden->codigo,
-                                'tipotransaccion' => $tipotransaccion,
-                                'preciounitario' => $saldoFaltante,
-                                'descuentounitario' => 0,
-                                'totalunitario' => $saldoFaltante,
-                                'proveedorid' => $proveedorid,
-                                'proveedornombre' => $proveedornombre,
-                                'fechacomprar' => $fechacomprar,
-                                'fechapagar' => $fechapagar,
-                                'tipoorden' => 'ORDEN DE COMPRA',
-                                'estado' => 'PENDIENTE',
-                                'formapago' => $formapago,
-                                'sucursal' => $sucursal,
-                                'sucursalgasto' => $sucursalgasto,
-                                'observacion' => $observacion,
-                                'preordenid' => $nuevoPreOrdenId,
-                                'usuarioregistroid' => $usuarioAutenticado,
-                                'usuarioregistronombre' => $usuarioAutenticadonombre,
-                            ]);
-                        }
-                    }
-                }
-            }
-            $detalleOrdenes = DetalleOrdenes::where('ordenid', $orden->id)->get(); 
-
-            $ultimacp = CuentasPagar::orderByRaw("LENGTH(id) DESC, id DESC")
-                ->first();
-            $nuevoIdcp = $ultimacp ? ((int) filter_var($ultimacp->id, FILTER_SANITIZE_NUMBER_INT)) + 1 : 1;
-
-            foreach ($detalleOrdenes as $detalle) {
-                $idUnico = $nuevoIdcp . 'CP';
-
-                // Buscar si hay una preorden de saldo relacionada con este detalle
-                $preordenConSaldo = PreOrdenes::where('detalle', 'LIKE', '%' . $detalle->ordenid . ')') // nombre incluye "(SALDO [ordenid])"
-                    ->where('codigo', $detalle->codigo) // opcional si el código es identificador
-                    ->where('preciounitario', '>', 0)
-                    ->first();
-
-                // Si existe una preorden de saldo, se resta del subtotal original
-                $subtotalFinal = $detalle->preciounitario;
-                if ($preordenConSaldo) {
-                    $subtotalFinal -= $preordenConSaldo->preciounitario;
-                }
-
-
-                $cuentasPagar = new CuentasPagar();
-                $cuentasPagar->id = $idUnico;
-                $cuentasPagar->proveedorid = $orden->proveedorid;
-                $cuentasPagar->proveedornombre = $orden->proveedornombre;
-                $cuentasPagar->detalleproducto = $detalle->detalle;
-                $cuentasPagar->fechaasignada = $orden->fechapagar;
-                $cuentasPagar->fechacomprar = $orden->fechacomprar;
-                $cuentasPagar->nrobancoorigen = $detalle->nrobancoorigen;
-                /* $cuentasPagar->subtotal = $detalle->preciounitario; */
-                $cuentasPagar->subtotal = $subtotalFinal;
-                $cuentasPagar->descuento = $detalle->descuentounitario;
-                $cuentasPagar->montototal = $detalle->totalunitario;
-                $cuentasPagar->preciocompra = '0.00';
-                $cuentasPagar->sucursalgasto = $orden->sucursalgasto;
-                $cuentasPagar->ciudad = $sucursal;
-                $cuentasPagar->tipoorden = $orden->tipoorden;
-                $cuentasPagar->tipoproveedorservicio = $proveedor->categoria;
-                $cuentasPagar->ordenid = $orden->id;
-                $cuentasPagar->cantidad = $detalle->cantidad;
-                $cuentasPagar->estado = 'PENDIENTE';
-                $cuentasPagar->usuarioregistroid = $orden->usuarioregistroid;
-                $cuentasPagar->usuarioregistronombre = $orden->usuarioregistronombre;
-                $cuentasPagar->detalleordenid = $detalle->id;
-                $cuentasPagar->save();
-                $nuevoIdcp++;
-            }
-
-            $pdfData = [
-                'ordenesCompra' => $detalleOrdenes,
-                'tipotransaccion' => $tipotransaccion,
-                'formapago' => $formapago,
-                'fechacomprar' => $fechacomprar,
-                'fechapagar' => $fechapagar,
-                'proveedor' => $proveedornombre,
-                'observacion' => $observacion,
-                'subtotal' => $subtotal,
-                'descuento' => $descuento,
-                'montototal' => $montototal,
-                'saldo' => $subtotal - ($descuento + $montototal),
-                'usuarioAutenticado' => $usuarioAutenticado,
-                'usuarioAutenticadonombre' => $usuarioAutenticadonombre,
-                'ordenId' => $orden->id,
-                'proveedor' => $proveedor,
-                'usuarioregistro' => $usuariopreorden,
-            ];
-
-            // Generar el PDF
-            $pdf = PDF::loadView('admin.inventario.pdfgenerarordencompra', $pdfData);
-            $nombreArchivo = 'ORDEN_COMPRA_' . $orden->id . '.pdf';
-            
-            // Ruta para guardar el PDF
-            $directorio = public_path('ordenesaprobadas/' . $usuarioAutenticado);
-            if (!is_dir($directorio)) {
-                mkdir($directorio, 0777, true);
-            }
-            
-            $rutaArchivo = $directorio . '/' . $nombreArchivo;
-            $pdf->save($rutaArchivo);
-
-            $orden->update([
-                'documentoorden' => $nombreArchivo,
-            ]);
-
-        return redirect()->route('admin.inventario.listaordenes')->with('info', 'Orden de compra generada con éxito.');
-    }
-    public function generarOrdenServicio(Request $request)
-    {
-        $tipotransaccion = $request->input('tipotransaccion');
-        $formapago = $request->input('formapago');
-        $sucursalgasto = $request->input('sucursalgasto2');
-        $fechacomprar = $request->input('fechacomprar');
-        $fechapagar = $request->input('fechapagar');
-        $proveedorid = $request->input('proveedorid');
-        $proveedornombre = $request->input('proveedornombre');
-        $observacion = $request->input('observacion');
-        $montototal = $request->input('montototal');
-        $subtotal = $request->input('subtotal');
-        $descuento = $request->input('descuento');
-        $usuariopreorden = $request->input('usuariopreorden');
-        $usuarioAutenticado = auth()->user()->id;
-        $usuarioAutenticadonombre = auth()->user()->name;
-        $sucursal = auth()->user()->sucursal;
-        $bancosDestino = $request->input('bancodestino2');
-        $totalunitariosEditados = $request->input('totalunitario2');
-
-        $proveedor = Proveedoresservicios::find($proveedorid);
-        if (!$proveedor) {
-            return redirect()->back()->with('error', 'Proveedor no encontrado');
-        }
-
-        $ultimoNumero = Ordenes::where('tipoorden', 'ORDEN DE SERVICIO')
-            ->where('id', 'LIKE', '%S')
-            ->select(DB::raw('MAX(CAST(SUBSTRING(id, 1, LENGTH(id) - 1) AS UNSIGNED)) as max_id'))
-            ->value('max_id');
-
-        $nuevoIdConSufijo = (($ultimoNumero ?? 0) + 1) . 'S';
-
-        $ordenData = [
-            'id' => $nuevoIdConSufijo,
-            'observacion' => $observacion,
-            'tipotransaccion' => $tipotransaccion,
-            'formapago' => $formapago,
-            'sucursalgasto' => $sucursalgasto,
-            'sucursal' => $sucursal,
-            'fechacomprar' => $fechacomprar,
-            'fechapagar' => $fechapagar,
-            'proveedorid' => $proveedorid,
-            'proveedornombre' => $proveedornombre,
-            'montototal' => $montototal,
-            'subtotal' => $subtotal,
-            'descuento' => $descuento,
-            'observacion' => $observacion,
-            'usuarioregistroid' => $usuarioAutenticado,
-            'usuarioregistronombre' => $usuarioAutenticadonombre,
-            'tipoorden' => 'ORDEN DE SERVICIO',
-            'estado' => 'APROBADO',
-            'usuariopreorden' => $usuariopreorden,
-        ];
-
-        $orden = Ordenes::create($ordenData);
-        $ordenesServicio = $request->input('ordenes2');
-        $preOrdenesSeleccionadas = PreOrdenes::whereIn('id', $ordenesServicio)->get();
-        $agrupadosPorPreordenId = $preOrdenesSeleccionadas->groupBy('preordenid');
-        foreach ($agrupadosPorPreordenId as $preordenid => $preOrdenes) {
-            $codigosSeleccionados = $preOrdenes->pluck('id')->toArray();
-
-            PreOrdenes::where('preordenid', $preordenid)->update([
-                'estado' => 'RECHAZADO'
-            ]);
-
-            PreOrdenes::whereIn('id', $codigosSeleccionados)->update([
-                'estado' => 'APROBADO'
-            ]);
-        }
-            if ($ordenesServicio) {
-                $detallesPreOrdenes = [];
-                foreach ($ordenesServicio as $id) {
-                    $detalleOrden = PreOrdenes::where('id', $id)->first();
-
-                    $totalUnitarioFinal = $totalunitariosEditados[$id] ?? $detalleOrden->totalunitario;
-                    $totalUnitarioFinal = str_replace(',', '', $totalUnitarioFinal);
-                    $totalUnitarioFinal = floatval($totalUnitarioFinal);
-
-                    if ($detalleOrden) {
-                        $detallesPreOrdenes[] = $detalleOrden;
-                        $cuentaSeleccionada = $bancosDestino[$id] ?? null;
-                
-                        DetalleOrdenes::create([
-                            'detalle' => $detalleOrden->detalle,
-                            'cantidad' => $detalleOrden->cantidad,
-                            'preciounitario' => $detalleOrden->preciounitario,
-                            'codigo' => $detalleOrden->codigo,
-                            'descuentounitario' => $detalleOrden->descuentounitario,
-                            'totalunitario' => $totalUnitarioFinal,
-                            'tipoorden' => 'ORDEN DE SERVICIO',
-                            'ordenid' => $orden->id,
-                            'observacion' => $observacion,
-                            'nrobancoorigen' => $cuentaSeleccionada,
-                            'tipotransaccion' => $tipotransaccion,
-                            'formapago' => $formapago,
-                            'fechacomprar' => $fechacomprar,
-                            'fechapagar' => $fechapagar,
-                            'proveedorid' => $proveedorid,
-                            'proveedornombre' => $proveedornombre,
-                            'usuarioregistroid' => $usuarioAutenticado,
-                            'usuarioregistronombre' => $usuarioAutenticadonombre,
-                            'usuariopreorden' => $usuariopreorden,
-                            'sucursal' => $detalleOrden->sucursal,
-                            'sucursalgasto' => $detalleOrden->sucursalgasto,
-                        ]);
-
-                        $sumaTotalYDescuento = floatval($detalleOrden->descuentounitario) + $totalUnitarioFinal;
-                        $precioOriginal = floatval($detalleOrden->preciounitario);
-
-                        if (round($sumaTotalYDescuento, 2) < round($precioOriginal, 2)) {
-                            $saldoFaltante = $precioOriginal - $sumaTotalYDescuento;
-                            $ultimoNumero = PreOrdenes::select(DB::raw('MAX(CAST(SUBSTRING(preordenid, 1, LENGTH(preordenid) - 2) AS UNSIGNED)) as max_num'))
-                                ->where('preordenid', 'LIKE', '%PO')
-                                ->value('max_num');
-
-                            $nuevoPreOrdenId = (($ultimoNumero ? $ultimoNumero + 1 : 1) . 'PO');
-
-                            PreOrdenes::create([
-                                'detalle' => $detalleOrden->detalle . ' (SALDO ' . $orden->id .')',
-                                'cantidad' => 0,
-                                'tipotransaccion' => $tipotransaccion,
-                                'preciounitario' => $saldoFaltante,
-                                'descuentounitario' => 0,
-                                'totalunitario' => $saldoFaltante,
-                                'proveedorid' => $proveedorid,
-                                'proveedornombre' => $proveedornombre,
-                                'fechacomprar' => $fechacomprar,
-                                'fechapagar' => $fechapagar,
-                                'tipoorden' => 'ORDEN DE SERVICIO',
-                                'estado' => 'PENDIENTE',
-                                'formapago' => $formapago,
-                                'sucursal' => $detalleOrden->sucursal,
-                                'sucursalgasto' => $detalleOrden->sucursalgasto,
-                                'observacion' => $observacion,
-                                'preordenid' => $nuevoPreOrdenId,
-                                'usuarioregistroid' => $usuarioAutenticado,
-                                'usuarioregistronombre' => $usuarioAutenticadonombre,
-                            ]);
-                        }
-                    }
-                }
-            }
-            $detalleOrdenes = DetalleOrdenes::where('ordenid', $orden->id)->get(); 
-
-            $ultimacp = CuentasPagar::orderByRaw("LENGTH(id) DESC, id DESC")
-                ->first();
-            $nuevoIdcp = $ultimacp ? ((int) filter_var($ultimacp->id, FILTER_SANITIZE_NUMBER_INT)) + 1 : 1;
-
-            foreach ($detalleOrdenes as $detalle) {
-                $idUnico = $nuevoIdcp . 'CP';
-
-                // Buscar si hay una preorden de saldo relacionada con este detalle
-                $preordenConSaldo = PreOrdenes::where('detalle', 'LIKE', '%' . $detalle->ordenid . ')') // nombre incluye "(SALDO [ordenid])"
-                    ->where('codigo', $detalle->codigo) // opcional si el código es identificador
-                    ->where('preciounitario', '>', 0)
-                    ->first();
-
-                // Si existe una preorden de saldo, se resta del subtotal original
-                $subtotalFinal = $detalle->preciounitario;
-                if ($preordenConSaldo) {
-                    $subtotalFinal -= $preordenConSaldo->preciounitario;
-                }
-
-                $cuentasPagar = new CuentasPagar();
-                $cuentasPagar->id = $idUnico;
-                $cuentasPagar->proveedorid = $orden->proveedorid;
-                $cuentasPagar->proveedornombre = $orden->proveedornombre;
-                $cuentasPagar->detalleproducto = $detalle->detalle;
-                $cuentasPagar->fechaasignada = $orden->fechapagar;
-                $cuentasPagar->fechacomprar = $orden->fechacomprar;
-                $cuentasPagar->nrobancoorigen = $detalle->nrobancoorigen;
-                /* $cuentasPagar->subtotal = $detalle->preciounitario; */
-                $cuentasPagar->subtotal = $subtotalFinal;
-                $cuentasPagar->descuento = $detalle->descuentounitario;
-                $cuentasPagar->montototal = $detalle->totalunitario;
-                $cuentasPagar->preciocompra = '0.00';
-                $cuentasPagar->sucursalgasto = $detalle->sucursalgasto;
-                $cuentasPagar->ciudad = $detalle->sucursal;
-                $cuentasPagar->tipoorden = $orden->tipoorden;
-                $cuentasPagar->tipoproveedorservicio = $proveedor->categoria;
-                $cuentasPagar->ordenid = $orden->id;
-                $cuentasPagar->cantidad = $detalle->cantidad;
-                $cuentasPagar->estado = 'PENDIENTE';
-                $cuentasPagar->usuarioregistroid = $orden->usuarioregistroid;
-                $cuentasPagar->usuarioregistronombre = $orden->usuarioregistronombre;
-                $cuentasPagar->detalleordenid = $detalle->id;
-                $cuentasPagar->save();
-                $nuevoIdcp++;
-            }
-
-            $pdfData = [
-                'ordenesServicio' => $detalleOrdenes,
-                'tipotransaccion' => $tipotransaccion,
-                'formapago' => $formapago,
-                'fechacomprar' => $fechacomprar,
-                'fechapagar' => $fechapagar,
-                'proveedor' => $proveedornombre,
-                'observacion' => $observacion,
-                'subtotal' => $subtotal,
-                'descuento' => $descuento,
-                'montototal' => $montototal,
-                'saldo' => $subtotal - ($descuento + $montototal),
-                'usuarioAutenticado' => $usuarioAutenticado,
-                'usuarioAutenticadonombre' => $usuarioAutenticadonombre,
-                'ordenId' => $orden->id,
-                'proveedor' => $proveedor,
-                'usuarioregistro' => $usuariopreorden,
-            ];
-
-            $pdf = PDF::loadView('admin.inventario.pdfgenerarordenservicio', $pdfData);
-            $nombreArchivo = 'ORDEN_SERVICIO_' . $orden->id . '.pdf';
-
-            $directorio = public_path('ordenesaprobadas/' . $usuarioAutenticado);
-            if (!is_dir($directorio)) {
-                mkdir($directorio, 0777, true);
-            }
-            
-            $rutaArchivo = $directorio . '/' . $nombreArchivo;
-            $pdf->save($rutaArchivo);
-
-            $orden->update([
-                'documentoorden' => $nombreArchivo,
-            ]);
-
-        return redirect()->route('admin.inventario.listaordenes')->with('info', 'Orden de servicio generada con éxito.');
-    }
-    public function generarOrdenpersonal(Request $request)
-    {
-        $tipotransaccion = $request->input('tipotransaccion');
-        $formapago = $request->input('formapago');
-        $sucursalgasto = $request->input('sucursalgasto3');
-        $fechacomprar = $request->input('fechacomprar');
-        $fechapagar = $request->input('fechapagar');
-        $proveedorid = $request->input('proveedorid');
-        $proveedornombre = $request->input('proveedornombre');
-        $observacion = $request->input('observacion');
-        $montototal = $request->input('montototal');
-        $subtotal = $request->input('subtotal');
-        $descuento = $request->input('descuento');
-        $usuariopreorden = $request->input('usuariopreorden');
-        $usuarioAutenticado = auth()->user()->id;
-        $usuarioAutenticadonombre = auth()->user()->name;
-        $bancosDestino = $request->input('bancodestino3');
-        $sucursal = auth()->user()->sucursal;
-        $totalunitariosEditados = $request->input('totalunitario3');
-
-        $proveedor = Proveedoresservicios::find($proveedorid);
-        if (!$proveedor) {
-            return redirect()->back()->with('error', 'Proveedor no encontrado');
-        }
-
-        $ultimoNumero = Ordenes::where('tipoorden', 'ORDEN DE PERSONAL')
-            ->where('id', 'LIKE', '%P')
-            ->select(DB::raw('MAX(CAST(SUBSTRING(id, 1, LENGTH(id) - 1) AS UNSIGNED)) as max_id'))
-            ->value('max_id');
-        $nuevoIdConSufijo = (($ultimoNumero ?? 0) + 1) . 'P';
-
-        $ordenData = [
-            'id' => $nuevoIdConSufijo,
-            'observacion' => $observacion,
-            'tipotransaccion' => $tipotransaccion,
-            'formapago' => $formapago,
-            'sucursalgasto' => $sucursalgasto,
-            'sucursal' => $sucursal,
-            'fechacomprar' => $fechacomprar,
-            'fechapagar' => $fechapagar,
-            'proveedorid' => $proveedorid,
-            'proveedornombre' => $proveedornombre,
-            'montototal' => $montototal,
-            'subtotal' => $subtotal,
-            'descuento' => $descuento,
-            'observacion' => $observacion,
-            'usuarioregistroid' => $usuarioAutenticado,
-            'usuarioregistronombre' => $usuarioAutenticadonombre,
-            'tipoorden' => 'ORDEN DE PERSONAL',
-            'estado' => 'APROBADO',
-            'usuariopreorden' => $usuariopreorden,
-        ];
-
-        $orden = Ordenes::create($ordenData);
-        $ordenesPersonal = $request->input('ordenes3');
-        $preOrdenesSeleccionadas = PreOrdenes::whereIn('id', $ordenesPersonal)->get();
-        $agrupadosPorPreordenId = $preOrdenesSeleccionadas->groupBy('preordenid');
-        foreach ($agrupadosPorPreordenId as $preordenid => $preOrdenes) {
-            $codigosSeleccionados = $preOrdenes->pluck('id')->toArray();
-
-            PreOrdenes::where('preordenid', $preordenid)->update([
-                'estado' => 'RECHAZADO'
-            ]);
-
-            PreOrdenes::whereIn('id', $codigosSeleccionados)->update([
-                'estado' => 'APROBADO'
-            ]);
-        }
-            if ($ordenesPersonal) {
-                $detallesPreOrdenes = [];
-
-                foreach ($ordenesPersonal as $id) {
-                    $detalleOrden = PreOrdenes::where('id', $id)->first();
-
-                    $totalUnitarioFinal = $totalunitariosEditados[$id] ?? $detalleOrden->totalunitario;
-                    $totalUnitarioFinal = str_replace(',', '', $totalUnitarioFinal);
-                    $totalUnitarioFinal = floatval($totalUnitarioFinal);
-
-                    if ($detalleOrden) {
-                        $detallesPreOrdenes[] = $detalleOrden;
-                        $cuentaSeleccionada = $bancosDestino[$id] ?? null;
-
-                        DetalleOrdenes::create([
-                            'detalle' => $detalleOrden->detalle,
-                            'cantidad' => $detalleOrden->cantidad,
-                            'preciounitario' => $detalleOrden->preciounitario,
-                            'codigo' => $detalleOrden->codigo,
-                            'descuentounitario' => $detalleOrden->descuentounitario,
-                            'totalunitario' => $totalUnitarioFinal,
-                            'tipoorden' => 'ORDEN DE PERSONAL',
-                            'ordenid' => $orden->id,
-                            'observacion' => $observacion,
-                            'nrobancoorigen' => $cuentaSeleccionada,
-                            'tipotransaccion' => $tipotransaccion,
-                            'formapago' => $formapago,
-                            'fechacomprar' => $fechacomprar,
-                            'fechapagar' => $fechapagar,
-                            'proveedorid' => $proveedorid,
-                            'proveedornombre' => $proveedornombre,
-                            'usuarioregistroid' => $usuarioAutenticado,
-                            'usuarioregistronombre' => $usuarioAutenticadonombre,
-                            'usuariopreorden' => $usuariopreorden,
-                        ]);
-
-                        $sumaTotalYDescuento = floatval($detalleOrden->descuentounitario) + $totalUnitarioFinal;
-                        $precioOriginal = floatval($detalleOrden->preciounitario);
-
-                        if (round($sumaTotalYDescuento, 2) < round($precioOriginal, 2)) {
-                            $saldoFaltante = $precioOriginal - $sumaTotalYDescuento;
-                            $ultimoNumero = PreOrdenes::select(DB::raw('MAX(CAST(SUBSTRING(preordenid, 1, LENGTH(preordenid) - 2) AS UNSIGNED)) as max_num'))
-                                ->where('preordenid', 'LIKE', '%PO')
-                                ->value('max_num');
-
-                            $nuevoPreOrdenId = (($ultimoNumero ? $ultimoNumero + 1 : 1) . 'PO');
-
-                            PreOrdenes::create([
-                                'detalle' => $detalleOrden->detalle . ' (SALDO ' . $orden->id .')',
-                                'cantidad' => 0,
-                                'tipotransaccion' => $tipotransaccion,
-                                'preciounitario' => $saldoFaltante,
-                                'descuentounitario' => 0,
-                                'totalunitario' => $saldoFaltante,
-                                'proveedorid' => $proveedorid,
-                                'proveedornombre' => $proveedornombre,
-                                'fechacomprar' => $fechacomprar,
-                                'fechapagar' => $fechapagar,
-                                'tipoorden' => 'ORDEN DE PERSONAL',
-                                'estado' => 'PENDIENTE',
-                                'formapago' => $formapago,
-                                'sucursal' => $sucursal,
-                                'sucursalgasto' => $sucursalgasto,
-                                'observacion' => $observacion,
-                                'preordenid' => $nuevoPreOrdenId,
-                                'usuarioregistroid' => $usuarioAutenticado,
-                                'usuarioregistronombre' => $usuarioAutenticadonombre,
-                            ]);
-                        }
-                    }
-                }
-            }
-
-            $detalleOrdenes = DetalleOrdenes::where('ordenid', $orden->id)->get(); 
-
-            $ultimacp = CuentasPagar::orderByRaw("LENGTH(id) DESC, id DESC")
-                ->first();
-            $nuevoIdcp = $ultimacp ? ((int) filter_var($ultimacp->id, FILTER_SANITIZE_NUMBER_INT)) + 1 : 1;
-
-            foreach ($detalleOrdenes as $detalle) {
-                $idUnico = $nuevoIdcp . 'CP';
-
-                // Buscar si hay una preorden de saldo relacionada con este detalle
-                $preordenConSaldo = PreOrdenes::where('detalle', 'LIKE', '%' . $detalle->ordenid . ')') // nombre incluye "(SALDO [ordenid])"
-                    ->where('codigo', $detalle->codigo) // opcional si el código es identificador
-                    ->where('preciounitario', '>', 0)
-                    ->first();
-
-                // Si existe una preorden de saldo, se resta del subtotal original
-                $subtotalFinal = $detalle->preciounitario;
-                if ($preordenConSaldo) {
-                    $subtotalFinal -= $preordenConSaldo->preciounitario;
-                }
-                
-                $cuentasPagar = new CuentasPagar();
-                $cuentasPagar->id = $idUnico;
-                $cuentasPagar->proveedorid = $orden->proveedorid;
-                $cuentasPagar->proveedornombre = $orden->proveedornombre;
-                $cuentasPagar->detalleproducto = $detalle->detalle;
-                $cuentasPagar->fechaasignada = $orden->fechapagar;
-                $cuentasPagar->fechacomprar = $orden->fechacomprar;
-                $cuentasPagar->nrobancoorigen = $detalle->nrobancoorigen;
-                /* $cuentasPagar->subtotal = $detalle->preciounitario; */
-                $cuentasPagar->subtotal = $subtotalFinal;
-                $cuentasPagar->descuento = $detalle->descuentounitario;
-                $cuentasPagar->montototal = $detalle->totalunitario;
-                $cuentasPagar->preciocompra = '0.00';
-                $cuentasPagar->sucursalgasto = $orden->sucursalgasto;
-                $cuentasPagar->ciudad = $sucursal;
-                $cuentasPagar->tipoorden = $orden->tipoorden;
-                $cuentasPagar->tipoproveedorservicio = $proveedor->categoria;
-                $cuentasPagar->ordenid = $orden->id;
-                $cuentasPagar->cantidad = $detalle->cantidad;
-                $cuentasPagar->estado = 'PENDIENTE';
-                $cuentasPagar->usuarioregistroid = $orden->usuarioregistroid;
-                $cuentasPagar->usuarioregistronombre = $orden->usuarioregistronombre;
-                $cuentasPagar->detalleordenid = $detalle->id;
-                $cuentasPagar->save();
-                $nuevoIdcp++;
-            }
-
-            $pdfData = [
-                'ordenesPersonal' => $detalleOrdenes,
-                'tipotransaccion' => $tipotransaccion,
-                'formapago' => $formapago,
-                'fechacomprar' => $fechacomprar,
-                'fechapagar' => $fechapagar,
-                'proveedor' => $proveedornombre,
-                'observacion' => $observacion,
-                'subtotal' => $subtotal,
-                'descuento' => $descuento,
-                'montototal' => $montototal,
-                'saldo' => $subtotal - ($descuento + $montototal),
-                'usuarioAutenticado' => $usuarioAutenticado,
-                'usuarioAutenticadonombre' => $usuarioAutenticadonombre,
-                'ordenId' => $orden->id,
-                'proveedor' => $proveedor,
-                'usuarioregistro' => $usuariopreorden,
-            ];
-
-            $pdf = PDF::loadView('admin.inventario.pdfgenerarordenpersonal', $pdfData);
-            $nombreArchivo = 'ORDEN_PERSONAL_' . $orden->id . '.pdf';
-
-            $directorio = public_path('ordenesaprobadas/' . $usuarioAutenticado);
-            if (!is_dir($directorio)) {
-                mkdir($directorio, 0777, true);
-            }
-            
-            $rutaArchivo = $directorio . '/' . $nombreArchivo;
-            $pdf->save($rutaArchivo);
-
-            $orden->update([
-                'documentoorden' => $nombreArchivo,
-            ]);
-
-        return redirect()->route('admin.inventario.listaordenes')->with('info', 'Orden de personal generada con éxito.');
-    }
+    
+    
     public function guardaractivofijo(Request $request)
     {
         $nuevoID = null;
@@ -2416,29 +3076,32 @@ class InventarioController extends Controller
         } else {
             $solicitudinventarios = SolicitudInventario::where('usuariosolicitante', $nombreUsuario)->orderBy('created_at', 'desc')->get();
         } */
-       $usuariosTodos = [
+        $usuariosTodos = [
             'CARLOS ALEJANDRO GUARACHI SANDOVAL',
-            'CRISTHIAN ALAIN DURAN SULLCA',
             'JHOSELINE EVA VELASQUEZ ESCOBAR',
-            'SERGIO ARMANDO MICHEL MAITA',
         ];
+        // Detectar si el usuario tiene el rol CONTABLE usando getRoleNames()
+        $tieneRolContable = $user->getRoleNames()->contains('CONTABLE');
 
+        // Determinar si es usuario con acceso total (por nombre o rol contable)
+        $esUsuarioTotal = in_array($nombreUsuario, $usuariosTodos) || $tieneRolContable;
+        
         $usuariosSinSucursal = [
             'CARLOS ALEJANDRO GUARACHI SANDOVAL',
             'JHOSELINE EVA VELASQUEZ ESCOBAR',
         ];
 
-        if (in_array($nombreUsuario, $usuariosTodos)) {
+        if ($esUsuarioTotal) {
             if (in_array($nombreUsuario, $usuariosSinSucursal)) {
                 // No filtra por sucursal
-                $solicitudinventarios = SolicitudInventario::orderBy('created_at', 'desc')->get();
+                $solicitudinventarios = SolicitudInventario::orderBy('created_at', 'desc')->simplePaginate(30);
             } else {
                 // Sí filtra por sucursal
-                $solicitudinventarios = SolicitudInventario::where('sucursal', $sucursalUsuario)->orderBy('created_at', 'desc')->get();
+                $solicitudinventarios = SolicitudInventario::where('sucursal', $sucursalUsuario)->orderBy('created_at', 'desc')->simplePaginate(30);
             }
         } else {
             // Para usuarios comunes, solo ven lo suyo
-            $solicitudinventarios = SolicitudInventario::where('usuariosolicitante', $nombreUsuario)->orderBy('created_at', 'desc')->get();
+            $solicitudinventarios = SolicitudInventario::where('usuariosolicitante', $nombreUsuario)->orderBy('created_at', 'desc')->simplePaginate(30);
         }
 
             $coincidencias = [];
@@ -2486,6 +3149,7 @@ class InventarioController extends Controller
         $usuarioSucursal = Auth::user()->sucursal;
         $productos = Inventario::where('ciudad', $usuarioSucursal)
             ->select('id', 'nombreproducto', 'marca', 'stockactual', 'especificacionmedida', 'color')
+            ->where('inventario', '!=', 'ANULADO')
             ->get();
 
 
@@ -2537,6 +3201,7 @@ class InventarioController extends Controller
             'usuariosolicitante_id' => '',
             'usuariosolicitante' => '',
             'usuarioregistro' => '',
+            'productosolicitadousuario' => '',
         ]);
 
         $solicitud = SolicitudInventario::create([
@@ -2544,6 +3209,7 @@ class InventarioController extends Controller
             'usuariosolicitanteid' => $request->usuariosolicitante_id,
             'usuariosolicitante' => $request->usuariosolicitante,
             'productosolicitado' => $request->productosolicitado,
+            'productosolicitadousuario' => $request->productosolicitadousuario,
             'cantidad' => $request->cantidadsolicitud,
             'estado' => 'SOLICITADO',
             'sucursal' => auth()->user()->sucursal,
@@ -2917,41 +3583,7 @@ class InventarioController extends Controller
         return redirect()->route('admin.inventario.index');
     }
     
-    /* NUEVAS ORDENES */
-    public function crearordenes(Request $request)  
-    {
-        $nombreproducto = $request->get('buscarpor');
-        $sucursal = auth()->user()->sucursal;
-        $bienesalmacen = PortafolioProveedores::leftJoin('inventario', 'portafolioproveedores.id', '=', 'inventario.codigo')
-            ->select('portafolioproveedores.*', 'inventario.stockactual as cantidadalmacen');
-        if ($nombreproducto) {
-        $bienesalmacen = $bienesalmacen->where(function ($query) use ($nombreproducto) {
-                $query->where('portafolioproveedores.nombreproducto', 'LIKE', "%$nombreproducto%")
-                    ->orWhere('portafolioproveedores.id', 'LIKE', "%$nombreproducto%");
-            });
-        }
-        $bienesalmacen = $bienesalmacen->paginate(20);
-
-        if ($request->ajax()) {
-            return view('admin.inventario.partials.tabla', compact('bienesalmacen'))->render();
-        }
-
-        $proveedores = ProveedoresServicios::where(function($query) {
-            $query->where('tipoorden1', 'ORDEN DE SERVICIO')
-                  ->orWhere('tipoorden2', 'ORDEN DE SERVICIO')
-                  ->orWhere('tipoorden3', 'ORDEN DE SERVICIO');
-        })
-        ->select('id', 'razonsocial', 'tipotransaccion', 'ciudad', 'ciudad2')
-        ->orderBy('razonsocial')
-        ->get();
     
-        $proveedorespersonal = ProveedoresServicios::whereIn('categoria', ['PROVEEDOR EXTERNO', 'PROVEEDOR INTERNO'])->select('id', 'razonsocial', 'tipotransaccion', 'categoria', 'ciudad', 'ciudad2')->get();
-
-        $planes = PlanesServiciosProv::select('id', 'plan', 'proveedorid', 'contrato', 'linea', 'cuenta', 'servicio', 'codigo', 'montofijo', 'ciudad', 'motivo')->get();
-
-        return view('admin.inventario.crearordenes', compact('bienesalmacen', 'proveedores', 'planes', 'proveedorespersonal', 'sucursal'));
-    }
-
 
 
     /* PLANILLAS DE PAGOS */

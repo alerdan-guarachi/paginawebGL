@@ -24,6 +24,7 @@ class CartasPolizas extends Model
         'usuarioregistroid' => '',
         'usuarioregistronombre' => '',
         'documentocarta' => '',
+        'clienteunoid' => '',
     ]; 
 
     protected $fillable = [
@@ -39,6 +40,7 @@ class CartasPolizas extends Model
         'usuarioregistroid',
         'usuarioregistronombre',
         'documentocarta',
+        'clienteunoid',
     ];
 
 }

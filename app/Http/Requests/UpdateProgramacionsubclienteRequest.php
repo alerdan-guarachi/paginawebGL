@@ -66,6 +66,7 @@ class UpdateProgramacionsubclienteRequest extends FormRequest
         'comprobante' => '',
         'cheque' => '',
         'codautorizacion' => '',
+        'idsubproc' => '',
     ]; 
     return $rules;
 }

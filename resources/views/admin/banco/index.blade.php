@@ -441,9 +441,9 @@
                                             @endif
                                         </td>
                                         <td title="{{ $detalle->tipotransaccion }}" class="truncar">{{ $detalle->tipotransaccion }}</td>
-                                        <td>{{ $detalle->subtotal }}</td>
+                                        <td>{{ $detalle->subtotal + $detalle->cajacentral_diferenciafavor - $detalle->cajacentral_diferenciacontra }}</td>
                                         <td>{{ $detalle->descuento }}</td>
-                                        <td>{{ $detalle->montototal }}</td>
+                                        <td>{{ $detalle->montototal + $detalle->cajacentral_diferenciafavor - $detalle->cajacentral_diferenciacontra }}</td>
                                         <td>{{ $detalle->descuentoatc ?? '0.00' }}</td>
                                         <td>{{ $detalle->saldo }}</td>
                                         <td>{{ $detalle->reciboid }}</td>

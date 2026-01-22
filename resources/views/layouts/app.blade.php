@@ -48,7 +48,11 @@
             </style>
             <div class="container">
                 <a class="navbar-brand" href="{{ url('/') }}">
-                    <img src="{{ asset('img/logo.png') }}" style="max-width: 170px; max-height: 70px;" alt="">
+                    @if(now()->month === 12)
+                        <img src="assets/img/logonavidad.png" style="width: 90px; height: 70px;" alt="">
+                    @else
+                        <img src="{{ asset('img/logo.png') }}" style="max-width: 170px; max-height: 70px;" alt="">
+                    @endif
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
@@ -104,4 +108,33 @@
         </main>
     </div>
 </body>
+@if(now()->month === 12)
+    <script src="https://cdn.jsdelivr.net/gh/scottschiller/Snowstorm/snowstorm-min.js"></script>
+    <script>
+        snowStorm.excludeMobile = false;
+        // COLOR
+        snowStorm.snowColor = '#ffffff';
+
+        // CANTIDAD
+        snowStorm.flakesMax = 200;
+        snowStorm.flakesMaxActive = 100;
+        snowStorm.snowStick = false;
+
+        // SOLO CAÍDA VERTICAL
+        snowStorm.vMaxX = 0;
+        snowStorm.vMinX = 0;
+        snowStorm.vMaxY = 2;
+        snowStorm.vMinY = 2;
+
+        // TAMAÑO
+        snowStorm.flakesMinSize = 12;
+        snowStorm.flakesMaxSize = 28;
+
+        // EFECTOS
+        snowStorm.useTwinkleEffect = true;
+        snowStorm.followMouse = false;
+        snowStorm.freezeOnBlur = false;
+        snowStorm.zIndex = 9999;
+    </script>
+@endif
 </html>

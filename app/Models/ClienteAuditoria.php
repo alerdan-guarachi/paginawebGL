@@ -19,13 +19,13 @@ class ClienteAuditoria extends Model
     static $rules = [
         'id' => '',
         'nombrecompleto' => 'required|max:255',
-        'fechanacimiento' => 'required|max:45',
-        'ocupacionprofesion' => 'required',
+        'fechanacimiento' => '',
+        'ocupacionprofesion' => '',
         'estadocivil' => 'required|max:90',
         'ci' => 'required|max:90',
-        'genero' => 'required|max:45',
-        'lugarresidencia' => 'required',
-        'edad' => 'required',
+        'genero' => '',
+        'lugarresidencia' => '',
+        'edad' => '',
         'usuarioid' => '',
         'usuarioregistro' => '',
         'celular' => '',
@@ -56,6 +56,9 @@ class ClienteAuditoria extends Model
         'nrocredito17' => '',
         'nrocredito18' => '',
         'cicomplemento' => '',
+        'tipocliente' => '',
+        'nombreespcon' => '',
+        'ciespcon' => '',
     ]; 
 
     protected $fillable = [
@@ -98,6 +101,9 @@ class ClienteAuditoria extends Model
         'nrocredito17',
         'nrocredito18',
         'cicomplemento',
+        'tipocliente',
+        'nombreespcon',
+        'ciespcon',
     ];
 
     public function user(){

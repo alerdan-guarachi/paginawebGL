@@ -94,7 +94,7 @@
                                     <p>
                                         <span id="preview-clientedos">[Sin Cliente 2]</span>
                                     </p>
-                                    <p style="margin-top: -10px;">
+                                    <p id="linea-ci-clientedosci" style="margin-top: -10px;">
                                         CI: <span id="preview-clientedosci">[Sin CI 2]</span>
                                     </p>
                                 </div>
@@ -105,6 +105,8 @@
             </div>
             
             <div class="col-md-4">
+                {{-- <button type="button" id="btn-agregar-cliente2" class="btn btn-sm btn-outline-primary" onclick="mostrarCliente2()"><i class="fa fa-plus"></i> Otro Cliente</button> --}}
+                {{--  style="display: none;" --}}
                 <div class="card">
                     <div class="card-body">
                         <form method="POST" action="{{ route('admin.cartaspolizas.descargarsolicitudpolizas') }}">
@@ -122,6 +124,10 @@
                                     <input type="date" id="fecha" name="fecha" class="form-control" required onchange="updatePreview()">
                                 </div>
                             </div>
+                            {{-- <div class="form-group">
+                                <label for="clienteid">ID Cliente Auditoría:</label>
+                                <input type="text" id="clienteid" name="clienteid" class="form-control" placeholder="Escriba ID del cliente y presione Enter">
+                            </div>
                             <div class="form-group">
                                 <label for="opcion">Seleccionar Banco o Seguro:</label>
                                 <select id="opcion" name="opcion" class="form-control" required onchange="updatePreview()">
@@ -134,28 +140,107 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="clienteuno">Nombre Cliente 1:</label>
+                                <label for="clienteuno">Nombre Cliente:</label>
                                 <input type="text" id="clienteuno" name="clienteuno" class="form-control" placeholder="Nombre del cliente uno" required oninput="updateClienteunoPreview()">
                             </div>
                             <div class="form-group">
-                                <label for="clienteunoci">CI Cliente 1:</label>
+                                <label for="clienteunoci">CI Cliente:</label>
                                 <input type="text" id="clienteunoci" name="clienteunoci" class="form-control" placeholder="CI del cliente uno" required oninput="updateCiClienteunoPreview()">
                             </div>
-
-                            <button type="button" id="btn-agregar-cliente2" class="btn btn-outline-primary" onclick="mostrarCliente2()"><i class="fa fa-plus"></i> Otro Cliente</button>
-
-                            <div id="cliente2-seccion" style="display: none;">
+                            <div id="cliente2-seccion">
                                 <div class="form-group">
-                                    <label for="clientedos">Nombre Cliente 2:</label>
+                                    <label for="clientedos">Nombre Esp/Cony.:</label>
                                     <input type="text" id="clientedos" name="clientedos" class="form-control" placeholder="Nombre del cliente dos" oninput="updateClientedosPreview()">
                                 </div>
                                 <div class="form-group">
-                                    <label for="clientedosci">CI Cliente 2:</label>
+                                    <label for="clientedosci">CI Esp/Cony.:</label>
                                     <input type="text" id="clientedosci" name="clientedosci" class="form-control" placeholder="CI del cliente dos" oninput="updateCiClientedosPreview()">
                                 </div>
-
-
+                            </div> --}}
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    <label for="clienteid">ID Cliente:</label>
+                                    <input type="text" id="clienteid" name="clienteid" class="form-control" placeholder="Escriba ID del cliente y presione Enter">
+                                </div>
+                                <div class="form-group col-lg-8"> 
+                                    <label for="opcion">Seleccionar Banco o Seguro:</label>
+                                    <select id="opcion" name="opcion" class="form-control" required onchange="updatePreview()">
+                                        <option value="" disabled selected>Seleccione una opción</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="clienteuno">Nombre Cliente:</label>
+                                    <input type="text" id="clienteuno" name="clienteuno" class="form-control" placeholder="Nombre del cliente uno" required oninput="updateClienteunoPreview()">
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="clienteunoci">CI Cliente:</label>
+                                    <input type="text" id="clienteunoci" name="clienteunoci" class="form-control" placeholder="CI del cliente uno" oninput="updateCiClienteunoPreview()">
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="clientedos">Nombre Esp/Cony.:</label>
+                                    <input type="text" id="clientedos" name="clientedos" class="form-control" placeholder="Nombre del cliente dos" oninput="updateClientedosPreview()">
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="clientedosci">CI Esp/Cony.:</label>
+                                    <input type="text" id="clientedosci" name="clientedosci" class="form-control" placeholder="CI del cliente dos" oninput="updateCiClientedosPreview()">
+                                </div>
                             </div>
+                            <script>
+                                let clientesAuditoria = @json($clientesAuditoria);
+                            </script>
+                            <script>
+                                document.getElementById('clienteid').addEventListener('keypress', function(e) {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+
+                                        let clienteId = this.value.trim();
+                                        if(clienteId === '') return;
+
+                                        let cliente = clientesAuditoria.find(c => c.id == clienteId);
+
+                                        let opcionSelect = document.getElementById('opcion');
+                                        let clienteuno = document.getElementById('clienteuno');
+                                        let clienteunoci = document.getElementById('clienteunoci');
+                                        let clientedos = document.getElementById('clientedos');
+                                        let clientedosci = document.getElementById('clientedosci');
+
+                                        if(cliente){
+                                            opcionSelect.innerHTML = '<option value="" disabled selected>Seleccione una opción</option>';
+                                            if(cliente.banco1) opcionSelect.innerHTML += `<option value="${cliente.banco1}">${cliente.banco1}</option>`;
+                                            if(cliente.banco2) opcionSelect.innerHTML += `<option value="${cliente.banco2}">${cliente.banco2}</option>`;
+                                            if(cliente.banco3) opcionSelect.innerHTML += `<option value="${cliente.banco3}">${cliente.banco3}</option>`;
+
+                                            clienteuno.value = cliente.nombrecompleto ?? '';
+                                            clienteunoci.value = cliente.ci ?? '';
+                                            clientedos.value = cliente.nombreespcon ?? '';
+                                            clientedosci.value = cliente.ciespcon ?? '';
+
+                                            updateClienteunoPreview();
+                                            updateCiClienteunoPreview();
+                                            updateClientedosPreview();
+                                            updateCiClientedosPreview();
+
+                                            if(cliente.nombreespcon || cliente.ciespcon){
+                                                document.getElementById('vista-previa-cliente2').style.display = 'block';
+                                            }
+                                        } else {
+                                            opcionSelect.innerHTML = '<option value="" disabled selected>Seleccione una opción</option>';
+                                            clienteuno.value = '';
+                                            clienteunoci.value = '';
+                                            clientedos.value = '';
+                                            clientedosci.value = '';
+
+                                            updateClienteunoPreview();
+                                            updateCiClienteunoPreview();
+                                            updateClientedosPreview();
+                                            updateCiClientedosPreview();
+
+                                            document.getElementById('vista-previa-cliente2').style.display = 'none';
+                                            alert("⚠️ Cliente no encontrado");
+                                        }
+                                    }
+                                });
+                            </script>
                             <button type="submit" class="btn btn-crear btn-block" style="margin-top: 10px;">GUARDAR Y GENERAR CARTA</button>
                         </form>
                     </div>
@@ -193,7 +278,7 @@
                                     <p>
                                         <span id="preview-clientedos2">[Sin Cliente 2]</span>
                                     </p>
-                                    <p style="margin-top: -10px;">
+                                    <p id="linea-ci-clientedosci2" style="margin-top: -10px;">
                                         CI: <span id="preview-clientedosci2">[Sin CI 2]</span>
                                     </p>
                                 </div>
@@ -221,40 +306,90 @@
                                     <input type="date" id="fecha2" name="fecha" class="form-control" required onchange="updatePreview2()">
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="opcion">Seleccionar Banco o Seguro:</label>
-                                <select id="opcion2" name="opcion" class="form-control" required onchange="updatePreview2()">
-                                    <option value="" disabled selected>Seleccione una opción</option>
-                                    @foreach($opciones as $opcion)
-                                        <option value="{{ $opcion->nombreBanco ?? $opcion->nombreSeguro }}">
-                                            {{ $opcion->nombreBanco ?? $opcion->nombreSeguro }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="clienteuno">Nombre Cliente 1:</label>
-                                <input type="text" id="clienteuno2" name="clienteuno" class="form-control" placeholder="Nombre del cliente uno" required oninput="updateClienteunoPreview2()">
-                            </div>
-                            <div class="form-group">
-                                <label for="clienteunoci">CI Cliente 1:</label>
-                                <input type="text" id="clienteunoci2" name="clienteunoci" class="form-control" placeholder="CI del cliente uno" required oninput="updateCiClienteunoPreview2()">
-                            </div>
-
-                            <button type="button" id="btn-agregar-cliente22" class="btn btn-outline-primary" onclick="mostrarCliente22()"><i class="fa fa-plus"></i> Otro Cliente</button>
-
-                            <div id="cliente2-seccion2" style="display: none;">
-                                <div class="form-group">
-                                    <label for="clientedos">Nombre Cliente 2:</label>
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    <label for="clienteid">ID Cliente:</label>
+                                    <input type="text" id="clienteid2" name="clienteid" class="form-control" placeholder="Escriba ID del cliente y presione Enter">
+                                </div>
+                                <div class="form-group col-lg-8">
+                                    <label for="opcion">Seleccionar Banco o Seguro:</label>
+                                    <select id="opcion2" name="opcion" class="form-control" required onchange="updatePreview2()">
+                                        <option value="" disabled selected>Seleccione una opción</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="clienteuno">Nombre Cliente:</label>
+                                    <input type="text" id="clienteuno2" name="clienteuno" class="form-control" placeholder="Nombre del cliente uno" required oninput="updateClienteunoPreview2()">
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="clienteunoci">CI Cliente:</label>
+                                    <input type="text" id="clienteunoci2" name="clienteunoci" class="form-control" placeholder="CI del cliente uno" required oninput="updateCiClienteunoPreview2()">
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="clientedos">Nombre Esp/Cony.:</label>
                                     <input type="text" id="clientedos2" name="clientedos" class="form-control" placeholder="Nombre del cliente dos" oninput="updateClientedosPreview2()">
                                 </div>
-                                <div class="form-group">
-                                    <label for="clientedosci">CI Cliente 2:</label>
+                                <div class="form-group col-lg-6">
+                                    <label for="clientedosci">CI Esp/Cony.:</label>
                                     <input type="text" id="clientedosci2" name="clientedosci" class="form-control" placeholder="CI del cliente dos" oninput="updateCiClientedosPreview2()">
                                 </div>
-
-
                             </div>
+                            <script>
+                                let clientesAuditoria = @json($clientesAuditoria);
+                            </script>
+                            <script>
+                                document.getElementById('clienteid2').addEventListener('keypress', function(e) {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+
+                                        let clienteId = this.value.trim();
+                                        if(clienteId === '') return;
+
+                                        let cliente = clientesAuditoria.find(c => c.id == clienteId);
+
+                                        let opcionSelect = document.getElementById('opcion2');
+                                        let clienteuno = document.getElementById('clienteuno2');
+                                        let clienteunoci = document.getElementById('clienteunoci2');
+                                        let clientedos = document.getElementById('clientedos2');
+                                        let clientedosci = document.getElementById('clientedosci2');
+
+                                        if(cliente){
+                                            opcionSelect.innerHTML = '<option value="" disabled selected>Seleccione una opción</option>';
+                                            if(cliente.banco1) opcionSelect.innerHTML += `<option value="${cliente.banco1}">${cliente.banco1}</option>`;
+                                            if(cliente.banco2) opcionSelect.innerHTML += `<option value="${cliente.banco2}">${cliente.banco2}</option>`;
+                                            if(cliente.banco3) opcionSelect.innerHTML += `<option value="${cliente.banco3}">${cliente.banco3}</option>`;
+
+                                            clienteuno.value = cliente.nombrecompleto ?? '';
+                                            clienteunoci.value = cliente.ci ?? '';
+                                            clientedos.value = cliente.nombreespcon ?? '';
+                                            clientedosci.value = cliente.ciespcon ?? '';
+
+                                            updateClienteunoPreview2();
+                                            updateCiClienteunoPreview2();
+                                            updateClientedosPreview2();
+                                            updateCiClientedosPreview2();
+
+                                            if(cliente.nombreespcon || cliente.ciespcon){
+                                                document.getElementById('vista-previa-cliente22').style.display = 'block';
+                                            }
+                                        } else {
+                                            opcionSelect.innerHTML = '<option value="" disabled selected>Seleccione una opción</option>';
+                                            clienteuno.value = '';
+                                            clienteunoci.value = '';
+                                            clientedos.value = '';
+                                            clientedosci.value = '';
+
+                                            updateClienteunoPreview2();
+                                            updateCiClienteunoPreview2();
+                                            updateClientedosPreview2();
+                                            updateCiClientedosPreview2();
+
+                                            document.getElementById('vista-previa-cliente22').style.display = 'none';
+                                            alert("⚠️ Cliente no encontrado");
+                                        }
+                                    }
+                                });
+                            </script>
                             <button type="submit" class="btn btn-crear btn-block" style="margin-top: 10px;">GUARDAR Y GENERAR CARTA</button>
                         </form>
                     </div>
@@ -292,7 +427,7 @@
                                     <p>
                                         <span id="preview-clientedos3">[Sin Cliente 2]</span>
                                     </p>
-                                    <p style="margin-top: -10px;">
+                                    <p id="linea-ci-clientedosci3" style="margin-top: -10px;">
                                         CI: <span id="preview-clientedosci3">[Sin CI 2]</span>
                                     </p>
                                 </div>
@@ -320,38 +455,90 @@
                                     <input type="date" id="fecha3" name="fecha" class="form-control" required onchange="updatePreview3()">
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="opcion">Seleccionar Banco o Seguro:</label>
-                                <select id="opcion3" name="opcion" class="form-control" required onchange="updatePreview3()">
-                                    <option value="" disabled selected>Seleccione una opción</option>
-                                    @foreach($opciones as $opcion)
-                                        <option value="{{ $opcion->nombreBanco ?? $opcion->nombreSeguro }}">
-                                            {{ $opcion->nombreBanco ?? $opcion->nombreSeguro }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="clienteuno">Nombre Cliente 1:</label>
-                                <input type="text" id="clienteuno3" name="clienteuno" class="form-control" placeholder="Nombre del cliente uno" required oninput="updateClienteunoPreview3()">
-                            </div>
-                            <div class="form-group">
-                                <label for="clienteunoci">CI Cliente 1:</label>
-                                <input type="text" id="clienteunoci3" name="clienteunoci" class="form-control" placeholder="CI del cliente uno" required oninput="updateCiClienteunoPreview3()">
-                            </div>
-
-                            <button type="button" id="btn-agregar-cliente23" class="btn btn-outline-primary" onclick="mostrarCliente23()"><i class="fa fa-plus"></i> Otro Cliente</button>
-
-                            <div id="cliente2-seccion3" style="display: none;">
-                                <div class="form-group">
-                                    <label for="clientedos">Nombre Cliente 2:</label>
+                            <div class="row">
+                                <div class="form-group col-lg-4">
+                                    <label for="clienteid">ID Cliente:</label>
+                                    <input type="text" id="clienteid3" name="clienteid" class="form-control" placeholder="Escriba ID del cliente y presione Enter">
+                                </div>
+                                <div class="form-group col-lg-8">
+                                    <label for="opcion">Seleccionar Banco o Seguro:</label>
+                                    <select id="opcion3" name="opcion" class="form-control" required onchange="updatePreview3()">
+                                        <option value="" disabled selected>Seleccione una opción</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="clienteuno">Nombre Cliente:</label>
+                                    <input type="text" id="clienteuno3" name="clienteuno" class="form-control" placeholder="Nombre del cliente uno" required oninput="updateClienteunoPreview3()">
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="clienteunoci">CI Cliente:</label>
+                                    <input type="text" id="clienteunoci3" name="clienteunoci" class="form-control" placeholder="CI del cliente uno" required oninput="updateCiClienteunoPreview3()">
+                                </div>
+                                <div class="form-group col-lg-6">
+                                    <label for="clientedos">Nombre Esp/Cony.:</label>
                                     <input type="text" id="clientedos3" name="clientedos" class="form-control" placeholder="Nombre del cliente dos" oninput="updateClientedosPreview3()">
                                 </div>
-                                <div class="form-group">
-                                    <label for="clientedosci">CI Cliente 2:</label>
+                                <div class="form-group col-lg-6">
+                                    <label for="clientedosci">CI Esp/Cony.:</label>
                                     <input type="text" id="clientedosci3" name="clientedosci" class="form-control" placeholder="CI del cliente dos" oninput="updateCiClientedosPreview3()">
                                 </div>
                             </div>
+                            <script>
+                                let clientesAuditoria = @json($clientesAuditoria);
+                            </script>
+                            <script>
+                                document.getElementById('clienteid3').addEventListener('keypress', function(e) {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+
+                                        let clienteId = this.value.trim();
+                                        if(clienteId === '') return;
+
+                                        let cliente = clientesAuditoria.find(c => c.id == clienteId);
+
+                                        let opcionSelect = document.getElementById('opcion3');
+                                        let clienteuno = document.getElementById('clienteuno3');
+                                        let clienteunoci = document.getElementById('clienteunoci3');
+                                        let clientedos = document.getElementById('clientedos3');
+                                        let clientedosci = document.getElementById('clientedosci3');
+
+                                        if(cliente){
+                                            opcionSelect.innerHTML = '<option value="" disabled selected>Seleccione una opción</option>';
+                                            if(cliente.banco1) opcionSelect.innerHTML += `<option value="${cliente.banco1}">${cliente.banco1}</option>`;
+                                            if(cliente.banco2) opcionSelect.innerHTML += `<option value="${cliente.banco2}">${cliente.banco2}</option>`;
+                                            if(cliente.banco3) opcionSelect.innerHTML += `<option value="${cliente.banco3}">${cliente.banco3}</option>`;
+
+                                            clienteuno.value = cliente.nombrecompleto ?? '';
+                                            clienteunoci.value = cliente.ci ?? '';
+                                            clientedos.value = cliente.nombreespcon ?? '';
+                                            clientedosci.value = cliente.ciespcon ?? '';
+
+                                            updateClienteunoPreview3();
+                                            updateCiClienteunoPreview3();
+                                            updateClientedosPreview3();
+                                            updateCiClientedosPreview3();
+
+                                            if(cliente.nombreespcon || cliente.ciespcon){
+                                                document.getElementById('vista-previa-cliente23').style.display = 'block';
+                                            }
+                                        } else {
+                                            opcionSelect.innerHTML = '<option value="" disabled selected>Seleccione una opción</option>';
+                                            clienteuno.value = '';
+                                            clienteunoci.value = '';
+                                            clientedos.value = '';
+                                            clientedosci.value = '';
+
+                                            updateClienteunoPreview3();
+                                            updateCiClienteunoPreview3();
+                                            updateClientedosPreview3();
+                                            updateCiClientedosPreview3();
+
+                                            document.getElementById('vista-previa-cliente23').style.display = 'none';
+                                            alert("⚠️ Cliente no encontrado");
+                                        }
+                                    }
+                                });
+                            </script>
                             <button type="submit" class="btn btn-crear btn-block" style="margin-top: 10px;">GUARDAR Y GENERAR CARTA</button>
                         </form>
                     </div>
@@ -411,8 +598,15 @@
     }
     function updateCiClientedosPreview() {
         const clientedosci = document.getElementById('clientedosci').value || '';
-        document.getElementById('preview-clientedosci').innerText = clientedosci;
+        const preview = document.getElementById('preview-clientedosci');
+        preview.innerText = clientedosci || '[Sin CI 2]';
+        const lineaCI = document.getElementById('linea-ci-clientedosci');
 
+        if(clientedosci.trim() === '') {
+            lineaCI.style.display = 'none';
+        } else {
+            lineaCI.style.display = 'block';
+        }
     }
 </script>
 
@@ -464,8 +658,15 @@
     }
     function updateCiClientedosPreview2() {
         const clientedosci2 = document.getElementById('clientedosci2').value || '';
-        document.getElementById('preview-clientedosci2').innerText = clientedosci2;
+        const preview = document.getElementById('preview-clientedosci2');
+        preview.innerText = clientedosci2 || '[Sin CI 2]';
+        const lineaCI = document.getElementById('linea-ci-clientedosci2');
 
+        if(clientedosci2.trim() === '') {
+            lineaCI.style.display = 'none';
+        } else {
+            lineaCI.style.display = 'block';
+        }
     }
 </script>
 
@@ -517,8 +718,15 @@
     }
     function updateCiClientedosPreview3() {
         const clientedosci3 = document.getElementById('clientedosci3').value || '';
-        document.getElementById('preview-clientedosci3').innerText = clientedosci3;
+        const preview = document.getElementById('preview-clientedosci3');
+        preview.innerText = clientedosci3 || '[Sin CI 2]';
+        const lineaCI = document.getElementById('linea-ci-clientedosci3');
 
+        if(clientedosci3.trim() === '') {
+            lineaCI.style.display = 'none';
+        } else {
+            lineaCI.style.display = 'block';
+        }
     }
 </script>
 
@@ -563,7 +771,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         }
     .btn-regresar:hover {
         background-color: #2926e2;
@@ -574,7 +782,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         }
     .btn-otraopcion:hover {
         background-color: #faa625;
@@ -585,7 +793,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
         }
     .btn-crear:hover {
         background-color: #94c93b;

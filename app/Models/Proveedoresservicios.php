@@ -75,6 +75,7 @@ class Proveedoresservicios extends Model
             'tipoorden2' => '',
             'tipoorden3' => '',
             'tipoplanilla' => '',
+            'nroderivtramites' => '',
     ]; 
 
     protected $fillable = [
@@ -135,6 +136,7 @@ class Proveedoresservicios extends Model
             'tipoorden2',
             'tipoorden3',
             'tipoplanilla',
+            'nroderivtramites',
     ];
 
     public function user(){

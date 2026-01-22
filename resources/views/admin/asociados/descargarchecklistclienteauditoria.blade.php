@@ -21,6 +21,7 @@
                 text-align: center;
                 font-size: 12px;
                 width: 100%;
+                font-family: Arial, sans-serif;
             }
             caption {
                 caption-side: top;

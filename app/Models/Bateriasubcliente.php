@@ -60,6 +60,7 @@ class Bateriasubcliente extends Model
         'usuariocomprobante' => '',
         'ordenid' => '',
         'fechamora' => '',
+        'idsubproc' => '',
     ]; 
 
     protected $fillable = [
@@ -112,6 +113,7 @@ class Bateriasubcliente extends Model
         'usuariocomprobante',
         'ordenid',
         'fechamora',
+        'idsubproc',
     ];
     public function cliente()
     {

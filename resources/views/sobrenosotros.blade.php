@@ -32,388 +32,183 @@
         </style>
     </head>
 <body>
-
-    <!-- Barra de navegacion -->
-    <nav class="navbar navbar-expand-lg navbar-light shadow fixed-top" style="background-color: #e2e2e1;"> 
-        <div class="container d-flex justify-content-between align-items-center">
-            <a class="navbar-brand text-success logo h1 align-self-center" href="welcome">
-                <a href="welcome" class="navbar-brand ml-lg-3">
-                    <img src="assets/img/logo.png" style="width: 120px; height: 60px;" alt="">
-            </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
-                <div class="flex-fill">
-                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="welcome">Inicio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link current-page" href="sobrenosotros">Sobre nosotros</a>
-                        </li>
-                        
-                        <li class="nav-item">
-                            <div class="dropdown" onmouseleave="closeDropdown()">
-                                <a href="#" class="nav-link dropdown-toggle" id="dropdownMenuLink" data-toggle="dropdown">Servicios</a>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                    <a class="dropdown-item nav-link" href="asesoramientolegal">Asesoramiento Legal</a>
-                                    <a class="dropdown-item nav-link" href="medicina">Medicina</a>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="contact">Contactos</a>
-                        </li>
-                    </ul>
-                </div>
-
-                @if (Route::has('login'))
-                        <div class="d-flex justify-content-end">
-                            @auth
-                                <a href="{{ url('/home') }}" class="btn oval-button text-decoration-none d-flex align-items-center mr-2" title="Inicio">
-                                    <i class="fa fa-fw fa-home icon"></i>
-                                </a>
-                            @else
-                                <a href="{{ route('login') }}" class="btn oval-button text-decoration-none d-flex align-items-center mr-2">
-                                    <i class="fa fa-fw fa-user icon"></i>
-                                    <span class="text">Iniciar sesión</span>
-                                </a>
-                                @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="btn register-button text-decoration-none d-flex align-items-center">
-                                        <i class="fa fa-fw fa-user-plus icon"></i>
-                                        <span class="text">Registrarse</span>
-                                    </a>
-                                @endif
-                            @endauth
-                        </div>
-                    @endif
-
-
-                    <style>
-                        .oval-button {
-                            background-color: white;
-                            border: 2px solid #94c93b;
-                            border-radius: 30px;
-                            padding: 5px 10px;
-                        }
-                        .oval-button:hover {
-                            background-color: #94c93b;
-                        }
-                        .oval-button .icon {
-                            color: #94c93b;
-                            transition: color 0.3s ease;
-                            margin-right: 5px;
-                        }
-                        .oval-button:hover .icon {
-                            color: white;
-                        }
-                        .oval-button .text {
-                            color: #94c93b;
-                            transition: color 0.3s ease;
-                            font-size: 12px;
-                        }
-                        .oval-button:hover .text {
-                            color: white;
-                        }
-                        .register-button {
-                            background-color: white;
-                            border: 2px solid #faa625;
-                            border-radius: 30px;
-                            padding: 5px 10px;
-                        }
-                        .register-button:hover {
-                            background-color: #faa625;
-                        }
-                        .register-button .icon {
-                            color: #faa625;
-                            transition: color 0.3s ease;
-                            margin-right: 5px;
-                        }
-                        .register-button:hover .icon {
-                            color: white;
-                        }
-                        .register-button .text {
-                            color: #faa625;
-                            transition: color 0.3s ease;
-                            font-size: 12px;
-                        }
-                        .register-button:hover .text {
-                            color: white;
-                        }
-                    </style>
-            </div>
-            <style>
-                .current-page {
-                color: #94c93b !important;
-                }
-                .nav-link:hover {
-                color: orange !important;
-                }
-            </style>
-        </div>
-    </nav>
+    @include('encabezado')
 
     <!-- Sobre nosotros -->
-        <div class="container text-center py-5" style="margin-bottom: -31px;">
-            <h3 class="display-3 mb-1 txt2" style="margin-top: 70px;"><b>SOBRE NOSOTROS</b></h3>
-        </div>
-        
-        <section>
-            <div class="container">
-                <div class="row justify-content-center align-items-stretch" style="margin-top: 40px;">
-                    <div class="col-md-4 col-lg-4 pb-5 text-center vision-section">
-                        <div class="h-100 d-flex flex-column">
-                            <div class="card-body custom-card-body">
-                                <div class="col-lg-12">
-                                    <h1 class="txt3 mb-4">⧻ Visión ⧻</h1>
-                                </div>
-                                <h1 class="txt1" style="margin-top: 45px;">
-                                    Ser una de las principales empresas líderes en Bolivia en la mejora de la calidad de vida de los colaboradores, incremento de la eficiencia del potencial humano de las organizaciones y haber generado un compromiso social empresarial que se traduce en un impacto positivo para los trabajadores, empleadores y Bolivia.
-                                </h1>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-lg-4 pb-5 text-center" style="margin-right: -80px; margin-left: -80px;">
-                        <a href="shop-single.html">
-                            <img src="assets/img/ia.png" class="img-fluid mx-auto d-block" style="max-width: 90%; height: auto;" alt="...">
-                        </a>
-                    </div>
-                    
-                    
-                    <div class="col-md-4 col-lg-4 pb-5 text-center mision-section">
-                        <div class="h-100 d-flex flex-column">
-                            <div class="card-body custom-card-body1">
-                                <div class="col-lg-12">
-                                    <h1 class="txt7 mb-4">⧻ Misión ⧻</h1>
-                                </div>
-                                <h1 class="txt1">
-                                    Apoyar a las organizaciones en la búsqueda del mejoramiento continuo de la calidad de vida de los trabajadores, mediante la oferta de servicios eficientes en Salud Ocupacional, Medicina Ocupacional, Seguridad e Higiene Ocupacional, Prevención en Salud, Ergonomía y Psicosociología laboral, promoviendo un concepto integral y social de la salud, impactando positivamente en el bienestar y salud de los trabajadores, optimizando su desempeño, mejorando su eficiencia laboral y la productividad de sus organizaciones.
-                                </h1>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        <style>
-            @keyframes pulsate {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.08);
-            }
-            100% {
-                transform: scale(1);
-            }
-            }
-
-            .pulsate {
-            animation: pulsate 3s infinite;
-            }
-            .custom-card-body {
-                border-left: 15px solid #faa625; /* Borde izquierdo */
-                border-bottom: 3px solid #faa625; /* Borde inferior */
-                padding-bottom: 20px; /* Espacio inferior para el borde */
-            }
-
-            .custom-card-body1 {
-                border-right: 15px solid #94c93b; /* Borde derecho */
-                border-bottom: 3px solid #94c93b; /* Borde inferior */
-                padding-bottom: 20px; /* Espacio inferior para el borde */
-            }
-            .txt7 {
-                font-family: "Latin Modern Roman";
-                font-size: 30px;
-                line-height: 1.6;
-                text-align: center;
-                color: #94c93b;
-            }
-        </style>
-
-<!-- Valores -->
-<section class="container">
-    <div class="row text-center pt-5 pb-5">
-        <div class="col-lg-6 m-auto">
-            <h1 class="txt3">⧻ Valores ⧻</h1>
-        </div>
+    <div class="container text-center py-5" style="margin-bottom: -31px;">
+        <h3 class="display-3 mb-1 txt2" style="margin-top: 70px;"><b>SOBRE NOSOTROS</b></h3>
     </div>
     
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-3 pb-5">
-            <div class="h-100 py-3">
-                <div class="h1 iconovalores text-center"><i class="fa fa-graduation-cap fa-lg"></i></div>
-                <h2 class="mt-4 text4">Profesionalismo</h2>
-                <div class="card-body">
-                    <h1 class="card-text txt1">
-                        Actuar siempre de acuerdo con los valores de nuestras profesiones, poniendo al servicio de la comunidad la mejor atención y la mejor evidencia científica, velando por la calidad de los servicios y la seguridad de las personas.
-                    </h1>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3 pb-5">
-            <div class="h-100 py-3">
-                <div class="h1 iconovalores text-center"><i class="fa fa-cogs fa-lg"></i></div>
-                <h2 class="mt-4 text4">Gestión responsable</h2>
-                <div class="card-body">
-                    <h1 class="card-text txt1">
-                        Velar por una gestión basada en la transparencia y la gestión eficiente de los recursos, teniendo en cuenta los aspectos éticos de nuestras decisiones, y que se comprometa con la responsabilidad social corporativa.
-                    </h1>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6 col-lg-3 pb-5">
-            <div class="h-100 py-3">
-                <div class="h1 text-center iconovalores"><i class="fa fa-sun fa-lg"></i></div>
-                <h2 class="mt-4 text4">Responsabilidad ambiental</h2>
-                <div class="card-body">
-                    <h1 class="card-text txt1">
-                        Comprometidos a operar de manera responsable y consciente con el medio ambiente, minimizando nuestra huella ecológica y promoviendo prácticas sostenibles en todas las operaciones.
-                    </h1>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-3 pb-5">
-            <div class="h-100 py-3">
-                <div class="h1 iconovalores text-center"><i class="fas fa-users fa-lg"></i></div>
-                <h2 class="mt-4 text4">Trabajo en equipo</h2>
-                <div class="card-body">
-                    <h1 class="card-text txt1">
-                        Trabajar en cooperación para unos objetivos compartidos, buscando la participación, el compromiso para un objetivo en común.
-                    </h1>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3 pb-5">
-            <div class="h-100 py-3">
-                <div class="h1 iconovalores text-center"><i class="fa fa-star fa-lg"></i></div>
-                <h2 class="mt-4 text4">Innovación</h2>
-                <div class="card-body">
-                    <h1 class="card-text txt1">
-                        Crear y aplicar nuevas formas de hacer que impulsen la mejora continua.
-                    </h1>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3 pb-5">
-            <div class="h-100 py-3">
-                <div class="h1 iconovalores text-center"><i class="fa fa-medal fa-lg"></i></div>
-                <h2 class="mt-4 text4">Respeto</h2>
-                <div class="card-body">
-                    <h1 class="card-text txt1">
-                        Ofrecer un trato humano y empático a las personas, respetando sus derechos individuales y colectivos, su autonomía y su diversidad.
-                    </h1>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-<style>
-    .iconovalores {
-        color: #94c93b;
-    }
-    .text4 {
-        font-family: "Latin Modern Roman";
-        font-size: 23px;
-        line-height: 1.6;
-        text-align: center;
-        font-weight: 400;
-        color: #94c93b;
-    }
-</style>
-
-    <!-- Pie de pagina-->
-    <footer class="bg-black" id="tempaltemo_footer">
+    <section>
         <div class="container">
-            <div class="row">
-
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 border-bottom pb-3 border-light logo txt6">Santa Cruz</h2>
-                    <ul class="list-unstyled text-light custom-footer-links">
-                        <li>
-                            <i class="fas fa-map-marker-alt fa-fw"></i>
-                            <a class="text-decoration-none" href="https://maps.app.goo.gl/9YcukYKG32Kg2NeX6">Av. Rene Moreno N° 484 Esq. Ana Barba entre 1er y 2do anillo - Barrio Sur</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-phone fa-fw"></i>
-                            <a class="text-decoration-none" href="tel:65045401">65045401</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-envelope fa-fw"></i>
-                            <a class="text-decoration-none" href="mailto:scz.prestaciones2@goodlife.com.bo?subject=Asunto&body=Cuerpo del mensaje&app=OUTLOOK">scz.prestaciones2@goodlife.com.bo</a>
-                        </li>
-                    </ul>
+            <div class="row justify-content-center align-items-stretch" style="margin-top: 40px;">
+                <div class="col-md-4 col-lg-4 pb-5 text-center vision-section">
+                    <div class="h-100 d-flex flex-column">
+                        <div class="card-body custom-card-body">
+                            <div class="col-lg-12">
+                                <h1 class="txt3 mb-4">⧻ Visión ⧻</h1>
+                            </div>
+                            <h1 class="txt1" style="margin-top: 45px;">
+                                Ser una de las principales empresas líderes en Bolivia en la mejora de la calidad de vida de los colaboradores, incremento de la eficiencia del potencial humano de las organizaciones y haber generado un compromiso social empresarial que se traduce en un impacto positivo para los trabajadores, empleadores y Bolivia.
+                            </h1>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 border-bottom pb-3 border-light logo txt6">Cochabamba</h2>
-                    <ul class="list-unstyled text-light custom-footer-links">
-                        <li>
-                            <i class="fas fa-map-marker-alt fa-fw" ></i> 
-                            <a class="text-decoration-none" href="https://maps.app.goo.gl/US5TiFQpvk7gAh346">Calle Lanza entre R. Rivero y Oruro Edif. Shashelly piso 2 of. 2B</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-phone fa-fw"></i>
-                            <a class="text-decoration-none" href="tel:65045401">65045401</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-envelope fa-fw"></i>
-                            <a class="text-decoration-none" href="mailto:cbbaprestaciones@goodlife.com.bo?subject=Asunto&body=Cuerpo del mensaje&app=OUTLOOK">cbbaprestaciones@goodlife.com.bo</a>
-                        </li>
-                    </ul>
+                <div class="col-md-4 col-lg-4 pb-5 text-center" style="margin-right: -80px; margin-left: -80px;">
+                    <a href="shop-single.html">
+                        <img src="assets/img/ia.png" class="img-fluid mx-auto d-block" style="max-width: 90%; height: auto;" alt="...">
+                    </a>
                 </div>
-
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 text-light border-bottom pb-3 border-light">Menu</h2>
-                    <ul class="list-unstyled text-light custom-footer-links">
-                        <li><a class="text-decoration-none" href="welcome">Inicio</a></li>
-                        <li><a class="text-decoration-none current-page" href="sobrenosotros">Sobre nosotros</a></li>
-                        <li><a class="text-decoration-none" href="asesoramientolegal">Servicio de asesoramiento legal</a></li>
-                        <li><a class="text-decoration-none" href="medicina">Servicio de medicina</a></li>
-                        <li><a class="text-decoration-none" href="contact">Contactos</a></li>
-                    </ul>
-                </div>
-            </div>
-
-            <div class="row text-light mb-4">
-                <div class="col-12 mb-3">
-                    <div class="w-100 my-3 border-top border-light"></div>
-                </div>
-                <div class="col-auto me-auto">
-                    <ul class="list-inline text-left footer-icons">
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.facebook.com/Good.Life.Consultora.de.Pensiones/"><i class="fab fa-facebook-f fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.instagram.com/goodlife_srl/"><i class="fab fa-instagram fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.youtube.com/@goodlifesrlpensionesysalud5514"><i class="fab fa-youtube fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.tiktok.com/@good_life_srl"><i class="fab fa-tiktok fa-lg fa-fw"></i></a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="w-100 py-3 footerend">
-            <div class="container">
-                <div class="row pt-2">
-                    <div class="col-12">  
-                        <p class="m-0 text-black">&copy; <a class="h5 logo text-dark text-decoration-none">GOOD LIFE</a>. Todos los derechos reservados.</p>
+                
+                
+                <div class="col-md-4 col-lg-4 pb-5 text-center mision-section">
+                    <div class="h-100 d-flex flex-column">
+                        <div class="card-body custom-card-body1">
+                            <div class="col-lg-12">
+                                <h1 class="txt7 mb-4">⧻ Misión ⧻</h1>
+                            </div>
+                            <h1 class="txt1">
+                                Apoyar a las organizaciones en la búsqueda del mejoramiento continuo de la calidad de vida de los trabajadores, mediante la oferta de servicios eficientes en Salud Ocupacional, Medicina Ocupacional, Seguridad e Higiene Ocupacional, Prevención en Salud, Ergonomía y Psicosociología laboral, promoviendo un concepto integral y social de la salud, impactando positivamente en el bienestar y salud de los trabajadores, optimizando su desempeño, mejorando su eficiencia laboral y la productividad de sus organizaciones.
+                            </h1>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
+    <style>
+        @keyframes pulsate {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.08);
+        }
+        100% {
+            transform: scale(1);
+        }
+        }
 
-    </footer>
+        .pulsate {
+        animation: pulsate 3s infinite;
+        }
+        .custom-card-body {
+            border-left: 15px solid #faa625; /* Borde izquierdo */
+            border-bottom: 3px solid #faa625; /* Borde inferior */
+            padding-bottom: 20px; /* Espacio inferior para el borde */
+        }
+
+        .custom-card-body1 {
+            border-right: 15px solid #94c93b; /* Borde derecho */
+            border-bottom: 3px solid #94c93b; /* Borde inferior */
+            padding-bottom: 20px; /* Espacio inferior para el borde */
+        }
+        .txt7 {
+            font-family: "Latin Modern Roman";
+            font-size: 30px;
+            line-height: 1.6;
+            text-align: center;
+            color: #94c93b;
+        }
+    </style>
+
+    <!-- Valores -->
+    <section class="container">
+        <div class="row text-center pt-5 pb-5">
+            <div class="col-lg-6 m-auto">
+                <h1 class="txt3">⧻ Valores ⧻</h1>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-3 pb-5">
+                <div class="h-100 py-3">
+                    <div class="h1 iconovalores text-center"><i class="fa fa-graduation-cap fa-lg"></i></div>
+                    <h2 class="mt-4 text4">Profesionalismo</h2>
+                    <div class="card-body">
+                        <h1 class="card-text txt1">
+                            Actuar siempre de acuerdo con los valores de nuestras profesiones, poniendo al servicio de la comunidad la mejor atención y la mejor evidencia científica, velando por la calidad de los servicios y la seguridad de las personas.
+                        </h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 pb-5">
+                <div class="h-100 py-3">
+                    <div class="h1 iconovalores text-center"><i class="fa fa-cogs fa-lg"></i></div>
+                    <h2 class="mt-4 text4">Gestión responsable</h2>
+                    <div class="card-body">
+                        <h1 class="card-text txt1">
+                            Velar por una gestión basada en la transparencia y la gestión eficiente de los recursos, teniendo en cuenta los aspectos éticos de nuestras decisiones, y que se comprometa con la responsabilidad social corporativa.
+                        </h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-3 pb-5">
+                <div class="h-100 py-3">
+                    <div class="h1 text-center iconovalores"><i class="fa fa-sun fa-lg"></i></div>
+                    <h2 class="mt-4 text4">Responsabilidad ambiental</h2>
+                    <div class="card-body">
+                        <h1 class="card-text txt1">
+                            Comprometidos a operar de manera responsable y consciente con el medio ambiente, minimizando nuestra huella ecológica y promoviendo prácticas sostenibles en todas las operaciones.
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-3 pb-5">
+                <div class="h-100 py-3">
+                    <div class="h1 iconovalores text-center"><i class="fas fa-users fa-lg"></i></div>
+                    <h2 class="mt-4 text4">Trabajo en equipo</h2>
+                    <div class="card-body">
+                        <h1 class="card-text txt1">
+                            Trabajar en cooperación para unos objetivos compartidos, buscando la participación, el compromiso para un objetivo en común.
+                        </h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 pb-5">
+                <div class="h-100 py-3">
+                    <div class="h1 iconovalores text-center"><i class="fa fa-star fa-lg"></i></div>
+                    <h2 class="mt-4 text4">Innovación</h2>
+                    <div class="card-body">
+                        <h1 class="card-text txt1">
+                            Crear y aplicar nuevas formas de hacer que impulsen la mejora continua.
+                        </h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 pb-5">
+                <div class="h-100 py-3">
+                    <div class="h1 iconovalores text-center"><i class="fa fa-medal fa-lg"></i></div>
+                    <h2 class="mt-4 text4">Respeto</h2>
+                    <div class="card-body">
+                        <h1 class="card-text txt1">
+                            Ofrecer un trato humano y empático a las personas, respetando sus derechos individuales y colectivos, su autonomía y su diversidad.
+                        </h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <style>
+        .iconovalores {
+            color: #94c93b;
+        }
+        .text4 {
+            font-family: "Latin Modern Roman";
+            font-size: 23px;
+            line-height: 1.6;
+            text-align: center;
+            font-weight: 400;
+            color: #94c93b;
+        }
+    </style>
+
+    @include('piepagina')
+
     <script src="assets/js/jquery-1.11.0.min.js"></script>
     <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>

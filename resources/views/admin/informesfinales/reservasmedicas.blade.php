@@ -415,7 +415,7 @@
                                                         <span aria-hidden="true">&times;</span>
                                                     </button>
                                                 </div>
-                                                {!! Form::open(['route' => 'procesar.informe', 'method' => 'POST', 'files' => true]) !!}
+                                                {!! Form::open(['route' => 'procesar.informe', 'method' => 'POST', 'files' => true, 'id' => 'formuno']) !!}
                                                     {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                                                     {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                                                     {!! Form::hidden('clienteitaid', null, ['id' => 'modal-clienteitaid']) !!}
@@ -577,11 +577,30 @@
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="modal-footer">
+                                                    {{-- <div class="modal-footer">
                                                         <div class="text-center w-100">
                                                             {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
                                                         </div>
+                                                    </div> --}}
+                                                    <div class="modal-footer">
+                                                        <div class="text-center w-100">
+                                                            {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear', 'id' => 'btnSubirInforme']) !!}
+                                                        </div>
                                                     </div>
+
+                                                    <script>
+                                                        document.addEventListener('DOMContentLoaded', function () {
+                                                            const form = document.querySelector('#formuno'); // <- CORREGIDO
+                                                            const btn = document.getElementById('btnSubirInforme');
+
+                                                            form.addEventListener('submit', function(e) {
+                                                                // Cambiar texto del botón
+                                                                btn.value = 'GUARDANDO...';
+                                                                // Deshabilitar el botón
+                                                                btn.disabled = true;
+                                                            });
+                                                        });
+                                                    </script>
                                                 {!! Form::close() !!}
                                             </div>
                                         </div>
@@ -640,7 +659,7 @@
                                                             <span aria-hidden="true">&times;</span>
                                                         </button>
                                                     </div>
-                                                    {!! Form::open(['route' => 'procesar.informe.multiple', 'method' => 'POST', 'files' => true]) !!}
+                                                    {!! Form::open(['route' => 'procesar.informe.multiple', 'method' => 'POST', 'files' => true, 'id' => 'formdos']) !!}
                                                         {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                                                         {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                                                         {!! Form::hidden('clienteitaid', null, ['id' => 'modal-clienteitaid']) !!}
@@ -846,11 +865,30 @@
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="modal-footer">
+                                                        {{-- <div class="modal-footer">
                                                             <div class="text-center w-100">
                                                                 {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
                                                             </div>
+                                                        </div> --}}
+                                                        <div class="modal-footer">
+                                                            <div class="text-center w-100">
+                                                                {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear', 'id' => 'btnSubirInforme2']) !!}
+                                                            </div>
                                                         </div>
+
+                                                        <script>
+                                                            document.addEventListener('DOMContentLoaded', function () {
+                                                                const form = document.querySelector('#formdos'); // <- CORREGIDO
+                                                                const btn = document.getElementById('btnSubirInforme2');
+
+                                                                form.addEventListener('submit', function(e) {
+                                                                    // Cambiar texto del botón
+                                                                    btn.value = 'GUARDANDO...';
+                                                                    // Deshabilitar el botón
+                                                                    btn.disabled = true;
+                                                                });
+                                                            });
+                                                        </script>
                                                     {!! Form::close() !!}
                                                 </div>
                                             </div>

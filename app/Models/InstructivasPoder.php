@@ -29,6 +29,8 @@ class InstructivasPoder extends Model
         'apoderado10' => '',
         'usuarioregistroid' => '',
         'usuarioregistronombre' => '',
+        'documentofirmado' => '',
+        'fecharegistro' => '',
     ]; 
 
     protected $fillable = [
@@ -49,5 +51,7 @@ class InstructivasPoder extends Model
         'apoderado10',
         'usuarioregistroid',
         'usuarioregistronombre',
+        'documentofirmado',
+        'fecharegistro',
     ];
 }

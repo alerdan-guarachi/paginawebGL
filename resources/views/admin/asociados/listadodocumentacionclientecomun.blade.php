@@ -2,7 +2,7 @@
     
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclientecomun', $clientecomun) }}">REGRESAR</a>
-<h5>DOCUMENTACIÓN DE:</h5>
+<h5>INFORMES DE:</h5>
 <h3>{{$clientecomun->nombrecompleto}}</h3>
 @stop
 

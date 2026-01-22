@@ -33,442 +33,235 @@
     </head>
 <body>
 
-    <!-- Barra de navegacion -->
-    <nav class="navbar navbar-expand-lg navbar-light shadow fixed-top" style="background-color: #e2e2e1;"> 
-        <div class="container d-flex justify-content-between align-items-center">
-            <a class="navbar-brand text-success logo h1 align-self-center" href="welcome">
-                <a href="welcome" class="navbar-brand ml-lg-3">
-                    <img src="assets/img/logo.png" style="width: 120px; height: 60px;" alt="">
-            </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+    @include('encabezado')
 
-            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
-                <div class="flex-fill">
-                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="welcome">Inicio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="sobrenosotros">Sobre nosotros</a>
-                        </li>
-                        
-                        <li class="nav-item">
-                            <div class="dropdown" onmouseleave="closeDropdown()">
-                                <a href="#" class="nav-link dropdown-toggle" id="dropdownMenuLink" data-toggle="dropdown">Servicios</a>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                    <a class="dropdown-item nav-link current-page" href="asesoramientolegal">Asesoramiento Legal</a>
-                                    <a class="dropdown-item nav-link" href="medicina">Medicina</a>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="contact">Contactos</a>
-                        </li>
-                    </ul>
-                </div>
-
-                @if (Route::has('login'))
-                        <div class="d-flex justify-content-end">
-                            @auth
-                                <a href="{{ url('/home') }}" class="btn oval-button text-decoration-none d-flex align-items-center mr-2" title="Inicio">
-                                    <i class="fa fa-fw fa-home icon"></i>
-                                </a>
-                            @else
-                                <a href="{{ route('login') }}" class="btn oval-button text-decoration-none d-flex align-items-center mr-2">
-                                    <i class="fa fa-fw fa-user icon"></i>
-                                    <span class="text">Iniciar sesión</span>
-                                </a>
-                                @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="btn register-button text-decoration-none d-flex align-items-center">
-                                        <i class="fa fa-fw fa-user-plus icon"></i>
-                                        <span class="text">Registrarse</span>
-                                    </a>
-                                @endif
-                            @endauth
-                        </div>
-                    @endif
-
-
-                    <style>
-                        .oval-button {
-                            background-color: white;
-                            border: 2px solid #94c93b;
-                            border-radius: 30px;
-                            padding: 5px 10px;
-                        }
-                        .oval-button:hover {
-                            background-color: #94c93b;
-                        }
-                        .oval-button .icon {
-                            color: #94c93b;
-                            transition: color 0.3s ease;
-                            margin-right: 5px;
-                        }
-                        .oval-button:hover .icon {
-                            color: white;
-                        }
-                        .oval-button .text {
-                            color: #94c93b;
-                            transition: color 0.3s ease;
-                            font-size: 12px;
-                        }
-                        .oval-button:hover .text {
-                            color: white;
-                        }
-                        .register-button {
-                            background-color: white;
-                            border: 2px solid #faa625;
-                            border-radius: 30px;
-                            padding: 5px 10px;
-                        }
-                        .register-button:hover {
-                            background-color: #faa625;
-                        }
-                        .register-button .icon {
-                            color: #faa625;
-                            transition: color 0.3s ease;
-                            margin-right: 5px;
-                        }
-                        .register-button:hover .icon {
-                            color: white;
-                        }
-                        .register-button .text {
-                            color: #faa625;
-                            transition: color 0.3s ease;
-                            font-size: 12px;
-                        }
-                        .register-button:hover .text {
-                            color: white;
-                        }
-                    </style>
-            </div>
-            <style>
-                .current-page {
-                color: #94c93b !important;
-                }
-                .nav-link:hover {
-                color: orange !important;
-                }
-            </style>
-        </div>
-    </nav>
     <!-- Asesoramiento legal -->
+    <div class="container text-center py-5">
+        <h3 class="display-3 mb-1 txt2" style="margin-top: 70px; font-size: 35px;"><b>ASESORAMIENTO LEGAL</b></h3>
+    </div>
 
-        <div class="container text-center py-5">
-            <h3 class="display-3 mb-1 txt2" style="margin-top: 70px; font-size: 35px;"><b>ASESORAMIENTO LEGAL</b></h3>
-        </div>
-
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card custom-container shadow">
-                        <div class="card-body d-flex flex-lg-row flex-column align-items-center position-relative">
-                            <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
-                                <img src="assets/img/servicios/ASESORÍA PAGINA WEB/invalidez.png" alt="Imagen 1">
-                            </div>
-                            <div class="custom-description">
-                                <h2 class="tec1">Pensión por invalidez (Riesgo Común)</h2>
-                                <h2 class="txt1">GOOD LIFE se destaca como un referente en la asesoría sobre la Ley de Pensiones 065 en Bolivia, ofreciendo un apoyo fundamental en la comprensión y aplicación de las pensiones. Nos dedicamos a guiar a las personas a través de este proceso, brindándoles la seguridad y la claridad necesarias para tomar decisiones informadas en situaciones de invalidez.</h2>
-                                <div class="custom-buttons">
-                                    <a class="btn btn-success2" href="https://www.youtube.com/watch?v=_Nh7Rwyr7IE">Video</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20invalidez.">Scz.</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20invalidez.">Cbba.</a>
-                                </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card custom-container shadow">
+                    <div class="card-body d-flex flex-lg-row flex-column align-items-center position-relative">
+                        <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
+                            <img src="assets/img/servicios/ASESORÍA PAGINA WEB/invalidez.png" alt="Imagen 1">
+                        </div>
+                        <div class="custom-description">
+                            <h2 class="tec1">Pensión por invalidez (Riesgo Común)</h2>
+                            <h2 class="txt1">GOOD LIFE se destaca como un referente en la asesoría sobre la Ley de Pensiones 065 en Bolivia, ofreciendo un apoyo fundamental en la comprensión y aplicación de las pensiones. Nos dedicamos a guiar a las personas a través de este proceso, brindándoles la seguridad y la claridad necesarias para tomar decisiones informadas en situaciones de invalidez.</h2>
+                            <div class="custom-buttons">
+                                <a class="btn btn-success2" href="https://www.youtube.com/watch?v=_Nh7Rwyr7IE">Video</a>
+                                <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20invalidez.">Scz.</a>
+                                <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20invalidez.">Cbba.</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card custom-container shadow">
-                        <div class="card-body d-flex flex-lg-row flex-column align-items-center">
-                            <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
-                                <img src="assets/img/servicios/ASESORÍA PAGINA WEB/invalidez.png" alt="Imagen 1">
-                            </div>
-                            <div class="custom-description">
-                                <h2 class="tec1">Pensión  por invalidez (Riesgo profesional)</h2>
-                                <h2 class="txt1">GOOD LIFE se destaca como un referente en la asesoría sobre la Ley de Pensiones 065 en Bolivia, ofreciendo un apoyo fundamental en la comprensión y aplicación de las pensiones. Nos dedicamos a guiar a las personas a través de este proceso, brindándoles la seguridad y la claridad necesarias para tomar decisiones informadas en situaciones de invalidez.</h2>
-                                <div class="custom-buttons">
-                                    <a class="btn btn-success2" href="https://www.youtube.com/watch?v=_Nh7Rwyr7IE">Video</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20invalidez.">Scz.</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20invalidez.">Cbba.</a>
-                                </div>
+    </div>
+    
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card custom-container shadow">
+                    <div class="card-body d-flex flex-lg-row flex-column align-items-center">
+                        <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
+                            <img src="assets/img/servicios/ASESORÍA PAGINA WEB/invalidez.png" alt="Imagen 1">
+                        </div>
+                        <div class="custom-description">
+                            <h2 class="tec1">Pensión  por invalidez (Riesgo profesional)</h2>
+                            <h2 class="txt1">GOOD LIFE se destaca como un referente en la asesoría sobre la Ley de Pensiones 065 en Bolivia, ofreciendo un apoyo fundamental en la comprensión y aplicación de las pensiones. Nos dedicamos a guiar a las personas a través de este proceso, brindándoles la seguridad y la claridad necesarias para tomar decisiones informadas en situaciones de invalidez.</h2>
+                            <div class="custom-buttons">
+                                <a class="btn btn-success2" href="https://www.youtube.com/watch?v=_Nh7Rwyr7IE">Video</a>
+                                <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20invalidez.">Scz.</a>
+                                <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20invalidez.">Cbba.</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card custom-container shadow">
-                        <div class="card-body d-flex flex-lg-row flex-column align-items-center">
-                            <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
-                                <img src="assets/img/servicios/ASESORÍA PAGINA WEB/jubilacion.png" alt="Imagen 1">
-                            </div>
-                            <div class="custom-description">
-                                <h2 class="tec1">Pensión de vejez</h2>
-                                <h2 class="txt1">Brindamos asesoría personalizada para ayudar a las personas a planificar su jubilación de manera inteligente y aprovechar al máximo sus beneficios. Nuestra misión es asegurar que cada individuo pueda disfrutar de un retiro cómodo y sin preocupaciones.</h2>
-                                <div class="custom-buttons">
-                                    <a class="btn btn-success2" href="https://www.youtube.com/watch?v=yJoQvJqhP6o">Video</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20de%20vejez.">Scz.</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20de%20vejez.">Cbba.</a>
-                                </div>
+    </div>
+    
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card custom-container shadow">
+                    <div class="card-body d-flex flex-lg-row flex-column align-items-center">
+                        <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
+                            <img src="assets/img/servicios/ASESORÍA PAGINA WEB/jubilacion.png" alt="Imagen 1">
+                        </div>
+                        <div class="custom-description">
+                            <h2 class="tec1">Pensión de vejez</h2>
+                            <h2 class="txt1">Brindamos asesoría personalizada para ayudar a las personas a planificar su jubilación de manera inteligente y aprovechar al máximo sus beneficios. Nuestra misión es asegurar que cada individuo pueda disfrutar de un retiro cómodo y sin preocupaciones.</h2>
+                            <div class="custom-buttons">
+                                <a class="btn btn-success2" href="https://www.youtube.com/watch?v=yJoQvJqhP6o">Video</a>
+                                <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20de%20vejez.">Scz.</a>
+                                <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20de%20vejez.">Cbba.</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card custom-container shadow">
-                        <div class="card-body d-flex flex-lg-row flex-column align-items-center">
-                            <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
-                                <img src="assets/img/servicios/ASESORÍA PAGINA WEB/retiroaportes.png" alt="Imagen 1">
-                            </div>
-                            <div class="custom-description">
-                                <h2 class="tec1">Retiro de aportes (Totales)</h2>
-                                <h2 class="txt1">Nuestro compromiso es ayudar a nuestros clientes a comprender las opciones disponibles para el retiro de aportes y asegurarnos de que tomen decisiones informadas que se alineen con sus objetivos financieros a largo plazo. Con nuestra experiencia y orientación, buscamos garantizar que cada individuo optimice sus recursos de manera estratégica y asegure un futuro económico sólido.</h2>
-                                <div class="custom-buttons">
-                                    <a class="btn btn-success2" href="https://www.youtube.com/watch?v=hNN33Yk5cAk">Video</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20totales.">Scz.</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20totales.">Cbba.</a>
-                                </div>
+    </div>
+    
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card custom-container shadow">
+                    <div class="card-body d-flex flex-lg-row flex-column align-items-center">
+                        <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
+                            <img src="assets/img/servicios/ASESORÍA PAGINA WEB/retiroaportes.png" alt="Imagen 1">
+                        </div>
+                        <div class="custom-description">
+                            <h2 class="tec1">Retiro de aportes (Totales)</h2>
+                            <h2 class="txt1">Nuestro compromiso es ayudar a nuestros clientes a comprender las opciones disponibles para el retiro de aportes y asegurarnos de que tomen decisiones informadas que se alineen con sus objetivos financieros a largo plazo. Con nuestra experiencia y orientación, buscamos garantizar que cada individuo optimice sus recursos de manera estratégica y asegure un futuro económico sólido.</h2>
+                            <div class="custom-buttons">
+                                <a class="btn btn-success2" href="https://www.youtube.com/watch?v=hNN33Yk5cAk">Video</a>
+                                <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20totales.">Scz.</a>
+                                <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20totales.">Cbba.</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card custom-container shadow">
-                        <div class="card-body d-flex flex-lg-row flex-column align-items-center">
-                            <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
-                                <img src="assets/img/servicios/ASESORÍA PAGINA WEB/retiroaportes.png" alt="Imagen 1">
-                            </div>
-                            <div class="custom-description">
-                                <h2 class="tec1">Retiro de aportes (Parciales)</h2>
-                                <h2 class="txt1">Nuestro compromiso es ayudar a nuestros clientes a comprender las opciones disponibles para el retiro de aportes y asegurarnos de que tomen decisiones informadas que se alineen con sus objetivos financieros a largo plazo. Con nuestra experiencia y orientación, buscamos garantizar que cada individuo optimice sus recursos de manera estratégica y asegure un futuro económico sólido.</h2>
-                                <div class="custom-buttons">
-                                    <a class="btn btn-success2" href="https://www.youtube.com/watch?v=hNN33Yk5cAk">Video</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20parciales.">Scz.</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20parciales.">Cbba.</a>
-                                </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card custom-container shadow">
+                    <div class="card-body d-flex flex-lg-row flex-column align-items-center">
+                        <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
+                            <img src="assets/img/servicios/ASESORÍA PAGINA WEB/retiroaportes.png" alt="Imagen 1">
+                        </div>
+                        <div class="custom-description">
+                            <h2 class="tec1">Retiro de aportes (Parciales)</h2>
+                            <h2 class="txt1">Nuestro compromiso es ayudar a nuestros clientes a comprender las opciones disponibles para el retiro de aportes y asegurarnos de que tomen decisiones informadas que se alineen con sus objetivos financieros a largo plazo. Con nuestra experiencia y orientación, buscamos garantizar que cada individuo optimice sus recursos de manera estratégica y asegure un futuro económico sólido.</h2>
+                            <div class="custom-buttons">
+                                <a class="btn btn-success2" href="https://www.youtube.com/watch?v=hNN33Yk5cAk">Video</a>
+                                <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20parciales.">Scz.</a>
+                                <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20parciales.">Cbba.</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card custom-container shadow">
-                        <div class="card-body d-flex flex-lg-row flex-column align-items-center">
-                            <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
-                                <img src="assets/img/servicios/ASESORÍA PAGINA WEB/retiroaportes.png" alt="Imagen 1">
-                            </div>
-                            <div class="custom-description">
-                                <h2 class="tec1">Retiro de aportes (Remanentes)</h2>
-                                <h2 class="txt1">Nuestro compromiso es ayudar a nuestros clientes a comprender las opciones disponibles para el retiro de aportes y asegurarnos de que tomen decisiones informadas que se alineen con sus objetivos financieros a largo plazo. Con nuestra experiencia y orientación, buscamos garantizar que cada individuo optimice sus recursos de manera estratégica y asegure un futuro económico sólido.</h2>
-                                <div class="custom-buttons">
-                                    <a class="btn btn-success2" href="https://www.youtube.com/watch?v=hNN33Yk5cAk">Video</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20remanentes.">Scz.</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20remanentes.">Cbba.</a>
-                                </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card custom-container shadow">
+                    <div class="card-body d-flex flex-lg-row flex-column align-items-center">
+                        <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
+                            <img src="assets/img/servicios/ASESORÍA PAGINA WEB/retiroaportes.png" alt="Imagen 1">
+                        </div>
+                        <div class="custom-description">
+                            <h2 class="tec1">Retiro de aportes (Remanentes)</h2>
+                            <h2 class="txt1">Nuestro compromiso es ayudar a nuestros clientes a comprender las opciones disponibles para el retiro de aportes y asegurarnos de que tomen decisiones informadas que se alineen con sus objetivos financieros a largo plazo. Con nuestra experiencia y orientación, buscamos garantizar que cada individuo optimice sus recursos de manera estratégica y asegure un futuro económico sólido.</h2>
+                            <div class="custom-buttons">
+                                <a class="btn btn-success2" href="https://www.youtube.com/watch?v=hNN33Yk5cAk">Video</a>
+                                <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20remanentes.">Scz.</a>
+                                <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20retiro%20de%20aportes%20remanentes.">Cbba.</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card custom-container shadow">
-                        <div class="card-body d-flex flex-lg-row flex-column align-items-center">
-                            <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
-                                <img src="assets/img/servicios/ASESORÍA PAGINA WEB/pensionmuerte.png" alt="Imagen 1">
-                            </div>
-                            <div class="custom-description">
-                                <h2 class="tec1">Pensión por muerte</h2>
-                                <h2 class="txt1">La pensión por muerte es un beneficio económico GOOD LIFE, somos especialistas en asesorar sobre la Ley de Pensiones 065 de Bolivia, y estamos comprometidos en brindar apoyo y orientación a quienes enfrentan la pérdida de un ser querido. Nuestra misión es asegurar que los beneficiarios comprendan sus derechos y opciones, facilitando el proceso y garantizando que reciban la atención y el respaldo económico necesario en estos momentos difíciles.</h2>
-                                <div class="custom-buttons">
-                                    <a class="btn btn-success2" href="https://www.youtube.com/watch?v=UMBi6wyOQac">Video</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20muerte.">Scz.</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20muerte.">Cbba.</a>
-                                </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card custom-container shadow">
+                    <div class="card-body d-flex flex-lg-row flex-column align-items-center">
+                        <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
+                            <img src="assets/img/servicios/ASESORÍA PAGINA WEB/pensionmuerte.png" alt="Imagen 1">
+                        </div>
+                        <div class="custom-description">
+                            <h2 class="tec1">Pensión por muerte</h2>
+                            <h2 class="txt1">La pensión por muerte es un beneficio económico GOOD LIFE, somos especialistas en asesorar sobre la Ley de Pensiones 065 de Bolivia, y estamos comprometidos en brindar apoyo y orientación a quienes enfrentan la pérdida de un ser querido. Nuestra misión es asegurar que los beneficiarios comprendan sus derechos y opciones, facilitando el proceso y garantizando que reciban la atención y el respaldo económico necesario en estos momentos difíciles.</h2>
+                            <div class="custom-buttons">
+                                <a class="btn btn-success2" href="https://www.youtube.com/watch?v=UMBi6wyOQac">Video</a>
+                                <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20muerte.">Scz.</a>
+                                <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20pensión%20por%20muerte.">Cbba.</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card custom-container shadow">
-                        <div class="card-body d-flex flex-lg-row flex-column align-items-center">
-                            <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
-                                <img src="assets/img/servicios/ASESORÍA PAGINA WEB/masahereditaria.png" alt="Imagen 1">
-                            </div>
-                            <div class="custom-description">
-                                <h2 class="tec1">Masa hereditaria</h2>
-                                <h2 class="txt1">La masa hereditaria es un tema crucial en la planificación financiera y legal es un beneficio económico para los herederos del fallecido. Comprendemos la importancia de garantizar que los activos y derechos hereditarios se gestionen de manera eficiente y justa.</h2>
-                                <div class="custom-buttons">
-                                    <a class="btn btn-success2" href="https://www.youtube.com/watch?v=BRO243FBudo">Video</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20materia%20hereditaria.">Scz.</a>
-                                    <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20materia%20hereditaria.">Cbba.</a>
-                                </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card custom-container shadow">
+                    <div class="card-body d-flex flex-lg-row flex-column align-items-center">
+                        <div class="custom-image-container me-0 me-lg-3 mb-3 mb-lg-0">
+                            <img src="assets/img/servicios/ASESORÍA PAGINA WEB/masahereditaria.png" alt="Imagen 1">
+                        </div>
+                        <div class="custom-description">
+                            <h2 class="tec1">Masa hereditaria</h2>
+                            <h2 class="txt1">La masa hereditaria es un tema crucial en la planificación financiera y legal es un beneficio económico para los herederos del fallecido. Comprendemos la importancia de garantizar que los activos y derechos hereditarios se gestionen de manera eficiente y justa.</h2>
+                            <div class="custom-buttons">
+                                <a class="btn btn-success2" href="https://www.youtube.com/watch?v=BRO243FBudo">Video</a>
+                                <a class="btn btn-success1" href="https://wa.me/59167409620?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20materia%20hereditaria.">Scz.</a>
+                                <a class="btn btn-success1" href="https://wa.me/59172222960?text=Hola,%20me%20gustaría%20obtener%20información%20sobre%20el%20trámite%20de%20materia%20hereditaria.">Cbba.</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-<style>
-     .btn-success1 {
-        background-color: #faa625; /* Color verde */
-        color: #fff; /* Color del texto */
-        /* Otros estilos opcionales */
-        border: none;
-        padding: 10px 20px;
-        border-radius: 7px;
-        text-decoration: none;
-        cursor: pointer;
-    }
-    .btn-success2 {
-        background-color: #94c93b; /* Color verde */
-        color: #fff; /* Color del texto */
-        /* Otros estilos opcionales */
-        border: none;
-        padding: 10px 20px;
-        border-radius: 7px;
-        text-decoration: none;
-        cursor: pointer;
-    }
+    </div>
+    <style>
+        .btn-success1 {
+            background-color: #faa625; /* Color verde */
+            color: #fff; /* Color del texto */
+            /* Otros estilos opcionales */
+            border: none;
+            padding: 10px 20px;
+            border-radius: 7px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-success2 {
+            background-color: #94c93b; /* Color verde */
+            color: #fff; /* Color del texto */
+            /* Otros estilos opcionales */
+            border: none;
+            padding: 10px 20px;
+            border-radius: 7px;
+            text-decoration: none;
+            cursor: pointer;
+        }
 
-    .btn-success1:hover {
-        background-color: #94c93b; /* Color verde más oscuro al pasar el cursor */
-    }
-    .btn-success2:hover {
-        background-color: #faa625; /* Color verde más oscuro al pasar el cursor */
-    }
-    .tec1 {
-        font-family: "Latin Modern Roman";
-        font-size: 30px;
-        line-height: 1.6;
-        text-align: center;
-        color: #94c93b;
-    }
-</style>
-    <!-- Pie dde pagina -->
-    <footer class="bg-black" id="tempaltemo_footer">
-        <div class="container">
-            <div class="row">
+        .btn-success1:hover {
+            background-color: #94c93b; /* Color verde más oscuro al pasar el cursor */
+        }
+        .btn-success2:hover {
+            background-color: #faa625; /* Color verde más oscuro al pasar el cursor */
+        }
+        .tec1 {
+            font-family: "Latin Modern Roman";
+            font-size: 30px;
+            line-height: 1.6;
+            text-align: center;
+            color: #94c93b;
+        }
+    </style>
+    
+    @include('piepagina')
 
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 border-bottom pb-3 border-light logo txt6">Santa Cruz</h2>
-                    <ul class="list-unstyled text-light custom-footer-links">
-                        <li>
-                            <i class="fas fa-map-marker-alt fa-fw"></i>
-                            <a class="text-decoration-none" href="https://maps.app.goo.gl/9YcukYKG32Kg2NeX6">Av. Rene Moreno N° 484 Esq. Ana Barba entre 1er y 2do anillo - Barrio Sur</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-phone fa-fw"></i>
-                            <a class="text-decoration-none" href="tel:65045401">65045401</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-envelope fa-fw"></i>
-                            <a class="text-decoration-none" href="mailto:scz.prestaciones2@goodlife.com.bo?subject=Asunto&body=Cuerpo del mensaje&app=OUTLOOK">scz.prestaciones2@goodlife.com.bo</a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 border-bottom pb-3 border-light logo txt6">Cochabamba</h2>
-                    <ul class="list-unstyled text-light custom-footer-links">
-                        <li>
-                            <i class="fas fa-map-marker-alt fa-fw" ></i> 
-                            <a class="text-decoration-none" href="https://maps.app.goo.gl/US5TiFQpvk7gAh346">Calle Lanza entre R. Rivero y Oruro Edif. Shashelly piso 2 of. 2B</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-phone fa-fw"></i>
-                            <a class="text-decoration-none" href="tel:65045401">65045401</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-envelope fa-fw"></i>
-                            <a class="text-decoration-none" href="mailto:cbbaprestaciones@goodlife.com.bo?subject=Asunto&body=Cuerpo del mensaje&app=OUTLOOK">cbbaprestaciones@goodlife.com.bo</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 text-light border-bottom pb-3 border-light">Menu</h2>
-                    <ul class="list-unstyled text-light custom-footer-links">
-                        <li><a class="text-decoration-none" href="welcome">Inicio</a></li>
-                        <li><a class="text-decoration-none" href="sobrenosotros">Sobre nosotros</a></li>
-                        <li><a class="text-decoration-none current-page" href="asesoramientolegal">Servicio de asesoramiento legal</a></li>
-                        <li><a class="text-decoration-none" href="medicina">Servicio de medicina</a></li>
-                        <li><a class="text-decoration-none" href="contact">Contactos</a></li>
-                    </ul>
-                </div>
-
-
-            </div>
-
-            <div class="row text-light mb-4">
-                <div class="col-12 mb-3">
-                    <div class="w-100 my-3 border-top border-light"></div>
-                </div>
-                <div class="col-auto me-auto">
-                    <ul class="list-inline text-left footer-icons">
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.facebook.com/Good.Life.Consultora.de.Pensiones/"><i class="fab fa-facebook-f fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.instagram.com/goodlife_srl/"><i class="fab fa-instagram fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.youtube.com/@goodlifesrlpensionesysalud5514"><i class="fab fa-youtube fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.tiktok.com/@good_life_srl"><i class="fab fa-tiktok fa-lg fa-fw"></i></a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <div class="w-100 py-3 footerend">
-            <div class="container">
-                <div class="row pt-2">
-                    <div class="col-12">
-                        
-                            <p class="m-0 text-black">&copy; <a class="h5 logo text-dark text-decoration-none">GOOD LIFE</a>. Todos los derechos reservados.</p>
-                        
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </footer>
     <script src="assets/js/jquery-1.11.0.min.js"></script>
     <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
@@ -481,10 +274,8 @@
         }
     </script>
 </body>
-
 </html>
 <style>
-    
     .custom-image-container {
         width: 300px; /* Ancho de la imagen */
         overflow: hidden; /* Ocultar partes de la imagen fuera del contenedor */

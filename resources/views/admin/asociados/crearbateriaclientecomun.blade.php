@@ -343,7 +343,22 @@
                     
                 </div>
             </div>
-            <button type="button" class="btn btn-crear" id="btn-crear-bateria">CREAR BATERIA</button>  
+            <button type="button" class="btn btn-crear" id="btn-crear-bateria">CREAR BATERIA</button>
+            <script>
+                $(document).ready(function() {
+                    $('#btn-crear-bateria').prop('disabled', true);
+                    $(document).on('change', 'input[type="checkbox"]', function() {
+                        const algunMarcado = $('input[type="checkbox"]:checked').length > 0;
+                        $('#btn-crear-bateria').prop('disabled', !algunMarcado);
+                    });
+                });
+            </script>
+            <style>
+                #btn-crear-bateria:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            </style>
             {!! Form::close() !!}
         </div>
     </div>

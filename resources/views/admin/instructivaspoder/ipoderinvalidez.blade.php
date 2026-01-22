@@ -22,49 +22,47 @@
         }
         h1 {
             font-weight: 700;
-            font-size: 16px;
+            font-size: 15px;
             margin-bottom: 30px;
             font-family: Arial, sans-serif;
             text-align: center;
             text-decoration: underline;
         }
-
         h3 {
             font-weight: 400;
-            font-size: 16px;
-            font-family: Arial, sans-serif;
-            text-align: justify;
-            line-height: 1.5; /* Ajusta el interlineado */
-        }
-        h4 {
-            font-size: 16px;
+            font-size: 15px;
             font-family: Arial, sans-serif;
             text-align: justify;
             line-height: 1.5;
         }
-
+        h4 {
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+            text-align: justify;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
     <main>
         <h1>INSTRUCTIVA DE PODER</h1>
-        <h3><strong>QUE OTORGA:</strong> El Sr/a. {{$cliente->nombrecompleto}} con C.I. {{$cliente->ci}} {{$cliente->ciexp}}, 
+        <h3><strong>QUE OTORGA:</strong> El Sr/a. {{$cliente->nombrecompleto}} con C.I. {{$cliente->ci}}{{$cliente->ciexp}}, 
             {{ $estadoCivil }}, mayor de edad, Ocupación {{$cliente->ocupacion}}, con domicilio en {{$cliente->domicilio}} - {{$cliente->ciudadresidencia}}
              y hábil por derecho. <br>
-            <strong>A FAVOR DE:</strong>Al Sr. FABRICIO ORLANDO PRADO PARRADO con C.I. 5505371, mayor de edad con domicilio en la ciudad de Cochabamba y hábil por derecho, 
-            y/o al Sra. DENISSE MAUREN LOPEZ FLORES Con C.I. No. 5211568, mayor de edad, con domicilio en la ciudad de Cochabamba y hábil por derecho; 
-            {{-- @foreach($personal as $persona)
-            y/o al Sr/a. {{$persona->razonsocial}} con C.I. {{$persona->ci}} {{$persona->ciexp}}, mayor de edad, con domicilio en la ciudad de {{$persona->sucursal}} y hábil por derecho @if (!$loop->last);@else.@endif
-            @endforeach --}}
+            <strong>A FAVOR DE:</strong> Al Sr. FABRICIO ORLANDO PRADO PARRADO con C.I. 5505371, mayor de edad con domicilio en la ciudad de SANTA CRUZ y hábil por derecho, 
+            y/o al Sra. DENISSE MAUREN LOPEZ FLORES Con C.I. No. 5211568, mayor de edad, con domicilio en la ciudad de SANTA CRUZ y hábil por derecho; 
+            @if ($sucursal === 'COCHABAMBA')
+            y/o al Sr. EUDAL AGUIRRE RODRIGUEZ Con C.I. No. 10360406, mayor de edad, con domicilio en la ciudad de SANTA CRUZ y hábil por derecho; 
+            @endif
             @foreach($personal as $persona)
-                y/o al Sr/a. {{ $persona->razonsocial }} con C.I. {{ $persona->ci }} {{ $persona->ciexp }}, mayor de edad, con domicilio en la ciudad de {{ $persona->sucursal }} y hábil por derecho{{ !$loop->last ? ';' : '.' }}
+                y/o al Sr/a. {{ $persona->razonsocial }} con C.I. {{ $persona->ci }}{{ $persona->ciexp }}, mayor de edad, con domicilio en la ciudad de {{ $persona->ciudad }} y hábil por derecho{{ !$loop->last ? ';' : '.' }}
             @endforeach
             <br>
             <strong>OBJETO:</strong> Para que en nombre y representación de su persona acciones y derechos, uno Indistintamente de 
             otro, con facultades de Apersonamiento de manera individual y/o colectiva, ante las oficinas de la Gestora Pública de 
             la Seguridad Social de Largo Plazo para Inicio, Continuidad, Seguimiento y Conclusión de 
-            <strong>TRAMITE DE PENSIÓN POR INVALIDEZ,</strong> Solicitar y Firmar el formulario de actualización de datos, 
-            Iniciar Tramite de Pensión por Invalidez firmando la solicitud correspondiente, solicitar estado de ahorro 
+            <strong>TRÁMITE DE PENSIÓN POR INVALIDEZ</strong> Solicitar y Firmar el formulario de actualización de datos, 
+            Iniciar Tramite de pensión por invalidez firmando la solicitud correspondiente, solicitar estado de ahorro 
             previsional, Solicitar Revisar y Conciliar el estado de ahorro previsional, Notificarse con requerimientos del 
             Tribunal Medico Calificador TMC, desistir de la solicitud antes de la emisión del dictamen correspondiente, recibir 
             notificaciones del dictamen de invalidez, solicitar revisión del dictamen de invalidez, recibir la notificación de 
@@ -84,6 +82,8 @@
             limitativas, facultando a los apoderados a otorgar poder en favor de terceros o ser sustituidos total y/o 
             parcialmente del presente mandato, en caso de viaje, enfermedad, ausencia o dejación de cargo.
             </h3>
+            <br>
+            <h3 style="text-align: center;">{{ $cliente->sucursal }} - {{ $fechaactual }}</h3>
     </main>
 </body>
 </html>

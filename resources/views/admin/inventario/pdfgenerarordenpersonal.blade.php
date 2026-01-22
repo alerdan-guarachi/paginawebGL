@@ -295,7 +295,7 @@
             </div>
         </div>
         <p style="margin-top: 40px;"><strong>Encargado:</strong> {{ $usuarioregistro }}</p>
-        <p><strong>Aprobado por:</strong> {{ $usuarioAutenticadonombre }}</p>
+        {{-- <p><strong>Aprobado por:</strong> {{ $usuarioAutenticadonombre }}</p> --}}
     </div>
 </body>
 </html>

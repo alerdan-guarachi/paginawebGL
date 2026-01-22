@@ -21,8 +21,8 @@
 @endif
 <div class="card">
     <div class="card-body">
-        <nav class="navbar navbar-expand-lg float-right">
-            <div class="container-fluid">
+        {{-- <nav class="navbar navbar-expand-lg float-right"> --}}
+            {{-- <div class="container-fluid">
                 <div class="d-flex flex-wrap align-items-center">
                     <form action="{{ route('buscarclientescomun') }}" method="get" class="form-inline">
                         <div class="flex-grow-1">
@@ -31,11 +31,12 @@
                         <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit" disabled><i class="fas fa-search"></i></button>
                     </form>
                 </div>
-            </div>
-        </nav>
+            </div> --}}
+        {{-- </nav> --}}
 
-        <div class="table">
-            <table class="table table-striped">
+        <div class="table-responsive">
+            <input id="buscador" class="form-control" style="width: 400px;" type="search" placeholder="BUSCAR POR ID, CI O NOMBRE DEL CLIENTE..." aria-label="Search"><br>
+            <table class="table table-striped table-sm table-bordered">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -44,6 +45,7 @@
                         <th>Edad</th>
                         <th>Celular</th>
                         <th>Sucursal</th>
+                        <th>Ver</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -55,7 +57,7 @@
                         <td>{{$clientecomun->edad}}</td>
                         <td>{{$clientecomun->celular}}</td>
                         <td>{{$clientecomun->sucursal}}</td>
-                        <td width="10px">
+                        <td>
                             <abbr title="Ver Cliente">
                                 <a class="btn btn-sm btn-vercliente" href="{{ route('admin.asociados.verclientecomun', $clientecomun) }}">
                                     <i class="fas fa-eye"></i>
@@ -64,10 +66,33 @@
                         </td>
                     </tr>
                     @endforeach
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+                            const input = document.getElementById("buscador");
+                            const rows = document.querySelectorAll("table tbody tr");
+
+                            input.addEventListener("keyup", function () {
+                                const value = this.value.toLowerCase();
+
+                                rows.forEach(function (row) {
+                                    // buscamos en ID, nombrecompleto y CI
+                                    const id = row.cells[0].textContent.toLowerCase();
+                                    const nombre = row.cells[1].textContent.toLowerCase();
+                                    const ci = row.cells[2].textContent.toLowerCase();
+
+                                    if (id.includes(value) || nombre.includes(value) || ci.includes(value)) {
+                                        row.style.display = "";
+                                    } else {
+                                        row.style.display = "none";
+                                    }
+                                });
+                            });
+                        });
+                    </script>
                 </tbody>
             </table>
         </div>
-        {{ $clientecomunes->links() }}
+        {{-- {{ $clientecomunes->links() }} --}}
     </div>
 </div>
 @stop

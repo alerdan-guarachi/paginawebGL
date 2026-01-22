@@ -2,8 +2,10 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
+@if ($hayPendientes)
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#requisitosModal">VER REQUISITOS</a>
-<h5>SUBIR DOCUMENTACIÓN DE REQUISITOS DE SEGUNDA SOLICITUD DE:</h5>
+@endif
+<h5>SUBIR REQUISITOS DE SEGUNDA SOLICITUD DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
 @stop
 
@@ -15,9 +17,11 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
+
+@if ($hayPendientes)
 <div class="card">
     <div class="card-body">
         <div class="row">
@@ -40,563 +44,653 @@
                     </div>
                 </div>
                 <div class="row">
-                    @if($poderPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('poder', 'PODER:') !!}
-                        {!! Form::file('poder', ['class' => 'form-control-file dropify']) !!}
-                        {!! Form::text('numeropoder', null, ['class' => 'form-control', 'placeholder' => 'NRO. DE PODER']) !!}
-                    </div>
-                    @endif
-                    
-                    @if($avcciPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('avcci', 'AVC/CARNET ASEGURADO:') !!}
-                        {!! Form::file('avcci', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                
-                    @if($cnacaseguradoPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('cnacasegurado', 'CERTIFICADO NACIMIENTO ASEGURADO:') !!}
-                        {!! Form::file('cnacasegurado', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($ciaseguradoPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('ciasegurado', 'CARNET IDENTIDAD ASEGURADO:') !!}
-                        {!! Form::file('ciasegurado', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($cmatrimonioPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('cmatrimonio', 'CERTIFICADO DE MATRIMONIO:') !!}
-                        {!! Form::file('cmatrimonio', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($cnacconyugePendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('cnacconyuge', 'CERTIFICADO NACIMIENTO CONYUGE:') !!}
-                        {!! Form::file('cnacconyuge', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($ciconyugePendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('ciconyuge', 'CARNET IDENTIDAD CONYUGE:') !!}
-                        {!! Form::file('ciconyuge', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-
-                    @if($cunionlibrePendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('cunionlibre', 'CERTIFICADO DE UNIÓN LIBRE:') !!}
-                        {!! Form::file('cunionlibre', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($cnacimientounionlibrePendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('cnacimientounionlibre', 'CERTIFICADO DE NAC. DE UNIÓN LIBRE:') !!}
-                        {!! Form::file('cnacimientounionlibre', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($ciunionlibrePendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('ciunionlibre', 'CARNET IDENTIDAD DE UNIÓN LIBRE:') !!}
-                        {!! Form::file('ciunionlibre', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($cdivorcioPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('cdivorcio', 'CERTIFICADO DE DIVORCIO:') !!}
-                        {!! Form::file('cdivorcio', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($cdefuncionPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('cdefuncion', 'CERTIFICADO DE DEFUNCIÓN:') !!}
-                        {!! Form::file('cdefuncion', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-
-                    @if($cnacjihosPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('cnacjihos', 'CERTIFICADO NACIMIENTO HIJOS < 25:') !!}
-                        {!! Form::file('cnacjihos', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($cihijosPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('cihijos', 'CARNET IDENTIDAD HIJOS < 25:') !!}
-                        {!! Form::file('cihijos', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($denfaccidentePendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('denfaccidente', 'DENUNCIA ENFERMEDAD ACCIDENTE:') !!}
-                        {!! Form::file('denfaccidente', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($crodomicilioPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('crodomicilio', 'CROQUIS DE DOMICILIO:') !!}
-                        {!! Form::file('crodomicilio', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($contratoPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('contrato', 'CONTRATO:') !!}
-                        {!! Form::file('contrato', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($ctrabajoPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('ctrabajo', 'CERTIFICADO DE TRABAJO:') !!}
-                        {!! Form::file('ctrabajo', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($boletapagoPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('boletapago', 'BOLETA DE PAGO:') !!}
-                        {!! Form::file('boletapago', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($egestoraPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('egestora', 'EXTRACTO DE GESTORA:') !!}
-                        {!! Form::file('egestora', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($actdatosPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('actdatos', 'ACTUALIZACIÓN DE DATOS:') !!}
-                        {!! Form::file('actdatos', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($resolinvhijosPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('resolinvhijos', 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25:') !!}
-                        {!! Form::file('resolinvhijos', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($recordserviciosPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('recordservicios', 'RECORD SERVICIOS') !!}
-                        {!! Form::file('recordservicios', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($dictamencalentencPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('dictamencalentenc', 'DICTAMEN CALIFICACION ENTIDAD ENCARGADA') !!}
-                        {!! Form::file('dictamencalentenc', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($infomedicasaludPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('infomedicasalud', 'INFORMACION MEDICA') !!}
-                        {!! Form::file('infomedicasalud', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($anteriordictamenPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('anteriordictamen', 'ANTERIOR DICTAMEN O RESOLUCION') !!}
-                        {!! Form::file('anteriordictamen', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
-                    @if($poderciapoderadoPendiente)
-                    <div class="form-group col-lg-3">
-                        {!! Form::label('poderciapoderado', 'PODER Y CARNET IDENTIDAD APODERADO') !!}
-                        {!! Form::file('poderciapoderado', ['class' => 'form-control-file dropify']) !!}
-                    </div>
-                    @endif
+                    @foreach($requisitos as $req)
+                        @if($req['pendiente'])
+                            <div class="form-group col-lg-3">
+                                {!! Form::label($req['campo'], $req['label'] . ':') !!}
+                                {!! Form::file($req['campo'], ['class' => 'form-control-file dropify']) !!}
+                                
+                                @if($req['campo'] === 'poder')
+                                    {!! Form::text('numeropoder', null, [
+                                        'class' => 'form-control',
+                                        'placeholder' => 'NRO. DE PODER'
+                                    ]) !!}
+                                @endif
+                            </div>
+                        @endif
+                    @endforeach
                 </div>
                 
-
-                <div class="modal fade" id="requisitosModal" tabindex="-1" aria-labelledby="requisitosModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h3 class="modal-title" id="requisitosModalLabel">LISTA DE DOCUMENTOS DE REQUISITOS</h3>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <table class="table">
-                                    <thead>
-                                        <tr> 
-                                            <th>Requisito</th>
-                                            <th>Estado</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @if (!is_null($requisito->poder))
-                                            <tr>
-                                                @if (is_null($requisito->numeropoder))
-                                                <td>PODER:</td>
-                                                @endif
-                                                @if (!is_null($requisito->numeropoder))
-                                                <td>PODER: {{ $requisito->numeropoder }}</td>
-                                                @endif
-                                                <td> 
-                                                    @if ($poderSubido)
-                                                        <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->poder}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                    @else
-                                                        <div class="pendiente">PENDIENTE</div>
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->avcci))
-                                        <tr>
-                                            <td>AVC/CARNET ASEGURADO</td>
-                                            <td>
-                                                @if ($avcciSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->avcci}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->cnacasegurado))
-                                        <tr>
-                                            <td>CERTIFICADO NACIMIENTO ASEGURADO</td>
-                                            <td>
-                                                @if ($cnacaseguradoSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->cnacasegurado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        
-                                        @if (!is_null($requisito->ciasegurado))
-                                        <tr>
-                                            <td>CARNET IDENTIDAD ASEGURADO</td>
-                                            <td>
-                                                @if ($ciaseguradoSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->ciasegurado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->cmatrimonio))
-                                        <tr>
-                                            <td>CERTIFICADO DE MATRIMONIO</td>
-                                            <td>
-                                                @if ($cmatrimonioSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->cmatrimonio}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->cnacconyuge))
-                                        <tr>
-                                            <td>CERTIFICADO NACIMIENTO CONYUGE</td>
-                                            <td>
-                                                @if ($cnacconyugeSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->cnacconyuge}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->ciconyuge))
-                                        <tr>
-                                            <td>CARNET IDENTIDAD CONYUGE</td>
-                                            <td>
-                                                @if ($ciconyugeSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->ciconyuge}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->cunionlibre))
-                                        <tr>
-                                            <td>CERTIFICADO DE UNIÓN LIBRE</td>
-                                            <td>
-                                                @if ($cunionlibreSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->cunionlibre}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->cnacimientounionlibre))
-                                        <tr>
-                                            <td>CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE</td>
-                                            <td>
-                                                @if ($cnacimientounionlibreSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->cnacimientounionlibre}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->ciunionlibre))
-                                        <tr>
-                                            <td>CARNET IDENTIDAD DE UNIÓN LIBRE</td>
-                                            <td>
-                                                @if ($ciunionlibreSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->ciunionlibre}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->cdivorcio))
-                                        <tr>
-                                            <td>CERTIFICADO DE DIVORCIO</td>
-                                            <td>
-                                                @if ($cdivorcioSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->cdivorcio}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        
-                                        @if (!is_null($requisito->cdefuncion))
-                                        <tr>
-                                            <td>CERTIFICADO DE DEFUNCIÓN</td>
-                                            <td>
-                                                @if ($cdefuncionSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->cdefuncion}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->cnacjihos))
-                                        <tr>
-                                            <td>CERTIFICADO NACIMIENTO HIJOS &lt; 25</td>
-                                            <td>
-                                                @if ($cnacjihosSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->cnacjihos}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->cihijos))
-                                        <tr>
-                                            <td>CARNET IDENTIDAD HIJOS &lt; 25</td>
-                                            <td>
-                                                @if ($cihijosSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->cihijos}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->denfaccidente))
-                                        <tr>
-                                            <td>DENUNCIA ENFERMEDAD ACCIDENTE</td>
-                                            <td>
-                                                @if ($denfaccidenteSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->denfaccidente}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->crodomicilio))
-                                        <tr>
-                                            <td>CROQUIS DE DOMICILIO</td>
-                                            <td>
-                                                @if ($crodomicilioSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->crodomicilio}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->contrato))
-                                        <tr>
-                                            <td>CONTRATO</td>
-                                            <td>
-                                                @if ($contratoSubido)
-                                                    @if ($userRole === 'MAESTRO' || $userRole === 'ADMINISTRADOR')
-                                                        <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->contrato}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                        @else
-                                                        <p class="verdoc2" disabled>
-                                                            VER DOCUMENTO
-                                                        </p>
-                                                    @endif
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->recordservicios))
-                                        <tr>
-                                            <td>RECORD SERVICIOS</td>
-                                            <td>
-                                                @if ($recordserviciosSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->recordservicios}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-
-                                        @if (!is_null($requisito->ctrabajo))
-                                        <tr>
-                                            <td>CERTIFICADO DE TRABAJO</td>
-                                            <td>
-                                                @if ($ctrabajoSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->ctrabajo}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        @if (!is_null($requisito->boletapago))
-                                        <tr>
-                                            <td>BOLETA DE PAGO</td>
-                                            <td>
-                                                @if ($boletapagoSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->boletapago}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        @if (!is_null($requisito->egestora))
-                                        <tr>
-                                            <td>EXTRACTO DE GESTORA</td>
-                                            <td>
-                                                @if ($egestoraSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->egestora}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        @if (!is_null($requisito->actdatos))
-                                        <tr>
-                                            <td>ACTUALIZACIÓN DE DATOS</td>
-                                            <td>
-                                                @if ($actdatosSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->actdatos}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        @if (!is_null($requisito->resolinvhijos))
-                                        <tr>
-                                            <td>RESOL. INVAL. HIJOS < 25</td>
-                                            <td>
-                                                @if ($resolinvhijosSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->resolinvhijos}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        @if (!is_null($requisito->dictamencalentenc))
-                                        <tr>
-                                            <td>DICTAMEN CALIFICACION ENTIDAD ENCARGADA</td>
-                                            <td>
-                                                @if ($dictamencalentencSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->dictamencalentenc}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        @if (!is_null($requisito->infomedicasalud))
-                                        <tr>
-                                            <td>INFORMACION MEDICA</td>
-                                            <td>
-                                                @if ($infomedicasaludSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->infomedicasalud}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        @if (!is_null($requisito->anteriordictamen))
-                                        <tr>
-                                            <td>ANTERIOR DICTAMEN O RESOLUCION</td>
-                                            <td>
-                                                @if ($anteriordictamenSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->anteriordictamen}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                        @if (!is_null($requisito->poderciapoderado))
-                                        <tr>
-                                            <td>PODER Y CARNET IDENTIDAD APODERADO</td>
-                                            <td>
-                                                @if ($poderciapoderadoSubido)
-                                                <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$requisito->poderciapoderado}") }}" target="_blank" class="verdoc">VER DOCUMENTO</a>
-                                                @else
-                                                <div class="pendiente">PENDIENTE</div>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                        @endif
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {!! Form::submit('SUBIR DOCUMENTACION', ['class' => 'btn btn-crear']) !!}
+                {!! Form::submit('SUBIR REQUISITOS', ['class' => 'btn btn-crear btn-sm']) !!}
                 {!! Form::close() !!}
             </div>
         </div>
     </div>
 </div>
+@endif
+
+@if ($hayPendientes)
+<div class="modal fade" id="requisitosModal" tabindex="-1" aria-labelledby="requisitosModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="requisitosModalLabel">LISTA DE REQUISITOS</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+@else
+            <div class="card">
+                <div class="card-body">
+@endif
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-lg-7">
+                                <label>REQUISITOS DE SEGUNDA SOLICITUD</label>
+                                <div class="card"> 
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table tabla-ajustada table-striped table-bordered">
+                                                <thead class="table-secondary">
+                                                    <tr>
+                                                        <th>REQUISITO</th>
+                                                        <th class="text-center">ESTADO</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ($requisitosList as $req)
+                                                        @if (!is_null($req['file']))
+                                                            <tr>
+                                                                <td>
+                                                                    {{ $req['label'] }}
+                                                                    @if(!empty($req['extra']))
+                                                                        : {{ $req['extra'] }}
+                                                                    @endif
+                                                                </td>
+                                                                <td class="text-center">
+                                                                    @if ($req['uploaded'])
+                                                                        @if (!empty($req['restricted']) && !in_array($userRole, ['MAESTRO','ADMINISTRADOR']))
+                                                                            <p class="verdoc2" disabled>VER DOCUMENTO</p>
+                                                                        @else
+                                                                            <a href="{{ asset("/requisitosclientesita/{$cliente->id}/{$req['file']}") }}" 
+                                                                            target="_blank" class="verdoc">VISUALIZAR</a>
+                                                                        @endif
+                                                                    @else
+                                                                        <div class="pendiente">PENDIENTE</div>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endif
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-5">
+                                <label>REQUISITOS PARA NUEVO TRÁMITE</label>
+                                <div class="card"> 
+                                    <div class="card-body">
+                                        <form id="pdfForm" action="{{ route('admin.asociados.descargarchecklistclienteita2', $cliente) }}" method="POST">
+                                            @csrf
+                                            <input type="hidden" name="documentosSeleccionados" id="documentosSeleccionadosInput">
+                                            <input type="hidden" name="documentosSeleccionados2" id="documentosSeleccionados2Input">
+                                            <input type="hidden" name="tramitecliente" id="tramitecliente" value="SEGUNDA SOLICITUD">
+                                            <div class="form-group">
+                                                <label for="tipo_solicitud">Trámite:</label>
+                                                <select id="tipo_solicitud" name="tipo_solicitud" class="form-control">
+                                                    <option value="">Seleccione...</option>
+                                                    <option value="INVALIDEZ">INVALIDEZ</option>
+                                                    <option value="APELACIÓN">APELACIÓN</option>
+                                                    {{-- <option value="SEGUNDA SOLICITUD">SEGUNDA SOLICITUD</option> --}}
+                                                    <option value="APELACIÓN SEGUNDA SOLICITUD">APELACIÓN SEGUNDA SOLICITUD</option>
+                                                    <option value="TERCERA SOLICITUD">TERCERA SOLICITUD</option>
+                                                    <option value="APELACIÓN TERCERA SOLICITUD">APELACIÓN TERCERA SOLICITUD</option>
+                                                    <option value="RECALIFICACIÓN">RECALIFICACIÓN</option>
+                                                    <option value="APELACIÓN DE RECALIFICACIÓN">APELACIÓN DE RECALIFICACIÓN</option>
+                                                    <option value="RECALIFICACIÓN SEGUNDA SOLICITUD">RECALIFICACIÓN SEGUNDA SOLICITUD</option>
+                                                    <option value="APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD">APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD</option>
+                                                    <option value="JUBILACIÓN">JUBILACIÓN</option>
+                                                    <option value="RETIRO DE APORTES TOTAL">RETIRO DE APORTES TOTAL</option>
+                                                    <option value="RETIRO DE APORTES PARCIAL">RETIRO DE APORTES PARCIAL</option>
+                                                    <option value="PENSIÓN POR MUERTE">PENSIÓN POR MUERTE</option>
+                                                    <option value="MASA HEREDITARIA">MASA HEREDITARIA</option>
+                                                    <option value="COMPENSACIÓN DE COTIZACIONES (SENASIR)">COMPENSACIÓN DE COTIZACIONES (SENASIR)</option>
+                                                </select>
+                                            </div>
+                                            <script>
+                                                document.addEventListener("DOMContentLoaded", function () {
+                                                    const checkboxes = document.querySelectorAll('.form-group.opcion input[type="checkbox"]');
+                                                    checkboxes.forEach(chk => {
+                                                        chk.addEventListener('change', function () {
+                                                            if (this.checked) {
+                                                                const grupo = this.closest('.form-group.opcion');
+                                                                const otros = grupo.querySelectorAll('input[type="checkbox"]');
+                                                                otros.forEach(cb => {
+                                                                    if (cb !== this) cb.checked = false;
+                                                                });
+                                                            }
+                                                        });
+                                                    });
+                                                    const selectSolicitud = document.getElementById("tipo_solicitud");
+                                                    selectSolicitud.addEventListener("change", function () {
+                                                        checkboxes.forEach(cb => cb.checked = false);
+                                                    });
+                                                });
+                                            </script>
+                                        </form>
+                                        <script>
+                                            document.addEventListener("DOMContentLoaded", function () {
+                                                const select = document.getElementById("tipo_solicitud");
+                                                const checkboxes = document.querySelectorAll("#checkboxes-container .opcion");
+                                                function mostrarChecks(valor) {
+                                                    checkboxes.forEach(cb => {
+                                                        cb.style.display = "none";
+                                                        const valorClase = valor.replace(/\s+/g, "_"); 
+                                                        if (valor && cb.classList.contains(valorClase)) {
+                                                            cb.style.display = "block";
+                                                        }
+                                                    });
+                                                }
+                                                select.addEventListener("change", function () {
+                                                    mostrarChecks(this.value);
+                                                });
+                                                mostrarChecks("");
+                                            });
+                                        </script>
+                                        <style>
+                                            .form-group.opcion {
+                                                margin-bottom: 8px;
+                                                margin-top: -10px;
+                                                border-bottom: 1px solid #ccc;
+                                            }
+                                        </style>
+                                        <script>
+                                            document.addEventListener("DOMContentLoaded", function () {
+                                                const relaciones = {
+                                                    "poder": "numeropoder",
+                                                    "poder2": "numeropoder2",
+                                                };
+                                                Object.keys(relaciones).forEach(principalId => {
+                                                    const dependienteId = relaciones[principalId];
+                                                    const principal = document.getElementById(principalId);
+                                                    const dependiente = document.getElementById(dependienteId);
+
+                                                    if (principal && dependiente) {
+                                                        principal.addEventListener("change", function () {
+                                                            dependiente.checked = principal.checked;
+                                                            const opuestoId = principalId.endsWith("2")
+                                                                ? principalId.slice(0, -1)
+                                                                : principalId + "2";
+                                                            const opuesto = document.getElementById(opuestoId);
+                                                            const opuestoDependiente = document.getElementById(relaciones[opuestoId]);
+                                                            if (this.checked) {
+                                                                if (opuesto) opuesto.checked = false;
+                                                                if (opuestoDependiente) opuestoDependiente.checked = false;
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            });
+                                        </script>
+
+                                        <script>
+                                            document.addEventListener("DOMContentLoaded", function () {
+                                                const checkboxes = document.querySelectorAll('.form-group.opcion input[type="checkbox"]');
+                                                checkboxes.forEach(chk => {
+                                                    chk.addEventListener('change', function () {
+                                                        if (this.checked) {
+                                                            const grupo = this.closest('.form-group.opcion');
+                                                            const otros = grupo.querySelectorAll('input[type="checkbox"]');
+                                                            otros.forEach(cb => {
+                                                                if (cb !== this) cb.checked = false;
+                                                            });
+                                                        }
+                                                    });
+                                                });
+                                            });
+                                        </script>
+
+                                        <div class="row" id="checkboxes-container">
+                                            <div class="col-lg-12">
+                                                <div class="form-group" style="background-color: #f0f0f0">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8">Requisito</label>
+                                                        <label class="col-2 text-center">Nuevo</label>
+                                                        <label class="col-2 text-center">Actual</label>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="poder" style="font-weight: 500;">PODER</label>
+                                                        <input class="col-2" type="checkbox" name="poder" value="poder" id="poder">
+                                                        <input class="col-2" type="checkbox" name="poder" value="poder2" id="poder2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)" hidden>
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="numeropoder" style="font-weight: 500;">NRO. PODER</label>
+                                                        <input class="col-2" type="checkbox" name="numeropoder" value="numeropoder" id="numeropoder">
+                                                        <input class="col-2" type="checkbox" name="numeropoder" value="numeropoder2" id="numeropoder2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="avcci" style="font-weight: 500;">AVC/CARNET ASEGURADO</label> 
+                                                        <input class="col-2" type="checkbox" name="avcci" value="avcci" id="avcci">
+                                                        <input class="col-2" type="checkbox" name="avcci" value="avcci2" id="avcci2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="cnacasegurado" style="font-weight: 500;">CERTIFICADO NACIMIENTO ASEGURADO</label>
+                                                        <input class="col-2" type="checkbox" name="cnacasegurado" value="cnacasegurado" id="cnacasegurado">
+                                                        <input class="col-2" type="checkbox" name="cnacasegurado" value="cnacasegurado2" id="cnacasegurado2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN JUBILACIÓN RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="ciasegurado" style="font-weight: 500;">CARNET IDENTIDAD ASEGURADO</label>
+                                                        <input class="col-2" type="checkbox" name="ciasegurado" value="ciasegurado" id="ciasegurado">
+                                                        <input class="col-2" type="checkbox" name="ciasegurado" value="ciasegurado2" id="ciasegurado2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE MASA_HEREDITARIA RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="crodomicilio" style="font-weight: 500;">CROQUIS DE DOMICILIO</label>
+                                                        <input class="col-2" type="checkbox" name="crodomicilio" value="crodomicilio" id="crodomicilio">
+                                                        <input class="col-2" type="checkbox" name="crodomicilio" value="crodomicilio2" id="crodomicilio2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE MASA_HEREDITARIA RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="contrato" style="font-weight: 500;">CONTRATO</label>
+                                                        <input class="col-2" type="checkbox" name="contrato" value="contrato" id="contrato">
+                                                        <input class="col-2" type="checkbox" name="contrato" value="contrato2" id="contrato2">
+                                                    </div>
+                                                </div>
+                                                @if (strtolower($estadoCivil) === 'casad@')
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cmatrimonio" style="font-weight: 500;">CERTIFICADO DE MATRIMONIO</label>
+                                                            <input class="col-2" type="checkbox" name="cmatrimonio" value="cmatrimonio" id="cmatrimonio">
+                                                            <input class="col-2" type="checkbox" name="cmatrimonio" value="cmatrimonio2" id="cmatrimonio2">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cnacconyuge" style="font-weight: 500;">CERTIFICADO NACIMIENTO CONYUGE</label>
+                                                            <input class="col-2" type="checkbox" name="cnacconyuge" value="cnacconyuge" id="cnacconyuge">
+                                                            <input class="col-2" type="checkbox" name="cnacconyuge" value="cnacconyuge2" id="cnacconyuge2">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="ciconyuge" style="font-weight: 500;">CARNET IDENTIDAD CONYUGE</label>
+                                                            <input class="col-2" type="checkbox" name="ciconyuge" value="ciconyuge" id="ciconyuge">
+                                                            <input class="col-2" type="checkbox" name="ciconyuge" value="ciconyuge2" id="ciconyuge2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                @if (strtolower($estadoCivil) === 'union libre')
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cunionlibre" style="font-weight: 500;">CERTIFICADO DE UNIÓN LIBRE</label>
+                                                            <input class="col-2" type="checkbox" name="cunionlibre" value="cunionlibre" id="cunionlibre">
+                                                            <input class="col-2" type="checkbox" name="cunionlibre" value="cunionlibre" id="cunionlibre">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cnacimientounionlibre" style="font-weight: 500;">CERTIFICADO NACIMIENTO DE UNIÓN LIBRE</label>
+                                                            <input class="col-2" type="checkbox" name="cnacimientounionlibre" value="cnacimientounionlibre" id="cnacimientounionlibre">
+                                                            <input class="col-2" type="checkbox" name="cnacimientounionlibre" value="cnacimientounionlibre2" id="cnacimientounionlibre2">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="ciunionlibre" style="font-weight: 500;">CARNET IDENTIDAD DE UNIÓN LIBRE</label>
+                                                            <input class="col-2" type="checkbox" name="ciunionlibre" value="ciunionlibre" id="ciunionlibre">
+                                                            <input class="col-2" type="checkbox" name="ciunionlibre" value="ciunionlibre2" id="ciunionlibre2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                @if (strtolower($estadoCivil) === 'divorciad@')
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cdivorcio" style="font-weight: 500;">CERTIFICADO DE DIVORCIO</label>
+                                                            <input class="col-2" type="checkbox" name="cdivorcio" value="cdivorcio" id="cdivorcio">
+                                                            <input class="col-2" type="checkbox" name="cdivorcio" value="cdivorcio2" id="cdivorcio2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                @if (strtolower($estadoCivil) === 'viud@')
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE MASA_HEREDITARIA">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cdefuncion" style="font-weight: 500;">CERTIFICADO DE DIFUNCIÓN</label>
+                                                            <input class="col-2" type="checkbox" name="cdefuncion" value="cdefuncion" id="cdefuncion">
+                                                            <input class="col-2" type="checkbox" name="cdefuncion" value="cdefuncion2" id="cdefuncion2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                @if ($numHijosMenores > 0 || $numHijosMenores !== null)
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cnacjihos" style="font-weight: 500;">CERTIFICADO NACIMIENTO HIJOS < 25</label>
+                                                            <input class="col-2" type="checkbox" name="cnacjihos" value="cnacjihos" id="cnacjihos">
+                                                            <input class="col-2" type="checkbox" name="cnacjihos" value="cnacjihos2" id="cnacjihos2">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD PENSIÓN_POR_MUERTE RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cihijos" style="font-weight: 500;">CARNET IDENTIDAD HIJOS < 25</label>
+                                                            <input class="col-2" type="checkbox" name="cihijos" value="cihijos" id="cihijos">
+                                                            <input class="col-2" type="checkbox" name="cihijos" value="cihijos2" id="cihijos2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                @if (strtolower($estadoLaboral) === 'activo')
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="ctrabajo" style="font-weight: 500;">CERTIFICADO DE TRABAJO</label>
+                                                            <input class="col-2" type="checkbox" name="ctrabajo" value="ctrabajo" id="ctrabajo">
+                                                            <input class="col-2" type="checkbox" name="ctrabajo" value="ctrabajo2" id="ctrabajo2">
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="boletapago" style="font-weight: 500;">BOLETA DE PAGO</label>
+                                                            <input class="col-2" type="checkbox" name="boletapago" value="boletapago" id="boletapago">
+                                                            <input class="col-2" type="checkbox" name="boletapago" value="boletapago2" id="boletapago2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="egestora" style="font-weight: 500;">EXTRACTO DE GESTORA</label>
+                                                        <input class="col-2" type="checkbox" name="egestora" value="egestora" id="egestora">
+                                                        <input class="col-2" type="checkbox" name="egestora" value="egestora2" id="egestora2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="recordservicios" style="font-weight: 500;">RECORD SERVICIOS</label>
+                                                        <input class="col-2" type="checkbox" name="recordservicios" value="recordservicios" id="recordservicios">
+                                                        <input class="col-2" type="checkbox" name="recordservicios" value="recordservicios2" id="recordservicios2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="infomedicasalud" style="font-weight: 500;">INFORMACIÓN MÉDICA</label>
+                                                        <input class="col-2" type="checkbox" name="infomedicasalud" value="infomedicasalud" id="infomedicasalud">
+                                                        <input class="col-2" type="checkbox" name="infomedicasalud" value="infomedicasalud2" id="infomedicasalud2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD PENSIÓN_POR_MUERTE">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="denfaccidente" style="font-weight: 500;">DENUNCIA ENFERMEDAD ACCIDENTE</label>
+                                                        <input class="col-2" type="checkbox" name="denfaccidente" value="denfaccidente" id="denfaccidente">
+                                                        <input class="col-2" type="checkbox" name="denfaccidente" value="denfaccidente2" id="denfaccidente2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ JUBILACIÓN PENSIÓN_POR_MUERTE">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="actdatos" style="font-weight: 500;">ACTUALIZACIÓN DE DATOS</label>
+                                                        <input class="col-2" type="checkbox" name="actdatos" value="actdatos" id="actdatos">
+                                                        <input class="col-2" type="checkbox" name="actdatos" value="actdatos2" id="actdatos2">
+                                                    </div>
+                                                </div>
+                                                @if ($numHijosMenores > 0 || $numHijosMenores !== null)
+                                                    <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="resolinvhijos" style="font-weight: 500;">RESOLUCIÓN INVALIDEZ DE HIJOS < 25</label>
+                                                            <input class="col-2" type="checkbox" name="resolinvhijos" value="resolinvhijos" id="resolinvhijos">
+                                                            <input class="col-2" type="checkbox" name="resolinvhijos" value="resolinvhijos2" id="resolinvhijos2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+
+                                                <div class="form-group opcion APELACIÓN">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="dictamencalentenc" style="font-weight: 500;">DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA</label>
+                                                        <input class="col-2" type="checkbox" name="dictamencalentenc" value="dictamencalentenc" id="dictamencalentenc">
+                                                        <input class="col-2" type="checkbox" name="dictamencalentenc" value="dictamencalentenc2" id="dictamencalentenc2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="anteriordictamen" style="font-weight: 500;">ANTERIOR DICTAMEN O RESOLUCIÓN</label>
+                                                        <input class="col-2" type="checkbox" name="anteriordictamen" value="anteriordictamen" id="anteriordictamen">
+                                                        <input class="col-2" type="checkbox" name="anteriordictamen" value="anteriordictamen2" id="anteriordictamen2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion JUBILACIÓN">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="ccompcotsenasir" style="font-weight: 500;">CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR</label>
+                                                        <input class="col-2" type="checkbox" name="ccompcotsenasir" value="ccompcotsenasir" id="ccompcotsenasir">
+                                                        <input class="col-2" type="checkbox" name="ccompcotsenasir" value="ccompcotsenasir2" id="ccompcotsenasir2">
+                                                    </div>
+                                                </div>
+                                                @if (strtolower($genero) === 'femenino')
+                                                    <div class="form-group opcion JUBILACIÓN">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cnactreshijos" style="font-weight: 500;">CERTIFICADO NACIMIENTO DE 3 HIJOS</label>
+                                                            <input class="col-2" type="checkbox" name="cnactreshijos" value="cnactreshijos" id="cnactreshijos">
+                                                            <input class="col-2" type="checkbox" name="cnactreshijos" value="cnactreshijos2" id="cnactreshijos2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                @if (strtolower($ocupacion) === 'minero')
+                                                    <div class="form-group opcion JUBILACIÓN">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="ctrabajoinsalubre" style="font-weight: 500;">CERTIFICADO TRABAJO INSALUBRE</label>
+                                                            <input class="col-2" type="checkbox" name="ctrabajoinsalubre" value="ctrabajoinsalubre" id="ctrabajoinsalubre">
+                                                            <input class="col-2" type="checkbox" name="ctrabajoinsalubre" value="ctrabajoinsalubre2" id="ctrabajoinsalubre2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                <div class="form-group opcion JUBILACIÓN MASA_HEREDITARIA PENSIÓN_POR_MUERTE">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="poderciapoderado" style="font-weight: 500;">PODER Y CARNET IDENTIDAD APODERADO</label>
+                                                        <input class="col-2" type="checkbox" name="poderciapoderado" value="poderciapoderado" id="poderciapoderado">
+                                                        <input class="col-2" type="checkbox" name="poderciapoderado" value="poderciapoderado2" id="poderciapoderado2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion PENSIÓN_POR_MUERTE">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="cmeddifuncion" style="font-weight: 500;">CERTIFICADO MÉDICO DIFUNCIÓN</label>
+                                                        <input class="col-2" type="checkbox" name="cmeddifuncion" value="cmeddifuncion" id="cmeddifuncion">
+                                                        <input class="col-2" type="checkbox" name="cmeddifuncion" value="cmeddifuncion2" id="cmeddifuncion2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion MASA_HEREDITARIA PENSIÓN_POR_MUERTE">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="cnactitular" style="font-weight: 500;">CERTIFICADO NACIMIENTO TITULAR</label>
+                                                        <input class="col-2" type="checkbox" name="cnactitular" value="cnactitular" id="cnactitular">
+                                                        <input class="col-2" type="checkbox" name="cnactitular" value="cnactitular2" id="cnactitular2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion MASA_HEREDITARIA PENSIÓN_POR_MUERTE">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="cititular" style="font-weight: 500;">CARNET IDENTIDAD TITULAR</label>
+                                                        <input class="col-2" type="checkbox" name="cititular" value="cititular" id="cititular">
+                                                        <input class="col-2" type="checkbox" name="cititular" value="cititular2" id="cititular2">
+                                                    </div>
+                                                </div>
+                                                @if ($numHijosMenores > 0 || $numHijosMenores !== null)
+                                                    <div class="form-group opcion PENSIÓN_POR_MUERTE">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cestudioshijos" style="font-weight: 500;">CERTIFICADO ESTUDIOS HIJOS < 25</label>
+                                                            <input class="col-2" type="checkbox" name="cestudioshijos" value="cestudioshijos" id="cestudioshijos">
+                                                            <input class="col-2" type="checkbox" name="cestudioshijos" value="cestudioshijos2" id="cestudioshijos2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                <div class="form-group opcion MASA_HEREDITARIA">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="tdeclaherederos" style="font-weight: 500;">TESTIMONIO DE DECLARATORIA DE HEREDEROS</label>
+                                                        <input class="col-2" type="checkbox" name="tdeclaherederos" value="tdeclaherederos" id="tdeclaherederos">
+                                                        <input class="col-2" type="checkbox" name="tdeclaherederos" value="tdeclaherederos2" id="tdeclaherederos2">
+                                                    </div>
+                                                </div>
+                                                @if ($numHijosMenores > 0 || $numHijosMenores !== null)
+                                                    <div class="form-group opcion MASA_HEREDITARIA">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <label class="col-8" for="cnacherederos" style="font-weight: 500;">CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS</label>
+                                                            <input class="col-2" type="checkbox" name="cnacherederos" value="cnacherederos" id="cnacherederos">
+                                                            <input class="col-2" type="checkbox" name="cnacherederos" value="cnacherederos2" id="cnacherederos2">
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                <div class="form-group opcion MASA_HEREDITARIA">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="cideclaherederos" style="font-weight: 500;">CARNET IDENTIDAD DECLARADOS HEREDEROS</label>
+                                                        <input class="col-2" type="checkbox" name="cideclaherederos" value="cideclaherederos" id="cideclaherederos">
+                                                        <input class="col-2" type="checkbox" name="cideclaherederos" value="cideclaherederos2" id="cideclaherederos2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="compenzacioncotizacion" style="font-weight: 500;">CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES</label>
+                                                        <input class="col-2" type="checkbox" name="compenzacioncotizacion" value="compenzacioncotizacion" id="compenzacioncotizacion">
+                                                        <input class="col-2" type="checkbox" name="compenzacioncotizacion" value="compenzacioncotizacion2" id="compenzacioncotizacion2">
+                                                    </div>
+                                                </div>
+                                                {{-- <div class="form-group opcion RETIRO_DE_APORTES_TOTAL RETIRO_DE_APORTES_PARCIAL">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="contratojubilacion" style="font-weight: 500;">CONTRATO DE JUBILACIÓN</label>
+                                                        <input type="checkbox" name="contratojubilacion" value="contratojubilacion" id="contratojubilacion">
+                                                        <input type="checkbox" name="contratojubilacion" value="contratojubilacion2" id="contratojubilacion2">
+                                                    </div>
+                                                </div> --}}
+                                                <div class="form-group opcion COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="csalarioaportes" style="font-weight: 500;">CERTIFICADO DE SALARIOS Y APORTES</label>
+                                                        <input class="col-2" type="checkbox" name="csalarioaportes" value="csalarioaportes" id="csalarioaportes">
+                                                        <input class="col-2" type="checkbox" name="csalarioaportes" value="csalarioaportes2" id="csalarioaportes2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="fotofrojoasegurado" style="font-weight: 500;">ASEGURADO FOTO 4X4 FONDO ROJO</label>
+                                                        <input class="col-2" type="checkbox" name="fotofrojoasegurado" value="fotofrojoasegurado" id="fotofrojoasegurado">
+                                                        <input class="col-2" type="checkbox" name="fotofrojoasegurado" value="fotofrojoasegurado2" id="fotofrojoasegurado2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="fotofrojoapoderadocroquis" style="font-weight: 500;">APOD. FOTO 4X4 FONDO ROJO + CROQUIS DOM.</label>
+                                                        <input class="col-2" type="checkbox" name="fotofrojoapoderadocroquis" value="fotofrojoapoderadocroquis" id="fotofrojoapoderadocroquis">
+                                                        <input class="col-2" type="checkbox" name="fotofrojoapoderadocroquis" value="fotofrojoapoderadocroquis2" id="fotofrojoapoderadocroquis2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="csalarioaporteslegalizada" style="font-weight: 500;">CERTIFICADO DE SALARIOS Y APORTES (LEGALIZADO)</label>
+                                                        <input class="col-2" type="checkbox" name="csalarioaporteslegalizada" value="csalarioaporteslegalizada" id="csalarioaporteslegalizada">
+                                                        <input class="col-2" type="checkbox" name="csalarioaporteslegalizada" value="csalarioaporteslegalizada2" id="csalarioaporteslegalizada2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion COMPENSACIÓN_DE_COTIZACIONES_(SENASIR)">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="finiquito" style="font-weight: 500;">FINIQUITO</label>
+                                                        <input class="col-2" type="checkbox" name="finiquito" value="finiquito" id="finiquito">
+                                                        <input class="col-2" type="checkbox" name="finiquito" value="finiquito2" id="finiquito2">
+                                                    </div>
+                                                </div>
+                                                <div class="form-group opcion RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN_SEGUNDA_SOLICITUD APELACIÓN_DE_RECALIFICACIÓN RECALIFICACIÓN">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="col-8" for="solrecaldictamen" style="font-weight: 500;">CARTA DE SOLICITUD DE RECALIFICACION DE DICTAMEN</label>
+                                                        <input class="col-2" type="checkbox" name="solrecaldictamen" value="solrecaldictamen" id="solrecaldictamen">
+                                                        <input class="col-2" type="checkbox" name="solrecaldictamen" value="solrecaldictamen2" id="solrecaldictamen2">
+                                                    </div>
+                                                </div>
+                                                <script>
+                                                    document.querySelectorAll('.color-toggle').forEach(label => {
+                                                        label.addEventListener('dblclick', () => {
+                                                            label.classList.toggle('black');
+                                                        });
+                                                    });
+                                                </script>
+                                            </div>
+                                        </div>
+                                        <div style="text-align: center; margin-top: 10px;">
+                                            <button id="btnGenerar" onclick="generatePDF(), generatePDF2()" class="btn-crear btn-sm" disabled>
+                                                GENERAR CHECK LIST
+                                            </button>
+                                        </div>
+                                        <script>
+                                            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                                            const btnGenerar = document.getElementById('btnGenerar');
+
+                                            function toggleButton() {
+                                                btnGenerar.disabled = !Array.from(checkboxes).some(chk => chk.checked);
+                                            }
+
+                                            checkboxes.forEach(chk => chk.addEventListener('change', toggleButton));
+                                        </script>
+
+                                        <script>
+                                            function generatePDF() {
+                                                var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                                                var documentosSeleccionados = [];
+                                                checkboxes.forEach(function(checkbox) {
+                                                    if (checkbox.checked) {
+                                                        documentosSeleccionados.push(checkbox.value);
+                                                    }
+                                                });
+                                                document.getElementById('documentosSeleccionadosInput').value = JSON.stringify(documentosSeleccionados);
+                                                document.getElementById('pdfForm').submit();
+                                            }
+
+                                            function generatePDF2() {
+                                                var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                                                var documentosSeleccionados2 = [];
+                                                checkboxes.forEach(function(checkbox) {
+                                                    if (checkbox.checked) {
+                                                        documentosSeleccionados2.push(checkbox.value);
+                                                    }
+                                                });
+                                                document.getElementById('documentosSeleccionados2Input').value = JSON.stringify(documentosSeleccionados2);
+                                                document.getElementById('pdfForm').submit();
+                                            }
+                                        </script>
+                                        <script>
+                                            function generatePDFOnly() {
+                                                var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                                                var documentosSeleccionados = [];
+                                                checkboxes.forEach(function(checkbox) {
+                                                    if (checkbox.checked) {
+                                                        documentosSeleccionados.push(checkbox.value);
+                                                    }
+                                                });
+                                                document.getElementById('documentosSeleccionadosInputOnly').value = JSON.stringify(documentosSeleccionados);
+
+                                                var documentosSeleccionados2 = [];
+                                                checkboxes.forEach(function(checkbox) {
+                                                    if (checkbox.checked) {
+                                                        documentosSeleccionados2.push(checkbox.value);
+                                                    }
+                                                });
+                                                document.getElementById('documentosSeleccionados2InputOnly').value = JSON.stringify(documentosSeleccionados2);
+
+                                                document.getElementById('pdfOnlyForm').submit();}
+                                        </script>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+@if (!$hayPendientes)
+                </div>
+            </div>
+@else
+        </div>
+    </div>
+</div>
+@endif
 
 @stop
 @section('js')
@@ -660,7 +754,6 @@
         }
     });
 
-//CANCELAR FUNCION DE LA TECLA ENTER
     document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
@@ -674,42 +767,42 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    .tabla-ajustada td, 
+    .tabla-ajustada th {
+        padding: 2px 6px;
+        line-height: 1.5;
+    }
     th {
         color:#000000; 
         font-family: "Segoe UI";
-        font-weight: 900;
+        font-weight: 700;
     }
     .pendiente {
         color:#ff0000; 
         font-family: "Segoe UI";
-        font-weight: 700;
+        font-weight: 500;
     }
     .verdoc {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 700;
+        font-weight: 500;
     }
     .verdoc:hover {
         color:#faa625; 
         font-family: "Segoe UI";
-        font-weight: 700;
+        font-weight: 500;
     }
     .verdoc2 {
         color:#b5b5b5; 
         font-family: "Segoe UI";
-        font-weight: 700;
+        font-weight: 500;
     }
     .dropify-wrapper {
-        height: 200px !important;
+        height: 100px !important;
     }
     .dropify-message p {
         font-size: 14px;
     }
-    h1 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-        }
     h5 {
         color:#94c93b; 
         font-family: "Segoe UI";
@@ -719,7 +812,7 @@
     h3 {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 1000;
+        font-weight: 800;
         }
     .btn-crear {
         background-color:  #ffffff;
@@ -732,28 +825,6 @@
         background-color: #94c93b;
         color: #ffffff;
         }
-    .mensaje-error {
-        color: #e1172b;
-        font-family: "Times New Roman";
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 5px;
-        font-size: 12.5px;
-        font-weight: bold;
-        display: inline-block;
-        margin-left: -10px;
-    }
-    .custom-button {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 5px 40px;
-    }
-    .custom-button:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
     .custom2-button {
         background-color: #ffffff;
         color: #faa625;
@@ -763,17 +834,6 @@
     }
     .custom2-button:hover {
         background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-cerrar {
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 5px 10px;
-    }
-    .btn-cerrar:hover {
-        background-color: #94c93b;
         color: #ffffff;
     }
     .btn-regresar {
@@ -788,16 +848,8 @@
         background-color: #2926e2;
         color: #ffffff;
     }
-    .btn-multiple {
-        background-color: #ffffff;
-        color: #26b0e2;
-        border-color: #26b0e2;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-multiple:hover {
-        background-color: #26b0e2;
-        color: #ffffff;
+    .opcion {
+        margin-top: -20px;
     }
 </style>
 @stop

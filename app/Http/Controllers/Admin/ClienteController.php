@@ -32,9 +32,9 @@ class ClienteController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function __construct() { 
+    /* public function __construct() { 
         $this->middleware ('can:admin.asociados.index')->only('index');
-    }
+    } */
 
     public function index(Request $request)
     {

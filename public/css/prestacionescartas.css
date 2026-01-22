@@ -12,6 +12,22 @@ table {
     margin-bottom: 20px;
     font-size: 15px;
 }
+.tablesinborde, 
+.tablesinborde td, 
+.tablesinborde th, 
+.tablesinborde tr {
+    border: none !important;
+    font-family: Arial, sans-serif;
+}
+.tablesinborde {
+    border-collapse: collapse !important;
+}
+.textoedita {
+    color: #e81313;              
+    font-style: italic;          
+    text-decoration: underline; 
+    font-weight: bold;
+}
 th, td {
     padding: 8px;
     text-align: left;

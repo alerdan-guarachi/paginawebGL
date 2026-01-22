@@ -27,14 +27,25 @@
         Por medio de la presente, tengo a bien a dirigirme a ustedes con la finalidad de solicitar que se me pueda otorgar una 
         copia <strong>LEGALIZADA</strong> de la <strong>HISTORIA CLINICA</strong> de mi persona <strong>{{$cliente->nombrecompleto}}</strong>
         con Matricula Nro. <strong>{{ $matricula }}</strong> con C.I. <strong>{{$cliente->ci}} {{$cliente->ciexp}}</strong>. 
-        Y se me pueda entregar por la sección que corresponda, mismos que son necesarios para mi trámite de 
+        Y se me pueda entregar por la sección que corresponda, mismos que son necesarios para mi trámite de
         <strong>
-            @if (strtoupper($nombretramite) === 'INVALIDEZ')
+            @if (
+                strtoupper($nombretramite) === 'INVALIDEZ' ||
+                strtoupper($nombretramite) === 'APELACIÓN' ||
+                strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
+                strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
+                strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
+                strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
+                strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
+                strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
+                strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
+                strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
+            )
                 PENSIÓN POR INVALIDEZ
             @else
                 {{ $nombretramite }}
             @endif
-        </strong>.
+        </strong>
 
         </div>
         <div class="tipo6">
@@ -69,9 +80,17 @@
         <div class="tipo6">
         Atte.
         </div>
-        <div class="tipo7" style="margin-top: 80px;"><strong>{{$cliente->nombrecompleto}}</div>
-        <div class="tipo8">C.I.: {{$cliente->ci}} {{$cliente->ciexp}}</div>
-        <div class="tipo8">Teléfono: {{ substr($cliente->celular, 3) }}</div>
+        <div class="tipo7" style="margin-top: 60px;"><strong>{{ $nombre }}</strong></div>
+        <div class="tipo8">C.I.: {{ $ci }} {{ $ciexp }}</div>
+        @if ($emisor === 'APODERADO')
+            <div class="tipo7"><strong>APODERADO</strong></div>
+        @endif
+        <div class="tipo8">
+            Teléfono: {{ $telefono }}
+            @if ($emisor === 'APODERADO')
+                - {{ Str::startsWith($cliente->celular, '591') ? substr($cliente->celular, 3) : $cliente->celular }}
+            @endif
+        </div>
     </main>
 </body>
 </html>

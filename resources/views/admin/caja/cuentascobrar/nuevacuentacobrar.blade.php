@@ -493,14 +493,18 @@
                             </div>
                         </div>
                     </div>
+                    @php
+                        $cuentasFacturada = $cuentas->where('tipocuenta', 'FACTURADA')->pluck('numerocuenta')->values();
+                        $cuentasNoFacturada = $cuentas->where('tipocuenta', 'NO FACTURADA')->pluck('numerocuenta')->values();
+                        $cuentasTodas = $cuentas->pluck('numerocuenta')->values();
+                    @endphp
                     <script>
-                        
                         const destinoContainer = document.getElementById('destino-container');
                         const bancoSelect = document.getElementById('bancoorigen');
                         const cuentas = {
-                            facturada: ['3000189269'/* , '4011113557' */],
-                            no_facturada: ['2505314878'],
-                            todas: ['3000189269'/* , '4011113557' */, '2505314878']
+                            facturada: @json($cuentasFacturada),
+                            no_facturada: @json($cuentasNoFacturada),
+                            todas: @json($cuentasTodas)
                         };
 
                         function actualizarBancoOrigen(valorDestino) {
@@ -509,7 +513,7 @@
 
                             if (valorDestino === 'CUENTA NO FACTURADA') {
                                 opciones = cuentas.no_facturada;
-                                bancoSelect.disabled = true;
+                                bancoSelect.disabled = false;
                             } else if (valorDestino === 'CUENTA FACTURADA') {
                                 opciones = cuentas.facturada;
                                 bancoSelect.disabled = false;

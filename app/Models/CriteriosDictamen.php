@@ -32,6 +32,8 @@ class CriteriosDictamen extends Model
         'decisionrecal' => '',
         'mes' => '',
         'anno' => '',
+        'fechasiniestro1' => '',
+        'fechasiniestro2' => '',
     ]; 
 
     protected $fillable = [
@@ -55,5 +57,7 @@ class CriteriosDictamen extends Model
         'decisionrecal',
         'mes',
         'anno',
+        'fechasiniestro1',
+        'fechasiniestro2',
     ];
 }

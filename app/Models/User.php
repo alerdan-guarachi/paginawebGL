@@ -25,6 +25,8 @@ class User extends Authenticatable
         'password',
         'empresa',
         'sucursal',
+        'clienteid',
+        'fcm_token',
     ];
 
     /**
@@ -37,6 +39,8 @@ class User extends Authenticatable
         'remember_token',
         'empresa',
         'sucursal',
+        'clienteid',
+        'fcm_token',
     ];
 
     /**

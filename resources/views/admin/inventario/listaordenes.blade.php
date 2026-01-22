@@ -24,7 +24,7 @@
             });
         }
 </script>
-<h1>ÓRDENES PENDIENTES Y APROBADAS</h1>
+<h1>LISTA DE ÓRDENES</h1>
 @stop
 
 @section('css')
@@ -152,11 +152,11 @@
                     <i class="fas fa-cogs"></i> ÓRDENES DE PERSONAL
                 </a>
             </li>
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a class="nav-link tab-rounded" id="tab-5" data-toggle="tab" href="#tab-content-5" role="tab" aria-controls="tab-content-5" aria-selected="true">
                     <i class="fas fa-lungs-virus"></i> ATENCIÓN MÉDICA
                 </a>
-            </li>
+            </li> --}}
         </ul>
     </div>
     
@@ -175,19 +175,19 @@
             {{-- ORDENES DE COMPRA --}}
             <div class="tab-pane fade show active" id="tab-content-1">
                 <ul class="nav nav-tabs">
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link active" data-toggle="tab" href="#sub-tab-1">PRE - ÓRDENES DE COMPRA</a>
-                    </li>
+                    </li> --}}
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#sub-tab-2">ÓRDENES DE COMPRA APROBADAS</a>
+                        <a class="nav-link active" data-toggle="tab" href="#sub-tab-2">ÓRDENES DE COMPRA PENDIENTES</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#sub-tab-3">ÓRDENES DE COMPRA PROCESADAS</a>
                     </li>
-                </ul>
+                </ul><br>
                 <div class="tab-content">
                     {{-- PRE - ÓRDENES DE COMPRA --}}
-                    <div class="tab-pane fade show active" id="sub-tab-1">
+                    {{-- <div class="tab-pane fade show active" id="sub-tab-1">
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -278,13 +278,14 @@
                                 @endcan
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                     {{-- ÓRDENES DE COMPRA APROBADAS --}}
-                    <div class="tab-pane fade" id="sub-tab-2">
+                    <div class="tab-pane fade show active" id="sub-tab-2">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-striped table-bordered table-sm">
                                 <thead>
                                     <tr>
+                                        <th>Unif.</th>
                                         <th>ID</th>
                                         <th>Proveedor</th>
                                         <th>Suc_Gasto</th>
@@ -304,7 +305,15 @@
                                 <tbody>
                                     @foreach ($ordenesaprobadas as $orden)
                                         <tr>
-                                            <td>{{$orden->id}}</td>
+                                            <td>
+                                                <input type="checkbox" class="check-unificar" data-preordenid="{{$orden->id}}" data-proveedornombre="{{ $orden->proveedornombre }}" data-fechapagar="{{$orden->fechapagar}}">
+                                            </td>
+                                            <td>
+                                                {{ $orden->id }}
+                                                @if(!empty($orden->ordenunificado))
+                                                    (UNIF.: {{ $orden->ordenunificado }})
+                                                @endif
+                                            </td>
                                             <td title="{{ $orden->proveedornombre }}" class="truncar">{{$orden->proveedornombre}}</td>
                                             <td>{{$orden->sucursalgasto}}</td>
                                             <td title="{{ $orden->detalles->pluck('detalle')->implode(', ') }}" class="truncar">{{ $orden->detalles->pluck('detalle')->implode(', ') }}</td>
@@ -349,11 +358,18 @@
                                 </tbody> 
                             </table>
                         </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            @can('admin.inventario.aprobarpreordenes')
+                            <button id="unificarPreordenBtn" class="btn btn-outline-secondary btn-sm">
+                                UNIFICAR ID
+                            </button>
+                            @endcan
+                        </div>
                     </div>
                     {{-- ÓRDENES DE COMPRA PROCESADAS --}}
                     <div class="tab-pane fade" id="sub-tab-3">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-striped table-bordered table-sm">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -415,19 +431,19 @@
             {{-- ORDENES DE SERVICIO --}}
             <div class="tab-pane fade" id="tab-content-2">
                 <ul class="nav nav-tabs">
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link active" data-toggle="tab" href="#sub-tab-4">PRE - ÓRDENES DE SERVICIO</a>
-                    </li>
+                    </li> --}}
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#sub-tab-5">ÓRDENES DE SERVICIO APROBADAS</a>
+                        <a class="nav-link active" data-toggle="tab" href="#sub-tab-5">ÓRDENES DE SERVICIO PENDIENTES</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#sub-tab-6">ÓRDENES DE SERVICIO PROCESADAS</a>
                     </li>
-                </ul>
+                </ul><br>
                 <div class="tab-content">
                     {{-- PRE - ÓRDENES DE SERVICIO --}}
-                    <div class="tab-pane fade show active" id="sub-tab-4">
+                    {{-- <div class="tab-pane fade show active" id="sub-tab-4">
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -487,15 +503,9 @@
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    {{-- @can('admin.inventario.aprobarpreordenes') --}}
-                                                        <a type="button" class="btn btn-botongris" data-toggle="modal" data-target="#modal2{{ $preordenid }}" title="VER PRE-ORDEN DE SERVICIO">
-                                                            <i class="fas fa-clipboard-list"></i>
-                                                        </a>
-                                                    {{-- @else
-                                                        <button type="button" class="btn btn-botongris" title="Sin permiso" disabled>
-                                                            <i class="fas fa-clipboard-list"></i>
-                                                        </button>
-                                                    @endcan --}}
+                                                    <a type="button" class="btn btn-botongris" data-toggle="modal" data-target="#modal2{{ $preordenid }}" title="VER PRE-ORDEN DE SERVICIO">
+                                                        <i class="fas fa-clipboard-list"></i>
+                                                    </a>
                                                 </td>
                                                 <td>
                                                     <input type="checkbox" class="check-unificar" data-preordenid="{{ $preordenid }}" data-proveedornombre="{{ $ordenesGrupo[0]->proveedornombre }}" data-fechapagar="{{ $ordenesGrupo[0]->fechapagar }}">
@@ -516,13 +526,14 @@
                                 @endcan
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                     {{-- ÓRDENES DE SERVICIO APROBADAS --}}
-                    <div class="tab-pane fade" id="sub-tab-5">
+                    <div class="tab-pane fade show active" id="sub-tab-5">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-striped table-bordered table-sm">
                                 <thead>
                                     <tr>
+                                        <th>Unif.</th>
                                         <th>ID</th>
                                         <th>Proveedor</th>
                                         <th>Suc_Gasto</th>
@@ -542,7 +553,15 @@
                                 <tbody>
                                     @foreach ($ordenesaprobadasservicio as $orden)
                                         <tr>
-                                            <td>{{$orden->id}}</td>
+                                            <td>
+                                                <input type="checkbox" class="check-unificar" data-preordenid="{{$orden->id}}" data-proveedornombre="{{ $orden->proveedornombre }}" data-fechapagar="{{$orden->fechapagar}}">
+                                            </td>
+                                            <td>
+                                                {{ $orden->id }}
+                                                @if(!empty($orden->ordenunificado))
+                                                    (UNIF.: {{ $orden->ordenunificado }})
+                                                @endif
+                                            </td>
                                             <td title="{{ $orden->proveedornombre }}" class="truncar">{{$orden->proveedornombre}}</td>
                                             <td>{{$orden->sucursalgasto}}</td>
                                             <td title="{{ $orden->detalles->pluck('detalle')->implode(', ') }}" class="truncar">{{ $orden->detalles->pluck('detalle')->implode(', ') }}</td>
@@ -587,11 +606,18 @@
                                 </tbody> 
                             </table>
                         </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            @can('admin.inventario.aprobarpreordenes')
+                            <button id="unificarPreordenBtn2" class="btn btn-outline-secondary btn-sm">
+                                UNIFICAR ID
+                            </button>
+                            @endcan
+                        </div>
                     </div>
                     {{-- ÓRDENES DE SERVICIO PROCESADAS --}}
                     <div class="tab-pane fade" id="sub-tab-6">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-striped table-bordered table-sm">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -653,19 +679,19 @@
             {{-- ORDENES DE PERSONAL --}}
             <div class="tab-pane fade" id="tab-content-4">
                 <ul class="nav nav-tabs">
-                    <li class="nav-item">
+                    {{-- <li class="nav-item">
                         <a class="nav-link active" data-toggle="tab" href="#sub-tab-10">PRE - ÓRDENES DE PERSONAL</a>
-                    </li>
+                    </li> --}}
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#sub-tab-11">ÓRDENES DE PERSONAL APROBADAS</a>
+                        <a class="nav-link active" data-toggle="tab" href="#sub-tab-11">ÓRDENES DE PERSONAL PENDIENTES</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#sub-tab-12">ÓRDENES DE PERSONAL PROCESADAS</a>
                     </li>
-                </ul>
+                </ul><br>
                 <div class="tab-content">
                     {{-- PRE - ÓRDENES DE PERSONAL --}}
-                    <div class="tab-pane fade show active" id="sub-tab-10">
+                    {{-- <div class="tab-pane fade show active" id="sub-tab-10">
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
@@ -754,13 +780,14 @@
                                 @endcan
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                     {{-- ÓRDENES DE PERSONAL APROBADAS --}}
-                    <div class="tab-pane fade" id="sub-tab-11">
+                    <div class="tab-pane fade show active" id="sub-tab-11">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-striped table-bordered table-sm">
                                 <thead>
                                     <tr>
+                                        <th>Unif.</th>
                                         <th>ID</th>
                                         <th>Proveedor</th>
                                         <th>Suc_Gasto</th>
@@ -780,7 +807,15 @@
                                 <tbody>
                                     @foreach ($ordenesaprobadaspersonal as $orden)
                                         <tr>
-                                            <td>{{$orden->id}}</td>
+                                            <td>
+                                                <input type="checkbox" class="check-unificar" data-preordenid="{{$orden->id}}" data-proveedornombre="{{ $orden->proveedornombre }}" data-fechapagar="{{$orden->fechapagar}}">
+                                            </td>
+                                            <td>
+                                                {{ $orden->id }}
+                                                @if(!empty($orden->ordenunificado))
+                                                    (UNIF.: {{ $orden->ordenunificado }})
+                                                @endif
+                                            </td>
                                             <td title="{{ $orden->proveedornombre }}" class="truncar">{{$orden->proveedornombre}}</td>
                                             <td>{{$orden->sucursalgasto}}</td>
                                             <td title="{{ $orden->detalles->pluck('detalle')->implode(', ') }}" class="truncar">{{ $orden->detalles->pluck('detalle')->implode(', ') }}</td>
@@ -825,11 +860,18 @@
                                 </tbody> 
                             </table>
                         </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            @can('admin.inventario.aprobarpreordenes')
+                            <button id="unificarPreordenBtn3" class="btn btn-outline-secondary btn-sm">
+                                UNIFICAR ID
+                            </button>
+                            @endcan
+                        </div>
                     </div>
                     {{-- ÓRDENES DE PERSONAL PROCESADAS --}}
                     <div class="tab-pane fade" id="sub-tab-12">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-striped table-bordered table-sm">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
@@ -889,17 +931,10 @@
             </div>
 
             {{-- ATENCIÓN MÉDICA --}}
-            <div class="tab-pane fade" id="tab-content-5">
-                {{-- <ul class="nav nav-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" href="#sub-tab-13">PRIORIZADOS</a>
-                    </li>
-                </ul> --}}
+            {{-- <div class="tab-pane fade" id="tab-content-5">
                 <div class="tab-content">
-                    {{-- PRIORIZADOS --}}
                     <div class="tab-pane fade show active" id="sub-tab-13">
                         <div class="row justify-content-center"> 
-                            <!-- Tarjeta Cuenta 1 -->
                             <div class="col-md-6 mb-4">
                                 <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
                                     <div class="card-header text-center border-0 position-relative" style="background: rgba(0, 0, 0, 0.03); padding: 0.5rem;">
@@ -917,7 +952,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Tarjeta Cuenta 2 -->
                             <div class="col-md-6 mb-4">
                                 <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
                                     <div class="card-header text-center border-0 position-relative" style="background: rgba(0, 0, 0, 0.03); padding: 0.5rem;">
@@ -935,7 +969,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Tarjeta Cuenta 3 -->
                             <div class="col-md-4 mb-4" hidden>
                                 <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
                                     <div class="card-header text-center border-0 position-relative" style="background: rgba(0, 0, 0, 0.03); padding: 0.5rem;">
@@ -966,7 +999,6 @@
                                                 <option value="">Seleccione una cuenta</option>
                                                 <option value="3000189269" data-saldo="{{ $cuentasConSaldo['3000189269'] ?? 0 }}">3000189269</option>
                                                 <option value="2505314878" data-saldo="{{ $cuentasConSaldo['2505314878'] ?? 0 }}">2505314878</option>
-                                                {{-- <option value="4011113557" data-saldo="{{ $cuentasConSaldo['4011113557'] ?? 0 }}">4011113557</option> --}}
                                             </select>
                                         </div>
                                         <div class="form-group col-lg-2">
@@ -975,7 +1007,6 @@
                                         </div>
                                         <div class="form-group col-lg-2">
                                             <button type="submit" id="btn-guardar" name="accion" value="guardar" class="btn btn-outline-success mt-4">GUARDAR</button>
-                                            {{-- <button type="submit" id="btn-despriorizar" name="accion" value="despriorizar" class="btn btn-outline-danger mt-4" style="margin-left:10px;">DESPRIORIZAR</button> --}}
                                         </div>
                                         <div class="form-group col-lg-2">
                                         </div>
@@ -995,118 +1026,6 @@
                                     </div>
                                 </div>
                             </div>
-                            {{-- <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Sel.</th>
-                                            <th>ID</th>
-                                            <th>Proveedor</th>
-                                            <th>Est./Esp.</th>
-                                            <th>ID.Cli.</th>
-                                            <th>Cliente_Nombre</th>
-                                            <th>Sucursal_Cli.</th>
-                                            <th>Fecha_Bat.</th>
-                                            <th>Pago</th>
-                                            <th>Prog.</th>
-                                            <th>Informe</th>
-                                            <th>Factura</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach ($registrosbateria as $registro)
-                                            <tr>
-                                                <td>
-                                                    <input type="checkbox" name="registros[]" value="{{ $registro->id }}" class="check-pago" data-precio="{{ $registro->preciocompra }}">
-
-                                                </td>
-                                                <td>{{ $registro->id }}</td>
-                                                <td title="{{ $registro->proveedorasignado }}" class="truncar">{{ $registro->proveedorasignado }}</td>
-                                                <td title="{{ $registro->accionnombre }}" class="truncar">{{ $registro->accionnombre }}</td>
-                                                <td>{{ $registro->clienteitaid }}{{ $registro->clienteauditoriaid }}{{ $registro->clientecomunid }}</td>
-                                                <td title="{{ $registro->clienteitanombre }}{{ $registro->clienteauditorianombre }}{{ $registro->clientecomunnombre }}" class="truncar">{{ $registro->clienteitanombre }}{{ $registro->clienteauditorianombre }}{{ $registro->clientecomunnombre }}</td>
-                                                <td>
-                                                    {{ $registro->clienteita->sucursal ?? $registro->clienteauditoria->sucursal ?? $registro->clientecomun->sucursal ?? 'N/A' }}
-                                                </td>
-
-                                                <td>{{ $registro->fechabateria }}</td>
-                                                <td>{{ $registro->preciocompra }}</td>
-                                                <td>
-                                                    @if ($registro->accionnombre === 'INFORME FINAL')
-                                                        {{ $registro->informe_created_at ? \Carbon\Carbon::parse($registro->informe_created_at)->format('Y-m-d') : 'PENDIENTE' }}
-                                                    @else
-                                                        {{ optional($registro->programacion)->fechaasignada ?? 'PENDIENTE' }}
-                                                    @endif
-                                                </td>
-                                                <td>
-                                                    @if ($registro->accionnombre === 'INFORME FINAL')
-                                                        {{ $registro->informe_created_at ? \Carbon\Carbon::parse($registro->informe_created_at)->format('Y-m-d') : 'PENDIENTE' }}
-                                                    @else
-                                                        @if ($registro->accionnombre === 'PSICOLOGIA' && !is_null($registro->clientecomunid))
-                                                            {{ optional($registro->programacion)->fechaasignada ?? 'PENDIENTE' }}
-                                                        @else
-                                                            {{ optional(optional($registro->programacion)->documentacion)->created_at
-                                                                ? optional($registro->programacion)->documentacion->created_at->format('Y-m-d')
-                                                                : 'PENDIENTE' }}
-                                                        @endif
-                                                    @endif
-                                                </td>
-                                                <td class="td-nrofactura">
-                                                    @php
-                                                        $factura = optional($registro->programacion)->factura
-                                                            ?? optional($registro->proveedorinformefinal)->factura;
-                                                    @endphp
-
-                                                    @if ($factura)
-                                                        <a type="button" class="btn btn-botongris btn-sm" data-toggle="modal" data-target="#modalFactura{{ $registro->id }}" title="VER FACTURA">
-                                                            <i class="fas fa-file"></i>
-                                                        </a>
-                                                    @else
-
-                                                    @endif
-
-                                                    {{
-                                                        optional($registro->programacion)->nrofactura
-                                                        ?? optional($registro->proveedorinformefinal)->nrofactura
-                                                        ?? 'PENDIENTE'
-                                                    }}
-
-                                                </td>
-                                            </tr>
-                                            @if ($factura)
-                                            <div class="modal fade" id="modalFactura{{ $registro->id }}" tabindex="-1" aria-labelledby="modalFacturaLabel{{ $registro->id }}" aria-hidden="true">
-                                                <div class="modal-dialog modal-lg modal-dialog-centered">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h4 class="modal-title" id="modalFacturaLabel{{ $registro->id }}" style="font-weight: 900;">FACTURA</h4>
-                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                                                                <span aria-hidden="true">&times;</span>
-                                                            </button>
-
-                                                        </div>
-                                                        <div class="modal-body text-center">
-                                                            @php
-                                                                $ext = pathinfo($factura, PATHINFO_EXTENSION);
-                                                                $url = asset('comprobantescuentaspagar/' . $factura);
-                                                            @endphp
-
-                                                            @if(in_array(strtolower($ext), ['jpg', 'jpeg', 'png', 'gif']))
-                                                                <img src="{{ $url }}" alt="Factura" class="img-fluid rounded shadow">
-                                                            @elseif(strtolower($ext) === 'pdf')
-                                                                <embed src="{{ $url }}" type="application/pdf" width="100%" height="600px">
-                                                            @else
-                                                                <p>No se puede mostrar este tipo de archivo.</p>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div> --}}
-
                             @foreach ($result as $item)
                                 <div class="table-responsive" style="max-height: 65vh;">
                                     <table class="table table-striped">
@@ -1130,15 +1049,6 @@
                                         </thead>
                                         <tbody>
                                             @php
-                                                /* $accionesOrdenadas = collect($item['acciones'])->sortBy(function($accion) {
-                                                    if (!empty($accion['fechaprogramacion'])) {
-                                                        return \Carbon\Carbon::parse($accion['fechaprogramacion']);
-                                                    }
-                                                    if (!empty($accion['informedocumentacionfinal'])) {
-                                                        return \Carbon\Carbon::parse($accion['informedocumentacionfinal']);
-                                                    }
-                                                    return \Carbon\Carbon::now()->addYears(100);
-                                                }); */
                                                 $accionesOrdenadas = collect($item['acciones'])->sortBy(function($accion) {
                                                     return $accion['proveedorasignado'] ?? '';
                                                 });
@@ -1202,11 +1112,6 @@
                                                         </td>
                                                         <td hidden>{{ $accion['idprogramacion'] }}</td>
                                                         <td class="td-nrofactura">
-                                                            {{-- @if (!empty($accion['documentofactura']))
-                                                                <a href="{{ asset('comprobantescuentaspagar/' . $accion['documentofactura']) }}" target="_blank" class="btn btn-sm btn-botongris" title="VER FACTURA">
-                                                                    <i class="fas fa-file-alt"></i>
-                                                                </a>
-                                                            @endif --}}
                                                             @if (!empty($accion['documentofactura']) || !empty($accion['facturainformefinal']))
                                                                 <a 
                                                                     class="btn btn-sm btn-botongris btn-ver-factura" 
@@ -1249,11 +1154,6 @@
                                                         </td>
                                                         <td hidden>{{ $accion['provinfofinalid'] }}</td>
                                                         <td class="td-nrofactura">
-                                                            {{-- @if (!empty($accion['facturainformefinal']))
-                                                                <a href="{{ asset('comprobantescuentaspagar/' . $accion['facturainformefinal']) }}" target="_blank" class="btn btn-sm btn-botongris" title="VER FACTURA">
-                                                                    <i class="fas fa-file-alt"></i>
-                                                                </a>
-                                                            @endif --}}
                                                             @if (!empty($accion['documentofactura']) || !empty($accion['facturainformefinal']))
                                                                 <a 
                                                                     class="btn btn-sm btn-botongris btn-ver-factura" 
@@ -1278,7 +1178,6 @@
                                 <button type="submit" id="btn-despriorizar" name="accion" value="despriorizar" class="btn btn-sm btn-outline-danger mt-4">DESPRIORIZAR</button>
                             </div>
                             <script>
-                                // SUMAR TOTAL DE SELECCIONADOS
                                 function actualizarTotal() {
                                     let total = 0;
                                     document.querySelectorAll('.check-pago:checked').forEach(function(chk) {
@@ -1287,33 +1186,27 @@
                                     document.getElementById('total-seleccionado').value = total.toFixed(2);
                                 }
 
-                                // EVENTO AL CAMBIAR CHECKBOX
                                 document.querySelectorAll('.check-pago').forEach(function(checkbox) {
                                     checkbox.addEventListener('change', actualizarTotal);
                                 });
 
-                                // FILTRO DE TABLA Y RESETEO
                                 document.getElementById('busqueda').addEventListener('keyup', function () {
                                     const texto = this.value.toLowerCase();
 
-                                    // Oculta o muestra las filas
-                                    /* document.querySelectorAll('table tbody tr').forEach(function (fila) {
+                                    document.querySelectorAll('table tbody tr').forEach(function (fila) {
                                         const visible = Array.from(fila.cells).some(td => td.textContent.toLowerCase().includes(texto));
                                         fila.style.display = visible ? '' : 'none';
-                                    }); */
+                                    });
                                     document.querySelectorAll('table tbody tr').forEach(function (fila) {
                                     const tdFactura = fila.querySelector('.td-nrofactura');
                                     const contiene = tdFactura && tdFactura.textContent.toLowerCase().includes(texto);
                                     fila.style.display = contiene ? '' : 'none';
                                     });
 
-
-                                    // ✅ Desmarca todos los checkboxes
                                     document.querySelectorAll('.check-pago').forEach(function(chk) {
                                         chk.checked = false;
                                     });
 
-                                    // ✅ Reinicia total seleccionado
                                     document.getElementById('total-seleccionado').value = '0.00';
                                 });
                             </script>
@@ -1338,7 +1231,7 @@
                                             fila.style.display = 'none';
                                         }
 
-                                        checkbox.checked = false; // Desmarcar todos por si acaso
+                                        checkbox.checked = false;
                                     });
 
                                     document.getElementById('total-seleccionado').value = total.toFixed(2);
@@ -1346,85 +1239,6 @@
                             </script>
 
                         </form>
-                        
-                        {{-- <script>
-                            document.addEventListener('DOMContentLoaded', function () {
-                                const cuentaSelect = document.getElementById('bancoorigenprogramacion');
-                                const checkboxes = document.querySelectorAll('.check-pago');
-                                const btnGuardar = document.getElementById('btn-guardar');
-                                const btnDespriorizar = document.getElementById('btn-despriorizar');
-
-                                let saldoDisponible = 0;
-                                let modoGuardarActivo = false;
-
-                                btnGuardar.addEventListener('click', function () {
-                                    modoGuardarActivo = true;
-                                    actualizarChecks();
-                                });
-
-                                btnDespriorizar.addEventListener('click', function () {
-                                    modoGuardarActivo = false;
-                                    checkboxes.forEach(c => {
-                                        c.disabled = false;
-                                    });
-                                });
-
-                                function actualizarChecks() {
-                                    if (!modoGuardarActivo) return;
-
-                                    let totalSeleccionado = 0;
-                                    checkboxes.forEach(c => {
-                                        if (c.checked) {
-                                            totalSeleccionado += parseFloat(c.getAttribute('data-precio'));
-                                        }
-                                    });
-
-                                    const saldoRestante = saldoDisponible - totalSeleccionado;
-
-                                    checkboxes.forEach(c => {
-                                        const precio = parseFloat(c.getAttribute('data-precio'));
-                                        if (!c.checked) {
-                                            c.disabled = precio > saldoRestante;
-                                        } else {
-                                            c.disabled = false;
-                                        }
-                                    });
-                                }
-
-                                cuentaSelect.addEventListener('change', function () {
-                                    const selectedOption = this.options[this.selectedIndex];
-                                    saldoDisponible = parseFloat(selectedOption.getAttribute('data-saldo')) || 0;
-                                    modoGuardarActivo = true;
-                                    checkboxes.forEach(chk => {
-                                        chk.checked = false;
-                                        chk.disabled = false;
-                                    });
-
-                                    actualizarChecks();
-                                });
-
-                                checkboxes.forEach(chk => {
-                                    chk.addEventListener('change', function () {
-                                        if (!modoGuardarActivo) return;
-
-                                        let totalSeleccionado = 0;
-                                        checkboxes.forEach(c => {
-                                            if (c.checked) {
-                                                totalSeleccionado += parseFloat(c.getAttribute('data-precio'));
-                                            }
-                                        });
-
-                                        if (totalSeleccionado > saldoDisponible) {
-                                            alert('No hay suficiente saldo para seleccionar este registro.');
-                                            this.checked = false;
-                                        }
-
-                                        actualizarChecks();
-                                    });
-                                });
-                            });
-
-                        </script> --}}
                         <script>
                             document.addEventListener('DOMContentLoaded', function () {
                                 const cuentaSelect = document.getElementById('bancoorigenprogramacion');
@@ -1463,7 +1277,6 @@
                                     checkboxes.forEach(c => {
                                         const precio = parseFloat(c.getAttribute('data-precio'));
 
-                                        // Solo desactivar por saldo si es la cuenta 3000189269
                                         if (cuentaActual === '3000189269') {
                                             if (!c.checked) {
                                                 c.disabled = precio > saldoRestante;
@@ -1501,7 +1314,6 @@
                                             }
                                         });
 
-                                        // Solo bloquear si la cuenta es la primera
                                         if (cuentaActual === '3000189269' && totalSeleccionado > saldoDisponible) {
                                             alert('No hay suficiente saldo para seleccionar este registro.');
                                             this.checked = false;
@@ -1514,11 +1326,11 @@
                         </script>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
     </div>
 </div>
-<!-- Modal para mostrar la factura -->
+
 <div class="modal fade" id="modalFactura" tabindex="-1" role="dialog" aria-labelledby="modalFacturaLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
@@ -1541,7 +1353,6 @@
         $('#modalFactura').modal('show');
     });
 
-    // Limpia el iframe al cerrar el modal
     $('#modalFactura').on('hidden.bs.modal', function () {
         $('#iframeFactura').attr('src', '');
     });
@@ -1781,6 +1592,7 @@
                                                                     saldosDisponibles[sel.value] -= total;
                                                                 }
                                                             });
+                                                            // BLOQUEO DE APROBAR SIN SALDO EN CUENTAS
                                                             //if (selectedCuenta && totalUnitario >= saldosDisponibles[selectedCuenta]) {
                                                             //    alert(`No hay saldo suficiente en la cuenta ${selectedCuenta}. Saldo disponible: ${saldosDisponibles[selectedCuenta].toFixed(2)}`);
                                                             //    this.value = '';
@@ -2451,14 +2263,14 @@
 @section('js')
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    @if (session('eliminar')=='ok')
-    <script>
-        Swal.fire(
-      '¡Eliminado!',
-      'El rol se eliminó con éxito',
-      'success')
-    </script>
-    @endif
+@if (session('eliminar')=='ok')
+<script>
+    Swal.fire(
+    '¡Eliminado!',
+    'El rol se eliminó con éxito',
+    'success')
+</script>
+@endif
 
 <script>
     $('.formulario-eliminar').submit(function(e){
@@ -2485,9 +2297,7 @@
         document.querySelectorAll('.actualizar-fecha-btn').forEach(button => {
             button.addEventListener('click', function () {
                 const preordenid = this.getAttribute('data-preordenid');
-                /* const inputFecha = document.querySelector(`input[data-preordenid='${preordenid}']`); */
                 const inputFecha = this.closest('.input-group').querySelector('input[type="date"]');
-
                 const nuevaFecha = inputFecha.value;
 
                 if (!nuevaFecha) {
@@ -2653,7 +2463,7 @@
         const seleccionados = Array.from(document.querySelectorAll('.check-unificar:checked'));
 
         if (seleccionados.length < 2) {
-            alert('Seleccione al menos dos preórdenes para unificar.');
+            alert('Seleccione al menos dos órdenes para unificar.');
             return;
         }
 
@@ -2670,14 +2480,14 @@
         });
 
         if (proveedores.size > 1 || fechas.size > 1) {
-            alert('Las preórdenes seleccionadas deben tener el MISMO PROVEEDOR y la MISMA FECHA DE PAGO.');
+            alert('Las órdenes seleccionadas deben tener el MISMO PROVEEDOR y la MISMA FECHA DE PAGO.');
             return;
         }
 
         // Elegir la preorden más antigua alfabéticamente
         const preordenBase = ids.reduce((a, b) => a < b ? a : b);
 
-        if (!confirm(`¿Desea unificar las preórdenes seleccionadas bajo la preorden "${preordenBase}"?`)) {
+        if (!confirm(`¿Desea unificar las órdenes seleccionadas bajo la preorden "${preordenBase}"?`)) {
             return;
         }
 
@@ -2708,7 +2518,7 @@
         const seleccionados = Array.from(document.querySelectorAll('.check-unificar:checked'));
 
         if (seleccionados.length < 2) {
-            alert('Seleccione al menos dos preórdenes para unificar.');
+            alert('Seleccione al menos dos órdenes para unificar.');
             return;
         }
 
@@ -2725,14 +2535,14 @@
         });
 
         if (proveedores.size > 1 || fechas.size > 1) {
-            alert('Las preórdenes seleccionadas deben tener el MISMO PROVEEDOR y la MISMA FECHA DE PAGO.');
+            alert('Las órdenes seleccionadas deben tener el MISMO PROVEEDOR y la MISMA FECHA DE PAGO.');
             return;
         }
 
         // Elegir la preorden más antigua alfabéticamente
         const preordenBase = ids.reduce((a, b) => a < b ? a : b);
 
-        if (!confirm(`¿Desea unificar las preórdenes seleccionadas bajo la preorden "${preordenBase}"?`)) {
+        if (!confirm(`¿Desea unificar las órdenes seleccionadas bajo la preorden "${preordenBase}"?`)) {
             return;
         }
 
@@ -2763,7 +2573,7 @@
         const seleccionados = Array.from(document.querySelectorAll('.check-unificar:checked'));
 
         if (seleccionados.length < 2) {
-            alert('Seleccione al menos dos preórdenes para unificar.');
+            alert('Seleccione al menos dos órdenes para unificar.');
             return;
         }
 
@@ -2780,14 +2590,14 @@
         });
 
         if (proveedores.size > 1 || fechas.size > 1) {
-            alert('Las preórdenes seleccionadas deben tener el MISMO PROVEEDOR y la MISMA FECHA DE PAGO.');
+            alert('Las órdenes seleccionadas deben tener el MISMO PROVEEDOR y la MISMA FECHA DE PAGO.');
             return;
         }
 
         // Elegir la preorden más antigua alfabéticamente
         const preordenBase = ids.reduce((a, b) => a < b ? a : b);
 
-        if (!confirm(`¿Desea unificar las preórdenes seleccionadas bajo la preorden "${preordenBase}"?`)) {
+        if (!confirm(`¿Desea unificar las órdenes seleccionadas bajo la preorden "${preordenBase}"?`)) {
             return;
         }
 
@@ -2813,39 +2623,4 @@
         });
     });
 </script>
-{{-- <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        let proveedorReferencia = null;
-        let fechaReferencia = null;
-
-        document.querySelectorAll('.check-unificar').forEach(checkbox => {
-            checkbox.addEventListener('change', function () {
-                const proveedorActual = (this.dataset.proveedornombre || '').trim().toLowerCase();
-                const fechaActual = (this.dataset.fechapagar || '').trim();
-
-                if (this.checked) {
-                    const seleccionados = document.querySelectorAll('.check-unificar:checked');
-                    if (seleccionados.length === 1) {
-                        // Primer checkbox marcado, se define la referencia
-                        proveedorReferencia = proveedorActual;
-                        fechaReferencia = fechaActual;
-                    } else {
-                        // Verificar coincidencia
-                        if (proveedorActual !== proveedorReferencia || fechaActual !== fechaReferencia) {
-                            alert('Solo puede seleccionar preórdenes del MISMO PROVEEDOR y con la MISMA FECHA DE PAGO.');
-                            this.checked = false;
-                        }
-                    }
-                } else {
-                    // Si se desmarca y no quedan seleccionados, reinicia referencias
-                    const seleccionados = document.querySelectorAll('.check-unificar:checked');
-                    if (seleccionados.length === 0) {
-                        proveedorReferencia = null;
-                        fechaReferencia = null;
-                    }
-                }
-            });
-        });
-    });
-</script> --}}
 @endsection

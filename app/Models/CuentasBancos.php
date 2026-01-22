@@ -17,6 +17,7 @@ class CuentasBancos extends Model
         'numerocuenta' => '',
         'nombrecuenta' => '',
         'estado' => '',
+        'tipocuenta' => '',
         'sigla' => '',
     ]; 
 
@@ -26,6 +27,7 @@ class CuentasBancos extends Model
         'numerocuenta',
         'nombrecuenta',
         'estado',
+        'tipocuenta',
         'sigla',
     ];
 

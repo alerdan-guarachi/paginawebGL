@@ -1,0 +1,341 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../services/api_service.dart';
+import 'login_page.dart';
+import 'areas_page.dart';
+import 'goodbits_page.dart';
+import 'atencion_medicos_page.dart';
+import '../widgets/good_life_loader.dart';
+import 'documentos_page.dart'; // Ajusta la ruta según tu proyecto
+import 'tramites_page.dart'; // Ajusta la ruta según tu proyecto
+import 'notificaciones_page.dart'; // Ajusta la ruta según tu proyecto
+
+class HomePage extends StatefulWidget {
+  final String nombreUsuario;
+  final String sucursalUsuario;
+  final String usuarioId;
+
+  HomePage({required this.nombreUsuario, required this.sucursalUsuario, required this.usuarioId});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _unreadCount = 0;
+  final Color verde = Color(0xFF94C93B);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnreadCount();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    try {
+      final data = await ApiService.getNotificaciones(widget.usuarioId);
+      if (mounted) {
+        setState(() {
+          _unreadCount = data['no_leidas']?.length ?? 0;
+        });
+      }
+    } catch (e) {
+      print('Error fetching notification count: $e');
+    }
+  }
+
+  void cerrarSesion(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('nombreUsuario');
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => LoginPage()),
+    );
+  }
+
+  void _navigateToNotificaciones() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NotificacionesPage(usuarioId: widget.usuarioId),
+      ),
+    );
+    // Al regresar, actualizamos el contador
+    _loadUnreadCount();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      drawer: Drawer(
+        child: Column(
+          children: [
+            Container(
+              color: verde,
+              width: double.infinity,
+              padding: EdgeInsets.only(top: 40, bottom: 20),
+              child: Column(
+                children: [
+                  Container(
+                    width: 70,
+                    height: 70,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: ClipOval(
+                      child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    widget.nombreUsuario,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+
+            // NUEVA OPCIÓN: Atención Médicos
+            ListTile(
+              leading: Icon(Icons.medical_services, color: verde),
+              title: Text('Atención Médicos'),
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text('Atención Médicos'),
+                    content: Text('¿Deseas ver Estudios o Especialidades?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AreasPage(
+                                tipoArea: 'ESTUDIO',
+                                sucursalUsuario: widget.sucursalUsuario,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text('ESTUDIOS'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AreasPage(
+                                tipoArea: 'ESPECIALIDAD',
+                                sucursalUsuario: widget.sucursalUsuario,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text('ESPECIALIDADES'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+
+            // Otras opciones
+            ListTile(
+              leading: Icon(Icons.calendar_month, color: verde),
+              title: Text('Programaciones Médicas'),
+              onTap: () {},
+            ),
+
+            ListTile(
+              leading: Icon(Icons.description, color: verde),
+              title: Text('Informes Médicos'),
+              onTap: () async {
+                // Obtener el usuarioId del SharedPreferences
+                final prefs = await SharedPreferences.getInstance();
+                final usuarioId = prefs.getString('usuarioId');
+
+                if (usuarioId != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DocumentosPage(usuarioId: usuarioId),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Usuario no autenticado')),
+                  );
+                }
+              },
+            ),
+
+            ListTile(
+              leading: Icon(Icons.assignment, color: verde),
+              title: Text('Trámites'),
+              onTap: () async {
+                final prefs = await SharedPreferences.getInstance();
+                final usuarioId = prefs.getString('usuarioId');
+
+                if (usuarioId != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => TramitesPage(usuarioId: usuarioId),
+                    ),
+                  );
+                }
+              },
+            ),
+
+
+            ListTile(
+              leading: Icon(Icons.account_balance_wallet, color: verde),
+              title: Text('Billetera Móvil'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GoodBitsPage(usuarioId: widget.usuarioId),
+                  ),
+                );
+              },
+            ),
+
+            ListTile(
+              leading: Icon(Icons.notifications, color: verde),
+              title: const Text('Notificaciones'),
+              trailing: _unreadCount > 0
+                  ? Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '$_unreadCount',
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                    )
+                  : null,
+              onTap: _navigateToNotificaciones,
+            ),
+
+
+            Spacer(),
+
+            ListTile(
+              leading: Icon(Icons.logout,
+                  color: Colors.red),
+              title: Text('Cerrar sesión'),
+              onTap: () { showDialog( context: context,
+                builder: (_) => AlertDialog( title: Text('Confirmar'),
+                  content: Text('¿Deseas cerrar sesión?'),
+                  actions: [ TextButton( onPressed: () => Navigator.pop(context),
+                    child: Text('Cancelar'), ),
+                    ElevatedButton( style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      onPressed: () { Navigator.pop(context); cerrarSesion(context); },
+                      child: Text('Sí, cerrar', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              );
+                },
+            ),
+
+          ],
+        ),
+      ),
+      appBar: AppBar(backgroundColor: verde, title: Text("")),
+      body: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              verde.withOpacity(0.15),
+              Colors.white,
+            ],
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 40),
+
+              Center(
+                child: Image.asset(
+                  'assets/logo.png',
+                  height: 120,
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // TITULO
+              Text(
+                "BIENVENIDO(A) A LA APP OFICIAL DE",
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey.shade700,
+                  letterSpacing: 1,
+                ),
+              ),
+
+              const SizedBox(height: 1),
+
+              Text(
+                "GOOD LIFE S.R.L.",
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: verde,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // CARD DE TEXTO
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.all(25),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 15,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  "En GOOD LIFE S.R.L. nos dedicamos a cuidar de tu bienestar y asegurar tu futuro financiero.\n\n"
+                      "Descubre nuestros servicios médicos y asesoría en la ley de pensiones para una vida plena y segura.\n\n"
+                      "Explora nuestra App y conoce más sobre nuestro equipo de profesionales apasionados y dedicados a tu atención.\n\n"
+                      "Estamos aquí para escucharte y responder a tus necesidades de manera personalizada.\n\n"
+                      "¡Tu bienestar es nuestra prioridad!",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.4,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

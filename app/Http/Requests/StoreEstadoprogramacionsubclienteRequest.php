@@ -48,10 +48,10 @@ class StoreEstadoprogramacionsubclienteRequest extends FormRequest
             'accionnombre' => '',
             'fechabateria' => '',
             'programacionid' => '',
-            'motivoanulacion',
-        'usuarioanulacion',
-        'nrosesion',
-
+            'motivoanulacion' => '',
+            'usuarioanulacion' => '',
+            'nrosesion' => '',
+            'idsubproc' => '',
         ]; 
         return $rules;
     }

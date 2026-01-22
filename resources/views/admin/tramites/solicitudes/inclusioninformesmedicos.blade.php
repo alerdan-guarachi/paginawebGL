@@ -2,6 +2,16 @@
 <html>
 <head>
     <link rel="stylesheet" href="{{ asset('css/prestacionescartas.css') }}">
+    <style>
+        table td {
+            padding: 2px 5px;
+            line-height: 1.2;
+        }
+        .tableinter td {
+            padding: 2px 5px;
+            line-height: 1;
+        }
+    </style>
 </head>
 <body>
     <main>
@@ -22,7 +32,7 @@
         <div class="tipo5"><strong>REF: SOLICITUD DE INCLUSIÓN DE INFORMES MÉDICOS</strong></div>
         <div class="tipo2">Distinguido Doctor. -</div>
         <div class="tipo6">
-        Yo, el Sr. <strong>{{$cliente->nombrecompleto}}</strong> con Matricula Nro. <strong>{{ $matricula }}</strong>, con C.I. 
+        Yo, @if ($sexo === 'masculino')el Sr.@elseif ($sexo === 'femenino')la Sra.@endif <strong>{{$cliente->nombrecompleto}}</strong> con Matricula Nro. <strong>{{ $matricula }}</strong>, con C.I. 
         <strong>{{$cliente->ci}} {{$cliente->ciexp}}</strong>. 
         Por medio de la presente, tengo a bien a dirigirme a su persona con la finalidad de solicitar la Inclusión de 
         <strong>Certificados Médicos de Especialidades más Informes de Estudios</strong> a mi <strong>HISTORIA CLINICA</strong>. 
@@ -45,12 +55,12 @@
                         <tr>
                             <td>{{ $especialista['especialista'] }}</td>
                             <td>{{ $especialista['detalle'] }}</td>
-                            <td class="tipo10">{{ $especialista['cantidad'] }}</td>
+                            <td class="tipo10">{{ $especialista['cantidad'] }} Pag.</td>
                         </tr>
                     @endforeach
                 @else
                     <tr>
-                        <td colspan="3">No hay datos disponibles</td>
+                        <td colspan="3" class="textoedita">NINGUNA ESPECIALIDAD AGREGADA</td>
                     </tr>
                 @endif
             </tbody>
@@ -59,11 +69,19 @@
         Sin otro particular, me despido no sin antes deseándoles éxito en sus actividades cotidianas.
         </div>
         <div class="tipo6">
-        Atte.<br><br>
+        Atte.
         </div>
-        <div class="tipo7" style="margin-top: 80px;"><strong>{{$cliente->nombrecompleto}}</div>
-        <div class="tipo8">C.I.: {{$cliente->ci}}</div>
-        <div class="tipo8">Teléfono: {{ substr($cliente->celular, 3) }}</div>
+        <div class="tipo7" style="margin-top: 60px;"><strong>{{ $nombre }}</strong></div>
+        <div class="tipo8">C.I.: {{ $ci }} {{ $ciexp }}</div>
+        @if ($emisor === 'APODERADO')
+            <div class="tipo7"><strong>APODERADO</strong></div>
+        @endif
+        <div class="tipo8">
+            Teléfono: {{ $telefono }}
+            @if ($emisor === 'APODERADO')
+                - {{ Str::startsWith($cliente->celular, '591') ? substr($cliente->celular, 3) : $cliente->celular }}
+            @endif
+        </div>
     </main>
 </body>
 </html>

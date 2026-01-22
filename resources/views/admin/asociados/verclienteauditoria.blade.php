@@ -109,7 +109,15 @@
                                                 </tr>
                                                 <tr>
                                                     <th>Estado civil</th>
-                                                    <td>{{$clienteauditoria->estadocivil}}</td>
+                                                    <td>
+                                                        {{ $clienteauditoria->estadocivil }}
+                                                        @if(!empty($clienteauditoria->nombreespcon))
+                                                            - {{ $clienteauditoria->nombreespcon }}
+                                                        @endif
+                                                        @if(!empty($clienteauditoria->ciespcon))
+                                                            - {{ $clienteauditoria->ciespcon }}
+                                                        @endif
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <th>Domicilio</th>
@@ -288,7 +296,7 @@
                                 </a>
                             </div>
                             @endcan
-                            @can('admin.asociados.crearbateriaclienteauditoria')
+                            @can('admin.asociados.crearserviciocliente')
 
                             @if ($tieneContactos)
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
@@ -480,6 +488,17 @@
     </div>
 
     <!-- CARTAS -->
+    <style>
+        .modal-xxl {
+            max-width: 90%;
+        }
+        .truncar2 {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 80px;
+        }
+    </style>
     <div class="modal fade" id="cartasclientes" tabindex="-1" role="dialog" aria-labelledby="cartasclientesLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
@@ -496,7 +515,7 @@
                                     {!! Form::hidden('clienteauditorianombre', $clienteauditoria->nombrecompleto) !!}
 
                                     <strong style="color: #94c93b">SUBIR DOCUMENTOS</strong>
-                                    <div class="form-group">
+                                    {{-- <div class="form-group">
                                         {!! Form::label('detalle', 'Detalle:') !!}
                                         {!! Form::text('detalle', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
                                         @error('detalle')
@@ -505,6 +524,50 @@
                                             </small>
                                         @enderror
                                     </div>
+                                    <div class="form-group">
+                                        {!! Form::label('cartaadjunto', 'Seleccionar Carta a Adjuntar:') !!}
+                                        <select name="cartaadjunto" class="form-control">
+                                            <option value="">Seleccionar Carta...</option>
+                                            @foreach ($cartasclientes as $cartascliente)
+                                                <option value="{{ $cartascliente->id }}">
+                                                    {{ $cartascliente->detalle }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div> --}}
+                                    <div class="form-group d-flex align-items-center">
+                                        <div style="flex: 1;">
+                                            {!! Form::label('detalle', 'Detalle:') !!}
+                                            {!! Form::text('detalle', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                                            @error('detalle')
+                                                <small class="text-danger fas fa-exclamation-circle">
+                                                    {{ $message }}
+                                                </small>
+                                            @enderror
+                                        </div>
+                                        <div style="margin-left: 10px; margin-top: 25px;">
+                                            <button type="button" id="btnMostrarCarta" class="btn btn-sm btn-outline-secondary" title="ADJUNTAR A CARTA">
+                                                <i class="fas fa-envelope-open"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="grupoCartaAdjunto" style="display: none;">
+                                        {!! Form::label('cartaadjunto', 'Carta a Adjuntar:') !!}
+                                        <select name="cartaadjunto" class="form-control">
+                                            <option value="">Seleccionar Carta...</option>
+                                            @foreach ($cartasclientes as $cartascliente)
+                                                <option value="{{ $cartascliente->id }}">
+                                                    {{ $cartascliente->detalle }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <script>
+                                        document.getElementById('btnMostrarCarta').addEventListener('click', function () {
+                                            const grupo = document.getElementById('grupoCartaAdjunto');
+                                            grupo.style.display = grupo.style.display === 'none' ? 'block' : 'none';
+                                        });
+                                    </script>
                                     <div class="form-group">
                                         {!! Form::label('fecha', 'Fecha_Reg:') !!}
                                         {!! Form::date('fecha', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
@@ -535,35 +598,584 @@
                         </div>
                         <div class="col-lg-8">
                             <div class="card">
+                                {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.actualizarBanco', $clienteauditoria], 'method' => 'POST']) !!}
                                 <div class="card-body">
                                     <strong style="color: #94c93b">LISTADO DE DOCUMENTOS</strong>
-                                    <div class="table-responsive"></div>
-                                        <table class="table table-striped">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-sm table-bordered">
                                             <thead>
-                                                <tr>
-                                                    <th style="color: black; padding: 5px;">ID</th>
-                                                    <th style="color: black; padding: 5px;">Detalle</th>
-                                                    <th style="color: black; padding: 5px;">Fecha</th>
-                                                    <th style="color: black; padding: 5px;">Doc.</th>
-                                                    
+                                                <tr style="background-color: rgb(255, 255, 255);">
+                                                    <th class="text-left">Banco_Adj.</th>
+                                                    <th class="text-center">Adj.</th>
+                                                    <th class="text-left">ID</th>
+                                                    <th class="text-left">Detalle</th>
+                                                    <th class="text-left">Fecha</th>
+                                                    <th class="text-center">Doc.</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 @foreach ($cartasclientes as $cartascliente)
-                                                    <tr>
+                                                    @php
+                                                        $adjuntos = DB::table('adjuntoacartas')
+                                                            ->where('clienteid', $clienteauditoria->id)
+                                                            ->where('idcarta', $cartascliente->id)
+                                                            ->orderByRaw('CAST(nroorden AS UNSIGNED)')
+                                                            ->get();
+                                                    @endphp
+                                                    <tr style="background-color: rgb(245, 245, 245);">
+                                                        <td class="text-center truncar2">
+                                                            @if($cartascliente->bancoadjunto)
+                                                                <span title="{{ $cartascliente->bancoadjunto }}">{{ $cartascliente->bancoadjunto }}</span>
+                                                            @else
+                                                                <input type="checkbox" name="idcarta[]" value="{{ $cartascliente->id }}" class="check-adjunto">
+                                                            @endif
+                                                        </td>
+
+                                                        <td class="text-center">
+                                                            @if($adjuntos->count() > 0)
+                                                                <a class="btn btn-sm btn-vercarta2 toggle-adjuntos" data-id="{{ $cartascliente->id }}">
+                                                                    <i class="fas fa-eye"></i>
+                                                                </a>
+                                                            @else
+                                                                <button class="btn btn-sm btn-secondary" disabled>
+                                                                </button>
+                                                            @endif
+                                                        </td>
                                                         <td style="text-align: left; padding: 5px;">{{ $cartascliente->id }}</td>
                                                         <td style="text-align: left; padding: 5px;">{{ $cartascliente->detalle }}</td>
                                                         <td style="text-align: left; padding: 5px;">{{ $cartascliente->fecha }}</td>
-                                                        <td style="text-align: left; padding: 5px;">
+                                                        <td class="text-center">
                                                             <a href="{{ asset('/cartasclientes/' . $clienteauditoria->id . '/' . $cartascliente->documento) }}" class="btn btn-vercarta" target="_blank" title="VER DOCUMENTO">
                                                                 <i class="fas fa-file-alt"></i>
                                                             </a>
                                                         </td>
                                                     </tr>
+
+                                                    @if($adjuntos->count() > 0)
+                                                        <tr class="adjuntos-row" id="adjuntos-{{ $cartascliente->id }}" style="display: none;">
+                                                            <td colspan="6">
+                                                                <table class="table table-bordered table-sm mb-0">
+                                                                    <thead>
+                                                                        <tr style="background-color: white">
+                                                                            <th class="text-left">ID</th>
+                                                                            <th class="text-left">Orden</th>
+                                                                            <th class="text-left">Detalle</th>
+                                                                            <th class="text-center">Fecha</th>
+                                                                            <th class="text-center">Doc.</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @foreach($adjuntos as $adj)
+                                                                            @php
+                                                                                if($adj->tipo == 'HISTORIA MEDICA' || $adj->tipo == 'PROGRAMACIONES'){
+                                                                                    $detalle = DB::table('documentacionsubclientes')
+                                                                                        ->where('id', $adj->idadjunto)
+                                                                                        ->where('clienteauditoriaid', $clienteauditoria->id)
+                                                                                        ->first();
+                                                                                    $nombre = $detalle->accion ?? 'Sin Acción';
+                                                                                    $documento = $detalle->document ?? '';
+                                                                                    $fechaMostrar = $detalle ? \Carbon\Carbon::parse($detalle->created_at)->format('Y-m-d') : '';
+                                                                                    $idMostrar = $detalle->id ?? '';
+                                                                                } elseif($adj->tipo == 'CARTAS'){
+                                                                                    $detalle = DB::table('cartasclientes')
+                                                                                        ->where('id', $adj->idadjunto)
+                                                                                        ->where('clienteid', $clienteauditoria->id)
+                                                                                        ->first();
+                                                                                    $nombre = $detalle->detalle ?? 'Sin Detalle';
+                                                                                    $documento = $detalle->documento ?? '';
+                                                                                    $fechaMostrar = $detalle->fecha ?? '';
+                                                                                    $idMostrar = $detalle->id ?? '';
+                                                                                } elseif($adj->tipo == 'DICTAMEN'){
+                                                                                    $detalle = DB::table('dictamenauditoria')
+                                                                                        ->where('id', $adj->idadjunto)
+                                                                                        ->where('clienteauditoriaid', $clienteauditoria->id)
+                                                                                        ->first();
+                                                                                    $nrodictamen = $detalle->nrodictamen ?? 'Sin Detalle';
+                                                                                    $porcentajeinvalidez = $detalle->porcentajeinvalidez ?? '';
+                                                                                    $nrodictamen = $detalle->nrodictamen ?? '';
+                                                                                    $documento = $detalle->documento ?? '';
+                                                                                    $fechaMostrar = $detalle->fechadictamen ?? '';
+                                                                                    $idMostrar = $detalle->id ?? '';
+                                                                                } elseif($adj->tipo == 'DOCUMENTACIÓN'){
+                                                                                    $idBase = preg_replace('/[^0-9]/', '', $adj->idadjunto);
+                                                                                    $sufijo = preg_replace('/[0-9]/', '', $adj->idadjunto);
+
+                                                                                    $detalle = DB::table('requisitosclientesauditorias')
+                                                                                        ->where('id', $idBase)
+                                                                                        ->where('clienteauditoriaid', $clienteauditoria->id)
+                                                                                        ->first();
+
+                                                                                    $nombre = '';
+                                                                                    $documento = '';
+                                                                                    $fechaMostrar = '';
+                                                                                    $idMostrar = '';
+
+                                                                                    if ($detalle) {
+                                                                                        if ($sufijo === 'CI' && !empty($detalle->ciasegurado)) {
+                                                                                            $nombre = 'CARNET DE IDENTIDAD';
+                                                                                            $documento = $detalle->ciasegurado;
+                                                                                            $fechaMostrar = \Carbon\Carbon::parse($detalle->updated_at)->format('Y-m-d');
+                                                                                            $idMostrar = $detalle->id . 'CI';
+                                                                                        } elseif ($sufijo === 'CN' && !empty($detalle->cnacasegurado)) {
+                                                                                            $nombre = 'CERTIFICADO DE NACIMIENTO';
+                                                                                            $documento = $detalle->cnacasegurado;
+                                                                                            $fechaMostrar = \Carbon\Carbon::parse($detalle->updated_at)->format('Y-m-d');
+                                                                                            $idMostrar = $detalle->id . 'CN';
+                                                                                        }
+                                                                                    }
+                                                                                } elseif($adj->tipo == 'INFORME FINAL'){
+                                                                                    $detalle = DB::table('informesfinales')
+                                                                                        ->where('id', $adj->idadjunto)
+                                                                                        ->where('clienteauditoriaid', $clienteauditoria->id)
+                                                                                        ->first();
+                                                                                    $nombre = $detalle->servicio ?? 'Sin Detalle';
+                                                                                    $documento = $detalle->document ?? '';
+                                                                                    $documento2 = $detalle->documentfirmado ?? '';
+                                                                                    $fechaMostrar = \Carbon\Carbon::parse($detalle->created_at)->format('Y-m-d');
+                                                                                    $idMostrar = $detalle->id ?? '';
+                                                                                }
+                                                                            @endphp
+                                                                            <tr style="background-color: white;">
+                                                                                <td class="text-left">{{ $idMostrar }}</td>
+                                                                                <td class="text-left">{{ $adj->nroorden }}</td>
+                                                                                <td class="text-left">
+                                                                                    @if($adj->tipo == 'DICTAMEN')
+                                                                                        DICTAMEN N° {{ $nrodictamen }} - Porcentaje: {{ $porcentajeinvalidez }}
+                                                                                    @elseif($adj->tipo == 'INFORME FINAL')
+                                                                                        INFORME FINAL DE {{ $nombre ?? 'Sin detalle' }}
+                                                                                    @else
+                                                                                        {{ $nombre ?? 'Sin detalle' }}
+                                                                                    @endif
+                                                                                </td>
+                                                                                <td class="text-center">{{ $fechaMostrar }}</td>
+                                                                                <td class="text-center">
+                                                                                    @if($documento)
+                                                                                        @php
+                                                                                            if($adj->tipo == 'CARTAS') {
+                                                                                                $ruta = '/cartasclientes/' . $clienteauditoria->id . '/';
+                                                                                            } elseif($adj->tipo == 'PROGRAMACIONES') {
+                                                                                                $ruta = '/documentacionclientesauditoria/' . $clienteauditoria->id . '/';
+                                                                                            } elseif($adj->tipo == 'HISTORIA MEDICA') {
+                                                                                                $ruta = '/historiamedicaauditoria/' . $clienteauditoria->id . '/extracted/';
+                                                                                            } elseif($adj->tipo == 'DICTAMEN') {
+                                                                                                $ruta = '/dictamenauditoria/' . $clienteauditoria->id . '/';
+                                                                                            } elseif($adj->tipo == 'DOCUMENTACIÓN') {
+                                                                                                $ruta = '/requisitosclientesauditoria/' . $clienteauditoria->id . '/';
+                                                                                            } elseif($adj->tipo == 'INFORME FINAL') {
+                                                                                                $ruta = '/informesfinalesclientesauditoria/' . $clienteauditoria->id . '/';
+                                                                                            } else {
+                                                                                                $ruta = '';
+                                                                                            }
+                                                                                        @endphp
+
+                                                                                        @if(!empty($documento) && $documento !== 'PENDIENTE')
+                                                                                            <a href="{{ asset($ruta . $documento) }}" 
+                                                                                            class="btn btn-sm btn-vercarta" 
+                                                                                            target="_blank" 
+                                                                                            title="Ver Documento">
+                                                                                                <i class="fas fa-file-alt"></i>
+                                                                                            </a>
+                                                                                        @else
+                                                                                            <span class="badge badge-warning">PENDIENTE</span>
+                                                                                        @endif
+
+                                                                                        @if($adj->tipo == 'INFORME FINAL' && !empty($documento2))
+                                                                                            <a href="{{ asset($ruta . $documento2) }}" 
+                                                                                            class="btn btn-sm btn-vercarta" 
+                                                                                            target="_blank" 
+                                                                                            title="Ver Documento 2">
+                                                                                                <i class="fas fa-file-alt"></i>
+                                                                                            </a>
+                                                                                        @endif
+                                                                                    @endif
+                                                                                </td>
+                                                                            </tr>
+                                                                        @endforeach
+                                                                    </tbody>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    @endif
                                                 @endforeach
                                             </tbody>
                                         </table>
                                     </div>
+
+                                    <label for="">Agrupar a Entidad Financiera:</label>
+                                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                                        <select name="banco" id="banco" class="form-control" style="flex: 1;">
+                                            <option value="">Seleccionar opción...</option>
+                                            @if($banco1) <option value="{{ $banco1 }}">{{ $banco1 }}</option> @endif
+                                            @if($banco2) <option value="{{ $banco2 }}">{{ $banco2 }}</option> @endif
+                                            @if($banco3) <option value="{{ $banco3 }}">{{ $banco3 }}</option> @endif
+                                        </select>
+
+                                        <button type="submit" class="btn btn-sm btn-si">AGRUPAR ENTIDAD</button>
+                                    </div>
+
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            document.querySelectorAll('.toggle-adjuntos').forEach(btn => {
+                                                btn.addEventListener('click', function() {
+                                                    let id = this.getAttribute('data-id');
+                                                    let row = document.getElementById('adjuntos-' + id);
+                                                    if(row.style.display === 'none' || row.style.display === '') {
+                                                        row.style.display = 'table-row';
+                                                    } else {
+                                                        row.style.display = 'none';
+                                                    }
+                                                });
+                                            });
+                                        });
+                                    </script>
+                                </div>
+                                
+                                {!! Form::close() !!}
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.adjuntaracartas', $clienteauditoria], 'method' => 'POST', 'files' => true]) !!}
+                                    {!! Form::hidden('usuarioregistroid', auth()->user()->id) !!}
+                                    {!! Form::hidden('usuarioregistronombre', auth()->user()->name) !!}
+                                    {!! Form::hidden('clienteid', $clienteauditoria->id) !!}
+                                    {!! Form::hidden('clientenombre', $clienteauditoria->nombrecompleto) !!}
+                                    <strong style="color: #94c93b">DOCUMENTOS DEL CLIENTE</strong>
+                                    <div class="table-responsive">
+                                        <div class="mb-3">
+                                            <label>Seleccionar Fecha de Batería:</label>
+                                            <select id="filtroFecha" class="form-control">
+                                                <option value="">-- Seleccione --</option>
+                                                @foreach($fechas as $f)
+                                                    <option value="{{ $f->fechabateria }}">{{ $f->fechabateria }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <table class="table table-striped table-sm table-bordered" id="tablaInformes">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-center" style="width: 10%;">Selec.</th>
+                                                    <th class="text-left" style="width: 10%;">ID</th>
+                                                    <th class="text-left" style="width: 70%;">Detalle</th>
+                                                    <th class="text-center" style="width: 10%;">Doc.</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if($historiaMedica)
+                                                    <tr data-fecha="">
+                                                        <td class="text-center">
+                                                            <input type="checkbox" name="seleccionados[]" value="{{ $historiaMedica->id }}">
+                                                            <input type="hidden" name="tipos[{{ $historiaMedica->id }}]" value="HISTORIA MEDICA">
+                                                            <input type="hidden" name="ordenes[{{ $historiaMedica->id }}]" class="orden-input">
+                                                        </td>
+                                                        <td class="text-left">{{ $historiaMedica->id }}</td>
+                                                        <td class="text-left">{{ $historiaMedica->accion }}</td>
+                                                        <td class="text-center">
+                                                            <a href="{{ asset('/historiamedicaauditoria/' . $clienteauditoria->id . '/extracted/' . $historiaMedica->document) }}"
+                                                            class="btn btn-vercarta btn-sm" target="_blank" title="Ver Documento">
+                                                                <i class="fas fa-paste"></i>
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                @endif
+                                                 @foreach ($informes as $informe)
+                                                    <tr data-fecha="{{ $informe->fechabateria }}" style="display: none;">
+                                                        <td class="text-center">
+                                                            <input type="checkbox" name="seleccionados[]" value="{{ $informe->id }}">
+                                                            <input type="hidden" name="tipos[{{ $informe->id }}]" value="PROGRAMACIONES">
+                                                            <input type="hidden" name="ordenes[{{ $informe->id }}]" class="orden-input">
+                                                        </td>
+                                                        <td class="text-left">{{ $informe->id }}</td>
+                                                        <td class="text-left">{{ $informe->accion }}</td>
+                                                        <td class="text-center">
+                                                            @if(!empty($informe->document))
+                                                                <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $informe->document) }}"
+                                                                    class="btn btn-vercarta btn-sm" target="_blank" title="Ver Documento">
+                                                                    <i class="fas fa-paste"></i>
+                                                                </a>
+                                                            @endif
+                                                            @if(!empty($informe->image))
+                                                                <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $informe->image) }}"
+                                                                    class="btn btn-vercarta2 btn-sm" target="_blank" title="Ver Imagen 1">
+                                                                    <i class="fas fa-image"></i>
+                                                                </a>
+                                                            @endif
+                                                            @if(!empty($informe->image2))
+                                                                <a href="{{ asset('/documentacionclientesauditoria/' . $clienteauditoria->id . '/' . $informe->image2) }}"
+                                                                    class="btn btn-vercarta2 btn-sm" target="_blank" title="Ver Imagen 2">
+                                                                    <i class="fas fa-image"></i>
+                                                                </a>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                        <script>
+                                            document.addEventListener('DOMContentLoaded', function () {
+                                                let ordenSeleccion = [];
+                                                document.getElementById('filtroFecha').addEventListener('change', function() {
+                                                    let fechaSeleccionada = this.value;
+                                                    document.querySelectorAll('#tablaInformes tbody tr').forEach(fila => {
+                                                        let fechaFila = fila.getAttribute('data-fecha');
+                                                        if (fechaSeleccionada === "" || fechaFila === fechaSeleccionada || fechaFila === "") {
+                                                            fila.style.display = "";
+                                                        } else {
+                                                            fila.style.display = "none";
+                                                        }
+                                                    });
+                                                });
+                                                document.querySelectorAll('input[type="checkbox"][name="seleccionados[]"]').forEach(chk => {
+                                                    chk.addEventListener('change', function () {
+                                                        let id = this.value;
+                                                        if (this.checked) {
+                                                            ordenSeleccion.push(id);
+                                                        } else {
+                                                            ordenSeleccion = ordenSeleccion.filter(item => item !== id);
+                                                        }
+                                                        document.querySelectorAll('input[type="checkbox"][name="seleccionados[]"]').forEach(chk2 => {
+                                                            let numSpan = chk2.parentElement.querySelector('.check-order');
+                                                            if (!numSpan) {
+                                                                numSpan = document.createElement('span');
+                                                                numSpan.classList.add('check-order');
+                                                                chk2.parentElement.appendChild(numSpan);
+                                                            }
+                                                            let pos = ordenSeleccion.indexOf(chk2.value);
+                                                            numSpan.textContent = pos >= 0 ? (pos + 1) : '';
+
+                                                            let ordenInput = chk2.parentElement.querySelector('.orden-input');
+                                                            if (ordenInput) {
+                                                                ordenInput.value = pos >= 0 ? (pos + 1) : '';
+                                                            }
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        </script>
+
+                                        <div class="row" style="margin-top: 30px;">
+                                            <div class="col-lg-3">
+                                                <label>Cartas Guardadas:</label>
+                                                <button class="btn btn-outline-secondary btn-sm mb-2" type="button" data-toggle="collapse" data-target="#tablaCartas" aria-expanded="false" aria-controls="tablaCartas">
+                                                    Ver Cartas
+                                                </button>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <label>Dictamen Guardado:</label>
+                                                <button class="btn btn-outline-secondary btn-sm mb-2" type="button" data-toggle="collapse" data-target="#tablaDictamen" aria-expanded="false" aria-controls="tablaDictamen">
+                                                    Ver Dictamen
+                                                </button>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <label>Doc. Guardado:</label>
+                                                <button class="btn btn-outline-secondary btn-sm mb-2" type="button" data-toggle="collapse" data-target="#tablaDocumentacion" aria-expanded="false" aria-controls="tablaDocumentacion">
+                                                    Ver Documentación
+                                                </button>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <label>Info. Final Guardado:</label>
+                                                <button class="btn btn-outline-secondary btn-sm mb-2" type="button" data-toggle="collapse" data-target="#tablaInfofinal" aria-expanded="false" aria-controls="tablaInfofinal">
+                                                    Ver Info. Final
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="collapse" id="tablaCartas">
+                                            <label>Listado de Cartas</label>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-sm table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center" style="width: 10%;">Selec.</th>
+                                                            <th class="text-left" style="width: 10%;">ID</th>
+                                                            <th class="text-left" style="width: 70%;">Detalle</th>
+                                                            <th class="text-center" style="width: 10%;">Doc.</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($cartasclientes as $cartascliente)
+                                                            <tr>
+                                                                <td class="text-center">
+                                                                    <input type="checkbox" name="seleccionados[]" value="{{ $cartascliente->id }}">
+                                                                    <input type="hidden" name="tipos[{{ $cartascliente->id }}]" value="CARTAS">
+                                                                    <input type="hidden" name="ordenes[{{ $cartascliente->id }}]" class="orden-input">
+                                                                </td>
+                                                                <td style="text-align: left; padding: 5px;">{{ $cartascliente->id }}</td>
+                                                                <td style="text-align: left; padding: 5px;">{{ $cartascliente->detalle }}</td>
+                                                                <td class="text-center">
+                                                                    <a href="{{ asset('/cartasclientes/' . $clienteauditoria->id . '/' . $cartascliente->documento) }}"
+                                                                    class="btn btn-vercarta" target="_blank" title="VER DOCUMENTO">
+                                                                        <i class="fas fa-file-alt"></i>
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div class="collapse" id="tablaDictamen">
+                                            <label>Listado de Dictamen</label>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-sm table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center" style="width: 10%;">Selec.</th>
+                                                            <th class="text-left" style="width: 10%;">ID</th>
+                                                            <th class="text-left" style="width: 30%;">Detalle</th>
+                                                            <th class="text-left" style="width: 20%;">Fecha Dictamen</th>
+                                                            <th class="text-left" style="width: 20%;">Porcentaje</th>
+                                                            <th class="text-center" style="width: 10%;">Doc.</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($dictamenauditorias as $dictamen)
+                                                            <tr>
+                                                                <td class="text-center">
+                                                                    <input type="checkbox" name="seleccionados[]" value="{{ $dictamen->id }}">
+                                                                    <input type="hidden" name="tipos[{{ $dictamen->id }}]" value="DICTAMEN">
+                                                                    <input type="hidden" name="ordenes[{{ $dictamen->id }}]" class="orden-input">
+                                                                </td>
+                                                                <td style="text-align: left; padding: 5px;">{{ $dictamen->id }}</td>
+                                                                <td style="text-align: left; padding: 5px;">DICTAMEN {{ $dictamen->nrodictamen }}</td>
+                                                                <td style="text-align: left; padding: 5px;">{{ $dictamen->fechadictamen }}</td>
+                                                                <td style="text-align: left; padding: 5px;">{{ $dictamen->porcentajeinvalidez }}</td>
+                                                                <td class="text-center">
+                                                                    <a href="{{ asset('/dictamenauditoria/' . $clienteauditoria->id . '/' . $dictamen->documento) }}"
+                                                                    class="btn btn-vercarta" target="_blank" title="VER DICTAMEN">
+                                                                        <i class="fas fa-file-alt"></i>
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div class="collapse" id="tablaDocumentacion">
+                                            <label>Listado de Documentos</label>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-sm table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center" style="width: 10%;">Selec.</th>
+                                                            <th class="text-left" style="width: 10%;">ID</th>
+                                                            <th class="text-left" style="width: 70%;">Detalle</th>
+                                                            <th class="text-center" style="width: 10%;">Doc.</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($documentacionauci as $doc)
+                                                            <tr>
+                                                                <td class="text-center">
+                                                                    <input type="checkbox" name="seleccionados[]" value="{{ $doc->id }}CI">
+                                                                    <input type="hidden" name="tipos[{{ $doc->id }}CI]" value="DOCUMENTACIÓN">
+                                                                    <input type="hidden" name="ordenes[{{ $doc->id }}CI]" class="orden-input">
+                                                                </td>
+                                                                <td style="text-align: left; padding: 5px;">{{ $doc->id }}CI</td>
+                                                                <td style="text-align: left; padding: 5px;">CARNET DE IDENTIDAD</td>
+                                                                <td class="text-center">
+                                                                    @if(!empty($doc->ciasegurado) && $doc->ciasegurado !== 'PENDIENTE')
+                                                                        <a href="{{ asset('/requisitosclientesauditoria/' . $clienteauditoria->id . '/' . $doc->ciasegurado) }}"
+                                                                        class="btn btn-vercarta" target="_blank" title="VER DOCUMENTACIÓN">
+                                                                            <i class="fas fa-file-alt"></i>
+                                                                        </a>
+                                                                    @else
+                                                                        <span class="badge badge-warning">PENDIENTE</span>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+
+                                                        @foreach ($documentacionaunac as $doc)
+                                                            <tr>
+                                                                <td class="text-center">
+                                                                    <input type="checkbox" name="seleccionados[]" value="{{ $doc->id }}CN">
+                                                                    <input type="hidden" name="tipos[{{ $doc->id }}CN]" value="DOCUMENTACIÓN">
+                                                                    <input type="hidden" name="ordenes[{{ $doc->id }}CN]" class="orden-input">
+                                                                </td>
+                                                                <td style="text-align: left; padding: 5px;">{{ $doc->id }}CN</td>
+                                                                <td style="text-align: left; padding: 5px;">CERTIFICADO DE NACIMIENTO</td>
+                                                                <td class="text-center">
+                                                                    @if(!empty($doc->cnacasegurado) && $doc->cnacasegurado !== 'PENDIENTE')
+                                                                        <a href="{{ asset('/requisitosclientesauditoria/' . $clienteauditoria->id . '/' . $doc->cnacasegurado) }}"
+                                                                        class="btn btn-vercarta" target="_blank" title="VER DOCUMENTACIÓN">
+                                                                            <i class="fas fa-file-alt"></i>
+                                                                        </a>
+                                                                    @else
+                                                                        <span class="badge badge-warning">PENDIENTE</span>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div class="collapse" id="tablaInfofinal">
+                                            <label>Listado de Informes Finales</label>
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-sm table-bordered">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center" style="width: 10%;">Selec.</th>
+                                                            <th class="text-left" style="width: 10%;">ID</th>
+                                                            <th class="text-left" style="width: 70%;">Detalle</th>
+                                                            <th class="text-center" style="width: 10%;">Doc.</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($informefinalau as $infofinal)
+                                                            <tr>
+                                                                <td class="text-center">
+                                                                    <input type="checkbox" name="seleccionados[]" value="{{ $infofinal->id }}">
+                                                                    <input type="hidden" name="tipos[{{ $infofinal->id }}]" value="INFORME FINAL">
+                                                                    <input type="hidden" name="ordenes[{{ $infofinal->id }}]" class="orden-input">
+                                                                </td>
+                                                                <td style="text-align: left; padding: 5px;">{{ $infofinal->id }}</td>
+                                                                <td style="text-align: left; padding: 5px;">INFORME FINAL DE {{ $infofinal->servicio }}</td>
+                                                                <td class="text-center">
+                                                                    @if($infofinal->document)
+                                                                        <a href="{{ asset('/informesfinalesclientesauditoria/' . $clienteauditoria->id . '/' . $infofinal->document) }}"
+                                                                        class="btn btn-vercarta" target="_blank" title="VER INFORME FINAL">
+                                                                            <i class="fas fa-file-alt"></i>
+                                                                        </a>
+                                                                    @endif
+                                                                    @if($infofinal->documentfirmado)
+                                                                        <a href="{{ asset('/informesfinalesclientesauditoria/' . $clienteauditoria->id . '/' . $infofinal->documentfirmado) }}"
+                                                                        class="btn btn-vercarta" target="_blank" title="VER INFORME FINAL FIRMADO">
+                                                                            <i class="fas fa-file-alt"></i>
+                                                                        </a>
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3" style="margin-top: 20px;">
+                                            <label>Carta a Adjuntar:</label>
+                                            <select name="detalle" class="form-control" required>
+                                                <option value="">Seleccionar Carta...</option>
+                                                @foreach ($cartasclientes as $cartascliente)
+                                                    <option value="{{ $cartascliente->id }}">
+                                                        {{ $cartascliente->detalle }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-sm btn-si">ADJUNTAR</button>
+                                    </div>
+                                    {!! Form::close() !!}
                                 </div>
                             </div>
                         </div>
@@ -1043,6 +1655,11 @@ $('.dropify').dropify();
 
 @section('css')
 <style>
+    .check-order {
+        font-weight: bold;
+        margin-left: 5px;
+        color: #007bff;
+    }
     .btn-vercarta {
         background-color:  #ffffff;
         color: #94c93b;
@@ -1052,6 +1669,17 @@ $('.dropify').dropify();
         }
     .btn-vercarta:hover {
         background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-vercarta2 {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 2px 6px;
+        }
+    .btn-vercarta2:hover {
+        background-color: #faa625;
         color: #ffffff;
         }
     .btn-no {

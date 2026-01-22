@@ -97,14 +97,14 @@
                                         <div class="row text-center">
                                             @can('admin.asociados.crearprogramacionclientecomun')
                                                 {{-- @if ($tieneCotizacionaprobada) --}}
-                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                         <a href="{{ route('admin.asociados.crearprogramacionclientecomun', $clientecomun) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
                                                             <i class="fas fa-calendar-alt"></i>
                                                             <strong>PROG.</strong>
                                                         </a>
                                                     </div>
                                                     @else
-                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                         <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
                                                             <i class="fas fa-calendar-alt"></i>
                                                             <strong>PROG.</strong>
@@ -114,14 +114,14 @@
                                             @endcan
                                             @can('admin.asociados.estadoprogramacionclientecomun')
                                                 @if ($tieneProgramacion)
-                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                         <a href="{{ route('admin.asociados.estadoprogramacionclientecomun', $clientecomun) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ESTADO DE PROGRAMACIÓN">
                                                             <i class="fas fa-calendar-check"></i>
                                                             <strong>ESTADO P.</strong>
                                                         </a>
                                                     </div>
                                                     @else
-                                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                         <a href="#" class="btn btn-etapa2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
                                                             <i class="fas fa-calendar-check"></i>
                                                             <strong>ESTADO P.</strong>
@@ -129,7 +129,7 @@
                                                     </div>
                                                 @endif
                                             @endcan
-                                            {{-- @can('admin.asociados.creardocumentacionclientecomun')
+                                            @can('admin.asociados.creardocumentacionclientecomun')
                                                 @if ($tieneProgramacionatentido)
                                                     <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                                         <a href="{{ route('admin.asociados.creardocumentacionclientecomun', $clientecomun) }}" class="btn btn-etapa2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
@@ -145,7 +145,7 @@
                                                         </a>
                                                     </div>
                                                 @endif
-                                            @endcan --}}
+                                            @endcan
                                         </div>
                                     </div>
                 

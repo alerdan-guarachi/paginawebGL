@@ -368,7 +368,7 @@
                                         @endphp
                                         <td>
                                             @if($productoEnInventario)
-                                                <button class="btn btn-sm btn-actualizar" onclick="actualizarStock('{{$detalles->codigo}}', {{$detalles->cantidad}} , {{$detalles->id}})">
+                                                <button class="btn btn-sm btn-actualizar" onclick="actualizarStock2('{{$detalles->codigo}}', {{$detalles->cantidad}} , {{$detalles->id}})">
                                                     REABASTECER
                                                 </button>
                                             @else
@@ -632,7 +632,7 @@
                 });
             </script>
             <script>
-                function actualizarStock(codigoProducto, cantidad) {
+                function actualizarStock2(codigoProducto, cantidad) {
                     $.ajax({
                         url: '{{ route("inventario.actualizarStock") }}',
                         method: 'POST',
@@ -936,83 +936,110 @@
             
             {{-- ALMACEN --}}
             <div class="tab-pane fade" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                        <thead class="table-secondary">
-                            <tr>
-                                <th>Cod.Prod.</th>
-                                <th>Producto</th>
-                                <th>Mat.prima</th>
-                                <th>Especif_Medida</th>
-                                <th>Color</th>
-                                <th>Marca</th>
-                                <th>Pres.</th>
-                                <th>Uni.</th>
-                                <th>U.medida</th>
-                                <th>Stock_Ini.</th>
-                                <th>Stock_Act.</th>
-                                <th>Cant.Min.</th>
-                                <th>Ciudad_Invent.</th>
-                                <th>Inventario</th>
-                                <th>Depósito</th>
-                                <th>Sección</th>
-                                <th>Precio</th>
-                                <th>Registros</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($bienesalmacen as $bienes)
+                <form action="{{ route('inventario.anularproductoinventario') }}" method="POST" id="form_anular_tab1">
+                    @csrf
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-secondary">
                                 <tr>
-                                    <td>{{$bienes->codigo}}</td>
-                                    <td title="{{ $bienes->nombreproducto }}" class="truncar">{{$bienes->nombreproducto}}</td>
-                                    <td title="{{ $bienes->materiaprima }}" class="truncar2">{{$bienes->materiaprima}}</td>
-                                    <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
-                                    <td>{{$bienes->color}}</td>
-                                    <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
-                                    <td>{{$bienes->presentacion}}</td>
-                                    <td>{{$bienes->unidades}}</td>
-                                    <td>{{$bienes->unidadmedida}}</td>
-                                    <td>{{$bienes->stockinicial}}</td>
-                                    {{-- <td>{{$bienes->stockactual}}</td> --}}
-                                    @php
-                                        $updated = $bienes->updated_at;
-                                        $esEditable = in_array($bienes->codigo, $codigosPermitidos) &&
-                                                    (is_null($updated) || !\Carbon\Carbon::parse($updated)->isToday());
-                                    @endphp
-                                    <td>
-                                        @if($esEditable)
-                                            <form method="POST" action="{{ route('inventario.actualizarStockcodigo', $bienes->codigo) }}" class="d-flex align-items-center">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="number" name="stockactual" value="{{ $bienes->stockactual }}" class="form-control form-control-sm w-50 me-1">
-                                                <button type="submit" class="btn btn-success btn-sm" title="Actualizar Stock">
-                                                    <i class="fas fa-save"></i>
-                                                </button>
-                                            </form>
-                                        @else
-                                            {{ $bienes->stockactual }}
-                                        @endif
-                                    </td>
-
-                                    <td>{{$bienes->minimocantidad}}</td>
-                                    <td>{{$bienes->ciudad}}</td>
-                                    <td title="{{ $bienes->inventario }}" class="truncar2">{{$bienes->inventario}}</td>
-                                    <td title="{{ $bienes->deposito }}" class="truncar">{{$bienes->deposito}}</td>
-                                    <td title="{{ $bienes->seccion }}" class="truncar2">{{$bienes->seccion}}</td>
-                                    <td>{{$bienes->precio}}</td>
-                                    <td class="justify-content-start">
-                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
-                                            <i class="fas fa-arrow-down"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
-                                            <i class="fas fa-arrow-up"></i> 
-                                        </button>
-                                    </td>
+                                    @can('admin.inventario.darbajaproductoinventario')
+                                    <th>Sel.</th>
+                                    @endcan
+                                    <th>Cod.Prod.</th>
+                                    <th>Producto</th>
+                                    <th>Mat.prima</th>
+                                    <th>Especif_Medida</th>
+                                    <th>Color</th>
+                                    <th>Marca</th>
+                                    <th>Pres.</th>
+                                    <th>Uni.</th>
+                                    <th>U.medida</th>
+                                    <th>Stock_Ini.</th>
+                                    <th>Stock_Act.</th>
+                                    <th>Cant.Min.</th>
+                                    <th>Ciudad_Invent.</th>
+                                    <th>Inventario</th>
+                                    <th>Depósito</th>
+                                    <th>Sección</th>
+                                    <th>Precio</th>
+                                    <th>Registros</th>
                                 </tr>
-                            @endforeach
-                        </tbody> 
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @foreach ($bienesalmacen as $bienes)
+                                    <tr>
+                                        @can('admin.inventario.darbajaproductoinventario')
+                                        <td class="text-center">
+                                            <input type="checkbox" name="codigos[]" value="{{ $bienes->codigo }}" class="check_item_tab1">
+                                        </td>
+                                        @endcan
+                                        <td>{{$bienes->codigo}}</td>
+                                        <td title="{{ $bienes->nombreproducto }}" class="truncar">{{$bienes->nombreproducto}}</td>
+                                        <td title="{{ $bienes->materiaprima }}" class="truncar2">{{$bienes->materiaprima}}</td>
+                                        <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
+                                        <td>{{$bienes->color}}</td>
+                                        <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
+                                        <td>{{$bienes->presentacion}}</td>
+                                        <td>{{$bienes->unidades}}</td>
+                                        <td>{{$bienes->unidadmedida}}</td>
+                                        <td>{{$bienes->stockinicial}}</td>
+                                        @php
+                                            $updated = $bienes->updated_at;
+                                            $esEditable = in_array($bienes->codigo, $codigosPermitidos) &&
+                                                        (is_null($updated) || !\Carbon\Carbon::parse($updated)->isToday());
+                                        @endphp
+                                        <td>
+                                            @if($esEditable)
+                                                {{-- <form method="POST" action="{{ route('inventario.actualizarStockcodigo', $bienes->codigo) }}" class="d-flex align-items-center">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <input type="text" name="stockactual" value="{{ $bienes->stockactual }}" class="form-control form-control-sm w-50 me-1">
+                                                    <button type="submit" class="btn btn-success btn-sm" title="Actualizar Stock">
+                                                        <i class="fas fa-save"></i>
+                                                    </button>
+                                                </form> --}}
+                                                <div class="d-flex align-items-center">
+                                                    <input type="text" min="1" name="stockactual_input_{{ $bienes->codigo }}"
+                                                        id="stockactual_input_{{ $bienes->codigo }}"
+                                                        value="{{ $bienes->stockactual }}"
+                                                        class="form-control form-control-sm w-50 me-1">
+                                                    <button type="button"
+                                                            class="btn btn-success btn-sm"
+                                                            onclick="actualizarStock('{{ $bienes->codigo }}', '{{ route('inventario.actualizarStockcodigo', $bienes->codigo) }}')"
+                                                            title="Actualizar Stock">
+                                                        <i class="fas fa-save"></i>
+                                                    </button>
+                                                </div>
+                                            @else
+                                                {{ $bienes->stockactual }}
+                                            @endif
+                                        </td>
+
+                                        <td>{{$bienes->minimocantidad}}</td>
+                                        <td>{{$bienes->ciudad}}</td>
+                                        <td title="{{ $bienes->inventario }}" class="truncar2">{{$bienes->inventario}}</td>
+                                        <td title="{{ $bienes->deposito }}" class="truncar">{{$bienes->deposito}}</td>
+                                        <td title="{{ $bienes->seccion }}" class="truncar2">{{$bienes->seccion}}</td>
+                                        <td>{{$bienes->precio}}</td>
+                                        <td class="justify-content-start">
+                                            <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
+                                                <i class="fas fa-arrow-down"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
+                                                <i class="fas fa-arrow-up"></i> 
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody> 
+                        </table>
+                    </div>
+                    @can('admin.inventario.darbajaproductoinventario')
+                    <button type="submit" class="btn btn-sm btn-outline-danger mt-2">
+                        DAR DE BAJA SELECCIONADOS
+                    </button>
+                    @endcan
+                </form>
                 <div class="d-flex justify-content-center mt-3">
                 {{ $bienesalmacen->withQueryString()->fragment('tab-content-1')->links() }}
                 </div>
@@ -1020,84 +1047,110 @@
 
             {{-- ACTIVOS FIJOS --}}
             <div class="tab-pane fade" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                        <thead class="table-secondary">
-                            <tr>
-                                <th>Cod.Prod.</th>
-                                <th>Producto</th>
-                                <th>Mat.prima</th>
-                                <th>Especif_Medida</th>
-                                <th>Color</th>
-                                <th>Marca</th>
-                                <th>Pres.</th>
-                                <th>Uni.</th>
-                                <th>Modelo</th>
-                                <th>Serie</th>
-                                <th>Sección</th>
-                                <th>Uni.medida</th>
-                                <th>Stock_ini.</th>
-                                <th>Stock_act.</th>
-                                <th>Ciudad_Invent.</th>
-                                <th>Precio</th>
-                                <th>Registros</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($bienesactivosfijos as $bienes)
+                <form action="{{ route('inventario.anularproductoinventario') }}" method="POST" id="form_anular_tab2">
+                    @csrf
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead class="table-secondary">
                                 <tr>
-                                    <td>{{$bienes->codigo}}</td>
-                                    <td title="{{ $bienes->nombreproducto }}" class="truncar">{{$bienes->nombreproducto}}</td>
-                                    <td title="{{ $bienes->materiaprima }}" class="truncar2">{{$bienes->materiaprima}}</td>
-                                    <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
-                                    <td>{{$bienes->color}}</td>
-                                    <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
-                                    <td>{{$bienes->presentacion}}</td>
-                                    <td>{{$bienes->unidades}}</td>
-                                    <td title="{{ $bienes->modelo }}" class="truncar">{{$bienes->modelo}}</td>
-                                    <td title="{{ $bienes->serie }}" class="truncar">{{$bienes->serie}}</td>
-                                    <td title="{{ $bienes->seccion }}" class="truncar2">{{$bienes->seccion}}</td>
-                                    <td>{{$bienes->unidadmedida}}</td>
-                                    <td>{{$bienes->stockinicial}}</td>
-                                    {{-- <td>{{$bienes->stockactual}}</td> --}}
-                                    @php
-                                        $updated = $bienes->updated_at;
-                                        $esEditable = in_array($bienes->codigo, $codigosPermitidos) &&
-                                                    (is_null($updated) || !\Carbon\Carbon::parse($updated)->isToday());
-                                    @endphp
-                                    <td>
-                                        @if($esEditable)
-                                            <form method="POST" action="{{ route('inventario.actualizarStockcodigo', $bienes->codigo) }}" class="d-flex align-items-center">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="number" name="stockactual" value="{{ $bienes->stockactual }}" class="form-control form-control-sm w-50 me-1">
-                                                <button type="submit" class="btn btn-success btn-sm" title="Actualizar Stock">
-                                                    <i class="fas fa-save"></i>
-                                                </button>
-                                            </form>
-                                        @else
-                                            {{ $bienes->stockactual }}
-                                        @endif
-                                    </td>
-                                    <td>{{$bienes->ciudad}}</td>
-                                    <td>{{$bienes->precio}}</td>
-                                    <td class="justify-content-start">
-                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
-                                            <i class="fas fa-arrow-down"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
-                                            <i class="fas fa-arrow-up"></i> 
-                                        </button>
-                                    </td>
+                                    @can('admin.inventario.darbajaproductoinventario')
+                                    <th>Sel.</th>
+                                    @endcan
+                                    <th>Cod.Prod.</th>
+                                    <th>Producto</th>
+                                    <th>Mat.prima</th>
+                                    <th>Especif_Medida</th>
+                                    <th>Color</th>
+                                    <th>Marca</th>
+                                    <th>Pres.</th>
+                                    <th>Uni.</th>
+                                    <th>Modelo</th>
+                                    <th>Serie</th>
+                                    <th>Sección</th>
+                                    <th>Uni.medida</th>
+                                    <th>Stock_ini.</th>
+                                    <th>Stock_act.</th>
+                                    <th>Ciudad_Invent.</th>
+                                    <th>Precio</th>
+                                    <th>Registros</th>
                                 </tr>
-                            @endforeach
-                        </tbody> 
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                @foreach ($bienesactivosfijos as $bienes)
+                                    <tr>
+                                        @can('admin.inventario.darbajaproductoinventario')
+                                        <td class="text-center">
+                                            <input type="checkbox" name="codigos[]" value="{{ $bienes->codigo }}" class="check_item_tab2">
+                                        </td>
+                                        @endcan
+                                        <td>{{$bienes->codigo}}</td>
+                                        <td title="{{ $bienes->nombreproducto }}" class="truncar">{{$bienes->nombreproducto}}</td>
+                                        <td title="{{ $bienes->materiaprima }}" class="truncar2">{{$bienes->materiaprima}}</td>
+                                        <td title="{{ $bienes->especificacionmedida }}" class="truncar">{{$bienes->especificacionmedida}}</td>
+                                        <td>{{$bienes->color}}</td>
+                                        <td title="{{ $bienes->marca }}" class="truncar">{{$bienes->marca}}</td>
+                                        <td>{{$bienes->presentacion}}</td>
+                                        <td>{{$bienes->unidades}}</td>
+                                        <td title="{{ $bienes->modelo }}" class="truncar">{{$bienes->modelo ?? 0}}</td>
+                                        <td title="{{ $bienes->serie }}" class="truncar">{{$bienes->serie ?? 0}}</td>
+                                        <td title="{{ $bienes->seccion }}" class="truncar2">{{$bienes->seccion}}</td>
+                                        <td>{{$bienes->unidadmedida}}</td>
+                                        <td>{{$bienes->stockinicial}}</td>
+                                        @php
+                                            $updated = $bienes->updated_at;
+                                            $esEditable = in_array($bienes->codigo, $codigosPermitidos) &&
+                                                        (is_null($updated) || !\Carbon\Carbon::parse($updated)->isToday());
+                                        @endphp
+                                        <td>
+                                            @if($esEditable)
+                                                {{-- <form method="POST" action="{{ route('inventario.actualizarStockcodigo', $bienes->codigo) }}" class="d-flex align-items-center">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <input type="text" name="stockactual" value="{{ $bienes->stockactual }}" class="form-control form-control-sm w-50 me-1">
+                                                    <button type="submit" class="btn btn-success btn-sm" title="Actualizar Stock">
+                                                        <i class="fas fa-save"></i>
+                                                    </button>
+                                                </form> --}}
+                                                <div class="d-flex align-items-center">
+                                                    <input type="text" min="1" name="stockactual_input_{{ $bienes->codigo }}"
+                                                        id="stockactual_input_{{ $bienes->codigo }}"
+                                                        value="{{ $bienes->stockactual }}"
+                                                        class="form-control form-control-sm w-50 me-1">
+                                                    <button type="button"
+                                                            class="btn btn-success btn-sm"
+                                                            onclick="actualizarStock('{{ $bienes->codigo }}', '{{ route('inventario.actualizarStockcodigo', $bienes->codigo) }}')"
+                                                            title="Actualizar Stock">
+                                                        <i class="fas fa-save"></i>
+                                                    </button>
+                                                </div>
+                                            @else
+                                                {{ $bienes->stockactual }}
+                                            @endif
+                                        </td>
+                                        <td>{{$bienes->ciudad}}</td>
+                                        <td>{{$bienes->precio}}</td>
+                                        <td class="justify-content-start">
+                                            <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialModal{{$bienes->codigo}}" title="VER HISTORIAL ENTRADAS">
+                                                <i class="fas fa-arrow-down"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-verregistros btn-sm" data-toggle="modal" data-target="#historialsalidaModal{{$bienes->codigo}}" title="VER HISTORIAL SALIDAS">
+                                                <i class="fas fa-arrow-up"></i> 
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody> 
+                        </table>
+                    </div>
+                    @can('admin.inventario.darbajaproductoinventario')
+                    <button type="submit" class="btn btn-sm btn-outline-danger mt-2">
+                        DAR DE BAJA SELECCIONADOS
+                    </button>
+                    @endcan
+                </form>
                 <div class="d-flex justify-content-center mt-3">
                 {{ $bienesactivosfijos->withQueryString()->fragment('tab-content-2')->links() }}
                 </div>
-
             </div>
         </div>
     </div>
@@ -1461,5 +1514,50 @@
         }
         }) 
     });
+</script>
+
+<script>
+async function actualizarStock(codigo, url) {
+    const input = document.getElementById('stockactual_input_' + codigo);
+    if (!input) return alert('Input no encontrado');
+    const nuevoValor = input.value;
+
+    // Validación simple
+    if (nuevoValor === '' || isNaN(nuevoValor)) {
+        return alert('Ingrese un número válido');
+    }
+
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    const formData = new FormData();
+    formData.append('_method', 'PUT'); // si tu ruta espera PUT
+    formData.append('_token', token);
+    formData.append('stockactual', nuevoValor);
+
+    try {
+        const res = await fetch(url, {
+            method: 'POST', // usamos POST + _method=PUT
+            body: formData,
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!res.ok) {
+            const text = await res.text();
+            console.error(text);
+            return alert('Error al actualizar (ver consola)');
+        }
+
+        const data = await res.json().catch(()=>null);
+        // Actualiza UI si lo deseas (por ejemplo mostrar toast o cambiar valor)
+        alert('Stock actualizado correctamente');
+        location.reload(); // 🔄 Recarga la página después de confirmar el alert
+    } catch (err) {
+        console.error(err);
+        alert('Error de red al actualizar stock');
+    }
+}
 </script>
 @endsection

@@ -137,7 +137,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 <div class="card">
@@ -165,7 +165,12 @@
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" id="myTabs">
 
-            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || $usuarioAutenticado === 'MARLENE ANDREA MONTELLANO ORTIZ')
+            {{-- @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || 
+            $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || 
+            $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || 
+            $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || 
+            $usuarioAutenticado === 'MARIA RENEE MONTENEGRO ORELLANA') --}}
+            @if (auth()->user()->hasAnyRole(['MAESTRO', 'ADMINISTRADOR', 'OPERATIVO']))
                 @can('admin.informesfinales.asignarproveedorinformesfinales')
                 <li class="nav-item">
                     <a class="nav-link active" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
@@ -186,7 +191,13 @@
             </li>   --}}   
             {{-- @endcan --}}
 
-            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || $usuarioAutenticado === 'MARLENE ANDREA MONTELLANO ORTIZ' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE')
+            {{-- @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || 
+            $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || 
+            $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || 
+            $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || 
+            $usuarioAutenticado === 'MARIA RENEE MONTENEGRO ORELLANA' || 
+            $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE') --}}
+            @if (auth()->user()->hasAnyRole(['MAESTRO', 'ADMINISTRADOR', 'OPERATIVO', 'PROVEEDOR IF']))
                 @can('admin.informesfinales.aprobarbateriainformesfinales') 
                 <li class="nav-item">
                     <a class="nav-link" id="tab-5" data-toggle="tab" href="#tab-content-5" role="tab" aria-controls="tab-content-5" aria-selected="true">
@@ -199,7 +210,13 @@
                 @endcan  
             @endif
             
-            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'MARLENE ANDREA MONTELLANO ORTIZ')
+            {{-- @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || 
+            $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || 
+            $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || 
+            $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || 
+            $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || 
+            $usuarioAutenticado === 'MARIA RENEE MONTENEGRO ORELLANA') --}}
+            @if (auth()->user()->hasAnyRole(['MAESTRO', 'ADMINISTRADOR', 'OPERATIVO', 'PROVEEDOR IF']))
                 @can('admin.informesfinales.subirinformesfinales') 
                     @can('admin.informesfinales.verinformestodosproveedores') 
                     <li class="nav-item">
@@ -262,7 +279,16 @@
                 @endcan 
             @endcan  --}}
 
-            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || $usuarioAutenticado === 'MARLENE ANDREA MONTELLANO ORTIZ' || $usuarioAutenticado === 'EUDAL AGUIRRE RODRIGUEZ' || $usuarioAutenticado === 'DANNY MARVIN VIAÑA IBAÑEZ' || $usuarioAutenticado === 'JUAN DANIEL ALVARADO SOTO')
+            {{-- @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || 
+            $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || 
+            $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || 
+            $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || 
+            $usuarioAutenticado === 'AGUIRRE VASQUEZ MARIA RENEE' || 
+            $usuarioAutenticado === 'MARIA RENEE MONTENEGRO ORELLANA' || 
+            $usuarioAutenticado === 'EUDAL AGUIRRE RODRIGUEZ' || 
+            $usuarioAutenticado === 'DANNY MARVIN VIAÑA IBAÑEZ' || 
+            $usuarioAutenticado === 'JUAN DANIEL ALVARADO SOTO') --}}
+            @if (auth()->user()->hasAnyRole(['MAESTRO', 'ADMINISTRADOR', 'OPERATIVO', 'PROVEEDOR IF', 'SUPERVISOR PRESTACIONES', 'EJECUTIVO PRESTACIONES']))
                 @can('admin.informesfinales.verinformesfinales')
                     @can('admin.informesfinales.verinformestodosproveedores')  
                     <li class="nav-item">
@@ -292,70 +318,68 @@
         <div class="tab-content" id="myTabContent">
 
             {{-- ASIGNAR PROVEEDOR --}}
-            @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $usuarioAutenticado === 'VANESSA MAMANI HUANACO' || $usuarioAutenticado === 'MARLENE ANDREA MONTELLANO ORTIZ')
             @can('admin.informesfinales.asignarproveedorinformesfinales')
-            <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID Cli.</th>
-                                <th>Cliente</th>
-                                <th>Fecha Batería</th>
-                                <th>Servicio</th>
-                                <th>Result. Médicos</th>
-                                <th>Doc.</th>
-                                <th>Prov.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($result as $item)
-                            @if (!$item['proveedornombre'] && $item['estado'] === 'COMPLETO')
+                <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
                                 <tr>
-                                    <td>{{ $item['clienteauditoriaid'] }}</td>
-                                    <td>{{ $item['clienteauditorianombre'] }}</td>
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
-                                        @endif
-                                    </td>
-                                    <td>{{ $item['fechabateria'] }}</td>
-
-                                    <td>{{ $item['tramite'] }}</td>
-                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER RESULTADOS MÉDICOS">
-                                            <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
-                                        </abbr>
-                                    </td>
-                                    <td>
-                                        <abbr title="VER DOCUMENTACIÓN" style="display: inline-block;">
-                                            <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
-                                                <i class="fas fa-address-book"></i>
-                                            </a>
-                                        </abbr>
-
-                                        @if ($item['historiamedica'])
-                                        <abbr title="VER HISTORIA MÉDICA" style="display: inline-block;">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <a class="btn btn-sm btn-bateria" href="{{ route('admin.asociados.verclienteauditoria', $item['clienteauditoriaid']) }}" title="ASIGNAR PROVEEDOR">
-                                            <i class="fas fa-user"></i>
-                                        </a>
-                                    </td>
+                                    <th>ID Cli.</th>
+                                    <th>Cliente</th>
+                                    <th>Fecha Batería</th>
+                                    <th>Servicio</th>
+                                    <th>Result. Médicos</th>
+                                    <th>Doc.</th>
+                                    <th>Prov.</th>
                                 </tr>
-                                @endif
-                            @endforeach
-                        </tbody> 
-                    </table>
+                            </thead>
+                            <tbody>
+                                @foreach ($result as $item)
+                                @if (!$item['proveedornombre'] && $item['estado'] === 'COMPLETO')
+                                    <tr>
+                                        <td>{{ $item['clienteauditoriaid'] }}</td>
+                                        <td>{{ $item['clienteauditorianombre'] }}</td>
+                                        <td hidden>
+                                            @if ($item['proveedornombre'])
+                                                {{ $item['celularproveedor'] }}
+                                            @endif
+                                        </td>
+                                        <td>{{ $item['fechabateria'] }}</td>
+
+                                        <td>{{ $item['tramite'] }}</td>
+                                        <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
+                                            {{ $item['estado'] }}
+                                            <abbr title="VER RESULTADOS MÉDICOS">
+                                                <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                            </abbr>
+                                        </td>
+                                        <td>
+                                            <abbr title="VER DOCUMENTACIÓN" style="display: inline-block;">
+                                                <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
+                                                    <i class="fas fa-address-book"></i>
+                                                </a>
+                                            </abbr>
+
+                                            @if ($item['historiamedica'])
+                                            <abbr title="VER HISTORIA MÉDICA" style="display: inline-block;">
+                                                <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
+                                                    <i class="fas fa-book-medical"></i>
+                                                </a>
+                                            </abbr>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-sm btn-bateria" href="{{ route('admin.asociados.verclienteauditoria', $item['clienteauditoriaid']) }}" title="ASIGNAR PROVEEDOR">
+                                                <i class="fas fa-user"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    @endif
+                                @endforeach
+                            </tbody> 
+                        </table>
+                    </div>
                 </div>
-            </div>
-            @endcan
             @endcan
 
             {{-- DOCUMENTOS OBSERVADOS --}}
@@ -432,25 +456,116 @@
 
             {{-- PAGOS PENDIENTES --}}
             @can('admin.informesfinales.aprobarbateriainformesfinales')
-            <div class="tab-pane fade" id="tab-content-5" role="tabpanel" aria-labelledby="tab-5">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID Cli.</th>
-                                <th>Cliente</th>
-                                <th>Proveedor</th>
-                                <th>Fecha Bateria</th>
-                                <th>Servicio</th>
-                                <th>Result. Médicos</th>
-                                <th>Doc.</th>
-                                <th>Aprobar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($result as $item)
-                                @if ($item['proveedornombre'] && $item['estadoaprob'] !== 'APROBADO' && $item['estado'] === 'COMPLETO')
-                                    @if ($item['estadoinforme'] !== 'PAGO PROCESADO' && $item['proveedornombre'] && $item['estado'] === 'COMPLETO')    
+                <div class="tab-pane fade" id="tab-content-5" role="tabpanel" aria-labelledby="tab-5">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID Cli.</th>
+                                    <th>Cliente</th>
+                                    <th>Proveedor</th>
+                                    <th>Fecha Bateria</th>
+                                    <th>Servicio</th>
+                                    <th>Result. Médicos</th>
+                                    <th>Doc.</th>
+                                    <th>Aprobar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($result as $item)
+                                    @if ($item['proveedornombre'] && $item['estadoaprob'] !== 'APROBADO' && $item['estado'] === 'COMPLETO')
+                                        @if ($item['estadoinforme'] !== 'PAGO PROCESADO' && $item['proveedornombre'] && $item['estado'] === 'COMPLETO')    
+                                        <tr>
+                                            <td>{{ $item['clienteauditoriaid'] }}</td>
+                                            <td>{{ $item['clienteauditorianombre'] }}</td>
+                                            <td>{{ $item['proveedornombre'] }}</td>
+                                            <td hidden>
+                                                @if ($item['proveedornombre'])
+                                                    {{ $item['celularproveedor'] }}
+                                                @endif
+                                            </td>
+                                            <td>{{ $item['fechabateria'] }}</td>
+                                            <td>{{ $item['tramite'] }}</td>
+                                            <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
+                                                {{ $item['estado'] }}
+                                                <abbr title="VER DOCUMENTACIÓN">
+                                                    <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                                </abbr>
+                                            </td>
+                                            <td>
+                                                <abbr title="VER DOCUMENTACIÓN" style="display: inline-block;">
+                                                    <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
+                                                        <i class="fas fa-address-book"></i>
+                                                    </a>
+                                                </abbr>
+                                                @if ($item['historiamedica'])
+                                                <abbr title="VER HISTORIA MÉDICA" style="display: inline-block;">
+                                                    <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
+                                                        <i class="fas fa-book-medical"></i>
+                                                    </a>
+                                                </abbr>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @php
+                                                    $aprobado = $aprobaciones->where('clienteauditoriaid', $item['clienteauditoriaid'])
+                                                            ->where('clienteauditorianombre', $item['clienteauditorianombre'])
+                                                            ->where('fechabateria', $item['fechabateria'])
+                                                            ->first();
+                                                @endphp
+                                                @if ($item['proveedornombre'])
+                                                    @if ($aprobado)
+                                                        <div class="text-completo">APROBADO</div>
+                                                    @else
+                                                    @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
+                                                        <abbr title="APROBAR BATERÍA">
+                                                            <a class="btn btn-aprobar" data-toggle="modal" data-target="#modalAprobar{{ $loop->index }}"
+                                                                data-cliente="{{ $item['clienteauditorianombre'] }}" 
+                                                                data-fecha="{{ $item['fechabateria'] }}">
+                                                                <i class="fas fa-calendar-check" style="align-items: center"></i>
+                                                            </a>
+                                                        </abbr>
+                                                        @else
+                                                        <div class="text-incompleto">NO APROBADO</div>
+                                                    @endif
+                                                    @endif
+                                                @else
+                                                    <button class="btn btn-disabled btn-disabled" disabled>
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @endif
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endcan
+
+            {{-- SUBIR INFORME --}}
+            @can('admin.informesfinales.subirinformesfinales')
+                <div class="tab-pane fade" id="tab-content-6" role="tabpanel" aria-labelledby="tab-6">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID Cli.</th>
+                                    <th>Cliente</th>
+                                    <th>Proveedor</th>
+                                    <th>Fecha Bateria</th>
+                                    <th>Servicio</th>
+                                    <th>Result. Médicos</th>
+                                    <th>Doc.</th>
+                                    <th>Subir</th> 
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @can('admin.informesfinales.soloverinformessegunproveedor')
+                                @foreach ($result as $item)
+                                @if ($item['estadoaprob'] === 'APROBADO' && !$item['estado_informefinal'] && $item['estado'] === 'COMPLETO' && $item['proveedornombre'] === $usuarioAutenticado || $item['estadoinforme'] === 'PAGO PROCESADO' && !$item['estado_informefinal'] && $item['estado'] === 'COMPLETO' && $item['proveedornombre'] === $usuarioAutenticado )
                                     <tr>
                                         <td>{{ $item['clienteauditoriaid'] }}</td>
                                         <td>{{ $item['clienteauditorianombre'] }}</td>
@@ -483,167 +598,76 @@
                                             @endif
                                         </td>
                                         <td>
-                                            @php
-                                                $aprobado = $aprobaciones->where('clienteauditoriaid', $item['clienteauditoriaid'])
-                                                        ->where('clienteauditorianombre', $item['clienteauditorianombre'])
-                                                        ->where('fechabateria', $item['fechabateria'])
-                                                        ->first();
-                                            @endphp
-                                            @if ($item['proveedornombre'])
-                                                @if ($aprobado)
-                                                    <div class="text-completo">APROBADO</div>
-                                                @else
-                                                @if ($usuarioAutenticado === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $usuarioAutenticado === 'DENISSE MAUREN LOPEZ FLORES' || $usuarioAutenticado === 'JHOSELINE EVA VELASQUEZ ESCOBAR')
-                                                    <abbr title="APROBAR BATERÍA">
-                                                        <a class="btn btn-aprobar" data-toggle="modal" data-target="#modalAprobar{{ $loop->index }}"
-                                                            data-cliente="{{ $item['clienteauditorianombre'] }}" 
-                                                            data-fecha="{{ $item['fechabateria'] }}">
-                                                            <i class="fas fa-calendar-check" style="align-items: center"></i>
-                                                        </a>
-                                                    </abbr>
-                                                    @else
-                                                    <div class="text-incompleto">NO APROBADO</div>
-                                                @endif
-                                                @endif
-                                            @else
-                                                <button class="btn btn-disabled btn-disabled" disabled>
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                            @endif
+                                            <a class="btn btn-subirinformeinicio btn-upload text-black" 
+                                                data-toggle="modal" 
+                                                data-target="#modalUpload{{ $loop->index }}"
+                                                title="SUBIR INFORME FINAL">
+                                                <i class="fas fa-upload"></i>
+                                            </a>                                      
                                         </td>
                                     </tr>
                                     @endif
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            @endcan
+                                @endforeach
+                                @endcan
 
-            {{-- SUBIR INFORME --}}
-            @can('admin.informesfinales.subirinformesfinales')
-            <div class="tab-pane fade" id="tab-content-6" role="tabpanel" aria-labelledby="tab-6">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID Cli.</th>
-                                <th>Cliente</th>
-                                <th>Proveedor</th>
-                                <th>Fecha Bateria</th>
-                                <th>Servicio</th>
-                                <th>Result. Médicos</th>
-                                <th>Doc.</th>
-                                <th>Subir</th> 
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @can('admin.informesfinales.soloverinformessegunproveedor')
-                            @foreach ($result as $item)
-                            @if ($item['estadoaprob'] === 'APROBADO' && !$item['estado_informefinal'] && $item['estado'] === 'COMPLETO' && $item['proveedornombre'] === $usuarioAutenticado || $item['estadoinforme'] === 'PAGO PROCESADO' && !$item['estado_informefinal'] && $item['estado'] === 'COMPLETO' && $item['proveedornombre'] === $usuarioAutenticado )
-                                <tr>
-                                    <td>{{ $item['clienteauditoriaid'] }}</td>
-                                    <td>{{ $item['clienteauditorianombre'] }}</td>
-                                    <td>{{ $item['proveedornombre'] }}</td>
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
-                                        @endif
-                                    </td>
-                                    <td>{{ $item['fechabateria'] }}</td>
-                                    <td>{{ $item['tramite'] }}</td>
-                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER DOCUMENTACIÓN">
-                                            <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
-                                        </abbr>
-                                    </td>
-                                    <td>
-                                        <abbr title="VER DOCUMENTACIÓN" style="display: inline-block;">
-                                            <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
-                                                <i class="fas fa-address-book"></i>
-                                            </a>
-                                        </abbr>
-                                        @if ($item['historiamedica'])
-                                        <abbr title="VER HISTORIA MÉDICA" style="display: inline-block;">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <a class="btn btn-subirinformeinicio btn-upload text-black" 
-                                            data-toggle="modal" 
-                                            data-target="#modalUpload{{ $loop->index }}"
-                                            title="SUBIR INFORME FINAL">
-                                            <i class="fas fa-upload"></i>
-                                        </a>                                      
-                                    </td>
-                                </tr>
-                                @endif
-                            @endforeach
-                            @endcan
-
-                            @can('admin.informesfinales.verinformestodosproveedores')
-                            @foreach ($result as $item)
-                            @if ($item['estadoaprob'] === 'APROBADO' && !$item['estado_informefinal'] && $item['estado'] === 'COMPLETO' || $item['estadoinforme'] === 'PAGO PROCESADO' && $item['proveedornombre'] && !$item['estado_informefinal'] && $item['estado'] === 'COMPLETO')
-                                <tr>
-                                    <td>{{ $item['clienteauditoriaid'] }}</td>
-                                    <td>{{ $item['clienteauditorianombre'] }}</td>
-                                    <td>{{ $item['proveedornombre'] }}</td>
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
-                                        @endif
-                                    </td>
-                                    <td>{{ $item['fechabateria'] }}</td>
-                                    <td>{{ $item['tramite'] }}</td>
-                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        @if (isset($item['observacion']) && !empty($item['observacion']) && $item['estado'] === 'COMPLETO')
-                                        {{ $item['estado'] }}
-                                            <abbr title="VER DOCUMENTACIÓN">
-                                                <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
-                                            </abbr>
-                                        @else
+                                @can('admin.informesfinales.verinformestodosproveedores')
+                                @foreach ($result as $item)
+                                @if ($item['estadoaprob'] === 'APROBADO' && !$item['estado_informefinal'] && $item['estado'] === 'COMPLETO' || $item['estadoinforme'] === 'PAGO PROCESADO' && $item['proveedornombre'] && !$item['estado_informefinal'] && $item['estado'] === 'COMPLETO')
+                                    <tr>
+                                        <td>{{ $item['clienteauditoriaid'] }}</td>
+                                        <td>{{ $item['clienteauditorianombre'] }}</td>
+                                        <td>{{ $item['proveedornombre'] }}</td>
+                                        <td hidden>
+                                            @if ($item['proveedornombre'])
+                                                {{ $item['celularproveedor'] }}
+                                            @endif
+                                        </td>
+                                        <td>{{ $item['fechabateria'] }}</td>
+                                        <td>{{ $item['tramite'] }}</td>
+                                        <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
+                                            @if (isset($item['observacion']) && !empty($item['observacion']) && $item['estado'] === 'COMPLETO')
                                             {{ $item['estado'] }}
-                                        
-                                            <abbr title="VER DOCUMENTACIÓN">
-                                                <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                                <abbr title="VER DOCUMENTACIÓN">
+                                                    <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                                </abbr>
+                                            @else
+                                                {{ $item['estado'] }}
+                                            
+                                                <abbr title="VER DOCUMENTACIÓN">
+                                                    <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                                </abbr>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <abbr title="VER DOCUMENTACIÓN" style="display: inline-block;">
+                                                <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
+                                                    <i class="fas fa-address-book"></i>
+                                                </a>
                                             </abbr>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <abbr title="VER DOCUMENTACIÓN" style="display: inline-block;">
-                                            <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
-                                                <i class="fas fa-address-book"></i>
-                                            </a>
-                                        </abbr>
-                                        @if ($item['historiamedica'])
-                                        <abbr title="VER HISTORIA MÉDICA" style="display: inline-block;">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <a class="btn btn-subirinformeinicio btn-upload text-black" 
-                                            data-toggle="modal" 
-                                            data-target="#modalUpload{{ $loop->index }}"
-                                            title="SUBIR INFORME FINAL">
-                                            <i class="fas fa-upload"></i>
-                                        </a>                                      
-                                    </td>
-                                </tr>
-                                @endif
-                            @endforeach
-                            @endcan
-                        </tbody>
-                    </table>
+                                            @if ($item['historiamedica'])
+                                            <abbr title="VER HISTORIA MÉDICA" style="display: inline-block;">
+                                                <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
+                                                    <i class="fas fa-book-medical"></i>
+                                                </a>
+                                            </abbr>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <a class="btn btn-subirinformeinicio btn-upload text-black" 
+                                                data-toggle="modal" 
+                                                data-target="#modalUpload{{ $loop->index }}"
+                                                title="SUBIR INFORME FINAL">
+                                                <i class="fas fa-upload"></i>
+                                            </a>                                      
+                                        </td>
+                                    </tr>
+                                    @endif
+                                @endforeach
+                                @endcan
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
             @endcan
 
             {{-- EN REVISION --}}
@@ -996,7 +1020,6 @@
                 </div>
             </div>
             @endcan --}}
-
             
             {{-- SOLICITO REVISION --}}
             {{-- @can('admin.informesfinales.subirinformesfinales')
@@ -1331,141 +1354,141 @@
 
             {{-- APROBADOS --}}
             @can('admin.informesfinales.verinformesfinales')
-            <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>ID Cli.</th>
-                                <th>Cliente</th>
-                                <th>Proveedor</th>
-                                <th>Fecha_Bateria</th>
-                                <th>Servicio</th>
-                                <th>Result._Médicos</th>
-                                <th>Doc.</th>
-                                <th>Informe_Final</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @can('admin.informesfinales.soloverinformessegunproveedor')
-                            @foreach ($result as $item)
-                            @if ($item['estado_informefinal'] === 'APROBADO' && $item['proveedornombre'] === $usuarioAutenticado)
+                <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
                                 <tr>
-                                    <td>{{ $item['clienteauditoriaid'] }}</td>
-                                    <td>{{ $item['clienteauditorianombre'] }}</td>
-                                    <td>{{ $item['proveedornombre'] }}</td>
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
-                                        @endif
-                                    </td>
-                                    <td>{{ $item['fechabateria'] }}</td>
-                                    <td>{{ $item['tramite'] }}</td>
-                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER DOCUMENTACIÓN">
-                                            <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
-                                        </abbr>
-                                    </td>
-                                    <td>
-                                        <abbr title="VER DOCUMENTACIÓN" style="display: inline-block;">
-                                            <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
-                                                <i class="fas fa-address-book"></i>
-                                            </a>
-                                        </abbr>
-                                        @if ($item['historiamedica'])
-                                        <abbr title="VER HISTORIA MÉDICA" style="display: inline-block;">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($item['document'])
-                                            <a href="{{ asset('/informesfinalesclientesauditoria/' . $item['clienteauditoriaid'] . '/'. $item['documentfirmado']) }}" class="btn btn-sm btn-veracciones" target="_blank" title="VER INFORME FINAL">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @endif
-                                        
-                                        @if ($item['documentfirmado'])
-                                            <a href="{{ asset('/informesfinalesclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $item['documentfirmado']) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME FINAL FIRMADO">
-                                                <i class="fas fa-file"></i>
-                                            </a>
-                                        @endif
-
-                                        @if ($item['documentword'])
-                                            <a href="{{ asset('/informesfinalesclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $item['documentword']) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME FINAL WORD">
-                                                <i class="fas fa-file"></i>
-                                            </a>
-                                        @endif
-                                    </td>
+                                    <th>ID Cli.</th>
+                                    <th>Cliente</th>
+                                    <th>Proveedor</th>
+                                    <th>Fecha_Bateria</th>
+                                    <th>Servicio</th>
+                                    <th>Result._Médicos</th>
+                                    <th>Doc.</th>
+                                    <th>Informe_Final</th>
                                 </tr>
-                                @endif
-                            @endforeach
-                            @endcan
+                            </thead>
+                            <tbody>
+                                @can('admin.informesfinales.soloverinformessegunproveedor')
+                                @foreach ($result as $item)
+                                @if ($item['estado_informefinal'] === 'APROBADO' && $item['proveedornombre'] === $usuarioAutenticado)
+                                    <tr>
+                                        <td>{{ $item['clienteauditoriaid'] }}</td>
+                                        <td>{{ $item['clienteauditorianombre'] }}</td>
+                                        <td>{{ $item['proveedornombre'] }}</td>
+                                        <td hidden>
+                                            @if ($item['proveedornombre'])
+                                                {{ $item['celularproveedor'] }}
+                                            @endif
+                                        </td>
+                                        <td>{{ $item['fechabateria'] }}</td>
+                                        <td>{{ $item['tramite'] }}</td>
+                                        <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
+                                            {{ $item['estado'] }}
+                                            <abbr title="VER DOCUMENTACIÓN">
+                                                <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                            </abbr>
+                                        </td>
+                                        <td>
+                                            <abbr title="VER DOCUMENTACIÓN" style="display: inline-block;">
+                                                <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
+                                                    <i class="fas fa-address-book"></i>
+                                                </a>
+                                            </abbr>
+                                            @if ($item['historiamedica'])
+                                            <abbr title="VER HISTORIA MÉDICA" style="display: inline-block;">
+                                                <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
+                                                    <i class="fas fa-book-medical"></i>
+                                                </a>
+                                            </abbr>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($item['document'])
+                                                <a href="{{ asset('/informesfinalesclientesauditoria/' . $item['clienteauditoriaid'] . '/'. $item['documentfirmado']) }}" class="btn btn-sm btn-veracciones" target="_blank" title="VER INFORME FINAL">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @endif
+                                            
+                                            @if ($item['documentfirmado'])
+                                                <a href="{{ asset('/informesfinalesclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $item['documentfirmado']) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME FINAL FIRMADO">
+                                                    <i class="fas fa-file"></i>
+                                                </a>
+                                            @endif
 
-                            @can('admin.informesfinales.verinformestodosproveedores')
-                            @foreach ($result as $item)
-                            @if ($item['estado_informefinal'] === 'APROBADO')
-                                <tr>
-                                    <td>{{ $item['clienteauditoriaid'] }}</td>
-                                    <td>{{ $item['clienteauditorianombre'] }}</td>
-                                    <td>{{ $item['proveedornombre'] }}</td>
-                                    <td hidden>
-                                        @if ($item['proveedornombre'])
-                                            {{ $item['celularproveedor'] }}
-                                        @endif
-                                    </td>
-                                    <td>{{ $item['fechabateria'] }}</td>
-                                    <td>{{ $item['tramite'] }}</td>
-                                    <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
-                                        {{ $item['estado'] }}
-                                        <abbr title="VER DOCUMENTACIÓN">
-                                            <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
-                                        </abbr>
-                                    </td>
-                                    <td>
-                                        <abbr title="VER DOCUMENTACIÓN" style="display: inline-block;">
-                                            <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
-                                                <i class="fas fa-address-book"></i>
-                                            </a>
-                                        </abbr>
-                                        @if ($item['historiamedica'])
-                                        <abbr title="VER HISTORIA MÉDICA" style="display: inline-block;">
-                                            <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
-                                                <i class="fas fa-book-medical"></i>
-                                            </a>
-                                        </abbr>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($item['document'])
-                                            <a href="{{ asset('/informesfinalesclientesauditoria/'. $item['clienteauditoriaid'] . '/'. $item['document']) }}" class="btn btn-sm btn-veracciones" target="_blank" title="VER INFORME FINAL">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @endif
+                                            @if ($item['documentword'])
+                                                <a href="{{ asset('/informesfinalesclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $item['documentword']) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME FINAL WORD">
+                                                    <i class="fas fa-file"></i>
+                                                </a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endif
+                                @endforeach
+                                @endcan
 
-                                        @if ($item['documentfirmado'])
-                                            <a href="{{ asset('/informesfinalesclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $item['documentfirmado']) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME FINAL FIRMADO">
-                                                <i class="fas fa-file"></i>
-                                            </a>
-                                        @endif
+                                @can('admin.informesfinales.verinformestodosproveedores')
+                                @foreach ($result as $item)
+                                @if ($item['estado_informefinal'] === 'APROBADO')
+                                    <tr>
+                                        <td>{{ $item['clienteauditoriaid'] }}</td>
+                                        <td>{{ $item['clienteauditorianombre'] }}</td>
+                                        <td>{{ $item['proveedornombre'] }}</td>
+                                        <td hidden>
+                                            @if ($item['proveedornombre'])
+                                                {{ $item['celularproveedor'] }}
+                                            @endif
+                                        </td>
+                                        <td>{{ $item['fechabateria'] }}</td>
+                                        <td>{{ $item['tramite'] }}</td>
+                                        <td class="{{ $item['estado'] === 'COMPLETO' ? 'text-completo' : 'text-incompleto' }}">
+                                            {{ $item['estado'] }}
+                                            <abbr title="VER DOCUMENTACIÓN">
+                                                <a class="btn btn-veracciones" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
+                                            </abbr>
+                                        </td>
+                                        <td>
+                                            <abbr title="VER DOCUMENTACIÓN" style="display: inline-block;">
+                                                <a class="btn btn-requisitosdocumentos" data-toggle="modal" data-target="#modalDocumentacion{{ $loop->index }}">
+                                                    <i class="fas fa-address-book"></i>
+                                                </a>
+                                            </abbr>
+                                            @if ($item['historiamedica'])
+                                            <abbr title="VER HISTORIA MÉDICA" style="display: inline-block;">
+                                                <a href="{{ asset('/historiamedicaauditoria/' . $item['clienteauditoriaid'] . '/' . $item['historiamedica']) }}" class="btn btn-verhistoriamedica" target="_blank">
+                                                    <i class="fas fa-book-medical"></i>
+                                                </a>
+                                            </abbr>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($item['document'])
+                                                <a href="{{ asset('/informesfinalesclientesauditoria/'. $item['clienteauditoriaid'] . '/'. $item['document']) }}" class="btn btn-sm btn-veracciones" target="_blank" title="VER INFORME FINAL">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @endif
 
-                                        @if ($item['documentword'])
-                                            <a href="{{ asset('/informesfinalesclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $item['documentword']) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME FINAL WORD">
-                                                <i class="fas fa-file"></i>
-                                            </a>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endif
-                            @endforeach
-                            @endcan
-                        </tbody>
-                    </table>
+                                            @if ($item['documentfirmado'])
+                                                <a href="{{ asset('/informesfinalesclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $item['documentfirmado']) }}" class="btn btn-sm btn-verinformefirmado" target="_blank" title="VER INFORME FINAL FIRMADO">
+                                                    <i class="fas fa-file"></i>
+                                                </a>
+                                            @endif
+
+                                            @if ($item['documentword'])
+                                                <a href="{{ asset('/informesfinalesclientesauditoria/' . $item['clienteauditoriaid'] . '/' . $item['documentword']) }}" class="btn btn-sm btn-verinformeword" target="_blank" title="DESCARGAR INFORME FINAL WORD">
+                                                    <i class="fas fa-file"></i>
+                                                </a>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    @endif
+                                @endforeach
+                                @endcan
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
             @endcan
         </div>
     </div>
@@ -1476,7 +1499,6 @@
             var cliente = $(this).data('cliente');
             var fecha = $(this).data('fecha');
 
-            // Asignar los valores al modal
             var modal2 = $(this).data('target');
             $(modal2).find('#cliente').val(cliente);
             $(modal2).find('#fechabateria').val(fecha);
@@ -1885,7 +1907,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/js/dropify.min.js"></script>
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     @if (session('eliminar')=='ok')
     <script>
         Swal.fire(

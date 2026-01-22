@@ -81,7 +81,7 @@
 <div class="card"><div class="card-body">
 <div class="row justify-content-center"> 
     <!-- Tarjeta Cuenta 1 -->
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
         <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
             <div class="card-header text-center border-0 position-relative" style="background: rgba(0, 0, 0, 0.03); padding: 1.2rem;">
                 <img src="{{ asset('img/logobanco.png') }}" alt="Logo Banco" class="img-fluid" style="max-height: 50px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2));">
@@ -116,7 +116,7 @@
     </div>
 
     <!-- Tarjeta Cuenta 2 -->
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
         <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
             <div class="card-header text-center border-0 position-relative" style="background: rgba(0, 0, 0, 0.03); padding: 1.2rem;">
                 <img src="{{ asset('img/logobanco.png') }}" alt="Logo Banco" class="img-fluid" style="max-height: 50px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2));">
@@ -181,6 +181,41 @@
             <div class="card-footer text-center border-0" style="background: rgba(0, 0, 0, 0.05); padding: 0.8rem;">
                 <a class="btn btn btn-vermov" data-toggle="modal" data-target="#ingresoscuenta3">VER INGRESOS</a>
                 <a class="btn btn btn-vermov" data-toggle="modal" data-target="#egresoscuenta3">VER EGRESOS</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjeta Cuenta 4 -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
+            <div class="card-header text-center border-0 position-relative" style="background: rgba(0, 0, 0, 0.03); padding: 1.2rem;">
+                <img src="{{ asset('img/bancoeco.png') }}" alt="Logo Banco" class="img-fluid" style="max-height: 50px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2));">
+                <h6 class="mt-2 text-uppercase font-weight-bold">N° Cuenta: 1031266712</h6>
+            </div>
+            <div class="card-body" style="text-align: left;">
+                <div class="d-flex justify-content-between">
+                    <h6 class="font-weight-bold">Saldo Anterior</h6>
+                    <p class="h6 fw-bold text-dark">{{ number_format($saldoanteriorcuenta4, 2, '.', '') }} <span class="text-muted">Bs.</span></p>
+                </div>
+                <hr class="bg-secondary">
+                <div class="d-flex justify-content-between">
+                    <h6 class="font-weight-bold">Total Ingresos</h6>
+                    <p class="h6 fw-bold text-dark">{{ number_format($totalCuenta4Ingreso, 2, '.', '') }} <span class="text-muted">Bs.</span></p>
+                </div>
+                <hr class="bg-secondary">
+                <div class="d-flex justify-content-between">
+                    <h6 class="font-weight-bold">Total Egresos</h6>
+                    <p class="h6 fw-bold text-dark">{{ number_format($totalCuenta4Egreso, 2, '.', '') }} <span class="text-muted">Bs.</span></p>
+                </div>
+                <hr class="bg-secondary">
+                <div class="d-flex justify-content-between">
+                    <h6 class="font-weight-bold">Saldo</h6>
+                    <p class="h5 fw-bold text-success">{{ number_format($saldoanteriorcuenta4 + $totalCuenta4Ingreso - $totalCuenta4Egreso, 2, '.', '') }} <span class="text-muted">Bs.</span></p>
+                </div>
+            </div>
+            <div class="card-footer text-center border-0" style="background: rgba(0, 0, 0, 0.05); padding: 0.8rem;">
+                <a class="btn btn btn-vermov" data-toggle="modal" data-target="#ingresoscuenta4">VER INGRESOS</a>
+                <a class="btn btn btn-vermov" data-toggle="modal" data-target="#egresoscuenta4">VER EGRESOS</a>
             </div>
         </div>
     </div>
@@ -600,6 +635,155 @@
                     </thead>
                     <tbody>
                         @foreach($egresoscuenta3 as $movimiento)
+                        <tr>
+                            <td>{{ $movimiento->id }}</td>
+                            <td title="{{ $movimiento->proveedoratencion }}" class="truncar">{{ $movimiento->proveedoratencion ?? 0 }}</td>
+                            <td title="{{ $movimiento->clientenombre }}" class="truncar">{{ $movimiento->clientenombre ?? 0 }}</td>
+                            <td title="{{ $movimiento->detalle }}" class="truncar">{{ $movimiento->detalle }}</td>
+                            <td title="{{ $movimiento->tipotransaccion }}" class="truncar">{{ $movimiento->tipotransaccion }}</td>
+                            <td>{{ $movimiento->subtotal }}</td>
+                            <td>{{ $movimiento->descuento }}</td>
+                            <td>{{ $movimiento->montototal }}</td>
+                            <td>{{ $movimiento->saldo }}</td>
+                            <td>{{ $movimiento->reciboid }}</td>
+                            <td title="{{ $movimiento->usuarioregistronombre }}" class="truncar">{{ $movimiento->usuarioregistronombre }}</td>
+                            <td>{{ $movimiento->updated_at }}</td>
+                            <td>
+                                @if ($movimiento->estado === 'PAGO PROCESADO')
+                                    <span class="badge bg-success">{{ $movimiento->estado }}</span>
+                                @elseif ($movimiento->estado === 'SALDO PENDIENTE')
+                                    <span class="badge bg-warning text-dark">{{ $movimiento->estado }}</span>
+                                @else
+                                    <span class="badge bg-secondary">{{ $movimiento->estado }}</span>
+                                @endif
+                            </td> 
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- INGRESOS Y EGRESOS CUENTA 1031266712 --}}
+<div class="modal fade" id="ingresoscuenta4" tabindex="-1" aria-labelledby="ingresoscuenta4Label" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ingresoscuenta4Label">INGRESOS DE LA CUENTA: 1031266712</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Proveedor</th>
+                            <th>Detalle</th>
+                            <th>Tipo_Transac.</th>
+                            <th>Subto.</th>
+                            <th>Desc.</th>
+                            <th>Total</th>
+                            <th>Saldo</th>
+                            <th>N.Rec.</th>
+                            <th>Usuario_Reg.</th>
+                            <th>Fecha_Dep.</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php
+                            $idsMostrados4 = [];
+                        @endphp
+
+                        @foreach($ingresoscuenta4 as $movimiento)
+                            @if(!in_array($movimiento->id, $idsMostrados4))
+                                @php
+                                    $idsMostrados4[] = $movimiento->id;
+                                @endphp
+                                <tr>
+                                    <td>{{ $movimiento->id }}</td>
+                                    <td title="{{ $movimiento->clientenombre }}" class="truncar">{{ $movimiento->clientenombre ?? 0 }}</td>
+                                    <td title="{{ $movimiento->proveedoratencion }}" class="truncar">{{ $movimiento->proveedoratencion ?? 0 }}</td>
+                                    <td title="{{ $movimiento->detalle }}" class="truncar">{{ $movimiento->detalle }}</td>
+                                    <td title="{{ $movimiento->tipotransaccion }}" class="truncar">{{ $movimiento->tipotransaccion }}</td>
+                                    <td>{{ $movimiento->subtotal }}</td>
+                                    <td>{{ $movimiento->descuento }}</td>
+                                    <td>
+                                        {{ $movimiento->descuentoatc 
+                                            ? number_format($movimiento->montototal - $movimiento->descuentoatc, 2) 
+                                            : number_format($movimiento->montototal, 2) }}
+                                    </td>                                    
+                                    <td>{{ $movimiento->saldo }}</td>
+                                    <td>{{ $movimiento->reciboid }}</td>
+                                    <td title="{{ $movimiento->usuarioregistronombre }}" class="truncar">{{ $movimiento->usuarioregistronombre }}</td>
+                                    @if($movimiento->tipotransaccion === 'EFECTIVO')
+                                    <td>{{ \Carbon\Carbon::parse($movimiento->depositosbancarios_created_at)->format('Y-m-d') }}</td>
+                                    @elseif($movimiento->tipotransaccion === 'TRANSFERENCIA BANCARIA' || $movimiento->tipotransaccion === 'DEPOSITO BANCARIO')
+                                        <td>{{ \Carbon\Carbon::parse($movimiento->created_at)->format('Y-m-d') }}</td>
+                                    @elseif($movimiento->tipotransaccion === 'ATC')
+                                        <td>{{ \Carbon\Carbon::parse($movimiento->cajacentral_fechabancarizacionatc)->format('Y-m-d') }}</td>
+                                    @elseif($movimiento->tipotransaccion === 'CHEQUE')
+                                        <td>{{ \Carbon\Carbon::parse($movimiento->cajacentral_updated_at)->format('Y-m-d') }}</td>
+                                    @else
+                                        <td>---------------</td>
+                                    @endif
+                                    <td>
+                                        @if ($movimiento->estado === 'PAGO PROCESADO')
+                                            <span class="badge bg-success">{{ $movimiento->estado }}</span>
+                                        @elseif ($movimiento->estado === 'SALDO PENDIENTE')
+                                            <span class="badge bg-warning text-dark">{{ $movimiento->estado }}</span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ $movimiento->estado }}</span>
+                                        @endif
+                                    </td> 
+                                </tr>
+                            @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="egresoscuenta4" tabindex="-1" aria-labelledby="egresoscuenta4Label" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="egresoscuenta4Label">EGRESOS DE LA CUENTA: 1031266712</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Proveedor</th>
+                            <th>Cliente</th>
+                            <th>Detalle</th>
+                            <th>Tipo_Transac.</th>
+                            <th>Subto.</th>
+                            <th>Desc.</th>
+                            <th>Total</th>
+                            <th>Saldo</th>
+                            <th>N.Rec.</th>
+                            <th>Usuario_Reg.</th>
+                            <th>Fecha_Reg.</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($egresoscuenta4 as $movimiento)
                         <tr>
                             <td>{{ $movimiento->id }}</td>
                             <td title="{{ $movimiento->proveedoratencion }}" class="truncar">{{ $movimiento->proveedoratencion ?? 0 }}</td>

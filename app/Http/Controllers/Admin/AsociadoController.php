@@ -77,6 +77,22 @@ use App\Models\CartasPolizas;
 use Dompdf\Options;
 use Illuminate\Support\Facades\View;
 use App\Models\ModificacionesDatos;
+use App\Models\AdjuntoaCartas;
+use App\Models\Informefinal;
+use App\Models\RecomendacionBaterias;
+/* NUEVO 141125 */
+use App\Models\SubTramite;
+
+use Illuminate\Support\Facades\Storage;
+use Google_Client;
+use Google_Service_Drive;
+use Google_Service_Drive_DriveFile;
+use Google_Service_Drive_Permission;
+use Illuminate\Support\Str;
+
+//NUEVO APP MOVIL
+use App\Notifications\ClienteReferenciadoNotification;
+use App\Services\FirebaseService;
 
 class AsociadoController extends Controller
 {
@@ -396,6 +412,42 @@ class AsociadoController extends Controller
         }
         $cliente = Cliente::create($clienteData);
 
+        /* NUEVO APP MOVIL */
+        if ($request->referenciadorid) {
+
+            $clienteReferenciador = Cliente::find($request->referenciadorid);
+
+            if ($clienteReferenciador) {
+
+                // Sumar billetera
+                $clienteReferenciador->billeteramovil += 20;
+                $clienteReferenciador->save();
+
+                // 🔔 BUSCAR USER DEL REFERENCIADOR
+                $userReferenciador = User::where('clienteid', $clienteReferenciador->id)->first();
+                if ($userReferenciador) {
+
+                    // 1️⃣ Notificación Laravel (BD)
+                    $userReferenciador->notify(
+                        new ClienteReferenciadoNotification(
+                            $cliente,
+                            $clienteReferenciador
+                        )
+                    );
+
+                    // 2️⃣ Push Firebase (FCM)
+                    if (!empty($userReferenciador->fcm_token)) {
+                        FirebaseService::sendNotification(
+                            $userReferenciador->fcm_token,
+                            'Nuevo Cliente Referenciado',
+                            'Has ganado 20 GoodBits por referenciar a ' . $cliente->nombrecompleto
+                        );
+                    }
+                }
+
+            }
+        }
+
         return redirect()->route('admin.asociados.verclienteita', $cliente->id)->with('info', 'El cliente se creó con éxito');
     }
     public function listadoclienteita(Request $request, Asociado $asociado) 
@@ -404,7 +456,8 @@ class AsociadoController extends Controller
         $clientes = Cliente::with('servicios')
                             ->where('nombrecompleto', 'LIKE', "%$nombrecompleto%")
                             ->orderBy('nombrecompleto')
-                            ->simplePaginate(20);
+                            /* ->simplePaginate(20); */
+                            ->get();
         return view('admin.asociados.listadoclienteita', compact('asociado', 'clientes'));
     }
     public function buscarclientesita(Request $request, Asociado $asociado)
@@ -426,43 +479,90 @@ class AsociadoController extends Controller
         $proveedores = Proveedor::whereIn('id', [3, 54])->get(['id', 'proveedor', 'celular']);
         $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
         $tieneBateria = Bateriasubcliente::where('clienteitaid', $cliente->id)->exists();
+        $tieneBateriaPrestaciones = SubTramite::where('clienteid', $cliente->id)->exists();
         $dictamenitas = DictamenAuditoria::where('clienteitaid', $cliente->id)->get();
         $tieneContactos = ContactoSubCliente::where('clienteitaid', $cliente->id)->exists();
         $tieneCotizacionaprobada = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)->exists();
         $tieneProgramacion = Programacionsubcliente::where('clienteitaid', $cliente->id)->exists();
         $tieneProgramacionatentido = Estadoprogramacionsubcliente::where('clienteitaid', $cliente->id)->exists();
         $tienerequisitosauditoria = Requisitosclientesauditoria::where('clienteitaid', $cliente->id)->exists();
+        $tienerequisitosapelacion = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'APELACIÓN')->exists();
+        $tienerequisitossegundasolicitud = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'SEGUNDA SOLICITUD')->exists();
+        $tienerequisitostercerasolicitud = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'TERCERA SOLICITUD')->exists();
+        $tienerequisitosjubilacion = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'JUBILACIÓN')->exists();
 
-        $tienerequisitosapelacion = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
-        $tienerequisitossegundasolicitud = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
-        $tienerequisitostercerasolicitud = RequisitoSubCliente::where('clienteitaid', $cliente->id)->exists();
+        $tienerequisitospensionmuerte = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'PENSIÓN POR MUERTE')->exists();
+        $tienerequisitosretiroaportestotal = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'RETIRO DE APORTES TOTAL')->exists();
+        $tienerequisitosretiroaportesparcial = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'RETIRO DE APORTES PARCIAL')->exists();
+        $tienerequisitosmasahereditaria = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'MASA HEREDITARIA')->exists();
+        $tienerequisitoscompensacioncotsenasir = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')->exists();
+        $tienerequisitosapelsegsolicitud = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'APELACIÓN SEGUNDA SOLICITUD')->exists();
+        $tienerequisitosapeltercersolicitud = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'APELACIÓN TERCERA SOLICITUD')->exists();
+        $tienerequisitosrecalificacion = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'RECALIFICACIÓN')->exists();
+        $tienerequisitosapelrecalificacion = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'APELACIÓN DE RECALIFICACIÓN')->exists();
+
+        $tienerequisitosrecalsegsolicitud = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'RECALIFICACIÓN SEGUNDA SOLICITUD')->exists();
+        $tienerequisitosapelrecalsegsolicitud = RequisitoSubCliente::where('clienteitaid', $cliente->id)->where('servicio', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')->exists();
 
         $tieneTramites = Tramitesubcliente::where('clienteitaid', $cliente->id)->exists();
         $cartaconsentimientoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id) 
             ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
             ->whereNotNull('document')
-            ->first();
+        ->first();
         $bateriaaprobadaExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id) 
             ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
-            ->first();
-
-        $documentacion = Documentacionsubcliente::where('clienteitaid', $cliente->id)
-        ->where('accion', 'HISTORIA MÉDICA')
         ->first();
-
+        $documentacion = Documentacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('accion', 'HISTORIA MÉDICA')
+        ->first();
         $tieneAuditoriaMedica = Tramitesubcliente::where('clienteitaid', $cliente->id)
-        ->where('tramite', 'AUDITORIA MEDICA')
+            ->where('tramite', 'AUDITORIA MEDICA')
         ->exists();
-
         $tieneApelacion = Tramitesubcliente::where('clienteitaid', $cliente->id)
-        ->where('tramite', 'APELACION')
+            ->where('tramite', 'APELACION')
         ->exists();
-
         $tieneSegundasolicitud = Tramitesubcliente::where('clienteitaid', $cliente->id)
-        ->where('tramite', 'SEGUNDA SOLICITUD')
+            ->where('tramite', 'SEGUNDA SOLICITUD')
         ->exists();
         $tieneTercerasolicitud = Tramitesubcliente::where('clienteitaid', $cliente->id)
-        ->where('tramite', 'TERCERA SOLICITUD')
+            ->where('tramite', 'TERCERA SOLICITUD')
+        ->exists();
+        $tieneJubilacion = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'JUBILACIÓN')
+        ->exists();
+        $tienePensionmuerte = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE')
+        ->exists();
+        $tieneRetiroaportestotal = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'RETIRO DE APORTES TOTAL')
+        ->exists();
+        $tieneRetiroaportesparcial = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'RETIRO DE APORTES PARCIAL')
+        ->exists();
+        $tieneMasahereditaria = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'MASA HEREDITARIA')
+        ->exists();
+        $tieneCompensacioncotsenasir = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
+        ->exists();
+        $tieneApelSegSolicitud = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'APELACIÓN SEGUNDA SOLICITUD')
+        ->exists();
+        $tieneApelTercerSolicitud = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'APELACIÓN TERCERA SOLICITUD')
+        ->exists();
+        $tieneApelRecalificacion = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'APELACIÓN DE RECALIFICACIÓN')
+        ->exists();
+        $tieneRecalificacion = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'RECALIFICACIÓN')
+        ->exists();
+
+        $tieneRecalSegSolicitud = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+        ->exists();
+        $tieneApelRecalSegSolicitud = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
         ->exists();
 
         $IDCliente = $cliente->id;
@@ -470,35 +570,27 @@ class AsociadoController extends Controller
 
         $historiamedica = Documentacionsubcliente::where('clienteitaid', $cliente->id)
             ->where('accion', 'HISTORIA MÉDICA')
-            ->whereNull('motivoanulacion') // Ignora los eliminados
+            ->whereNull('motivoanulacion')
             ->first();
 
         $historiamedicaclienteita = $historiamedica ? $historiamedica->document : null;
-
         $accionesCliente = BateriaSubCliente::where('clienteitaid', $IDCliente)->pluck('accionnombre')->toArray();
-
         $fechasbateriasSubCliente = BateriaSubCliente::where('clienteitaid', $IDCliente)
             ->distinct()
-            ->pluck('fechabateria');
-
+        ->pluck('fechabateria');
         $fechasRegistradas = ProveedorInformefinal::where('clienteitaid', $cliente->id)
-            ->pluck('fechabateria');
-
-        // Verificar si la fecha aún tiene trámites activos
+        ->pluck('fechabateria');
         $fechasConTramites = Tramitesubcliente::where('clienteitaid', $cliente->id)
             ->pluck('fechabateria')
-            ->unique();
-
-        // Obtener fechas que no están registradas en ProveedorInformefinal o que tienen trámites activos
+        ->unique();
         $fechasDisponibles = $fechasbateriasSubCliente->filter(function ($fecha) use ($fechasRegistradas, $fechasConTramites) {
             return !$fechasRegistradas->contains($fecha) || $fechasConTramites->contains($fecha);
         });
-
         $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionnombre', $accionesCliente)
             ->where('clienteitaid', $IDCliente)
             ->whereIn('fechabateria', $fechasDisponibles)
             ->distinct()
-            ->pluck('fechabateria', 'accionnombre');
+        ->pluck('fechabateria', 'accionnombre');
 
         $accionesPorFecha = [];
         foreach ($fechasBateriaPorAccion as $accion => $fecha) {
@@ -509,20 +601,28 @@ class AsociadoController extends Controller
             ->get()
             ->mapWithKeys(function ($item) {
                 return [$item->fechabateria => $item->tramite];
-            });
-
+        });
         $clienteConInvalidez = Tramitesubcliente::where('clienteitaid', $cliente->id)
             ->where('tramite', 'INVALIDEZ')
-            ->exists();
-
+        ->exists();
         $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteitaid', $cliente->id)
             ->whereIn('tramite', ['APELACION', 'SEGUNDA SOLICITUD'])
-            ->exists();
+        ->exists();
 
-
-        return view('admin.asociados.verclienteita', compact('cartasclientes','clienteConInvalidez','clienteConApelacionOSegunda','tramitesPorFecha','historiamedicaclienteita','nombreusuario','tienerequisitosapelacion','tienerequisitossegundasolicitud','tienerequisitostercerasolicitud','tieneTramites','tienerequisitosauditoria','tieneApelacion','tieneSegundasolicitud','tieneTercerasolicitud','tieneAuditoriaMedica','tieneProgramacion','tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria','cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion','proveedores', 'cliente', 'tieneRequisitos', 'documentacion', 'dictamenitas'));
+        return view('admin.asociados.verclienteita', compact('cartasclientes','clienteConInvalidez',
+        'clienteConApelacionOSegunda','tramitesPorFecha','historiamedicaclienteita','nombreusuario','tienerequisitosapelacion',
+        'tienerequisitossegundasolicitud','tienerequisitostercerasolicitud','tieneTramites','tienerequisitosauditoria',
+        'tieneApelacion','tieneSegundasolicitud','tieneTercerasolicitud','tieneAuditoriaMedica','tieneProgramacion',
+        'tieneProgramacionatentido','tieneCotizacionaprobada','bateriaaprobadaExistente','tieneBateria',
+        'cartaconsentimientoExistente','tieneContactos','requisitosubclientes','accionesPorFecha','fechasBateriaPorAccion',
+        'proveedores', 'cliente', 'tieneRequisitos', 'documentacion', 'dictamenitas','tieneJubilacion','tienerequisitosjubilacion',
+        'tienePensionmuerte','tieneRetiroaportestotal','tieneRetiroaportesparcial','tieneMasahereditaria','tieneCompensacioncotsenasir',
+        'tienerequisitospensionmuerte','tienerequisitosretiroaportestotal','tienerequisitosretiroaportesparcial',
+        'tienerequisitosmasahereditaria','tienerequisitoscompensacioncotsenasir','tienerequisitosapelsegsolicitud',
+        'tienerequisitosapeltercersolicitud','tienerequisitosrecalificacion','tieneApelSegSolicitud','tieneApelTercerSolicitud',
+        'tieneRecalificacion','tienerequisitosapelrecalificacion','tieneApelRecalificacion','tienerequisitosrecalsegsolicitud',
+        'tienerequisitosapelrecalsegsolicitud','tieneRecalSegSolicitud','tieneApelRecalSegSolicitud','tieneBateriaPrestaciones'));
     }
-
     public function guardardictamenita(Request $request, Cliente $cliente)
     {
         $archivo_name = null;
@@ -560,42 +660,38 @@ class AsociadoController extends Controller
         return redirect()->route('admin.asociados.verclienteita', $cliente)
             ->with('info', 'Dictamen guardado exitosamente.');
     }
-    
     public function guardarcartaclienteauditoriaita(Cliente $cliente, Request $request) 
-        {
-            $archivo_name = null;
-            if ($request->hasFile('carta')) {
-                $file = $request->file('carta');
-                $carpetaCliente = public_path("/cartasclientesita/{$cliente->id}");
-                if (!file_exists($carpetaCliente)) {
-                    mkdir($carpetaCliente, 0755, true);
-                }
-                $archivo_name = time() . '_' . $file->getClientOriginalName();
-                $file->move($carpetaCliente, $archivo_name);
+    {
+        $archivo_name = null;
+        if ($request->hasFile('carta')) {
+            $file = $request->file('carta');
+            $carpetaCliente = public_path("/cartasclientesita/{$cliente->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
             }
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+        }
 
-            $nombrecliente = $request->input('nombrecompleto');
-            $detalle = $request->input('detalle');
-            $fecha = $request->input('fecha');
-            $idcliente = $request->input('clienteitaid');
-            $nombrecliente = $request->input('clienteitanombre');
-            $usuarioAutenticado = Auth::user();
+        $nombrecliente = $request->input('nombrecompleto');
+        $detalle = $request->input('detalle');
+        $fecha = $request->input('fecha');
+        $idcliente = $request->input('clienteitaid');
+        $nombrecliente = $request->input('clienteitanombre');
+        $usuarioAutenticado = Auth::user();
 
-            CartasClientes::create([
-                'documento' => $archivo_name,
-                'detalle' => $detalle,
-                'fecha' => $fecha,
-                'clienteid' => $idcliente,
-                'clientenombre' => $nombrecliente,
-                'usuarioregistroid' => $usuarioAutenticado->id,
-                'usuarioregistronombre' => $usuarioAutenticado->name,
-            ]
-        );
-
+        CartasClientes::create([
+            'documento' => $archivo_name,
+            'detalle' => $detalle,
+            'fecha' => $fecha,
+            'clienteid' => $idcliente,
+            'clientenombre' => $nombrecliente,
+            'usuarioregistroid' => $usuarioAutenticado->id,
+            'usuarioregistronombre' => $usuarioAutenticado->name,
+        ]);
 
         return redirect()->route('admin.asociados.verclienteita', $request->cliente)->with('info', 'La carta se subió con éxito');
     }
-
     public function editarclienteita(Cliente $cliente)
     {
         $suc = [
@@ -622,7 +718,7 @@ class AsociadoController extends Controller
         $estciv = [
             'SOLTER@' => 'SOLTER@',
             'CASAD@' => 'CASAD@',
-            'UNIION LIBRE' => 'UNIION LIBRE',
+            'UNION LIBRE' => 'UNION LIBRE',
             'DIVORCIAD@' => 'DIVORCIAD@',
             'VIUD@' => 'VIUD@',
         ];
@@ -695,8 +791,10 @@ class AsociadoController extends Controller
         foreach ($clienteData as $campo => $nuevoValor) {
             $valorAnterior = $cliente->$campo;
             if ($valorAnterior != $nuevoValor) {
-                Modificacionesdatos::create([
+                ModificacionesDatos::create([
                     'tabla' => 'clientes',
+                    'clienteid' => $cliente->id,
+                    'clientenombre' => $cliente->nombrecompleto,
                     'columna' => $campo,
                     'datoantiguo' => $valorAnterior,
                     'datonuevo' => $nuevoValor,
@@ -712,7 +810,6 @@ class AsociadoController extends Controller
     }
 //
 //ASIGNAR TRAMITE
-    //
     public function listadotramiteclienteita(Asociado $asociado, Cliente $cliente)
     {
         $nombreclienteita = $cliente->nombrecompleto;
@@ -720,16 +817,34 @@ class AsociadoController extends Controller
                         ->simplePaginate(10000);
 
         $tramites = [
-            'APELACION' => 'APELACION',
-            'AUDITORIA MEDICA' => 'AUDITORIA MEDICA',
             'INVALIDEZ' => 'INVALIDEZ',
+            'APELACIÓN' => 'APELACIÓN',
             'SEGUNDA SOLICITUD' => 'SEGUNDA SOLICITUD',
+            'APELACIÓN SEGUNDA SOLICITUD' => 'APELACIÓN SEGUNDA SOLICITUD',
             'TERCERA SOLICITUD' => 'TERCERA SOLICITUD',
+            'APELACIÓN TERCERA SOLICITUD' => 'APELACIÓN TERCERA SOLICITUD',
+            'RECALIFICACIÓN' => 'RECALIFICACIÓN',
+            'APELACIÓN DE RECALIFICACIÓN' => 'APELACIÓN DE RECALIFICACIÓN',
+            'RECALIFICACIÓN SEGUNDA SOLICITUD' => 'RECALIFICACIÓN SEGUNDA SOLICITUD',
+            'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD' => 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD',
+            'JUBILACIÓN' => 'JUBILACIÓN',
+            'RETIRO DE APORTES TOTAL' => 'RETIRO DE APORTES TOTAL',
+            'RETIRO DE APORTES PARCIAL' => 'RETIRO DE APORTES PARCIAL',
+            'PENSIÓN POR MUERTE' => 'PENSIÓN POR MUERTE',
+            'MASA HEREDITARIA' => 'MASA HEREDITARIA',
+            'COMPENSACIÓN DE COTIZACIONES (SENASIR)' => 'COMPENSACIÓN DE COTIZACIONES (SENASIR)',
+            'AUDITORIA MÉDICA' => 'AUDITORIA MÉDICA',
         ];
 
+        $tramitesRegistrados = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->pluck('tramite')
+            ->toArray();
+
+        $tramitesDisponibles = array_diff_key($tramites, array_flip($tramitesRegistrados));
+
         $ciudades = [
-            'COCHABAMBA' => 'COCHABAMBA',
             'SANTA CRUZ' => 'SANTA CRUZ',
+            'COCHABAMBA' => 'COCHABAMBA',
         ];
 
         $nombreCliente = $cliente->nombrecompleto;
@@ -749,7 +864,6 @@ class AsociadoController extends Controller
 
         $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionnombre', $accionesCliente)
         ->where('clienteitaid', $idCliente)
-        /* ->whereIn('fechabateria', $fechasEnEstadoCotizacionSubCliente) */
         ->distinct()
         ->pluck('fechabateria', 'accionnombre');
 
@@ -758,24 +872,135 @@ class AsociadoController extends Controller
         $accionesPorFecha[$fecha][] = $accion;
         }
 
-        return view('admin.asociados.listadotramiteclienteita', compact('ciudades', 'tramitesubclientes', 'cliente', 'asociado', /* 'apoderados', */ 'tramites'/* , 'apoderadoSiguiente' */, 'accionesPorFecha'));
+        return view('admin.asociados.listadotramiteclienteita', compact('ciudades','tramitesubclientes','cliente','asociado',
+        'tramites', 'accionesPorFecha','tramitesDisponibles'));
     }
+
+    public function subirArchivoDrive(Request $request, $id)
+    {
+        $request->validate([
+            'archivo' => 'required|file|max:500000',
+            'archivo2' => 'nullable|file|max:500000',
+            'archivo3' => 'nullable|file|max:500000',
+        ]);
+
+        $registro = TramiteSubCliente::findOrFail($id);
+
+        $clienteId = $registro->clienteitaid;
+        $tramiteNombre = str_replace(['/', '\\'], '-', $registro->tramite);
+
+        $client = new Google_Client();
+        $client->setClientId(env('GOOGLE_DRIVE_CLIENT_ID'));
+        $client->setClientSecret(env('GOOGLE_DRIVE_CLIENT_SECRET'));
+        $client->refreshToken(env('GOOGLE_DRIVE_REFRESH_TOKEN'));
+
+        $service = new Google_Service_Drive($client);
+        $rootFolderId = env('GOOGLE_DRIVE_FOLDER_ID');
+
+        function crearCarpetaSiNoExiste($service, $nombre, $padreId) {
+            $resultado = $service->files->listFiles([
+                'q' => "mimeType='application/vnd.google-apps.folder' and trashed=false 
+                        and name='{$nombre}' and '{$padreId}' in parents",
+                'fields' => 'files(id, name)',
+            ]);
+
+            if (count($resultado->getFiles()) > 0) {
+                return $resultado->getFiles()[0]->id;
+            }
+
+            $folderMetadata = new Google_Service_Drive_DriveFile([
+                'name' => $nombre,
+                'mimeType' => 'application/vnd.google-apps.folder',
+                'parents' => [$padreId],
+            ]);
+
+            $folder = $service->files->create($folderMetadata, ['fields' => 'id']);
+
+            return $folder->id;
+        }
+
+        $clienteFolderId = crearCarpetaSiNoExiste($service, $clienteId, $rootFolderId);
+        $tramiteFolderId = crearCarpetaSiNoExiste($service, $tramiteNombre, $clienteFolderId);
+
+        function subirArchivo($service, $tramiteFolderId, $archivo)
+        {
+            $nombreArchivo = $archivo->getClientOriginalName();
+
+            $fileMetadata = new Google_Service_Drive_DriveFile([
+                'name' => $nombreArchivo,
+                'parents' => [$tramiteFolderId],
+            ]);
+
+            $resultado = $service->files->create($fileMetadata, [
+                'data' => file_get_contents($archivo->getRealPath()),
+                'mimeType' => $archivo->getMimeType(),
+                'uploadType' => 'multipart',
+                'fields' => 'id'
+            ]);
+
+            $fileId = $resultado->id;
+
+            $permission = new Google_Service_Drive_Permission([
+                'type' => 'anyone',
+                'role' => 'reader',
+            ]);
+
+            $service->permissions->create($fileId, $permission);
+
+            return "https://drive.google.com/file/d/{$fileId}/view";
+        }
+
+        if ($request->hasFile('archivo')) {
+            $registro->archivofinalizado = subirArchivo($service, $tramiteFolderId, $request->file('archivo'));
+        }
+
+        if ($request->hasFile('archivo2')) {
+            $registro->historiafinalizado = subirArchivo($service, $tramiteFolderId, $request->file('archivo2'));
+        }
+
+        if ($request->hasFile('archivo3')) {
+            $registro->requisitofinalizado = subirArchivo($service, $tramiteFolderId, $request->file('archivo3'));
+        }
+
+        $registro->estado = 'FINALIZADO';
+
+        $clienteId = $registro->clienteitaid;
+        $sucursal  = strtoupper($registro->ciudad);
+        $esPar = ($clienteId % 2 == 0);
+        if ($sucursal === 'SANTA CRUZ') {
+            $registro->apoderadoasignado = $esPar
+                ? 'JUAN DANIEL ALVARADO SOTO'
+                : 'DANNY MARVIN VIAÑA IBAÑEZ';
+        }
+        if ($sucursal === 'COCHABAMBA') {
+            $registro->apoderadoasignado = $esPar
+                ? 'HAROLD ARTURO CRUZ ARROYO'
+                : 'BERNARDO REQUE ROMERO';
+        }
+
+        $registro->fechaasignacion = now();
+        $registro->fechainicio = now();
+        $registro->fechafinalizacion = now();
+        $registro->save();
+
+        return back()->with('info', 'Archivos subidos correctamente');
+    }
+
     public function guardartramiteclienteita(StoreTramitesubclienteRequest $request)
     {
         $clienteID = $request->input('clienteitaid');
+        $tramiteregistro = $request->input('tramite');
         $cliente = Cliente::findOrFail($clienteID);
 
-        $fechaHoy = now()->toDateString(); // Obtener la fecha actual en formato YYYY-MM-DD
+        $fechaHoy = now()->toDateString();
 
-        // Verificar si ya existe un registro para este cliente en la fecha actual
-        $existeRegistro = Tramitesubcliente::where('clienteitanombre', $cliente->nombrecompleto)
-            ->whereDate('created_at', $fechaHoy) // Comparar solo la fecha sin la hora
+        $existeRegistro = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', $tramiteregistro)
             ->exists();
 
         if ($existeRegistro) {
-            return response()->json(['error' => 'Ya existe un registro para este cliente en el día de hoy'], 400);
+            return response()->json(['info' => 'Ya existe un registro para este cliente en el día de hoy'], 400);
         }
-
 
         $clienteData = $request->all();
         $clienteData['clienteitanombre'] = $cliente->nombrecompleto;
@@ -784,34 +1009,50 @@ class AsociadoController extends Controller
         $clienteData['usuarioregistro'] = $request->usuarioregistro;
         $clienteData['estado'] = $request->input('estado');
         $tramitesubcliente = Tramitesubcliente::create($clienteData);
-        $tramite = $request->input('tramite');
-        if ($tramite == 'INVALIDEZ') {
-            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteita', compact('cliente', 'tramite'));
-            $pdfName = 'Etiqueta_Invalidez_' . $cliente->nombrecompleto . '.pdf';
-        } elseif ($tramite == 'AUDITORIA MEDICA') {
-            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitaauditoria', compact('cliente', 'tramite'));
-            $pdfName = 'Etiqueta_Auditoria_' . $cliente->nombrecompleto . '.pdf';
-        } elseif ($tramite == 'APELACION') {
-            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitaapelacion', compact('cliente', 'tramite'));
-            $pdfName = 'Etiqueta_Apelacion_' . $cliente->nombrecompleto . '.pdf';
-        } elseif ($tramite == 'SEGUNDA SOLICITUD') {
-            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitasegundasolicitud', compact('cliente', 'tramite'));
-            $pdfName = 'Etiqueta_SegundaSolicitud_' . $cliente->nombrecompleto . '.pdf';
-        } elseif ($tramite == 'TERCERA SOLICITUD') {
-            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteitatercerasolicitud', compact('cliente', 'tramite'));
-            $pdfName = 'Etiqueta_TerceraSolicitud_' . $cliente->nombrecompleto . '.pdf';
-        } else {
-            return response()->json(['error' => 'Servicio no válido'], 400);
-        }
 
-        $pdf->save(public_path($pdfName));
+        $tramite = urlencode($request->input('tramite'));
 
         return response()->json([
-            'pdf_url' => asset($pdfName),
+            'pdf_url' => route('admin.asociados.descargarEtiqueta', ['id' => $tramitesubcliente->id, 'tramite' => $tramite]),
             'redirect_url' => route('admin.asociados.listadotramiteclienteita', $cliente->id)
         ]);
     }
-    //
+    /* public function descargarEtiqueta($id, $tramite)
+    {
+        $registro = Tramitesubcliente::findOrFail($id);
+        $cliente = Cliente::findOrFail($registro->clienteitaid);
+    
+        $tramite = rawurldecode($tramite);
+    
+        $tramiteArchivo = str_replace('/', '-', $tramite);
+        $pdfName = 'ETIQUETA_' . $tramiteArchivo . ' - ' . $cliente->nombrecompleto . '.pdf';
+        $pdfPath = public_path($pdfName);
+    
+        if (file_exists($pdfPath)) {
+            return response()->download($pdfPath);
+        }
+    
+        $pdf = \PDF::loadView('admin.asociados.generaretiquetaclienteita', compact('cliente', 'tramite'));
+        $pdf->save($pdfPath);
+    
+        return response()->download($pdfPath);
+    } */
+    public function descargarEtiqueta($id, $tramite)
+    {
+        $registro = Tramitesubcliente::findOrFail($id);
+        $cliente = Cliente::findOrFail($registro->clienteitaid);
+
+        $tramite = str_replace('+', ' ', rawurldecode($tramite));
+        $idtramite = $registro->id;
+
+        $pdf = \PDF::loadView('admin.asociados.generaretiquetaclienteita', compact('cliente', 'tramite','idtramite'));
+        $pdfName = 'ETIQUETA_' . $tramite . ' - ' . $cliente->nombrecompleto . '.pdf';
+
+        return $pdf->download($pdfName);
+    }
+
+
+
     public function asignarFecha_ITA(Request $request, $clienteId)
     {
         // Validar que se haya seleccionado una fecha de batería
@@ -987,10 +1228,131 @@ class AsociadoController extends Controller
             ];
         }
  
-        $proveedoresmedicos = Proveedor::all(); 
+        $proveedoresmedicos = Proveedor::all();
 
-        return view('admin.asociados.crearbateriaclienteita', compact('proveedoresmedicos','permisoValido', 'fechaExpiracion','nombreusuario','accionesPorFecha','fechasBateriaPorAccion','departamentos','estadoproveedor','areas','accionesPorArea','cliente','id','accionesCliente','areas2','rolusuario'));
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        /* NUEVO 141125 */
+        $bateriaprestaciones = SubTramite::where('opcionatencion', 'DERIVACIÓN A PROGRAMACIÓN')
+        ->where('clienteid', $cliente->id)
+        ->whereNotExists(function($query) {
+            $query->select(DB::raw(1))
+                ->from('bateriasubclientes')
+                ->whereColumn('bateriasubclientes.idsubproc', 'subprocedimientotramites.id');
+        })
+        ->get();
+
+        $bateriaproveedores = BateriaProveedor::where('estado', 'ACTIVO')
+        ->where('sucursal', $cliente->sucursal)
+        ->where('asociado', 'CLIENTES ITA')
+        ->get();
+
+
+        return view('admin.asociados.crearbateriaclienteita', compact('proveedoresmedicos','permisoValido', 'fechaExpiracion',
+        'nombreusuario','accionesPorFecha','fechasBateriaPorAccion','departamentos','estadoproveedor','areas',
+        'accionesPorArea','cliente','id','accionesCliente','areas2','rolusuario','ultimosRegistros','bateriaprestaciones',
+        'bateriaproveedores'));
     }
+    public function guardarBateria(Request $request)
+    {
+        foreach ($request->pacciondisponible as $idSubtramite => $accionSeleccionada) {
+
+            if ($accionSeleccionada == null) {
+                continue;
+            }
+
+            $clienteId = $request->pclienteitaid[$idSubtramite];
+            $archivo_name = null;
+
+            if ($file = $request->file("porden.$idSubtramite")) {
+                $carpetaCliente = public_path("/ordenesbateria/{$clienteId}");
+                if (!file_exists($carpetaCliente)) {
+                    mkdir($carpetaCliente, 0755, true);
+                }
+                $archivo_name = time() . '_' . $file->getClientOriginalName();
+                $file->move($carpetaCliente, $archivo_name);
+            }
+
+            /* BateriaSubCliente::create([
+                'pagoservicio' => $request->paccion_pagoservicio[$idSubtramite],
+                'accionnombre' => $request->pacciondisponible[$idSubtramite],
+                'fechabateria' => $request->pfechabateria[$idSubtramite],
+                'clienteitaid' => $request->pclienteitaid[$idSubtramite],
+                'clienteitanombre' => $request->pclienteitanombre[$idSubtramite],
+                'tipoarea' => $request->paccion_tipoarea[$idSubtramite],
+                'areanombre' => $request->paccion_area[$idSubtramite],
+                'accionid' => $request->paccion_id[$idSubtramite],
+                'servicio' => $request->paccion_servicio[$idSubtramite],
+                'precio' => $request->paccion_precio[$idSubtramite],
+                'preciocompra' => $request->paccion_preciocompra[$idSubtramite],
+                'proveedorasignado' => $request->paccion_proveedor[$idSubtramite],
+                'informe' => $request->pinforme[$idSubtramite],
+                'medicoderivante' => $request->pmedicoderivador[$idSubtramite],
+                'orden' => $archivo_name,
+                'idsubproc' => $idSubtramite,
+                'usuarioid' => auth()->id(),
+                'usuarioregistro' => auth()->user()->name,
+            ]); */
+
+            $cliente = $request->pclienteitaid[$idSubtramite];
+            $fecha   = $request->pfechabateria[$idSubtramite];
+            $accion  = $request->paccion_id[$idSubtramite];
+            $accionNombreBase = $request->pacciondisponible[$idSubtramite];
+            $accionIdBase = $accion;
+
+            $registros = BateriaSubCliente::where('clienteitaid', $cliente)
+                ->where('fechabateria', $fecha)
+                ->where(function($q) use ($accionIdBase) {
+                    $q->where('accionid', $accionIdBase)
+                    ->orWhere('accionid', 'LIKE', $accionIdBase . 'NV%');
+                })
+            ->get();
+            if ($registros->count() == 0) {
+                $accionNombre = $accionNombreBase;
+                $accionId = $accionIdBase;
+            } else {
+                $maxNv = 0;
+                foreach ($registros as $reg) {
+                    if (preg_match('/^' . $accionIdBase . 'NV(\d*)$/', $reg->accionid, $m)) {
+                        $num = $m[1] === '' ? 1 : intval($m[1]);
+                        if ($num > $maxNv) $maxNv = $num;
+                    }
+                }
+                $nuevoNv = $maxNv + 1;
+                if ($nuevoNv == 1) {
+                    $accionId = $accionIdBase . 'NV';
+                    $accionNombre = $accionNombreBase . ' - NV';
+                } else {
+                    $accionId = $accionIdBase . 'NV' . $nuevoNv;
+                    $accionNombre = $accionNombreBase . ' - NV' . $nuevoNv;
+                }
+            }
+            BateriaSubCliente::create([
+                'pagoservicio' => $request->paccion_pagoservicio[$idSubtramite],
+                'accionnombre' => $accionNombre,
+                'fechabateria' => $request->pfechabateria[$idSubtramite],
+                'clienteitaid' => $request->pclienteitaid[$idSubtramite],
+                'clienteitanombre' => $request->pclienteitanombre[$idSubtramite],
+                'tipoarea' => $request->paccion_tipoarea[$idSubtramite],
+                'areanombre' => $request->paccion_area[$idSubtramite],
+                'accionid' => $accionId,
+                'servicio' => $request->paccion_servicio[$idSubtramite],
+                'precio' => $request->paccion_precio[$idSubtramite],
+                'preciocompra' => $request->paccion_preciocompra[$idSubtramite],
+                'proveedorasignado' => $request->paccion_proveedor[$idSubtramite],
+                'informe' => $request->pinforme[$idSubtramite],
+                'medicoderivante' => $request->pmedicoderivador[$idSubtramite],
+                'orden' => $archivo_name,
+                'idsubproc' => $idSubtramite,
+                'usuarioid' => auth()->id(),
+                'usuarioregistro' => auth()->user()->name,
+            ]);
+        }
+
+        return back()->with('info', 'Batería registrada correctamente');
+    }
+
     public function anular(Request $request) 
     {
         $registros = $request->input('registros');
@@ -2222,6 +2584,7 @@ class AsociadoController extends Controller
                     'bateriaid' => $proveedor->id,
                     'comision' => $proveedor->comision,
                     'medicoderivante' => $proveedor->medicoderivante,
+                    'idsubproc' => $proveedor->idsubproc,
                     'programacionid' => Programacionsubcliente::where('accionnombre', $accion)
                         ->where('clienteitanombre', $nombreCliente)
                         ->value('id'),
@@ -2248,7 +2611,7 @@ class AsociadoController extends Controller
         foreach ($fechasBateria as $fecha) {
             $accionesProgramadas = ProgramacionSubCliente::where('fechabateria', $fecha)
                 ->where('clienteitaid', $clienteitaid)
-                ->get(['id', 'accionnombre','proveedornombre', 'fechaasignada', 'horadesde', 'horahasta', 'horahasta', 'precio', 'preciocompra', 'servicio', 'pagoservicio', 'bateriaid', 'comision', 'medicoderivante']);
+                ->get(['id', 'accionnombre','proveedornombre', 'fechaasignada', 'horadesde', 'horahasta', 'horahasta', 'precio', 'preciocompra', 'servicio', 'pagoservicio', 'bateriaid', 'comision', 'medicoderivante', 'idsubproc']);
 
             foreach ($accionesProgramadas as $accion) {
                 $accionesDetallesPorFecha[$fecha][$accion->accionnombre] = $accion;
@@ -2291,6 +2654,31 @@ class AsociadoController extends Controller
             $bateriaid = $request->input("bateriaid_$accionSanitizada");
             $comision = $request->input("comision_$accionSanitizada");
             $medicoderivante = $request->input("medicoderivante_$accionSanitizada");
+            $idsubproc = $request->input("idsubproc_$accionSanitizada");
+
+            // Obtener ORDEN de Bateriasubcliente si existe coincidencia
+            $ordenBateria = null;
+            if (!empty($bateriaid)) {
+                $bateria = Bateriasubcliente::find($bateriaid);
+                if ($bateria) {
+                    $ordenBateria = $bateria->orden;
+                }
+            }
+
+            // ACTUALIZAR SubTramite SI COINCIDE EL ID
+            if (!empty($idsubproc)) {
+
+                $subproc = SubTramite::find($idsubproc);
+
+                if ($subproc) {
+                    $subproc->update([
+                        'fechaprogramacion' => $fechaasignada,
+                        'horaprogramacion' => $horadesde,
+                        'nombremedico' => $proveedornombre,
+                        'ordenprogramacion' => $ordenBateria, // si existe
+                    ]);
+                }
+            }
 
             // Verifica si ya existe la programación
             $existente = Programacionsubcliente::where('accionnombre', $accion)
@@ -2320,6 +2708,7 @@ class AsociadoController extends Controller
                     'bateriaid' => $bateriaid,
                     'comision' => $comision,
                     'medicoderivante' => $medicoderivante,
+                    'idsubproc' => $idsubproc,
                 ]);
             }
         }
@@ -2336,6 +2725,7 @@ class AsociadoController extends Controller
         
         $reprogramaciones = ProgramacionSubCliente::where('clienteitaid', $cliente->id)
         ->whereNotNull('motivoreprogramacion')
+        ->orderBy('deleted_at')
         ->onlyTrashed()
         ->get();
 
@@ -2367,7 +2757,7 @@ class AsociadoController extends Controller
     {
         return $this->reprogramacionclienteita($cliente, $request);
     }
-    public function guardarreprogramacionclienteita(Request $request, Programacionsubcliente $programacionsubcliente)
+    /* public function guardarreprogramacionclienteita(Request $request, Programacionsubcliente $programacionsubcliente)
     {
         $request->validate([
             'motivoreprogramacion' => 'required|string|max:255',
@@ -2392,6 +2782,10 @@ class AsociadoController extends Controller
         $programacionsubcliente->usuarioactualizacion = $usuarioActualizacion;
         $programacionsubcliente->save();
 
+        // Guardar el idsubproc ANTES del delete()
+        $idsubproc = $programacionsubcliente->idsubproc;
+        $bateriaid = $programacionsubcliente->bateriaid;
+
         $programacionsubcliente->delete();
 
         $nuevaReprogramacion = $programacionsubcliente->replicate(['deleted_at']);
@@ -2400,15 +2794,81 @@ class AsociadoController extends Controller
         $nuevaReprogramacion->horadesde = $request->horadesde;
         $nuevaReprogramacion->horahasta = $request->horahasta;
         $nuevaReprogramacion->proveedornombre = $proveedornombre;
-
         $nuevaReprogramacion->save();
+
+        // 5️⃣ ACTUALIZAR SUBTRAMITE usando idsubproc
+        $subproc = SubTramite::find($idsubproc);
+
+        if ($subproc) {
+            // Si bateriaid coincide, obtener orden de la tabla BATERIASUBCLIENTES
+            if ($bateriaid) {
+                $bateria = BateriaSubCliente::find($bateriaid);
+
+                if ($bateria && $bateria->orden) {
+                    $subproc->ordenprogramacion = $bateria->orden;
+                }
+            }
+
+            // Actualizar datos de reprogramación
+            $subproc->update([
+                'fechareprogramacion'   => $request->fechaasignada,
+                'horareprogramacion'    => $request->horadesde,
+                'motivoreprogramacion'  => $request->motivoreprogramacion,
+            ]);
+        }
+
 
         $cliente = Cliente::where('nombrecompleto', $programacionsubcliente->clienteitanombre)->first();
         $fechaSeleccionada = $request->input('buscarpor');
 
         return redirect()->route('admin.asociados.reprogramacionclienteita', ['cliente' => $cliente, 'buscarpor' => $fechaSeleccionada])
             ->with('eliminar', 'ok');
+    } */
+
+    public function reprogramarMultiple(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required',
+            'motivoreprogramacion' => 'required',
+            'fechaasignada' => 'required|date',
+            'horadesde' => 'required',
+            'horahasta' => 'required',
+            'proveedornombre' => 'required'
+        ]);
+
+        $ids = explode(',', $request->ids);
+
+        foreach ($ids as $id) {
+            $programacion = Programacionsubcliente::findOrFail($id);
+
+            // guardar datos antes
+            $idsubproc = $programacion->idsubproc;
+            $bateriaid = $programacion->bateriaid;
+
+            $programacion->motivoreprogramacion = $request->motivoreprogramacion;
+            $programacion->usuarioactualizacion = $request->usuarioactualizacion;
+            $programacion->save();
+
+            $programacion->delete();
+
+            $nuevo = $programacion->replicate(['deleted_at']);
+            $nuevo->fechaasignada = $request->fechaasignada;
+            $nuevo->horadesde = $request->horadesde;
+            $nuevo->horahasta = $request->horahasta;
+            $nuevo->save();
+
+            if ($idsubproc) {
+                SubTramite::where('id', $idsubproc)->update([
+                    'fechareprogramacion' => $request->fechaasignada,
+                    'horareprogramacion' => $request->horadesde,
+                    'motivoreprogramacion' => $request->motivoreprogramacion,
+                ]);
+            }
+        }
+
+        return back()->with('info', 'Reprogramación realizada correctamente');
     }
+    
     public function estadoprogramacionclienteita(Cliente $cliente, Request $request)
     {
         $fechaSeleccionada = $request->get('buscarpor');
@@ -2569,16 +3029,26 @@ class AsociadoController extends Controller
                                             ->where('clienteitaid', $clienteitaid)
                                             ->where('fechabateria', $fechaBateria)
                                             ->value('id');
+            // Obtener idsubproc del registro de Programacion
+            $idsubproc = Programacionsubcliente::where('id', $accionId)
+                                          ->value('idsubproc');
 
             Estadoprogramacionsubcliente::create(
                 $request->except('accionid') + [
                     'accionnombre' => $accionNombre,
                     'fechabateria' => $fechaBateria,
-                    'programacionid' => $accionId
+                    'programacionid' => $accionId,
+                    'idsubproc' => $idsubproc
                 ]
             );
 
-        //CODIGO TEMPORAL
+            // Actualizar asistenciaprogramacion = 1 en Subprocimientostramite
+            if ($idsubproc) {
+                SubTramite::where('id', $idsubproc)
+                                    ->update(['asistenciaprogramacion' => 1]);
+            }
+            
+            //CODIGO TEMPORAL
             if (in_array(strtoupper($accionNombre), ['LAVADO DE OIDO DERECHO', 'LAVADO DE OIDO IZQUIERDO'])) {
                 $archivoOriginal = public_path('archivoartificial/norequiereinforme.png');
                 $archivo_name = time() . '_norequiereinforme.png';
@@ -2840,6 +3310,8 @@ class AsociadoController extends Controller
                                                        ->where('clienteitaid', $idcliente)
                                                        ->where('accionnombre', $accionId)
                                                        ->value('id');
+            $idsubproc = Programacionsubcliente::where('id', $idprogramacion)->value('idsubproc');
+
             Documentacionsubcliente::create(
                 $request->except('acciones') + [
                     'document' => $archivo_name,
@@ -2849,9 +3321,18 @@ class AsociadoController extends Controller
                     'clienteitaid' => $idcliente,
                     'clienteitanombre' => $nombrecliente,
                     'image' => $image_name,
-                    'image2' => $image_name2
+                    'image2' => $image_name2,
+                    'idsubproc' => $idsubproc,
                 ]
             );
+            if ($idsubproc) {
+                SubTramite::where('id', $idsubproc)
+                    ->update([
+                        'informeprogramacion' => $archivo_name,
+                        'solicitante1' => $image_name,
+                        'solicitante2' => $image_name2
+                    ]);
+            }
         }
 
         return redirect()->route('admin.asociados.creardocumentacionclienteita', $request->cliente)->with('info', 'El documento se subió con éxito');
@@ -3829,462 +4310,974 @@ class AsociadoController extends Controller
             return $pdf->download($pdfName);
         }
 //
-//REQUISITOS CLIENTE ITA
-    public function generarchecklistclienteita(Cliente $cliente) 
-        {
-            $tieneRequisitos = Requisitosubcliente::where('clienteitaid', $cliente->id)
-                ->where('servicio', 'INVALIDEZ')->exists();
-            $tieneInvalidez = Tramitesubcliente::where('clienteitaid', $cliente->id)
-                ->where('tramite', 'INVALIDEZ')->exists();
-            $estadoLaboral = strtolower($cliente->estadolaboral);
-            $numHijosMenores = $cliente->numhijosmenores;
-            $estadoCivil = strtolower($cliente->estadocivil);
-            $servicio1 = strtolower($cliente->tipocliente);
-            $rolusuario = auth()->user()->getRoleNames()->first(); 
 
-            $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
-                ->where('tramite', 'INVALIDEZ')
-                ->first();
-            $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
-                ->where('tramite', 'INVALIDEZ')
-                ->first();
-            $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
-                ->where('tramite', 'INVALIDEZ')
-                ->first();
-            
-                $userSucursal = Auth::user()->sucursal;
-
-                $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
-                    ->where('estado', 'ACTIVO')
-                    ->when($userSucursal === 'SANTA CRUZ', function ($query) {
-                        return $query->where('sucursal', 'SANTA CRUZ');
-                    })
-                    ->distinct()
-                    ->pluck('proveedor');
-
-            return view('admin.asociados.generarchecklistclienteita', compact(
-                'cliente', 
-                'tieneRequisitos', 
-                'estadoLaboral',
-                'numHijosMenores',  
-                'estadoCivil', 
-                'registroExistente','rolusuario','registroaprobadoExistente','servicio1','tieneInvalidez','proveedores','registroaprobadoinformefinalExistente'
-            ));
-        }
+//DESCARGAR CHECK LIST PARA TODOS LOS TRAMITES
     public function descargarchecklistclienteita(Request $request, Cliente $cliente)
-        {
-            $usuarioAutenticado = Auth::user();
-            $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
-            $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
+    {
+        $usuarioAutenticado = Auth::user();
+        $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
+        $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
+        $tramite = $request->input('tramitecliente');
 
-            $requisito = new RequisitoSubCliente();
-            $requisito->clienteitaid = $cliente->id;
-            $requisito->clienteitanombre = $cliente->nombrecompleto;
-            $requisito->usuarioid = $usuarioAutenticado->id;
-            $requisito->usuarioregistro = $usuarioAutenticado->name;
-            $requisito->servicio = 'INVALIDEZ';
+        $requisito = new RequisitoSubCliente();
+        $requisito->clienteitaid = $cliente->id;
+        $requisito->clienteitanombre = $cliente->nombrecompleto;
+        $requisito->usuarioid = $usuarioAutenticado->id;
+        $requisito->usuarioregistro = $usuarioAutenticado->name;
+        $requisito->servicio = $tramite;
 
-            $nombreDocumentos = [
-                'poder' => 'PODER',
-                'avcci' => 'AVC / CARNET ASEGURADO',
-                'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
-                'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
-                'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
-                'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
-                'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
-                'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
-                'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
-                'crodomicilio' => 'CROQUIS DOMICILIO',
-                'contrato' => 'CONTRATO',
-                'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
-                'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
-                'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
-                'cdivorcio' => 'CERTIFICADO DIVORCIO',
-                'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
-                
-                
-            ];
-            $nombreDocumentos2 = [
-                'ctrabajo' => 'CERTIFICADO TRABAJO',
-                'boletapago' => 'BOLETA PAGO',
-                'egestora' => 'EXTRACTO GESTORA',
-                'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
-                'actdatos' => 'ACTUALIZACIÓN DATOS',
-                'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
-                'recordservicios' => 'RECORD SERVICIOS',
-                'infomedicasalud' => 'INFORMACION MEDICA',
-            ];
+        $nombreDocumentos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC / CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'crodomicilio' => 'CROQUIS DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+        ];
+        $nombreDocumentos2 = [
+            'ctrabajo' => 'CERTIFICADO TRABAJO',
+            'boletapago' => 'BOLETA PAGO',
+            'egestora' => 'EXTRACTO GESTORA',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'actdatos' => 'ACTUALIZACIÓN DATOS',
+            'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACION MEDICA',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+            'solrecaldictamen' => 'SOLICITUD RECALIF. DICTAMEN',
+        ];
 
-            foreach ($documentosSeleccionados as $documento) {
-                $nombreCompleto = isset($nombreDocumentos[$documento]) ? $nombreDocumentos[$documento] : $documento;
-            $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
-                switch ($documento) {
-                    case 'poder':
-                        $requisito->poder = $valorDocumento;
-                        break;
-                    case 'avcci':
-                        $requisito->avcci = $valorDocumento;
-                        break;
-                    case 'cnacasegurado':
-                        $requisito->cnacasegurado = $valorDocumento;
-                        break;
-                    case 'ciasegurado':
-                        $requisito->ciasegurado = $valorDocumento;
-                        break;
-                    case 'cmatrimonio':
-                        $requisito->cmatrimonio = $valorDocumento;
-                        break;
-                    case 'cnacconyuge':
-                        $requisito->cnacconyuge = $valorDocumento;
-                        break;
-                    case 'ciconyuge':
-                        $requisito->ciconyuge = $valorDocumento;
-                        break;
-                    case 'cnacjihos':
-                        $requisito->cnacjihos = $valorDocumento;
-                        break;
-                    case 'cihijos':
-                        $requisito->cihijos = $valorDocumento;
-                        break;
-                    case 'crodomicilio':
-                        $requisito->crodomicilio = $valorDocumento;
-                        break;
-                    case 'contrato':
-                        $requisito->contrato = $valorDocumento;
-                        break;
-                    case 'cunionlibre':
-                        $requisito->cunionlibre = $valorDocumento;
-                        break;
-                    case 'cnacimientounionlibre':
-                        $requisito->cnacimientounionlibre = $valorDocumento;
-                        break;
-                    case 'ciunionlibre':
-                        $requisito->ciunionlibre = $valorDocumento;
-                        break;
-                    case 'cdivorcio':
-                        $requisito->cdivorcio = $valorDocumento;
-                        break;
-                    case 'cdefuncion':
-                        $requisito->cdefuncion = $valorDocumento;
-                        break;
-                    
-                    default:
-                        break;
-                }
+        foreach ($documentosSeleccionados as $documento) {
+            $nombreCompleto = isset($nombreDocumentos[$documento]) ? $nombreDocumentos[$documento] : $documento;
+        $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
+            switch ($documento) {
+                case 'poder':
+                    $requisito->poder = $valorDocumento;
+                    break;
+                case 'avcci':
+                    $requisito->avcci = $valorDocumento;
+                    break;
+                case 'cnacasegurado':
+                    $requisito->cnacasegurado = $valorDocumento;
+                    break;
+                case 'ciasegurado':
+                    $requisito->ciasegurado = $valorDocumento;
+                    break;
+                case 'cmatrimonio':
+                    $requisito->cmatrimonio = $valorDocumento;
+                    break;
+                case 'cnacconyuge':
+                    $requisito->cnacconyuge = $valorDocumento;
+                    break;
+                case 'ciconyuge':
+                    $requisito->ciconyuge = $valorDocumento;
+                    break;
+                case 'cnacjihos':
+                    $requisito->cnacjihos = $valorDocumento;
+                    break;
+                case 'cihijos':
+                    $requisito->cihijos = $valorDocumento;
+                    break;
+                case 'crodomicilio':
+                    $requisito->crodomicilio = $valorDocumento;
+                    break;
+                case 'contrato':
+                    $requisito->contrato = $valorDocumento;
+                    break;
+                case 'cunionlibre':
+                    $requisito->cunionlibre = $valorDocumento;
+                    break;
+                case 'cnacimientounionlibre':
+                    $requisito->cnacimientounionlibre = $valorDocumento;
+                    break;
+                case 'ciunionlibre':
+                    $requisito->ciunionlibre = $valorDocumento;
+                    break;
+                case 'cdivorcio':
+                    $requisito->cdivorcio = $valorDocumento;
+                    break;
+                case 'cdefuncion':
+                    $requisito->cdefuncion = $valorDocumento;
+                    break;
+                case 'dictamencalentenc':
+                    $requisito->dictamencalentenc = $valorDocumento;
+                    break;
+                case 'anteriordictamen':
+                    $requisito->anteriordictamen = $valorDocumento;
+                    break;
+                case 'ccompcotsenasir':
+                    $requisito->ccompcotsenasir = $valorDocumento;
+                    break;
+                case 'cnactreshijos':
+                    $requisito->cnactreshijos = $valorDocumento;
+                    break;
+                case 'ctrabajoinsalubre':
+                    $requisito->ctrabajoinsalubre = $valorDocumento;
+                    break;
+                case 'poderciapoderado':
+                    $requisito->poderciapoderado = $valorDocumento;
+                    break;
+                case 'cmeddifuncion':
+                    $requisito->cmeddifuncion = $valorDocumento;
+                    break;
+                case 'cnactitular':
+                    $requisito->cnactitular = $valorDocumento;
+                    break;
+                case 'cititular':
+                    $requisito->cititular = $valorDocumento;
+                    break;
+                case 'cestudioshijos':
+                    $requisito->cestudioshijos = $valorDocumento;
+                    break;
+                case 'tdeclaherederos':
+                    $requisito->tdeclaherederos = $valorDocumento;
+                    break;
+                case 'cnacherederos':
+                    $requisito->cnacherederos = $valorDocumento;
+                    break;
+                case 'cideclaherederos':
+                    $requisito->cideclaherederos = $valorDocumento;
+                    break;
+                case 'csalarioaportes':
+                    $requisito->csalarioaportes = $valorDocumento;
+                    break;
+                case 'fotofrojoasegurado':
+                    $requisito->fotofrojoasegurado = $valorDocumento;
+                    break;
+                case 'fotofrojoapoderadocroquis':
+                    $requisito->fotofrojoapoderadocroquis = $valorDocumento;
+                    break;
+                default:
+                    break;
             }
+        }
 
-            foreach ($documentosSeleccionados2 as $documento) {
-                $nombreCompleto = isset($nombreDocumentos2[$documento]) ? $nombreDocumentos2[$documento] : $documento;
-            $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
-                switch ($documento) {
-                    case 'ctrabajo':
-                        $requisito->ctrabajo = $valorDocumento;
-                        break;
-                    case 'boletapago':
-                        $requisito->boletapago = $valorDocumento;
-                        break;
-                    case 'egestora':
-                        $requisito->egestora = $valorDocumento;
-                        break;
-                    case 'denfaccidente':
-                        $requisito->denfaccidente = $valorDocumento;
-                        break;
-                    case 'actdatos':
-                        $requisito->actdatos = $valorDocumento;
-                        break;
-                    case 'resolinvhijos':
-                        $requisito->resolinvhijos = $valorDocumento;
-                        break;
-                    case 'recordservicios':
-                        $requisito->recordservicios = $valorDocumento;
-                        break;
-                    case 'infomedicasalud':
-                        $requisito->infomedicasalud = $valorDocumento;
-                        break;
-                    default:
-                        break;
-                }
+        foreach ($documentosSeleccionados2 as $documento) {
+            $nombreCompleto = isset($nombreDocumentos2[$documento]) ? $nombreDocumentos2[$documento] : $documento;
+        $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
+            switch ($documento) {
+                case 'ctrabajo':
+                    $requisito->ctrabajo = $valorDocumento;
+                    break;
+                case 'boletapago':
+                    $requisito->boletapago = $valorDocumento;
+                    break;
+                case 'egestora':
+                    $requisito->egestora = $valorDocumento;
+                    break;
+                case 'denfaccidente':
+                    $requisito->denfaccidente = $valorDocumento;
+                    break;
+                case 'actdatos':
+                    $requisito->actdatos = $valorDocumento;
+                    break;
+                case 'resolinvhijos':
+                    $requisito->resolinvhijos = $valorDocumento;
+                    break;
+                case 'recordservicios':
+                    $requisito->recordservicios = $valorDocumento;
+                    break;
+                case 'infomedicasalud':
+                    $requisito->infomedicasalud = $valorDocumento;
+                    break;
+                case 'compenzacioncotizacion':
+                    $requisito->compenzacioncotizacion = $valorDocumento;
+                    break;
+                case 'contratojubilacion':
+                    $requisito->contratojubilacion = $valorDocumento;
+                    break;
+                case 'csalarioaporteslegalizada':
+                    $requisito->csalarioaporteslegalizada = $valorDocumento;
+                    break;
+                case 'finiquito':
+                    $requisito->finiquito = $valorDocumento;
+                    break;
+                case 'solrecaldictamen':
+                    $requisito->solrecaldictamen = $valorDocumento;
+                    break;
+                default:
+                    break;
             }
+        }
 
-            $requisito->save();
+        $requisito->save();
 
-            $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteita', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
-            $pdfName = 'Requisitos_Invalidez_' . $cliente->nombrecompleto . '.pdf';
-            return $pdf->download($pdfName);
-        } 
+        $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteita',compact('cliente', 'documentosSeleccionados',
+                            'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2','tramite'));
+
+        $pdfName = 'REQUISITOS_'. $tramite . ' - ' . $cliente->nombrecompleto . '.pdf';
+
+        return $pdf->download($pdfName);
+    }
     public function descargarSOLOchecklistclienteITA(Request $request, Cliente $cliente)
-        {
-            // Obtener los documentos seleccionados, igual que antes
-            $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
-            $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
-    
-            // Definir los nombres de los documentos
-            $nombreDocumentos = [
-                'poder' => 'PODER',
-                'avcci' => 'AVC / CARNET ASEGURADO',
-                'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
-                'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
-                'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
-                'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
-                'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
-                'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
-                'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
-                'crodomicilio' => 'CROQUIS DOMICILIO',
-                'contrato' => 'CONTRATO',
-                'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
-                'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
-                'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
-                'cdivorcio' => 'CERTIFICADO DIVORCIO',
-                'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
-            ];
-            $nombreDocumentos2 = [
-                'ctrabajo' => 'CERTIFICADO TRABAJO',
-                'boletapago' => 'BOLETA PAGO',
-                'egestora' => 'EXTRACTO GESTORA',
-                'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
-                'actdatos' => 'ACTUALIZACIÓN DATOS',
-                'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
-                'recordservicios' => 'RECORD SERVICIOS',
-                'infomedicasalud' => 'INFORMACION MEDICA',
-            ];
-    
-            // Generar el PDF sin registrar nada en la base de datos
-            $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteita', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
-            $pdfName = 'Requisitos_Invalidez_' . $cliente->nombrecompleto . '.pdf';
-            return $pdf->download($pdfName);
-        }
-    public function subirdocrequisitos(Cliente $cliente)
-        {
-            $clienteitaid = $cliente->id; 
-            $userRole = auth()->user()->getRoleNames()->first(); 
-            $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
-            ->where('servicio', 'INVALIDEZ')->first();
-    
-            $poderPendiente = $requisitosCliente ? $requisitosCliente->poder === 'PENDIENTE' : false;
-            $avcciPendiente = $requisitosCliente ? $requisitosCliente->avcci === 'PENDIENTE' : false;
-            $cnacaseguradoPendiente = $requisitosCliente ? $requisitosCliente->cnacasegurado === 'PENDIENTE' : false;
-            $ciaseguradoPendiente = $requisitosCliente ? $requisitosCliente->ciasegurado === 'PENDIENTE' : false;
-            $cmatrimonioPendiente = $requisitosCliente ? $requisitosCliente->cmatrimonio === 'PENDIENTE' : false;
-            $cnacconyugePendiente = $requisitosCliente ? $requisitosCliente->cnacconyuge === 'PENDIENTE' : false;
-            $ciconyugePendiente = $requisitosCliente ? $requisitosCliente->ciconyuge === 'PENDIENTE' : false;
-            $cnacjihosPendiente = $requisitosCliente ? $requisitosCliente->cnacjihos === 'PENDIENTE' : false;
-            $cihijosPendiente = $requisitosCliente ? $requisitosCliente->cihijos === 'PENDIENTE' : false;
-            $denfaccidentePendiente = $requisitosCliente ? $requisitosCliente->denfaccidente === 'PENDIENTE' : false;
-            $crodomicilioPendiente = $requisitosCliente ? $requisitosCliente->crodomicilio === 'PENDIENTE' : false;
-            $contratoPendiente = $requisitosCliente ? $requisitosCliente->contrato === 'PENDIENTE' : false;
-            $recordserviciosPendiente = $requisitosCliente ? $requisitosCliente->recordservicios === 'PENDIENTE' : false;
-            
-            $cunionlibrePendiente = $requisitosCliente ? $requisitosCliente->cunionlibre === 'PENDIENTE' : false;
-            $cnacimientounionlibrePendiente = $requisitosCliente ? $requisitosCliente->cnacimientounionlibre === 'PENDIENTE' : false;
-            $ciunionlibrePendiente = $requisitosCliente ? $requisitosCliente->ciunionlibre === 'PENDIENTE' : false;
-            $cdivorcioPendiente = $requisitosCliente ? $requisitosCliente->cdivorcio === 'PENDIENTE' : false;
-            $cdefuncionPendiente = $requisitosCliente ? $requisitosCliente->cdefuncion === 'PENDIENTE' : false;
+    {
+        $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
+        $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
 
-            $ctrabajoPendiente = $requisitosCliente ? $requisitosCliente->ctrabajo === 'PENDIENTE' : false;
-            $boletapagoPendiente = $requisitosCliente ? $requisitosCliente->boletapago === 'PENDIENTE' : false;
-            $egestoraPendiente = $requisitosCliente ? $requisitosCliente->egestora === 'PENDIENTE' : false;
-            $actdatosPendiente = $requisitosCliente ? $requisitosCliente->actdatos === 'PENDIENTE' : false;
-            $resolinvhijosPendiente = $requisitosCliente ? $requisitosCliente->resolinvhijos === 'PENDIENTE' : false;
-            
-            
-            $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-            ->where('servicio', 'INVALIDEZ')->firstOrFail();
-            $poderSubido = $requisitosCliente && strpos($requisitosCliente->poder, '.pdf') !== false ? true:false;
-            $avcciSubido = $requisitosCliente && strpos($requisitosCliente->avcci, '.pdf') !== false ? true:false;
-            $cnacaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->cnacasegurado, '.pdf') !== false ? true:false;
-            $ciaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->ciasegurado, '.pdf') !== false ? true:false;
-            $cmatrimonioSubido = $requisitosCliente && strpos($requisitosCliente->cmatrimonio, '.pdf') !== false ? true:false;
-            $cnacconyugeSubido = $requisitosCliente && strpos($requisitosCliente->cnacconyuge, '.pdf') !== false ? true:false;
-            $ciconyugeSubido = $requisitosCliente && strpos($requisitosCliente->ciconyuge, '.pdf') !== false ? true:false;
-            $cnacjihosSubido = $requisitosCliente && strpos($requisitosCliente->cnacjihos, '.pdf') !== false ? true:false;
-            $cihijosSubido = $requisitosCliente && strpos($requisitosCliente->cihijos, '.pdf') !== false ? true:false;
-            $denfaccidenteSubido = $requisitosCliente && strpos($requisitosCliente->denfaccidente, '.pdf') !== false ? true:false;
-            $crodomicilioSubido = $requisitosCliente && strpos($requisitosCliente->crodomicilio, '.pdf') !== false ? true:false;
-            $contratoSubido = $requisitosCliente && strpos($requisitosCliente->contrato, '.pdf') !== false ? true:false;
-            $recordserviciosSubido = $requisitosCliente && strpos($requisitosCliente->recordservicios, '.pdf') !== false ? true:false;
-            
-            $cunionlibreSubido = $requisitosCliente && strpos($requisitosCliente->cunionlibre, '.pdf') !== false ? true:false;
-            $cnacimientounionlibreSubido = $requisitosCliente && strpos($requisitosCliente->cnacimientounionlibre, '.pdf') !== false ? true:false;
-            $ciunionlibreSubido = $requisitosCliente && strpos($requisitosCliente->ciunionlibre, '.pdf') !== false ? true:false;
-            $cdivorcioSubido = $requisitosCliente && strpos($requisitosCliente->cdivorcio, '.pdf') !== false ? true:false;
-            $cdefuncionSubido = $requisitosCliente && strpos($requisitosCliente->cdefuncion, '.pdf') !== false ? true:false;
+        $nombreDocumentos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC / CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'crodomicilio' => 'CROQUIS DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
+        ];
+        $nombreDocumentos2 = [
+            'ctrabajo' => 'CERTIFICADO TRABAJO',
+            'boletapago' => 'BOLETA PAGO',
+            'egestora' => 'EXTRACTO GESTORA',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'actdatos' => 'ACTUALIZACIÓN DATOS',
+            'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACION MEDICA',
+        ];
 
-            $ctrabajoSubido = $requisitosCliente && strpos($requisitosCliente->ctrabajo, '.pdf') !== false ? true:false;
-            $boletapagoSubido = $requisitosCliente && strpos($requisitosCliente->boletapago, '.pdf') !== false ? true:false;
-            $egestoraSubido = $requisitosCliente && strpos($requisitosCliente->egestora, '.pdf') !== false ? true:false;
-            $actdatosSubido = $requisitosCliente && strpos($requisitosCliente->actdatos, '.pdf') !== false ? true:false;
-            $resolinvhijosSubido = $requisitosCliente && strpos($requisitosCliente->resolinvhijos, '.pdf') !== false ? true:false;
+        $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteita', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
+        $pdfName = 'Requisitos_Invalidez_' . $cliente->nombrecompleto . '.pdf';
+        return $pdf->download($pdfName);
+    }
+    //CREAR NUEVO O ACTUAL REQUISITOS DE TRAMTIES
+    public function descargarchecklistclienteita2(Request $request, Cliente $cliente)
+    {
+        $usuarioAutenticado = Auth::user();
+        $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
+        $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
+        $tramite = $request->input('tramitecliente');
+        $tramiteacopiar = $request->input('tipo_solicitud');
+
+        $requisitoanterior = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', $tramite)
+            ->first();
             
-            return view('admin.asociados.subirdocrequisitos', compact('cliente', 'poderPendiente', 'avcciPendiente', 
-            'cnacaseguradoPendiente','ciaseguradoPendiente','cmatrimonioPendiente','cnacconyugePendiente','ciconyugePendiente',
-            'cnacjihosPendiente','cihijosPendiente','denfaccidentePendiente','recordserviciosPendiente','crodomicilioPendiente','contratoPendiente', 'requisito'
-            , 'poderSubido', 'avcciSubido', 'cnacaseguradoSubido', 'ciaseguradoSubido', 'cmatrimonioSubido', 'cnacconyugeSubido'
-            , 'ciconyugeSubido', 'cnacjihosSubido', 'cihijosSubido', 'denfaccidenteSubido', 'crodomicilioSubido', 'contratoSubido'
-            , 'ctrabajoPendiente', 'boletapagoPendiente', 'egestoraPendiente', 'actdatosPendiente', 'resolinvhijosPendiente'
-            , 'ctrabajoSubido', 'boletapagoSubido', 'egestoraSubido', 'actdatosSubido', 'resolinvhijosSubido'
-            , 'cunionlibrePendiente', 'cnacimientounionlibrePendiente', 'ciunionlibrePendiente', 'cdivorcioPendiente', 'cdefuncionPendiente'
-            , 'cunionlibreSubido', 'recordserviciosSubido', 'cnacimientounionlibreSubido', 'ciunionlibreSubido', 'cdivorcioSubido', 'cdefuncionSubido', 'userRole'));
-        }
-    protected function manejarArchivo(Request $request, $campo, $requisito, $clienteId)
-        {
-            if ($request->hasFile($campo)) {
-                $file = $request->file($campo);
-                $carpetaCliente = public_path("/requisitosclientesita/{$clienteId}");
-    
-                // Crear la carpeta si no existe
-                if (!file_exists($carpetaCliente)) {
-                    mkdir($carpetaCliente, 0755, true);
-                }
-    
-                // Generar un nombre único para el archivo
-                $archivo = time() . '_' . $file->getClientOriginalName();
-    
-                // Mover el archivo a la carpeta
-                $file->move($carpetaCliente, $archivo);
-    
-                // Actualizar el modelo
-                $requisito->update([$campo => $archivo]);
-            }
-        }
-    public function guardardocrequisitos(Request $request, Cliente $cliente)
-        {
-            $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-            ->where('servicio', 'INVALIDEZ')->firstOrFail();
-    
-            $request->validate([
-                'poder' => 'nullable|mimes:pdf',
-                'numeropoder' => 'nullable|max:45',
-                'avcci' => 'nullable|mimes:pdf',
-                'cnacasegurado' => 'nullable|mimes:pdf',
-                'ciasegurado' => 'nullable|mimes:pdf',
-                'cmatrimonio' => 'nullable|mimes:pdf',
-                'cnacconyuge' => 'nullable|mimes:pdf',
-                'ciconyuge' => 'nullable|mimes:pdf',
-                'cnacjihos' => 'nullable|mimes:pdf',
-                'cihijos' => 'nullable|mimes:pdf',
-                'denfaccidente' => 'nullable|mimes:pdf',
-                'crodomicilio' => 'nullable|mimes:pdf',
-                'contrato' => 'nullable|mimes:pdf',
-                'ctrabajo' => 'nullable|mimes:pdf',
-                'boletapago' => 'nullable|mimes:pdf',
-                'egestora' => 'nullable|mimes:pdf',
-                'actdatos' => 'nullable|mimes:pdf',
-                'resolinvhijos' => 'nullable|mimes:pdf',
-                'cunionlibre' => 'nullable|mimes:pdf',
-                'cnacimientounionlibre' => 'nullable|mimes:pdf',
-                'ciunionlibre' => 'nullable|mimes:pdf',
-                'cdivorcio' => 'nullable|mimes:pdf',
-                'cdefuncion' => 'nullable|mimes:pdf',
-                'recordservicios' => 'nullable|mimes:pdf',
-            ]);
+        $requisito = new RequisitoSubCliente();
+        $requisito->clienteitaid = $cliente->id;
+        $requisito->clienteitanombre = $cliente->nombrecompleto;
+        $requisito->usuarioid = $usuarioAutenticado->id;
+        $requisito->usuarioregistro = $usuarioAutenticado->name;
+        $requisito->servicio = $tramiteacopiar;
 
-            $camposArchivos = [
-                'poder', 'avcci', 'cnacasegurado', 'ciasegurado', 'cmatrimonio', 
-                'cnacconyuge', 'ciconyuge', 'cnacjihos', 'cihijos', 'denfaccidente', 
-                'crodomicilio', 'contrato', 'ctrabajo', 'boletapago', 'egestora', 'actdatos', 'resolinvhijos'
-                , 'cunionlibre', 'cnacimientounionlibre', 'ciunionlibre', 'cdivorcio', 'cdefuncion', 'recordservicios'
-            ];
+        $nombreDocumentos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC / CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'crodomicilio' => 'CROQUIS DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+        ];
+        $nombreDocumentos2 = [
+            'ctrabajo' => 'CERTIFICADO TRABAJO',
+            'boletapago' => 'BOLETA PAGO',
+            'egestora' => 'EXTRACTO GESTORA',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'actdatos' => 'ACTUALIZACIÓN DATOS',
+            'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACION MEDICA',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+            'solrecaldictamen' => 'SOLICITUD RECALIF. DICTAMEN',
+        ];
 
-            foreach ($camposArchivos as $campo) {
-                $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        foreach ($documentosSeleccionados as $documento) {
+            $nombreCompleto = $nombreDocumentos[$documento] ?? $documento;
+            $valorDocumento = 'PENDIENTE';
+
+            if ($request->input($documento) === 'NO') {
+                $valorDocumento = 'NO';
+            } elseif (str_ends_with($documento, '2')) {
+                $campoOriginal = substr($documento, 0, -1);
+                $valorDocumento = $requisitoanterior->$campoOriginal ?? 'PENDIENTE';
             }
 
-            if ($request->filled('numeropoder')) {
-                $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+            switch ($documento) {
+                case 'numeropoder':
+                case 'numeropoder2':
+                    $requisito->numeropoder = $valorDocumento;
+                    break;
+                case 'poder':
+                case 'poder2':
+                    $requisito->poder = $valorDocumento;
+                    break;
+                case 'avcci':
+                case 'avcci2':
+                    $requisito->avcci = $valorDocumento;
+                break;
+                case 'cnacasegurado':
+                case 'cnacasegurado2':
+                    $requisito->cnacasegurado = $valorDocumento;
+                    break;
+                case 'ciasegurado':
+                case 'ciasegurado2':
+                    $requisito->ciasegurado = $valorDocumento;
+                    break;
+                case 'cmatrimonio':
+                case 'cmatrimonio2':
+                    $requisito->cmatrimonio = $valorDocumento;
+                    break;
+                case 'cnacconyuge':
+                case 'cnacconyuge2':
+                    $requisito->cnacconyuge = $valorDocumento;
+                    break;
+                case 'ciconyuge':
+                case 'ciconyuge2':
+                    $requisito->ciconyuge = $valorDocumento;
+                    break;
+                case 'cnacjihos':
+                case 'cnacjihos2':
+                    $requisito->cnacjihos = $valorDocumento;
+                    break;
+                case 'cihijos':
+                case 'cihijos2':
+                    $requisito->cihijos = $valorDocumento;
+                    break;
+                case 'crodomicilio':
+                case 'crodomicilio2':
+                    $requisito->crodomicilio = $valorDocumento;
+                    break;
+                case 'contrato':
+                case 'contrato2':
+                    $requisito->contrato = $valorDocumento;
+                    break;
+                case 'cunionlibre':
+                case 'cunionlibre2':
+                    $requisito->cunionlibre = $valorDocumento;
+                    break;
+                case 'cnacimientounionlibre':
+                case 'cnacimientounionlibre2':
+                    $requisito->cnacimientounionlibre = $valorDocumento;
+                    break;
+                case 'ciunionlibre':
+                case 'ciunionlibre2':
+                    $requisito->ciunionlibre = $valorDocumento;
+                    break;
+                case 'cdivorcio':
+                case 'cdivorcio2':
+                    $requisito->cdivorcio = $valorDocumento;
+                    break;
+                case 'cdefuncion':
+                case 'cdefuncion2':
+                    $requisito->cdefuncion = $valorDocumento;
+                    break;
+                case 'dictamencalentenc':
+                case 'dictamencalentenc2':
+                    $requisito->dictamencalentenc = $valorDocumento;
+                    break;
+                case 'anteriordictamen':
+                case 'anteriordictamen2':
+                    $requisito->anteriordictamen = $valorDocumento;
+                    break;
+                case 'ccompcotsenasir':
+                case 'ccompcotsenasir2':
+                    $requisito->ccompcotsenasir = $valorDocumento;
+                    break;
+                case 'cnactreshijos':
+                case 'cnactreshijos2':
+                    $requisito->cnactreshijos = $valorDocumento;
+                    break;
+                case 'ctrabajoinsalubre':
+                case 'ctrabajoinsalubre2':
+                    $requisito->ctrabajoinsalubre = $valorDocumento;
+                    break;
+                case 'poderciapoderado':
+                case 'poderciapoderado2':
+                    $requisito->poderciapoderado = $valorDocumento;
+                    break;
+                case 'cmeddifuncion':
+                case 'cmeddifuncion2':
+                    $requisito->cmeddifuncion = $valorDocumento;
+                    break;
+                case 'cnactitular':
+                case 'cnactitular2':
+                    $requisito->cnactitular = $valorDocumento;
+                    break;
+                case 'cititular':
+                case 'cititular2':
+                    $requisito->cititular = $valorDocumento;
+                    break;
+                case 'cestudioshijos':
+                case 'cestudioshijos2':
+                    $requisito->cestudioshijos = $valorDocumento;
+                    break;
+                case 'tdeclaherederos':
+                case 'tdeclaherederos2':
+                    $requisito->tdeclaherederos = $valorDocumento;
+                    break;
+                case 'cnacherederos':
+                case 'cnacherederos2':
+                    $requisito->cnacherederos = $valorDocumento;
+                    break;
+                case 'cideclaherederos':
+                case 'cideclaherederos2':
+                    $requisito->cideclaherederos = $valorDocumento;
+                    break;
+                case 'csalarioaportes':
+                case 'csalarioaportes2':
+                    $requisito->csalarioaportes = $valorDocumento;
+                    break;
+                case 'fotofrojoasegurado':
+                case 'fotofrojoasegurado2':
+                    $requisito->fotofrojoasegurado = $valorDocumento;
+                    break;
+                default:
+                    break;
             }
-    
-            return redirect()->route('admin.asociados.subirdocrequisitos', $cliente)
-                             ->with('info', 'El documento se subió con éxito');
         }
 
+        foreach ($documentosSeleccionados2 as $documento) {
+            $nombreCompleto = $nombreDocumentos2[$documento] ?? $documento;
+            $valorDocumento = 'PENDIENTE';
+
+            if ($request->input($documento) === 'NO') {
+                $valorDocumento = 'NO';
+            } elseif (in_array($documento . '2', $documentosSeleccionados2)) {
+                $valorDocumento = $requisitoanterior->$documento ?? 'PENDIENTE';
+            }
+
+            switch ($documento) {
+                case 'ctrabajo':
+                case 'ctrabajo2':
+                    $requisito->ctrabajo = $valorDocumento;
+                    break;
+                case 'boletapago':
+                case 'boletapago2':
+                    $requisito->boletapago = $valorDocumento;
+                    break;
+                case 'egestora':
+                case 'egestora2':
+                    $requisito->egestora = $valorDocumento;
+                    break;
+                case 'denfaccidente':
+                case 'denfaccidente2':
+                    $requisito->denfaccidente = $valorDocumento;
+                    break;
+                case 'actdatos':
+                case 'actdatos2':
+                    $requisito->actdatos = $valorDocumento;
+                    break;
+                case 'resolinvhijos':
+                case 'resolinvhijos2':
+                    $requisito->resolinvhijos = $valorDocumento;
+                    break;
+                case 'recordservicios':
+                case 'recordservicios2':
+                    $requisito->recordservicios = $valorDocumento;
+                    break;
+                case 'infomedicasalud':
+                case 'infomedicasalud2':
+                    $requisito->infomedicasalud = $valorDocumento;
+                    break;
+                case 'compenzacioncotizacion':
+                case 'compenzacioncotizacion2':
+                    $requisito->compenzacioncotizacion = $valorDocumento;
+                    break;
+                case 'contratojubilacion':
+                case 'contratojubilacion2':
+                    $requisito->contratojubilacion = $valorDocumento;
+                    break;
+                case 'csalarioaporteslegalizada':
+                case 'csalarioaporteslegalizada2':
+                    $requisito->csalarioaporteslegalizada = $valorDocumento;
+                    break;
+                case 'finiquito':
+                case 'finiquito2':
+                    $requisito->finiquito = $valorDocumento;
+                    break;
+                case 'finiquito':
+                case 'finiquito2':
+                    $requisito->finiquito = $valorDocumento;
+                    break;
+                case 'solrecaldictamen':
+                case 'solrecaldictamen2':
+                    $requisito->solrecaldictamen = $valorDocumento;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        $requisito->save();
+
+        $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteita2', compact(
+            'cliente',
+            'documentosSeleccionados',
+            'nombreDocumentos', 'nombreDocumentos2',
+            'documentosSeleccionados2'
+        ));
+
+        $pdfName = 'REQUISITOS_' . $tramiteacopiar. ' - ' . $cliente->nombrecompleto . '.pdf';
+
+        return $pdf->download($pdfName);
+    }
 //
+
+//GUARDAR REQUISITOS PARA TODOS LOS TRAMITES
+    protected function manejarArchivo(Request $request, $campo, $requisito, $clienteId)
+    {
+        if ($request->hasFile($campo)) {
+            $file = $request->file($campo);
+            $carpetaCliente = public_path("/requisitosclientesita/{$clienteId}");
+
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+
+            $archivo = time() . '_' . $file->getClientOriginalName();
+
+            $file->move($carpetaCliente, $archivo);
+
+            $requisito->update([$campo => $archivo]);
+        }
+    }
+//
+
+//REQUISITOS CLIENTE ITA INVALIDEZ
+    public function subirdocrequisitos(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'INVALIDEZ')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'INVALIDEZ')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' =>  'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitos', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteita(Cliente $cliente) 
+    {
+        $tieneRequisitos = Requisitosubcliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'INVALIDEZ')->exists();
+        $tieneInvalidez = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'INVALIDEZ')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'INVALIDEZ')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'INVALIDEZ')
+            ->first();
+        $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'INVALIDEZ')
+            ->first();
+        
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+        
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+            ->orderBy('area')
+        ->get();
+
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        return view('admin.asociados.generarchecklistclienteita', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente',
+                    'servicio1','tieneInvalidez','proveedores','registroaprobadoinformefinalExistente','genero',
+                    'bateriaProveedores','ultimosRegistros'
+        ));
+    }
+    public function guardardocrequisitos(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'INVALIDEZ')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitos', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+    public function recomendarEstudioEspecialidad(Request $request)
+    {
+        $data = json_decode($request->recomendaciones, true);
+
+        foreach ($data as $rec) {
+            RecomendacionBaterias::create([
+                'tipoarea' => $rec['tipo'],
+                'area' => $rec['area'],
+                'estudioespecialidad' => $rec['accion'],
+                'tramite' => $request->tramiterecomendacion,
+                'clienteid' => $request->clienteid,
+                'clientenombre' => $request->clientenombre,
+                'usuarioregistroid' => Auth::id(),
+                'usuarioregistronombre' => Auth::user()->name,
+            ]);
+        }
+
+        return redirect()->back()->with('info', 'Recomendaciones guardadas correctamente.');
+    }
+//
+
 //REQUISITOS CLIENTE ITA AUDITORIA 
     public function generarchecklistclienteitaaudi(Cliente $cliente) 
-        {
-            $tieneRequisitos = Requisitosclientesauditoria::where('clienteitaid', $cliente->id)->exists();
-            $estadoLaboral = strtolower($cliente->estadolaboral);
-            $numHijosMenores = $cliente->numhijosmenores;
-            $estadoCivil = strtolower($cliente->estadocivil);
-            $bancos = Banco::orderBy('nombrebanco')->pluck('nombrebanco', 'nombrebanco');
+    {
+        $tieneRequisitos = Requisitosclientesauditoria::where('clienteitaid', $cliente->id)->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $bancos = Banco::orderBy('nombrebanco')->pluck('nombrebanco', 'nombrebanco');
 
-            $tieneauditoriamedica = Tramitesubcliente::where('clienteitaid', $cliente->id)
-                ->where('tramite', 'AUDITORIA MEDICA')->exists();
+        $tieneauditoriamedica = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'AUDITORIA MEDICA')->exists();
 
-            $rolusuario = auth()->user()->getRoleNames()->first(); 
+        $rolusuario = auth()->user()->getRoleNames()->first(); 
 
-            $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
-                ->where('tramite', 'AUDITORIA MEDICA')
-                ->first();
-            $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
-                ->where('tramite', 'AUDITORIA MEDICA')
-                ->first();
-            $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
-                ->where('tramite', 'AUDITORIA MEDICA')
-                ->first();
-                $userSucursal = Auth::user()->sucursal;
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'AUDITORIA MEDICA')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'AUDITORIA MEDICA')
+            ->first();
+        $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'AUDITORIA MEDICA')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
 
-                $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
-                    ->where('estado', 'ACTIVO')
-                    ->when($userSucursal === 'SANTA CRUZ', function ($query) {
-                        return $query->where('sucursal', 'SANTA CRUZ');
-                    })
-                    ->distinct()
-                    ->pluck('proveedor');
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
 
-            return view('admin.asociados.generarchecklistclienteitaaudi', compact(
-                'cliente', 
-                'tieneRequisitos', 
-                'estadoLaboral',
-                'numHijosMenores',  
-                'estadoCivil', 
-                'registroExistente','rolusuario','registroaprobadoExistente','tieneauditoriamedica','bancos','proveedores','registroaprobadoinformefinalExistente'
-            ));
-        }
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+            ->orderBy('area')
+        ->get();
+
+        return view('admin.asociados.generarchecklistclienteitaaudi', compact('cliente','tieneRequisitos','estadoLaboral',
+        'numHijosMenores',  'estadoCivil', 'registroExistente','rolusuario','registroaprobadoExistente',
+        'tieneauditoriamedica','bancos','proveedores','registroaprobadoinformefinalExistente','bateriaProveedores'
+        ));
+    }
     public function descargarchecklistclienteitaaudi(Request $request, Cliente $cliente)   
-        {
-            $usuarioAutenticado = Auth::user();
-            
-            // Guardar requisitos en la base de datos
-            $requisito1 = new Requisitosclientesauditoria();
-            $requisito1->clienteitaid = $cliente->id;
-            $requisito1->clienteitanombre = $cliente->nombrecompleto;
-            $requisito1->usuarioid = $usuarioAutenticado->id;
-            $requisito1->usuarioregistro = $usuarioAutenticado->name;
-            $requisito1->ciasegurado = 'PENDIENTE';
-            $requisito1->cnacasegurado = 'PENDIENTE';
-            $requisito1->save();
+    {
+        $usuarioAutenticado = Auth::user();
         
-            $numPolizas = $request->input('numPolizas');
-            for ($i = 1; $i <= $numPolizas; $i++) {
-                $banco = $request->input('banco' . $i);
-        
-                if (!empty($banco)) { 
-                    $requisitoPoliza = new Requisitosclientesauditoria();
-                    $requisitoPoliza->clienteitaid = $cliente->id;
-                    $requisitoPoliza->clienteitanombre = $cliente->nombrecompleto;
-                    $requisitoPoliza->usuarioid = $usuarioAutenticado->id;
-                    $requisitoPoliza->usuarioregistro = $usuarioAutenticado->name;
-                    $requisitoPoliza->banco = $banco;
-                    $requisitoPoliza->nropolizageneral = $request->input('nropolizageneral' . $i);
-                    $requisitoPoliza->polizageneral = $request->input('polizageneral' . $i) ? 'PENDIENTE' : 'NO APLICA';
-                    $requisitoPoliza->declasalud = $request->input('declasalud' . $i) ? 'PENDIENTE' : 'NO APLICA';
-                    $requisitoPoliza->nropolizadesgravamen = $request->input('nropolizadesgravamen' . $i);
-                    $requisitoPoliza->polizasegurodesgravamen = $request->input('polizasegurodesgravamen' . $i) ? 'PENDIENTE' : 'NO APLICA';
-                    $requisitoPoliza->save(); 
-                }
+        // Guardar requisitos en la base de datos
+        $requisito1 = new Requisitosclientesauditoria();
+        $requisito1->clienteitaid = $cliente->id;
+        $requisito1->clienteitanombre = $cliente->nombrecompleto;
+        $requisito1->usuarioid = $usuarioAutenticado->id;
+        $requisito1->usuarioregistro = $usuarioAutenticado->name;
+        $requisito1->ciasegurado = 'PENDIENTE';
+        $requisito1->cnacasegurado = 'PENDIENTE';
+        $requisito1->save();
+    
+        $numPolizas = $request->input('numPolizas');
+        for ($i = 1; $i <= $numPolizas; $i++) {
+            $banco = $request->input('banco' . $i);
+    
+            if (!empty($banco)) { 
+                $requisitoPoliza = new Requisitosclientesauditoria();
+                $requisitoPoliza->clienteitaid = $cliente->id;
+                $requisitoPoliza->clienteitanombre = $cliente->nombrecompleto;
+                $requisitoPoliza->usuarioid = $usuarioAutenticado->id;
+                $requisitoPoliza->usuarioregistro = $usuarioAutenticado->name;
+                $requisitoPoliza->banco = $banco;
+                $requisitoPoliza->nropolizageneral = $request->input('nropolizageneral' . $i);
+                $requisitoPoliza->polizageneral = $request->input('polizageneral' . $i) ? 'PENDIENTE' : 'NO APLICA';
+                $requisitoPoliza->declasalud = $request->input('declasalud' . $i) ? 'PENDIENTE' : 'NO APLICA';
+                $requisitoPoliza->nropolizadesgravamen = $request->input('nropolizadesgravamen' . $i);
+                $requisitoPoliza->polizasegurodesgravamen = $request->input('polizasegurodesgravamen' . $i) ? 'PENDIENTE' : 'NO APLICA';
+                $requisitoPoliza->save(); 
             }
-        
-            // Pasar los datos a la vista del PDF
-            $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteitaaudi', compact('cliente', 'numPolizas', 'request'));
-            $pdfName = 'Requisitos_AuditoriaMedica_' . $cliente->nombrecompleto . '.pdf';
-            return $pdf->download($pdfName);
         }
+    
+        // Pasar los datos a la vista del PDF
+        $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteitaaudi', compact('cliente', 'numPolizas', 'request'));
+        $pdfName = 'Requisitos_AuditoriaMedica_' . $cliente->nombrecompleto . '.pdf';
+        return $pdf->download($pdfName);
+    }
     public function subirdocrequisitosaudi(Cliente $cliente) 
     {
         $clienteitaid = $cliente->id; 
@@ -4414,669 +5407,705 @@ class AsociadoController extends Controller
         }
     }
 //
-//REQUISITOS CLIENTE ITA APELACION 
 
-    public function generarchecklistclienteitaapelacion(Cliente $cliente) 
-        {
-            $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-                ->where('servicio', 'APELACION')->exists();
-            $estadoLaboral = strtolower($cliente->estadolaboral);
-            $numHijosMenores = $cliente->numhijosmenores;
-            $estadoCivil = strtolower($cliente->estadocivil);
-
-            $rolusuario = auth()->user()->getRoleNames()->first(); 
-
-            $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
-                ->where('tramite', 'APELACION')
-                ->first();
-            $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
-                ->where('tramite', 'APELACION')
-                ->first();
-            $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
-                ->where('tramite', 'APELACION')
-                ->first();
-                $userSucursal = Auth::user()->sucursal;
-
-                $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
-                    ->where('estado', 'ACTIVO')
-                    ->when($userSucursal === 'SANTA CRUZ', function ($query) {
-                        return $query->where('sucursal', 'SANTA CRUZ');
-                    })
-                    ->distinct()
-                    ->pluck('proveedor');
-
-            return view('admin.asociados.generarchecklistclienteitaapelacion', compact(
-                'cliente', 
-                'tieneRequisitos', 
-                'estadoLaboral',
-                'numHijosMenores',  
-                'estadoCivil', 
-                'registroExistente','rolusuario','registroaprobadoExistente','proveedores','registroaprobadoinformefinalExistente'
-            ));
-        }
-    public function descargarchecklistclienteitaapelacion(Request $request, Cliente $cliente)
-        {
-            $usuarioAutenticado = Auth::user();
-            $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
-            $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
-
-            $requisito = new RequisitoSubCliente();
-            $requisito->clienteitaid = $cliente->id;
-            $requisito->clienteitanombre = $cliente->nombrecompleto;
-            $requisito->usuarioid = $usuarioAutenticado->id;
-            $requisito->usuarioregistro = $usuarioAutenticado->name;
-            $requisito->servicio = 'APELACION';
-
-            $nombreDocumentos = [
-                'poder' => 'PODER',
-                'avcci' => 'AVC / CARNET ASEGURADO',
-                'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
-                'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
-                'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
-                'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
-                'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
-                'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
-                'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
-                'crodomicilio' => 'CROQUIS DOMICILIO',
-                'contrato' => 'CONTRATO',
-                'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
-                'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
-                'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
-                'cdivorcio' => 'CERTIFICADO DIVORCIO',
-                'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
-                'recordservicios' => 'RECORD SERVICIOS',
-                'dictamencalentenc' => 'DICTAMEN CALIFICACION ENTIDAD ENCARGADA',
-                
-            ];
-
-            $nombreDocumentos2 = [
-                'ctrabajo' => 'CERTIFICADO TRABAJO',
-                'boletapago' => 'BOLETA PAGO',
-                'egestora' => 'EXTRACTO GESTORA',
-                'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
-                'actdatos' => 'ACTUALIZACIÓN DATOS',
-                'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
-                'infomedicasalud' => 'INFORMACION MEDICA',
-                'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCION',
-            ];
-
-            foreach ($documentosSeleccionados as $documento) {
-                $nombreCompleto = isset($nombreDocumentos[$documento]) ? $nombreDocumentos[$documento] : $documento;
-            $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
-                switch ($documento) {
-                    case 'poder':
-                        $requisito->poder = $valorDocumento;
-                        break;
-                    case 'avcci':
-                        $requisito->avcci = $valorDocumento;
-                        break;
-                    case 'cnacasegurado':
-                        $requisito->cnacasegurado = $valorDocumento;
-                        break;
-                    case 'ciasegurado':
-                        $requisito->ciasegurado = $valorDocumento;
-                        break;
-                    case 'cmatrimonio':
-                        $requisito->cmatrimonio = $valorDocumento;
-                        break;
-                    case 'cnacconyuge':
-                        $requisito->cnacconyuge = $valorDocumento;
-                        break;
-                    case 'ciconyuge':
-                        $requisito->ciconyuge = $valorDocumento;
-                        break;
-                    case 'cnacjihos':
-                        $requisito->cnacjihos = $valorDocumento;
-                        break;
-                    case 'cihijos':
-                        $requisito->cihijos = $valorDocumento;
-                        break;
-                    case 'crodomicilio':
-                        $requisito->crodomicilio = $valorDocumento;
-                        break;
-                    case 'contrato':
-                        $requisito->contrato = $valorDocumento;
-                        break;
-                    case 'cunionlibre':
-                        $requisito->cunionlibre = $valorDocumento;
-                        break;
-                    case 'cnacimientounionlibre':
-                        $requisito->cnacimientounionlibre = $valorDocumento;
-                        break;
-                    case 'ciunionlibre':
-                        $requisito->ciunionlibre = $valorDocumento;
-                        break;
-                    case 'cdivorcio':
-                        $requisito->cdivorcio = $valorDocumento;
-                        break;
-                    case 'cdefuncion':
-                        $requisito->cdefuncion = $valorDocumento;
-                        break;
-                    case 'recordservicios':
-                        $requisito->recordservicios = $valorDocumento;
-                        break;
-                    case 'dictamencalentenc':
-                        $requisito->dictamencalentenc = $valorDocumento;
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            foreach ($documentosSeleccionados2 as $documento) {
-                $nombreCompleto = isset($nombreDocumentos2[$documento]) ? $nombreDocumentos2[$documento] : $documento;
-            $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
-                switch ($documento) {
-                    case 'ctrabajo':
-                        $requisito->ctrabajo = $valorDocumento;
-                        break;
-                    case 'boletapago':
-                        $requisito->boletapago = $valorDocumento;
-                        break;
-                    case 'egestora':
-                        $requisito->egestora = $valorDocumento;
-                        break;
-                    case 'denfaccidente':
-                        $requisito->denfaccidente = $valorDocumento;
-                        break;
-                    case 'actdatos':
-                        $requisito->actdatos = $valorDocumento;
-                        break;
-                    case 'resolinvhijos':
-                        $requisito->resolinvhijos = $valorDocumento;
-                        break;
-                    case 'infomedicasalud':
-                        $requisito->infomedicasalud = $valorDocumento;
-                        break;
-                    case 'anteriordictamen':
-                        $requisito->anteriordictamen = $valorDocumento;
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            $requisito->save();
-
-            $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteitaapelacion', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
-            $pdfName = 'Requisitos_Apelacion_' . $cliente->nombrecompleto . '.pdf';
-            return $pdf->download($pdfName);
-        }
+//REQUISITOS CLIENTE ITA APELACION
     public function subirdocrequisitosapelacion(Cliente $cliente)
-        {
-            $clienteitaid = $cliente->id; 
-            $userRole = auth()->user()->getRoleNames()->first(); 
-            $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
-            ->where('servicio', 'APELACION')->first();
-    
-            $poderPendiente = $requisitosCliente ? $requisitosCliente->poder === 'PENDIENTE' : false;
-            $avcciPendiente = $requisitosCliente ? $requisitosCliente->avcci === 'PENDIENTE' : false;
-            $cnacaseguradoPendiente = $requisitosCliente ? $requisitosCliente->cnacasegurado === 'PENDIENTE' : false;
-            $ciaseguradoPendiente = $requisitosCliente ? $requisitosCliente->ciasegurado === 'PENDIENTE' : false;
-            $cmatrimonioPendiente = $requisitosCliente ? $requisitosCliente->cmatrimonio === 'PENDIENTE' : false;
-            $cnacconyugePendiente = $requisitosCliente ? $requisitosCliente->cnacconyuge === 'PENDIENTE' : false;
-            $ciconyugePendiente = $requisitosCliente ? $requisitosCliente->ciconyuge === 'PENDIENTE' : false;
-            $cnacjihosPendiente = $requisitosCliente ? $requisitosCliente->cnacjihos === 'PENDIENTE' : false;
-            $cihijosPendiente = $requisitosCliente ? $requisitosCliente->cihijos === 'PENDIENTE' : false;
-            $denfaccidentePendiente = $requisitosCliente ? $requisitosCliente->denfaccidente === 'PENDIENTE' : false;
-            $crodomicilioPendiente = $requisitosCliente ? $requisitosCliente->crodomicilio === 'PENDIENTE' : false;
-            $contratoPendiente = $requisitosCliente ? $requisitosCliente->contrato === 'PENDIENTE' : false;
-            $recordserviciosPendiente = $requisitosCliente ? $requisitosCliente->recordservicios === 'PENDIENTE' : false;
-            
-            $cunionlibrePendiente = $requisitosCliente ? $requisitosCliente->cunionlibre === 'PENDIENTE' : false;
-            $cnacimientounionlibrePendiente = $requisitosCliente ? $requisitosCliente->cnacimientounionlibre === 'PENDIENTE' : false;
-            $ciunionlibrePendiente = $requisitosCliente ? $requisitosCliente->ciunionlibre === 'PENDIENTE' : false;
-            $cdivorcioPendiente = $requisitosCliente ? $requisitosCliente->cdivorcio === 'PENDIENTE' : false;
-            $cdefuncionPendiente = $requisitosCliente ? $requisitosCliente->cdefuncion === 'PENDIENTE' : false;
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
 
-            $ctrabajoPendiente = $requisitosCliente ? $requisitosCliente->ctrabajo === 'PENDIENTE' : false;
-            $boletapagoPendiente = $requisitosCliente ? $requisitosCliente->boletapago === 'PENDIENTE' : false;
-            $egestoraPendiente = $requisitosCliente ? $requisitosCliente->egestora === 'PENDIENTE' : false;
-            $actdatosPendiente = $requisitosCliente ? $requisitosCliente->actdatos === 'PENDIENTE' : false;
-            $resolinvhijosPendiente = $requisitosCliente ? $requisitosCliente->resolinvhijos === 'PENDIENTE' : false;
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'APELACIÓN')
+        ->firstOrFail();
 
-            $dictamencalentencPendiente = $requisitosCliente ? $requisitosCliente->dictamencalentenc === 'PENDIENTE' : false;
-            $infomedicasaludPendiente = $requisitosCliente ? $requisitosCliente->infomedicasalud === 'PENDIENTE' : false;
-            $anteriordictamenPendiente = $requisitosCliente ? $requisitosCliente->anteriordictamen === 'PENDIENTE' : false;
-            
-            
-            $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-            ->where('servicio', 'APELACION')->firstOrFail();
-            $poderSubido = $requisitosCliente && strpos($requisitosCliente->poder, '.pdf') !== false ? true:false;
-            $avcciSubido = $requisitosCliente && strpos($requisitosCliente->avcci, '.pdf') !== false ? true:false;
-            $cnacaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->cnacasegurado, '.pdf') !== false ? true:false;
-            $ciaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->ciasegurado, '.pdf') !== false ? true:false;
-            $cmatrimonioSubido = $requisitosCliente && strpos($requisitosCliente->cmatrimonio, '.pdf') !== false ? true:false;
-            $cnacconyugeSubido = $requisitosCliente && strpos($requisitosCliente->cnacconyuge, '.pdf') !== false ? true:false;
-            $ciconyugeSubido = $requisitosCliente && strpos($requisitosCliente->ciconyuge, '.pdf') !== false ? true:false;
-            $cnacjihosSubido = $requisitosCliente && strpos($requisitosCliente->cnacjihos, '.pdf') !== false ? true:false;
-            $cihijosSubido = $requisitosCliente && strpos($requisitosCliente->cihijos, '.pdf') !== false ? true:false;
-            $denfaccidenteSubido = $requisitosCliente && strpos($requisitosCliente->denfaccidente, '.pdf') !== false ? true:false;
-            $crodomicilioSubido = $requisitosCliente && strpos($requisitosCliente->crodomicilio, '.pdf') !== false ? true:false;
-            $contratoSubido = $requisitosCliente && strpos($requisitosCliente->contrato, '.pdf') !== false ? true:false;
-            $recordserviciosSubido = $requisitosCliente && strpos($requisitosCliente->recordservicios, '.pdf') !== false ? true:false;
-            
-            $cunionlibreSubido = $requisitosCliente && strpos($requisitosCliente->cunionlibre, '.pdf') !== false ? true:false;
-            $cnacimientounionlibreSubido = $requisitosCliente && strpos($requisitosCliente->cnacimientounionlibre, '.pdf') !== false ? true:false;
-            $ciunionlibreSubido = $requisitosCliente && strpos($requisitosCliente->ciunionlibre, '.pdf') !== false ? true:false;
-            $cdivorcioSubido = $requisitosCliente && strpos($requisitosCliente->cdivorcio, '.pdf') !== false ? true:false;
-            $cdefuncionSubido = $requisitosCliente && strpos($requisitosCliente->cdefuncion, '.pdf') !== false ? true:false;
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'APELACIÓN')
+            ->first();
 
-            $ctrabajoSubido = $requisitosCliente && strpos($requisitosCliente->ctrabajo, '.pdf') !== false ? true:false;
-            $boletapagoSubido = $requisitosCliente && strpos($requisitosCliente->boletapago, '.pdf') !== false ? true:false;
-            $egestoraSubido = $requisitosCliente && strpos($requisitosCliente->egestora, '.pdf') !== false ? true:false;
-            $actdatosSubido = $requisitosCliente && strpos($requisitosCliente->actdatos, '.pdf') !== false ? true:false;
-            $resolinvhijosSubido = $requisitosCliente && strpos($requisitosCliente->resolinvhijos, '.pdf') !== false ? true:false;
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
 
-            $dictamencalentencSubido = $requisitosCliente && strpos($requisitosCliente->dictamencalentenc, '.pdf') !== false ? true:false;
-            $infomedicasaludSubido = $requisitosCliente && strpos($requisitosCliente->infomedicasalud, '.pdf') !== false ? true:false;
-            $anteriordictamenSubido = $requisitosCliente && strpos($requisitosCliente->anteriordictamen, '.pdf') !== false ? true:false;
-            
-            return view('admin.asociados.subirdocrequisitosapelacion', compact('cliente', 'poderPendiente', 'avcciPendiente', 
-            'cnacaseguradoPendiente','ciaseguradoPendiente','cmatrimonioPendiente','cnacconyugePendiente','ciconyugePendiente',
-            'cnacjihosPendiente','cihijosPendiente','denfaccidentePendiente','recordserviciosPendiente','crodomicilioPendiente','contratoPendiente', 'requisito'
-            , 'poderSubido', 'avcciSubido', 'cnacaseguradoSubido', 'ciaseguradoSubido', 'cmatrimonioSubido', 'cnacconyugeSubido'
-            , 'ciconyugeSubido', 'cnacjihosSubido', 'cihijosSubido', 'denfaccidenteSubido', 'crodomicilioSubido', 'contratoSubido'
-            , 'ctrabajoPendiente', 'boletapagoPendiente', 'egestoraPendiente', 'actdatosPendiente', 'resolinvhijosPendiente'
-            , 'ctrabajoSubido', 'boletapagoSubido', 'egestoraSubido', 'actdatosSubido', 'resolinvhijosSubido'
-            , 'cunionlibrePendiente', 'cnacimientounionlibrePendiente', 'ciunionlibrePendiente', 'cdivorcioPendiente', 'cdefuncionPendiente'
-            , 'cunionlibreSubido', 'recordserviciosSubido', 'cnacimientounionlibreSubido', 'ciunionlibreSubido', 'cdivorcioSubido', 'cdefuncionSubido', 'userRole'
-            , 'dictamencalentencPendiente','infomedicasaludPendiente','anteriordictamenPendiente','dictamencalentencSubido','infomedicasaludSubido','anteriordictamenSubido',));
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
         }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosapelacion', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitaapelacion(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'APELACIÓN')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'APELACIÓN')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'APELACIÓN')
+            ->first();
+        $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'APELACIÓN')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+                ->orderBy('area')
+            ->get();
+        
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        return view('admin.asociados.generarchecklistclienteitaapelacion', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero','bateriaProveedores','ultimosRegistros'
+        ));
+    }
     public function guardardocrequisitosapelacion(Request $request, Cliente $cliente)
-        {
-            $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-            ->where('servicio', 'APELACION')->firstOrFail();
-    
-            $request->validate([
-                'poder' => 'nullable|mimes:pdf',
-                'numeropoder' => 'nullable|max:45',
-                'avcci' => 'nullable|mimes:pdf',
-                'cnacasegurado' => 'nullable|mimes:pdf',
-                'ciasegurado' => 'nullable|mimes:pdf',
-                'cmatrimonio' => 'nullable|mimes:pdf',
-                'cnacconyuge' => 'nullable|mimes:pdf',
-                'ciconyuge' => 'nullable|mimes:pdf',
-                'cnacjihos' => 'nullable|mimes:pdf',
-                'cihijos' => 'nullable|mimes:pdf',
-                'denfaccidente' => 'nullable|mimes:pdf',
-                'crodomicilio' => 'nullable|mimes:pdf',
-                'contrato' => 'nullable|mimes:pdf',
-                'ctrabajo' => 'nullable|mimes:pdf',
-                'boletapago' => 'nullable|mimes:pdf',
-                'egestora' => 'nullable|mimes:pdf',
-                'actdatos' => 'nullable|mimes:pdf',
-                'resolinvhijos' => 'nullable|mimes:pdf',
-                'cunionlibre' => 'nullable|mimes:pdf',
-                'cnacimientounionlibre' => 'nullable|mimes:pdf',
-                'ciunionlibre' => 'nullable|mimes:pdf',
-                'cdivorcio' => 'nullable|mimes:pdf',
-                'cdefuncion' => 'nullable|mimes:pdf',
-                'dictamencalentenc' => 'nullable|mimes:pdf',
-                'infomedicasalud' => 'nullable|mimes:pdf',
-                'anteriordictamen' => 'nullable|mimes:pdf',
-            ]);
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'APELACIÓN')->firstOrFail();
 
-            $camposArchivos = [
-                'poder', 'avcci', 'cnacasegurado', 'ciasegurado', 'cmatrimonio', 
-                'cnacconyuge', 'ciconyuge', 'cnacjihos', 'cihijos', 'denfaccidente', 
-                'crodomicilio', 'contrato', 'ctrabajo', 'boletapago', 'egestora', 'actdatos', 'resolinvhijos'
-                , 'cunionlibre', 'cnacimientounionlibre', 'ciunionlibre', 'cdivorcio', 'cdefuncion'
-                , 'dictamencalentenc', 'infomedicasalud', 'anteriordictamen'
-            ];
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
 
-            foreach ($camposArchivos as $campo) {
-                $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
-            }
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
 
-            if ($request->filled('numeropoder')) {
-                $requisito->update(['numeropoder' => $request->input('numeropoder')]);
-            }
-    
-            return redirect()->route('admin.asociados.subirdocrequisitosapelacion', $cliente)
-                             ->with('info', 'El documento se subió con éxito');
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
         }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosapelacion', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
 //
-//REQUISITOS CLIENTE ITA SEGUNDA SOLICITUD 
 
-    public function generarchecklistclienteitasegsolicitud(Cliente $cliente) 
-        {
-            $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-                ->where('servicio', 'SEGUNDA SOLICITUD')->exists();
-            $estadoLaboral = strtolower($cliente->estadolaboral);
-            $numHijosMenores = $cliente->numhijosmenores;
-            $estadoCivil = strtolower($cliente->estadocivil);
-
-            $rolusuario = auth()->user()->getRoleNames()->first(); 
-
-            $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
-                ->where('tramite', 'SEGUNDA SOLICITUD')
-                ->first();
-            $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
-                ->where('tramite', 'SEGUNDA SOLICITUD')
-                ->first();
-                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
-                ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
-                ->where('tramite', 'SEGUNDA SOLICITUD')
-                ->first();
-                $userSucursal = Auth::user()->sucursal;
-
-                $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
-                    ->where('estado', 'ACTIVO')
-                    ->when($userSucursal === 'SANTA CRUZ', function ($query) {
-                        return $query->where('sucursal', 'SANTA CRUZ');
-                    })
-                    ->distinct()
-                    ->pluck('proveedor');
-
-            return view('admin.asociados.generarchecklistclienteitasegsolicitud', compact(
-                'cliente', 
-                'tieneRequisitos', 
-                'estadoLaboral',
-                'numHijosMenores',  
-                'estadoCivil', 
-                'registroExistente','rolusuario','registroaprobadoExistente','proveedores','registroaprobadoinformefinalExistente'
-            ));
-        }
-    public function descargarchecklistclienteitasegsolicitud(Request $request, Cliente $cliente)
-        {
-            $usuarioAutenticado = Auth::user();
-            $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
-            $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
-
-            $requisito = new RequisitoSubCliente();
-            $requisito->clienteitaid = $cliente->id;
-            $requisito->clienteitanombre = $cliente->nombrecompleto;
-            $requisito->usuarioid = $usuarioAutenticado->id;
-            $requisito->usuarioregistro = $usuarioAutenticado->name;
-            $requisito->servicio = 'SEGUNDA SOLICITUD';
-
-            $nombreDocumentos = [
-                'poder' => 'PODER',
-                'avcci' => 'AVC / CARNET ASEGURADO',
-                'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
-                'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
-                'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
-                'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
-                'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
-                'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
-                'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
-                'crodomicilio' => 'CROQUIS DOMICILIO',
-                'contrato' => 'CONTRATO',
-                'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
-                'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
-                'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
-                'cdivorcio' => 'CERTIFICADO DIVORCIO',
-                'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
-                'recordservicios' => 'RECORD SERVICIOS',
-                'dictamencalentenc' => 'DICTAMEN CALIFICACION ENTIDAD ENCARGADA',
-                
-            ];
-
-            $nombreDocumentos2 = [
-                'ctrabajo' => 'CERTIFICADO TRABAJO',
-                'boletapago' => 'BOLETA PAGO',
-                'egestora' => 'EXTRACTO GESTORA',
-                'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
-                'actdatos' => 'ACTUALIZACIÓN DATOS',
-                'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
-                'infomedicasalud' => 'INFORMACION MEDICA',
-                'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCION',
-                'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
-            ];
-
-            foreach ($documentosSeleccionados as $documento) {
-                $nombreCompleto = isset($nombreDocumentos[$documento]) ? $nombreDocumentos[$documento] : $documento;
-            $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
-                switch ($documento) {
-                    case 'poder':
-                        $requisito->poder = $valorDocumento;
-                        break;
-                    case 'avcci':
-                        $requisito->avcci = $valorDocumento;
-                        break;
-                    case 'cnacasegurado':
-                        $requisito->cnacasegurado = $valorDocumento;
-                        break;
-                    case 'ciasegurado':
-                        $requisito->ciasegurado = $valorDocumento;
-                        break;
-                    case 'cmatrimonio':
-                        $requisito->cmatrimonio = $valorDocumento;
-                        break;
-                    case 'cnacconyuge':
-                        $requisito->cnacconyuge = $valorDocumento;
-                        break;
-                    case 'ciconyuge':
-                        $requisito->ciconyuge = $valorDocumento;
-                        break;
-                    case 'cnacjihos':
-                        $requisito->cnacjihos = $valorDocumento;
-                        break;
-                    case 'cihijos':
-                        $requisito->cihijos = $valorDocumento;
-                        break;
-                    case 'crodomicilio':
-                        $requisito->crodomicilio = $valorDocumento;
-                        break;
-                    case 'contrato':
-                        $requisito->contrato = $valorDocumento;
-                        break;
-                    case 'cunionlibre':
-                        $requisito->cunionlibre = $valorDocumento;
-                        break;
-                    case 'cnacimientounionlibre':
-                        $requisito->cnacimientounionlibre = $valorDocumento;
-                        break;
-                    case 'ciunionlibre':
-                        $requisito->ciunionlibre = $valorDocumento;
-                        break;
-                    case 'cdivorcio':
-                        $requisito->cdivorcio = $valorDocumento;
-                        break;
-                    case 'cdefuncion':
-                        $requisito->cdefuncion = $valorDocumento;
-                        break;
-                    case 'recordservicios':
-                        $requisito->recordservicios = $valorDocumento;
-                        break;
-                    case 'dictamencalentenc':
-                        $requisito->dictamencalentenc = $valorDocumento;
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            foreach ($documentosSeleccionados2 as $documento) {
-                $nombreCompleto = isset($nombreDocumentos2[$documento]) ? $nombreDocumentos2[$documento] : $documento;
-            $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
-                switch ($documento) {
-                    case 'ctrabajo':
-                        $requisito->ctrabajo = $valorDocumento;
-                        break;
-                    case 'boletapago':
-                        $requisito->boletapago = $valorDocumento;
-                        break;
-                    case 'egestora':
-                        $requisito->egestora = $valorDocumento;
-                        break;
-                    case 'denfaccidente':
-                        $requisito->denfaccidente = $valorDocumento;
-                        break;
-                    case 'actdatos':
-                        $requisito->actdatos = $valorDocumento;
-                        break;
-                    case 'resolinvhijos':
-                        $requisito->resolinvhijos = $valorDocumento;
-                        break;
-                    case 'infomedicasalud':
-                        $requisito->infomedicasalud = $valorDocumento;
-                        break;
-                    case 'anteriordictamen':
-                        $requisito->anteriordictamen = $valorDocumento;
-                        break;
-                    case 'poderciapoderado':
-                        $requisito->poderciapoderado = $valorDocumento;
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            $requisito->save();
-
-            $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteitasegsolicitud', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
-            $pdfName = 'Requisitos_SegundaSolicitud_' . $cliente->nombrecompleto . '.pdf';
-            return $pdf->download($pdfName);
-        }
+//REQUISITOS CLIENTE ITA SEGUNDA SOLICITUD
     public function subirdocrequisitossegsolicitud(Cliente $cliente)
-        {
-            $clienteitaid = $cliente->id; 
-            $userRole = auth()->user()->getRoleNames()->first(); 
-            $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
-            ->where('servicio', 'SEGUNDA SOLICITUD')->first();
-    
-            $poderPendiente = $requisitosCliente ? $requisitosCliente->poder === 'PENDIENTE' : false;
-            $avcciPendiente = $requisitosCliente ? $requisitosCliente->avcci === 'PENDIENTE' : false;
-            $cnacaseguradoPendiente = $requisitosCliente ? $requisitosCliente->cnacasegurado === 'PENDIENTE' : false;
-            $ciaseguradoPendiente = $requisitosCliente ? $requisitosCliente->ciasegurado === 'PENDIENTE' : false;
-            $cmatrimonioPendiente = $requisitosCliente ? $requisitosCliente->cmatrimonio === 'PENDIENTE' : false;
-            $cnacconyugePendiente = $requisitosCliente ? $requisitosCliente->cnacconyuge === 'PENDIENTE' : false;
-            $ciconyugePendiente = $requisitosCliente ? $requisitosCliente->ciconyuge === 'PENDIENTE' : false;
-            $cnacjihosPendiente = $requisitosCliente ? $requisitosCliente->cnacjihos === 'PENDIENTE' : false;
-            $cihijosPendiente = $requisitosCliente ? $requisitosCliente->cihijos === 'PENDIENTE' : false;
-            $denfaccidentePendiente = $requisitosCliente ? $requisitosCliente->denfaccidente === 'PENDIENTE' : false;
-            $crodomicilioPendiente = $requisitosCliente ? $requisitosCliente->crodomicilio === 'PENDIENTE' : false;
-            $contratoPendiente = $requisitosCliente ? $requisitosCliente->contrato === 'PENDIENTE' : false;
-            $recordserviciosPendiente = $requisitosCliente ? $requisitosCliente->recordservicios === 'PENDIENTE' : false;
-            
-            $cunionlibrePendiente = $requisitosCliente ? $requisitosCliente->cunionlibre === 'PENDIENTE' : false;
-            $cnacimientounionlibrePendiente = $requisitosCliente ? $requisitosCliente->cnacimientounionlibre === 'PENDIENTE' : false;
-            $ciunionlibrePendiente = $requisitosCliente ? $requisitosCliente->ciunionlibre === 'PENDIENTE' : false;
-            $cdivorcioPendiente = $requisitosCliente ? $requisitosCliente->cdivorcio === 'PENDIENTE' : false;
-            $cdefuncionPendiente = $requisitosCliente ? $requisitosCliente->cdefuncion === 'PENDIENTE' : false;
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
 
-            $ctrabajoPendiente = $requisitosCliente ? $requisitosCliente->ctrabajo === 'PENDIENTE' : false;
-            $boletapagoPendiente = $requisitosCliente ? $requisitosCliente->boletapago === 'PENDIENTE' : false;
-            $egestoraPendiente = $requisitosCliente ? $requisitosCliente->egestora === 'PENDIENTE' : false;
-            $actdatosPendiente = $requisitosCliente ? $requisitosCliente->actdatos === 'PENDIENTE' : false;
-            $resolinvhijosPendiente = $requisitosCliente ? $requisitosCliente->resolinvhijos === 'PENDIENTE' : false;
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'SEGUNDA SOLICITUD')
+        ->firstOrFail();
 
-            $dictamencalentencPendiente = $requisitosCliente ? $requisitosCliente->dictamencalentenc === 'PENDIENTE' : false;
-            $infomedicasaludPendiente = $requisitosCliente ? $requisitosCliente->infomedicasalud === 'PENDIENTE' : false;
-            $anteriordictamenPendiente = $requisitosCliente ? $requisitosCliente->anteriordictamen === 'PENDIENTE' : false;
-            $poderciapoderadoPendiente = $requisitosCliente ? $requisitosCliente->poderciapoderado === 'PENDIENTE' : false;
-            
-            
-            $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-            ->where('servicio', 'SEGUNDA SOLICITUD')->firstOrFail();
-            $poderSubido = $requisitosCliente && strpos($requisitosCliente->poder, '.pdf') !== false ? true:false;
-            $avcciSubido = $requisitosCliente && strpos($requisitosCliente->avcci, '.pdf') !== false ? true:false;
-            $cnacaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->cnacasegurado, '.pdf') !== false ? true:false;
-            $ciaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->ciasegurado, '.pdf') !== false ? true:false;
-            $cmatrimonioSubido = $requisitosCliente && strpos($requisitosCliente->cmatrimonio, '.pdf') !== false ? true:false;
-            $cnacconyugeSubido = $requisitosCliente && strpos($requisitosCliente->cnacconyuge, '.pdf') !== false ? true:false;
-            $ciconyugeSubido = $requisitosCliente && strpos($requisitosCliente->ciconyuge, '.pdf') !== false ? true:false;
-            $cnacjihosSubido = $requisitosCliente && strpos($requisitosCliente->cnacjihos, '.pdf') !== false ? true:false;
-            $cihijosSubido = $requisitosCliente && strpos($requisitosCliente->cihijos, '.pdf') !== false ? true:false;
-            $denfaccidenteSubido = $requisitosCliente && strpos($requisitosCliente->denfaccidente, '.pdf') !== false ? true:false;
-            $crodomicilioSubido = $requisitosCliente && strpos($requisitosCliente->crodomicilio, '.pdf') !== false ? true:false;
-            $contratoSubido = $requisitosCliente && strpos($requisitosCliente->contrato, '.pdf') !== false ? true:false;
-            $recordserviciosSubido = $requisitosCliente && strpos($requisitosCliente->recordservicios, '.pdf') !== false ? true:false;
-            
-            $cunionlibreSubido = $requisitosCliente && strpos($requisitosCliente->cunionlibre, '.pdf') !== false ? true:false;
-            $cnacimientounionlibreSubido = $requisitosCliente && strpos($requisitosCliente->cnacimientounionlibre, '.pdf') !== false ? true:false;
-            $ciunionlibreSubido = $requisitosCliente && strpos($requisitosCliente->ciunionlibre, '.pdf') !== false ? true:false;
-            $cdivorcioSubido = $requisitosCliente && strpos($requisitosCliente->cdivorcio, '.pdf') !== false ? true:false;
-            $cdefuncionSubido = $requisitosCliente && strpos($requisitosCliente->cdefuncion, '.pdf') !== false ? true:false;
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'SEGUNDA SOLICITUD')
+            ->first();
 
-            $ctrabajoSubido = $requisitosCliente && strpos($requisitosCliente->ctrabajo, '.pdf') !== false ? true:false;
-            $boletapagoSubido = $requisitosCliente && strpos($requisitosCliente->boletapago, '.pdf') !== false ? true:false;
-            $egestoraSubido = $requisitosCliente && strpos($requisitosCliente->egestora, '.pdf') !== false ? true:false;
-            $actdatosSubido = $requisitosCliente && strpos($requisitosCliente->actdatos, '.pdf') !== false ? true:false;
-            $resolinvhijosSubido = $requisitosCliente && strpos($requisitosCliente->resolinvhijos, '.pdf') !== false ? true:false;
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
 
-            $dictamencalentencSubido = $requisitosCliente && strpos($requisitosCliente->dictamencalentenc, '.pdf') !== false ? true:false;
-            $infomedicasaludSubido = $requisitosCliente && strpos($requisitosCliente->infomedicasalud, '.pdf') !== false ? true:false;
-            $anteriordictamenSubido = $requisitosCliente && strpos($requisitosCliente->anteriordictamen, '.pdf') !== false ? true:false;
-            $poderciapoderadoSubido = $requisitosCliente && strpos($requisitosCliente->poderciapoderado, '.pdf') !== false ? true:false;
-            
-            return view('admin.asociados.subirdocrequisitossegsolicitud', compact('cliente', 'poderPendiente', 'avcciPendiente', 
-            'cnacaseguradoPendiente','ciaseguradoPendiente','cmatrimonioPendiente','cnacconyugePendiente','ciconyugePendiente',
-            'cnacjihosPendiente','cihijosPendiente','denfaccidentePendiente','recordserviciosPendiente','crodomicilioPendiente','contratoPendiente', 'requisito'
-            , 'poderSubido', 'avcciSubido', 'cnacaseguradoSubido', 'ciaseguradoSubido', 'cmatrimonioSubido', 'cnacconyugeSubido'
-            , 'ciconyugeSubido', 'cnacjihosSubido', 'cihijosSubido', 'denfaccidenteSubido', 'crodomicilioSubido', 'contratoSubido'
-            , 'ctrabajoPendiente', 'boletapagoPendiente', 'egestoraPendiente', 'actdatosPendiente', 'resolinvhijosPendiente'
-            , 'ctrabajoSubido', 'boletapagoSubido', 'egestoraSubido', 'actdatosSubido', 'resolinvhijosSubido'
-            , 'cunionlibrePendiente', 'cnacimientounionlibrePendiente', 'ciunionlibrePendiente', 'cdivorcioPendiente', 'cdefuncionPendiente'
-            , 'cunionlibreSubido', 'recordserviciosSubido', 'cnacimientounionlibreSubido', 'ciunionlibreSubido', 'cdivorcioSubido', 'cdefuncionSubido', 'userRole'
-            , 'dictamencalentencPendiente','infomedicasaludPendiente','anteriordictamenPendiente','dictamencalentencSubido','infomedicasaludSubido','anteriordictamenSubido'
-            , 'poderciapoderadoPendiente', 'poderciapoderadoSubido'));
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
         }
-    public function guardardocrequisitossegsolicitud(Request $request, Cliente $cliente)
-        {
-            $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-            ->where('servicio', 'SEGUNDA SOLICITUD')->firstOrFail();
-    
-            $request->validate([
-                'poder' => 'nullable|mimes:pdf',
-                'numeropoder' => 'nullable|max:45',
-                'avcci' => 'nullable|mimes:pdf',
-                'cnacasegurado' => 'nullable|mimes:pdf',
-                'ciasegurado' => 'nullable|mimes:pdf',
-                'cmatrimonio' => 'nullable|mimes:pdf',
-                'cnacconyuge' => 'nullable|mimes:pdf',
-                'ciconyuge' => 'nullable|mimes:pdf',
-                'cnacjihos' => 'nullable|mimes:pdf',
-                'cihijos' => 'nullable|mimes:pdf',
-                'denfaccidente' => 'nullable|mimes:pdf',
-                'crodomicilio' => 'nullable|mimes:pdf',
-                'contrato' => 'nullable|mimes:pdf',
-                'ctrabajo' => 'nullable|mimes:pdf',
-                'boletapago' => 'nullable|mimes:pdf',
-                'egestora' => 'nullable|mimes:pdf',
-                'actdatos' => 'nullable|mimes:pdf',
-                'resolinvhijos' => 'nullable|mimes:pdf',
-                'cunionlibre' => 'nullable|mimes:pdf',
-                'cnacimientounionlibre' => 'nullable|mimes:pdf',
-                'ciunionlibre' => 'nullable|mimes:pdf',
-                'cdivorcio' => 'nullable|mimes:pdf',
-                'cdefuncion' => 'nullable|mimes:pdf',
-                'dictamencalentenc' => 'nullable|mimes:pdf',
-                'infomedicasalud' => 'nullable|mimes:pdf',
-                'anteriordictamen' => 'nullable|mimes:pdf',
-                'poderciapoderado' => 'nullable|mimes:pdf',
-                'recordservicios' => 'nullable|mimes:pdf',
-            ]);
 
-            $camposArchivos = [
-                'poder', 'avcci', 'cnacasegurado', 'ciasegurado', 'cmatrimonio', 
-                'cnacconyuge', 'ciconyuge', 'cnacjihos', 'cihijos', 'denfaccidente', 
-                'crodomicilio', 'contrato', 'ctrabajo', 'boletapago', 'egestora', 'actdatos', 'resolinvhijos'
-                , 'cunionlibre', 'cnacimientounionlibre', 'ciunionlibre', 'cdivorcio', 'cdefuncion'
-                , 'dictamencalentenc', 'infomedicasalud', 'anteriordictamen', 'poderciapoderado', 'recordservicios'
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
             ];
 
-            foreach ($camposArchivos as $campo) {
-                $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
             }
 
-            if ($request->filled('numeropoder')) {
-                $requisito->update(['numeropoder' => $request->input('numeropoder')]);
-            }
-    
-            return redirect()->route('admin.asociados.subirdocrequisitossegsolicitud', $cliente)
-                             ->with('info', 'El documento se subió con éxito');
+            $requisitosList[] = $item;
         }
 
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitossegsolicitud', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitasegsolicitud(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'SEGUNDA SOLICITUD')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'SEGUNDA SOLICITUD')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'SEGUNDA SOLICITUD')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'SEGUNDA SOLICITUD')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+                ->orderBy('area')
+            ->get();
+
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        return view('admin.asociados.generarchecklistclienteitasegsolicitud', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero','bateriaProveedores','ultimosRegistros'
+        ));
+    }
+    public function guardardocrequisitossegsolicitud(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'SEGUNDA SOLICITUD')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitossegsolicitud', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
 //
-//REQUISITOS CLIENTE ITA TERCERA SOLICITUD 
+
+//REQUISITOS CLIENTE ITA TERCERA SOLICITUD
+    public function subirdocrequisitostercerasolicitud(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'TERCERA SOLICITUD')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'TERCERA SOLICITUD')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitostercerasolicitud', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
     public function generarchecklistclienteitatercerasolicitud(Cliente $cliente) 
     {
         $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
@@ -5084,8 +6113,9 @@ class AsociadoController extends Controller
         $estadoLaboral = strtolower($cliente->estadolaboral);
         $numHijosMenores = $cliente->numhijosmenores;
         $estadoCivil = strtolower($cliente->estadocivil);
-
-        $rolusuario = auth()->user()->getRoleNames()->first(); 
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
 
         $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
             ->where('tramite', 'TERCERA SOLICITUD')
@@ -5099,260 +6129,27 @@ class AsociadoController extends Controller
             ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
             ->where('tramite', 'TERCERA SOLICITUD')
             ->first();
-            $userSucursal = Auth::user()->sucursal;
+        $userSucursal = Auth::user()->sucursal;
 
-            $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
-                ->where('estado', 'ACTIVO')
-                ->when($userSucursal === 'SANTA CRUZ', function ($query) {
-                    return $query->where('sucursal', 'SANTA CRUZ');
-                })
-                ->distinct()
-                ->pluck('proveedor');
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
 
-        return view('admin.asociados.generarchecklistclienteitatercerasolicitud', compact(
-            'cliente', 
-            'tieneRequisitos', 
-            'estadoLaboral',
-            'numHijosMenores',  
-            'estadoCivil', 
-            'registroExistente','rolusuario','registroaprobadoExistente','proveedores','registroaprobadoinformefinalExistente'
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+                ->orderBy('area')
+            ->get();
+
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        return view('admin.asociados.generarchecklistclienteitatercerasolicitud', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero','bateriaProveedores','ultimosRegistros'
         ));
-    }
-    public function descargarchecklistclienteitatercerasolicitud(Request $request, Cliente $cliente)
-    {
-        $usuarioAutenticado = Auth::user();
-        $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
-        $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
-
-        $requisito = new RequisitoSubCliente();
-        $requisito->clienteitaid = $cliente->id;
-        $requisito->clienteitanombre = $cliente->nombrecompleto;
-        $requisito->usuarioid = $usuarioAutenticado->id;
-        $requisito->usuarioregistro = $usuarioAutenticado->name;
-        $requisito->servicio = 'TERCERA SOLICITUD';
-
-        $nombreDocumentos = [
-            'poder' => 'PODER',
-            'avcci' => 'AVC / CARNET ASEGURADO',
-            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
-            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
-            'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
-            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
-            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
-            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
-            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
-            'crodomicilio' => 'CROQUIS DOMICILIO',
-            'contrato' => 'CONTRATO',
-            'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
-            'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
-            'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
-            'cdivorcio' => 'CERTIFICADO DIVORCIO',
-            'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
-            'recordservicios' => 'RECORD SERVICIOS',
-            'dictamencalentenc' => 'DICTAMEN CALIFICACION ENTIDAD ENCARGADA',
-            
-        ];
-
-        $nombreDocumentos2 = [
-            'ctrabajo' => 'CERTIFICADO TRABAJO',
-            'boletapago' => 'BOLETA PAGO',
-            'egestora' => 'EXTRACTO GESTORA',
-            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
-            'actdatos' => 'ACTUALIZACIÓN DATOS',
-            'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
-            'infomedicasalud' => 'INFORMACION MEDICA',
-            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCION',
-            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
-        ];
-
-        foreach ($documentosSeleccionados as $documento) {
-            $nombreCompleto = isset($nombreDocumentos[$documento]) ? $nombreDocumentos[$documento] : $documento;
-        $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
-            switch ($documento) {
-                case 'poder':
-                    $requisito->poder = $valorDocumento;
-                    break;
-                case 'avcci':
-                    $requisito->avcci = $valorDocumento;
-                    break;
-                case 'cnacasegurado':
-                    $requisito->cnacasegurado = $valorDocumento;
-                    break;
-                case 'ciasegurado':
-                    $requisito->ciasegurado = $valorDocumento;
-                    break;
-                case 'cmatrimonio':
-                    $requisito->cmatrimonio = $valorDocumento;
-                    break;
-                case 'cnacconyuge':
-                    $requisito->cnacconyuge = $valorDocumento;
-                    break;
-                case 'ciconyuge':
-                    $requisito->ciconyuge = $valorDocumento;
-                    break;
-                case 'cnacjihos':
-                    $requisito->cnacjihos = $valorDocumento;
-                    break;
-                case 'cihijos':
-                    $requisito->cihijos = $valorDocumento;
-                    break;
-                case 'crodomicilio':
-                    $requisito->crodomicilio = $valorDocumento;
-                    break;
-                case 'contrato':
-                    $requisito->contrato = $valorDocumento;
-                    break;
-                case 'cunionlibre':
-                    $requisito->cunionlibre = $valorDocumento;
-                    break;
-                case 'cnacimientounionlibre':
-                    $requisito->cnacimientounionlibre = $valorDocumento;
-                    break;
-                case 'ciunionlibre':
-                    $requisito->ciunionlibre = $valorDocumento;
-                    break;
-                case 'cdivorcio':
-                    $requisito->cdivorcio = $valorDocumento;
-                    break;
-                case 'cdefuncion':
-                    $requisito->cdefuncion = $valorDocumento;
-                    break;
-                case 'recordservicios':
-                    $requisito->recordservicios = $valorDocumento;
-                    break;
-                case 'dictamencalentenc':
-                    $requisito->dictamencalentenc = $valorDocumento;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        foreach ($documentosSeleccionados2 as $documento) {
-            $nombreCompleto = isset($nombreDocumentos2[$documento]) ? $nombreDocumentos2[$documento] : $documento;
-        $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
-            switch ($documento) {
-                case 'ctrabajo':
-                    $requisito->ctrabajo = $valorDocumento;
-                    break;
-                case 'boletapago':
-                    $requisito->boletapago = $valorDocumento;
-                    break;
-                case 'egestora':
-                    $requisito->egestora = $valorDocumento;
-                    break;
-                case 'denfaccidente':
-                    $requisito->denfaccidente = $valorDocumento;
-                    break;
-                case 'actdatos':
-                    $requisito->actdatos = $valorDocumento;
-                    break;
-                case 'resolinvhijos':
-                    $requisito->resolinvhijos = $valorDocumento;
-                    break;
-                case 'infomedicasalud':
-                    $requisito->infomedicasalud = $valorDocumento;
-                    break;
-                case 'anteriordictamen':
-                    $requisito->anteriordictamen = $valorDocumento;
-                    break;
-                case 'poderciapoderado':
-                    $requisito->poderciapoderado = $valorDocumento;
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        $requisito->save();
-
-        $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteitatercerasolicitud', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
-        $pdfName = 'Requisitos_TerceraSolicitud_' . $cliente->nombrecompleto . '.pdf';
-        return $pdf->download($pdfName);
-    }
-    public function subirdocrequisitostercerasolicitud(Cliente $cliente)
-    {
-        $clienteitaid = $cliente->id; 
-        $userRole = auth()->user()->getRoleNames()->first(); 
-        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
-        ->where('servicio', 'TERCERA SOLICITUD')->first();
-
-        $poderPendiente = $requisitosCliente ? $requisitosCliente->poder === 'PENDIENTE' : false;
-        $avcciPendiente = $requisitosCliente ? $requisitosCliente->avcci === 'PENDIENTE' : false;
-        $cnacaseguradoPendiente = $requisitosCliente ? $requisitosCliente->cnacasegurado === 'PENDIENTE' : false;
-        $ciaseguradoPendiente = $requisitosCliente ? $requisitosCliente->ciasegurado === 'PENDIENTE' : false;
-        $cmatrimonioPendiente = $requisitosCliente ? $requisitosCliente->cmatrimonio === 'PENDIENTE' : false;
-        $cnacconyugePendiente = $requisitosCliente ? $requisitosCliente->cnacconyuge === 'PENDIENTE' : false;
-        $ciconyugePendiente = $requisitosCliente ? $requisitosCliente->ciconyuge === 'PENDIENTE' : false;
-        $cnacjihosPendiente = $requisitosCliente ? $requisitosCliente->cnacjihos === 'PENDIENTE' : false;
-        $cihijosPendiente = $requisitosCliente ? $requisitosCliente->cihijos === 'PENDIENTE' : false;
-        $denfaccidentePendiente = $requisitosCliente ? $requisitosCliente->denfaccidente === 'PENDIENTE' : false;
-        $crodomicilioPendiente = $requisitosCliente ? $requisitosCliente->crodomicilio === 'PENDIENTE' : false;
-        $contratoPendiente = $requisitosCliente ? $requisitosCliente->contrato === 'PENDIENTE' : false;
-        $recordserviciosPendiente = $requisitosCliente ? $requisitosCliente->recordservicios === 'PENDIENTE' : false;
-        
-        $cunionlibrePendiente = $requisitosCliente ? $requisitosCliente->cunionlibre === 'PENDIENTE' : false;
-        $cnacimientounionlibrePendiente = $requisitosCliente ? $requisitosCliente->cnacimientounionlibre === 'PENDIENTE' : false;
-        $ciunionlibrePendiente = $requisitosCliente ? $requisitosCliente->ciunionlibre === 'PENDIENTE' : false;
-        $cdivorcioPendiente = $requisitosCliente ? $requisitosCliente->cdivorcio === 'PENDIENTE' : false;
-        $cdefuncionPendiente = $requisitosCliente ? $requisitosCliente->cdefuncion === 'PENDIENTE' : false;
-
-        $ctrabajoPendiente = $requisitosCliente ? $requisitosCliente->ctrabajo === 'PENDIENTE' : false;
-        $boletapagoPendiente = $requisitosCliente ? $requisitosCliente->boletapago === 'PENDIENTE' : false;
-        $egestoraPendiente = $requisitosCliente ? $requisitosCliente->egestora === 'PENDIENTE' : false;
-        $actdatosPendiente = $requisitosCliente ? $requisitosCliente->actdatos === 'PENDIENTE' : false;
-        $resolinvhijosPendiente = $requisitosCliente ? $requisitosCliente->resolinvhijos === 'PENDIENTE' : false;
-
-        $dictamencalentencPendiente = $requisitosCliente ? $requisitosCliente->dictamencalentenc === 'PENDIENTE' : false;
-        $infomedicasaludPendiente = $requisitosCliente ? $requisitosCliente->infomedicasalud === 'PENDIENTE' : false;
-        $anteriordictamenPendiente = $requisitosCliente ? $requisitosCliente->anteriordictamen === 'PENDIENTE' : false;
-        $poderciapoderadoPendiente = $requisitosCliente ? $requisitosCliente->poderciapoderado === 'PENDIENTE' : false;
-        
-        
-        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
-        ->where('servicio', 'TERCERA SOLICITUD')->firstOrFail();
-        $poderSubido = $requisitosCliente && strpos($requisitosCliente->poder, '.pdf') !== false ? true:false;
-        $avcciSubido = $requisitosCliente && strpos($requisitosCliente->avcci, '.pdf') !== false ? true:false;
-        $cnacaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->cnacasegurado, '.pdf') !== false ? true:false;
-        $ciaseguradoSubido = $requisitosCliente && strpos($requisitosCliente->ciasegurado, '.pdf') !== false ? true:false;
-        $cmatrimonioSubido = $requisitosCliente && strpos($requisitosCliente->cmatrimonio, '.pdf') !== false ? true:false;
-        $cnacconyugeSubido = $requisitosCliente && strpos($requisitosCliente->cnacconyuge, '.pdf') !== false ? true:false;
-        $ciconyugeSubido = $requisitosCliente && strpos($requisitosCliente->ciconyuge, '.pdf') !== false ? true:false;
-        $cnacjihosSubido = $requisitosCliente && strpos($requisitosCliente->cnacjihos, '.pdf') !== false ? true:false;
-        $cihijosSubido = $requisitosCliente && strpos($requisitosCliente->cihijos, '.pdf') !== false ? true:false;
-        $denfaccidenteSubido = $requisitosCliente && strpos($requisitosCliente->denfaccidente, '.pdf') !== false ? true:false;
-        $crodomicilioSubido = $requisitosCliente && strpos($requisitosCliente->crodomicilio, '.pdf') !== false ? true:false;
-        $contratoSubido = $requisitosCliente && strpos($requisitosCliente->contrato, '.pdf') !== false ? true:false;
-        $recordserviciosSubido = $requisitosCliente && strpos($requisitosCliente->recordservicios, '.pdf') !== false ? true:false;
-        
-        $cunionlibreSubido = $requisitosCliente && strpos($requisitosCliente->cunionlibre, '.pdf') !== false ? true:false;
-        $cnacimientounionlibreSubido = $requisitosCliente && strpos($requisitosCliente->cnacimientounionlibre, '.pdf') !== false ? true:false;
-        $ciunionlibreSubido = $requisitosCliente && strpos($requisitosCliente->ciunionlibre, '.pdf') !== false ? true:false;
-        $cdivorcioSubido = $requisitosCliente && strpos($requisitosCliente->cdivorcio, '.pdf') !== false ? true:false;
-        $cdefuncionSubido = $requisitosCliente && strpos($requisitosCliente->cdefuncion, '.pdf') !== false ? true:false;
-
-        $ctrabajoSubido = $requisitosCliente && strpos($requisitosCliente->ctrabajo, '.pdf') !== false ? true:false;
-        $boletapagoSubido = $requisitosCliente && strpos($requisitosCliente->boletapago, '.pdf') !== false ? true:false;
-        $egestoraSubido = $requisitosCliente && strpos($requisitosCliente->egestora, '.pdf') !== false ? true:false;
-        $actdatosSubido = $requisitosCliente && strpos($requisitosCliente->actdatos, '.pdf') !== false ? true:false;
-        $resolinvhijosSubido = $requisitosCliente && strpos($requisitosCliente->resolinvhijos, '.pdf') !== false ? true:false;
-
-        $dictamencalentencSubido = $requisitosCliente && strpos($requisitosCliente->dictamencalentenc, '.pdf') !== false ? true:false;
-        $infomedicasaludSubido = $requisitosCliente && strpos($requisitosCliente->infomedicasalud, '.pdf') !== false ? true:false;
-        $anteriordictamenSubido = $requisitosCliente && strpos($requisitosCliente->anteriordictamen, '.pdf') !== false ? true:false;
-        $poderciapoderadoSubido = $requisitosCliente && strpos($requisitosCliente->poderciapoderado, '.pdf') !== false ? true:false;
-        
-        return view('admin.asociados.subirdocrequisitostercerasolicitud', compact('cliente', 'poderPendiente', 'avcciPendiente', 
-        'cnacaseguradoPendiente','ciaseguradoPendiente','cmatrimonioPendiente','cnacconyugePendiente','ciconyugePendiente',
-        'cnacjihosPendiente','cihijosPendiente','denfaccidentePendiente','recordserviciosPendiente','crodomicilioPendiente','contratoPendiente', 'requisito'
-        , 'poderSubido', 'avcciSubido', 'cnacaseguradoSubido', 'ciaseguradoSubido', 'cmatrimonioSubido', 'cnacconyugeSubido'
-        , 'ciconyugeSubido', 'cnacjihosSubido', 'cihijosSubido', 'denfaccidenteSubido', 'crodomicilioSubido', 'contratoSubido'
-        , 'ctrabajoPendiente', 'boletapagoPendiente', 'egestoraPendiente', 'actdatosPendiente', 'resolinvhijosPendiente'
-        , 'ctrabajoSubido', 'boletapagoSubido', 'egestoraSubido', 'actdatosSubido', 'resolinvhijosSubido'
-        , 'cunionlibrePendiente', 'cnacimientounionlibrePendiente', 'ciunionlibrePendiente', 'cdivorcioPendiente', 'cdefuncionPendiente'
-        , 'cunionlibreSubido', 'recordserviciosSubido', 'cnacimientounionlibreSubido', 'ciunionlibreSubido', 'cdivorcioSubido', 'cdefuncionSubido', 'userRole'
-        , 'dictamencalentencPendiente','infomedicasaludPendiente','anteriordictamenPendiente','dictamencalentencSubido','infomedicasaludSubido','anteriordictamenSubido'
-        , 'poderciapoderadoPendiente', 'poderciapoderadoSubido'));
     }
     public function guardardocrequisitostercerasolicitud(Request $request, Cliente $cliente)
     {
@@ -5383,18 +6180,38 @@ class AsociadoController extends Controller
             'ciunionlibre' => 'nullable|mimes:pdf',
             'cdivorcio' => 'nullable|mimes:pdf',
             'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
             'dictamencalentenc' => 'nullable|mimes:pdf',
-            'infomedicasalud' => 'nullable|mimes:pdf',
             'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
             'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
         ]);
 
         $camposArchivos = [
-            'poder', 'avcci', 'cnacasegurado', 'ciasegurado', 'cmatrimonio', 
-            'cnacconyuge', 'ciconyuge', 'cnacjihos', 'cihijos', 'denfaccidente', 
-            'crodomicilio', 'contrato', 'ctrabajo', 'boletapago', 'egestora', 'actdatos', 'resolinvhijos'
-            , 'cunionlibre', 'cnacimientounionlibre', 'ciunionlibre', 'cdivorcio', 'cdefuncion'
-            , 'dictamencalentenc', 'infomedicasalud', 'anteriordictamen', 'poderciapoderado'
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
         ];
 
         foreach ($camposArchivos as $campo) {
@@ -5406,9 +6223,3257 @@ class AsociadoController extends Controller
         }
 
         return redirect()->route('admin.asociados.subirdocrequisitostercerasolicitud', $cliente)
-                        ->with('info', 'El documento se subió con éxito');
+                            ->with('info', 'El documento se subió con éxito');
     }
 //
+
+//REQUISITOS CLIENTE ITA JUBILACIÓN
+    public function subirdocrequisitosjubilacion(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'JUBILACIÓN')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'JUBILACIÓN')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosjubilacion', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitajubilacion(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'JUBILACIÓN')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'JUBILACIÓN')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'JUBILACIÓN')
+            ->first();
+        $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'JUBILACIÓN')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+
+        return view('admin.asociados.generarchecklistclienteitajubilacion', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero'
+        ));
+    }
+    public function guardardocrequisitosjubilacion(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'JUBILACIÓN')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosjubilacion', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA PENSIÓN POR MUERTE
+    public function subirdocrequisitospensionmuerte(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'PENSIÓN POR MUERTE')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'PENSIÓN POR MUERTE')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitospensionmuerte', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitapensionmuerte(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'PENSIÓN POR MUERTE')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'PENSIÓN POR MUERTE')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'PENSIÓN POR MUERTE')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'PENSIÓN POR MUERTE')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+
+        return view('admin.asociados.generarchecklistclienteitapensionmuerte', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero'
+        ));
+    }
+    public function guardardocrequisitospensionmuerte(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'PENSIÓN POR MUERTE')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitospensionmuerte', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA RETIRO DE APORTES TOTAL
+    public function subirdocrequisitosretiroaportestotal(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'RETIRO DE APORTES TOTAL')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'RETIRO DE APORTES TOTAL')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosretiroaportestotal', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitaretiroaportestotal(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'RETIRO DE APORTES TOTAL')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'RETIRO DE APORTES TOTAL')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'RETIRO DE APORTES TOTAL')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'RETIRO DE APORTES TOTAL')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+
+        return view('admin.asociados.generarchecklistclienteitaretiroaportestotal', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero'
+        ));
+    }
+    public function guardardocrequisitosretiroaportestotal(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'RETIRO DE APORTES TOTAL')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosretiroaportestotal', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA RETIRO DE APORTES PARCIAL
+    public function subirdocrequisitosretiroaportesparcial(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'RETIRO DE APORTES PARCIAL')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'RETIRO DE APORTES PARCIAL')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosretiroaportesparcial', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitaretiroaportesparcial(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'RETIRO DE APORTES PARCIAL')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'RETIRO DE APORTES PARCIAL')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'RETIRO DE APORTES PARCIAL')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'RETIRO DE APORTES PARCIAL')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+
+        return view('admin.asociados.generarchecklistclienteitaretiroaportesparcial', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero'
+        ));
+    }
+    public function guardardocrequisitosretiroaportesparcial(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'RETIRO DE APORTES PARCIAL')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosretiroaportesparcial', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA MASA HEREDITARIA
+    public function subirdocrequisitosmasahereditaria(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'MASA HEREDITARIA')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'MASA HEREDITARIA')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosmasahereditaria', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitamasahereditaria(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'MASA HEREDITARIA')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'MASA HEREDITARIA')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'MASA HEREDITARIA')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'MASA HEREDITARIA')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+
+        return view('admin.asociados.generarchecklistclienteitamasahereditaria', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero'
+        ));
+    }
+    public function guardardocrequisitosmasahereditaria(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'MASA HEREDITARIA')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosmasahereditaria', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA COMPENSACIÓN DE COTIZACIONES (SENASIR)
+    public function subirdocrequisitoscompensacioncotsenasir(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitoscompensacioncotsenasir', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitacompensacioncotsenasir(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+
+        return view('admin.asociados.generarchecklistclienteitacompensacioncotsenasir', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero'
+        ));
+    }
+    public function guardardocrequisitoscompensacioncotsenasir(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitoscompensacioncotsenasir', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA RECALIFICACIÓN
+    public function subirdocrequisitosrecalificacion(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'RECALIFICACIÓN')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'RECALIFICACIÓN')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+            'solrecaldictamen' => 'SOLICITUD RECALIF. DICTAMEN',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+            'solrecaldictamen' => ['label' => 'SOLICITUD RECALIF. DICTAMEN'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosrecalificacion', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitarecalificacion(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'RECALIFICACIÓN')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'RECALIFICACIÓN')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'RECALIFICACIÓN')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'RECALIFICACIÓN')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+        
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+                ->orderBy('area')
+            ->get();
+
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        return view('admin.asociados.generarchecklistclienteitarecalificacion', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero','bateriaProveedores','ultimosRegistros'
+        ));
+    }
+    public function guardardocrequisitosrecalificacion(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'RECALIFICACIÓN')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+            'solrecaldictamen' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud','solrecaldictamen'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosrecalificacion', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA APELACIÓN DE RECALIFICACIÓN
+    public function subirdocrequisitosapelrecalificacion(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'APELACIÓN DE RECALIFICACIÓN')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'APELACIÓN DE RECALIFICACIÓN')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+            'solrecaldictamen' => 'SOLICITUD RECALIF. DICTAMEN',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+            'solrecaldictamen' => ['label' => 'SOLICITUD RECALIF. DICTAMEN'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosapelrecalificacion', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitaapelrecalificacion(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'APELACIÓN DE RECALIFICACIÓN')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'APELACIÓN DE RECALIFICACIÓN')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'APELACIÓN DE RECALIFICACIÓN')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'APELACIÓN DE RECALIFICACIÓN')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+        
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+                ->orderBy('area')
+            ->get();
+
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        return view('admin.asociados.generarchecklistclienteitaapelrecalificacion', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero','bateriaProveedores','ultimosRegistros'
+        ));
+    }
+    public function guardardocrequisitosapelrecalificacion(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'APELACIÓN DE RECALIFICACIÓN')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+            'solrecaldictamen' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud','solrecaldictamen'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosapelrecalificacion', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA APELACIÓN SEGUNDA SOLICITUD
+    public function subirdocrequisitosapelsegsolicitud(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'APELACIÓN SEGUNDA SOLICITUD')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'APELACIÓN SEGUNDA SOLICITUD')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosapelsegsolicitud', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitaapelsegsolicitud(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'APELACIÓN SEGUNDA SOLICITUD')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'APELACIÓN SEGUNDA SOLICITUD')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'APELACIÓN SEGUNDA SOLICITUD')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'APELACIÓN SEGUNDA SOLICITUD')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+        
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+                ->orderBy('area')
+            ->get();
+
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        return view('admin.asociados.generarchecklistclienteitaapelsegsolicitud', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero','bateriaProveedores','ultimosRegistros'
+        ));
+    }
+    public function guardardocrequisitosapelsegsolicitud(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'APELACIÓN SEGUNDA SOLICITUD')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosapelsegsolicitud', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA APELACIÓN TERCERA SOLICITUD
+    public function subirdocrequisitosapeltercersolicitud(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'APELACIÓN TERCERA SOLICITUD')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'APELACIÓN TERCERA SOLICITUD')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosapeltercersolicitud', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitaapeltercersolicitud(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'APELACIÓN TERCERA SOLICITUD')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'APELACIÓN TERCERA SOLICITUD')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'APELACIÓN TERCERA SOLICITUD')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'APELACIÓN TERCERA SOLICITUD')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+        
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+                ->orderBy('area')
+            ->get();
+
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        return view('admin.asociados.generarchecklistclienteitaapeltercersolicitud', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero','bateriaProveedores','ultimosRegistros'
+        ));
+    }
+    public function guardardocrequisitosapeltercersolicitud(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'APELACIÓN TERCERA SOLICITUD')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosapeltercersolicitud', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA RECALIFICACIÓN SEGUNDA SOLICITUD
+    public function subirdocrequisitosrecalsegsolicitud(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+            'solrecaldictamen' => 'SOLICITUD RECALIF. DICTAMEN',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+            'solrecaldictamen' => ['label' => 'SOLICITUD RECALIF. DICTAMEN'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosrecalsegsolicitud', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitarecalsegsolicitud(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'RECALIFICACIÓN SEGUNDA SOLICITUD')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+        
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+                ->orderBy('area')
+            ->get();
+
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        return view('admin.asociados.generarchecklistclienteitarecalsegsolicitud', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero','bateriaProveedores','ultimosRegistros'
+        ));
+    }
+    public function guardardocrequisitosrecalsegsolicitud(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'RECALIFICACIÓN SEGUNDA SOLICITUD')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+            'solrecaldictamen' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud','solrecaldictamen'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosrecalsegsolicitud', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+//REQUISITOS CLIENTE ITA APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD
+    public function subirdocrequisitosapelrecalsegsolicitud(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratojubilacion' => 'CONTRATO DE JUBILACIÓN',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+            'solrecaldictamen' => 'SOLICITUD RECALIF. DICTAMEN',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratojubilacion' => ['label' => 'CONTRATO DE JUBILACIÓN'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+            'solrecaldictamen' => ['label' => 'SOLICITUD RECALIF. DICTAMEN'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitosapelrecalsegsolicitud', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitaapelrecalsegsolicitud(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->first();
+                $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+        
+        $bateriaProveedores = Bateriaproveedor::select('tipoarea', 'area', 'accion')
+                ->orderBy('area')
+            ->get();
+
+        $ultimosRegistros = RecomendacionBaterias::where('clienteid', $cliente->id)
+            ->get();
+
+        return view('admin.asociados.generarchecklistclienteitaapelrecalsegsolicitud', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero','bateriaProveedores','ultimosRegistros'
+        ));
+    }
+    public function guardardocrequisitosapelrecalsegsolicitud(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratojubilacion' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+            'solrecaldictamen' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratojubilacion','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud','solrecaldictamen'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitosapelrecalsegsolicitud', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
+
 //DERIVAR A MEDICINA LABORAL
     public function generarPDFconsentimiento(Cliente $cliente, Request $request)
         {
@@ -5770,6 +9835,460 @@ class AsociadoController extends Controller
     }
 
 
+//NO SE OCUPA
+    public function descargarchecklistclienteitaapelacion(Request $request, Cliente $cliente)
+    {
+        $usuarioAutenticado = Auth::user();
+        $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
+        $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
+
+        $requisito = new RequisitoSubCliente();
+        $requisito->clienteitaid = $cliente->id;
+        $requisito->clienteitanombre = $cliente->nombrecompleto;
+        $requisito->usuarioid = $usuarioAutenticado->id;
+        $requisito->usuarioregistro = $usuarioAutenticado->name;
+        $requisito->servicio = 'APELACION';
+
+        $nombreDocumentos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC / CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'crodomicilio' => 'CROQUIS DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACION ENTIDAD ENCARGADA',
+            
+        ];
+
+        $nombreDocumentos2 = [
+            'ctrabajo' => 'CERTIFICADO TRABAJO',
+            'boletapago' => 'BOLETA PAGO',
+            'egestora' => 'EXTRACTO GESTORA',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'actdatos' => 'ACTUALIZACIÓN DATOS',
+            'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
+            'infomedicasalud' => 'INFORMACION MEDICA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCION',
+        ];
+
+        foreach ($documentosSeleccionados as $documento) {
+            $nombreCompleto = isset($nombreDocumentos[$documento]) ? $nombreDocumentos[$documento] : $documento;
+        $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
+            switch ($documento) {
+                case 'poder':
+                    $requisito->poder = $valorDocumento;
+                    break;
+                case 'avcci':
+                    $requisito->avcci = $valorDocumento;
+                    break;
+                case 'cnacasegurado':
+                    $requisito->cnacasegurado = $valorDocumento;
+                    break;
+                case 'ciasegurado':
+                    $requisito->ciasegurado = $valorDocumento;
+                    break;
+                case 'cmatrimonio':
+                    $requisito->cmatrimonio = $valorDocumento;
+                    break;
+                case 'cnacconyuge':
+                    $requisito->cnacconyuge = $valorDocumento;
+                    break;
+                case 'ciconyuge':
+                    $requisito->ciconyuge = $valorDocumento;
+                    break;
+                case 'cnacjihos':
+                    $requisito->cnacjihos = $valorDocumento;
+                    break;
+                case 'cihijos':
+                    $requisito->cihijos = $valorDocumento;
+                    break;
+                case 'crodomicilio':
+                    $requisito->crodomicilio = $valorDocumento;
+                    break;
+                case 'contrato':
+                    $requisito->contrato = $valorDocumento;
+                    break;
+                case 'cunionlibre':
+                    $requisito->cunionlibre = $valorDocumento;
+                    break;
+                case 'cnacimientounionlibre':
+                    $requisito->cnacimientounionlibre = $valorDocumento;
+                    break;
+                case 'ciunionlibre':
+                    $requisito->ciunionlibre = $valorDocumento;
+                    break;
+                case 'cdivorcio':
+                    $requisito->cdivorcio = $valorDocumento;
+                    break;
+                case 'cdefuncion':
+                    $requisito->cdefuncion = $valorDocumento;
+                    break;
+                case 'recordservicios':
+                    $requisito->recordservicios = $valorDocumento;
+                    break;
+                case 'dictamencalentenc':
+                    $requisito->dictamencalentenc = $valorDocumento;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        foreach ($documentosSeleccionados2 as $documento) {
+            $nombreCompleto = isset($nombreDocumentos2[$documento]) ? $nombreDocumentos2[$documento] : $documento;
+        $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
+            switch ($documento) {
+                case 'ctrabajo':
+                    $requisito->ctrabajo = $valorDocumento;
+                    break;
+                case 'boletapago':
+                    $requisito->boletapago = $valorDocumento;
+                    break;
+                case 'egestora':
+                    $requisito->egestora = $valorDocumento;
+                    break;
+                case 'denfaccidente':
+                    $requisito->denfaccidente = $valorDocumento;
+                    break;
+                case 'actdatos':
+                    $requisito->actdatos = $valorDocumento;
+                    break;
+                case 'resolinvhijos':
+                    $requisito->resolinvhijos = $valorDocumento;
+                    break;
+                case 'infomedicasalud':
+                    $requisito->infomedicasalud = $valorDocumento;
+                    break;
+                case 'anteriordictamen':
+                    $requisito->anteriordictamen = $valorDocumento;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        $requisito->save();
+
+        $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteitaapelacion', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
+        $pdfName = 'Requisitos_Apelacion_' . $cliente->nombrecompleto . '.pdf';
+        return $pdf->download($pdfName);
+    }
+    public function descargarchecklistclienteitasegsolicitud(Request $request, Cliente $cliente)
+    {
+        $usuarioAutenticado = Auth::user();
+        $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
+        $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
+
+        $requisito = new RequisitoSubCliente();
+        $requisito->clienteitaid = $cliente->id;
+        $requisito->clienteitanombre = $cliente->nombrecompleto;
+        $requisito->usuarioid = $usuarioAutenticado->id;
+        $requisito->usuarioregistro = $usuarioAutenticado->name;
+        $requisito->servicio = 'SEGUNDA SOLICITUD';
+
+        $nombreDocumentos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC / CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'crodomicilio' => 'CROQUIS DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACION ENTIDAD ENCARGADA',
+            
+        ];
+
+        $nombreDocumentos2 = [
+            'ctrabajo' => 'CERTIFICADO TRABAJO',
+            'boletapago' => 'BOLETA PAGO',
+            'egestora' => 'EXTRACTO GESTORA',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'actdatos' => 'ACTUALIZACIÓN DATOS',
+            'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
+            'infomedicasalud' => 'INFORMACION MEDICA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCION',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+        ];
+
+        foreach ($documentosSeleccionados as $documento) {
+            $nombreCompleto = isset($nombreDocumentos[$documento]) ? $nombreDocumentos[$documento] : $documento;
+        $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
+            switch ($documento) {
+                case 'poder':
+                    $requisito->poder = $valorDocumento;
+                    break;
+                case 'avcci':
+                    $requisito->avcci = $valorDocumento;
+                    break;
+                case 'cnacasegurado':
+                    $requisito->cnacasegurado = $valorDocumento;
+                    break;
+                case 'ciasegurado':
+                    $requisito->ciasegurado = $valorDocumento;
+                    break;
+                case 'cmatrimonio':
+                    $requisito->cmatrimonio = $valorDocumento;
+                    break;
+                case 'cnacconyuge':
+                    $requisito->cnacconyuge = $valorDocumento;
+                    break;
+                case 'ciconyuge':
+                    $requisito->ciconyuge = $valorDocumento;
+                    break;
+                case 'cnacjihos':
+                    $requisito->cnacjihos = $valorDocumento;
+                    break;
+                case 'cihijos':
+                    $requisito->cihijos = $valorDocumento;
+                    break;
+                case 'crodomicilio':
+                    $requisito->crodomicilio = $valorDocumento;
+                    break;
+                case 'contrato':
+                    $requisito->contrato = $valorDocumento;
+                    break;
+                case 'cunionlibre':
+                    $requisito->cunionlibre = $valorDocumento;
+                    break;
+                case 'cnacimientounionlibre':
+                    $requisito->cnacimientounionlibre = $valorDocumento;
+                    break;
+                case 'ciunionlibre':
+                    $requisito->ciunionlibre = $valorDocumento;
+                    break;
+                case 'cdivorcio':
+                    $requisito->cdivorcio = $valorDocumento;
+                    break;
+                case 'cdefuncion':
+                    $requisito->cdefuncion = $valorDocumento;
+                    break;
+                case 'recordservicios':
+                    $requisito->recordservicios = $valorDocumento;
+                    break;
+                case 'dictamencalentenc':
+                    $requisito->dictamencalentenc = $valorDocumento;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        foreach ($documentosSeleccionados2 as $documento) {
+            $nombreCompleto = isset($nombreDocumentos2[$documento]) ? $nombreDocumentos2[$documento] : $documento;
+        $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
+            switch ($documento) {
+                case 'ctrabajo':
+                    $requisito->ctrabajo = $valorDocumento;
+                    break;
+                case 'boletapago':
+                    $requisito->boletapago = $valorDocumento;
+                    break;
+                case 'egestora':
+                    $requisito->egestora = $valorDocumento;
+                    break;
+                case 'denfaccidente':
+                    $requisito->denfaccidente = $valorDocumento;
+                    break;
+                case 'actdatos':
+                    $requisito->actdatos = $valorDocumento;
+                    break;
+                case 'resolinvhijos':
+                    $requisito->resolinvhijos = $valorDocumento;
+                    break;
+                case 'infomedicasalud':
+                    $requisito->infomedicasalud = $valorDocumento;
+                    break;
+                case 'anteriordictamen':
+                    $requisito->anteriordictamen = $valorDocumento;
+                    break;
+                case 'poderciapoderado':
+                    $requisito->poderciapoderado = $valorDocumento;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        $requisito->save();
+
+        $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteitasegsolicitud', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
+        $pdfName = 'Requisitos_SegundaSolicitud_' . $cliente->nombrecompleto . '.pdf';
+        return $pdf->download($pdfName);
+    }
+    public function descargarchecklistclienteitatercerasolicitud(Request $request, Cliente $cliente)
+    {
+        $usuarioAutenticado = Auth::user();
+        $documentosSeleccionados = json_decode($request->input('documentosSeleccionados'));
+        $documentosSeleccionados2 = json_decode($request->input('documentosSeleccionados2'));
+
+        $requisito = new RequisitoSubCliente();
+        $requisito->clienteitaid = $cliente->id;
+        $requisito->clienteitanombre = $cliente->nombrecompleto;
+        $requisito->usuarioid = $usuarioAutenticado->id;
+        $requisito->usuarioregistro = $usuarioAutenticado->name;
+        $requisito->servicio = 'TERCERA SOLICITUD';
+
+        $nombreDocumentos = [
+            'poder' => 'PODER',
+            'avcci' => 'AVC / CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'crodomicilio' => 'CROQUIS DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'cunionlibre' => 'CERTIFICADO UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO NACIMIENTO UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DIFUNCIÓN',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACION ENTIDAD ENCARGADA',
+            
+        ];
+
+        $nombreDocumentos2 = [
+            'ctrabajo' => 'CERTIFICADO TRABAJO',
+            'boletapago' => 'BOLETA PAGO',
+            'egestora' => 'EXTRACTO GESTORA',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'actdatos' => 'ACTUALIZACIÓN DATOS',
+            'resolinvhijos' => 'RESOL. INVAL. HIJOS < 25',
+            'infomedicasalud' => 'INFORMACION MEDICA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCION',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+        ];
+
+        foreach ($documentosSeleccionados as $documento) {
+            $nombreCompleto = isset($nombreDocumentos[$documento]) ? $nombreDocumentos[$documento] : $documento;
+        $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
+            switch ($documento) {
+                case 'poder':
+                    $requisito->poder = $valorDocumento;
+                    break;
+                case 'avcci':
+                    $requisito->avcci = $valorDocumento;
+                    break;
+                case 'cnacasegurado':
+                    $requisito->cnacasegurado = $valorDocumento;
+                    break;
+                case 'ciasegurado':
+                    $requisito->ciasegurado = $valorDocumento;
+                    break;
+                case 'cmatrimonio':
+                    $requisito->cmatrimonio = $valorDocumento;
+                    break;
+                case 'cnacconyuge':
+                    $requisito->cnacconyuge = $valorDocumento;
+                    break;
+                case 'ciconyuge':
+                    $requisito->ciconyuge = $valorDocumento;
+                    break;
+                case 'cnacjihos':
+                    $requisito->cnacjihos = $valorDocumento;
+                    break;
+                case 'cihijos':
+                    $requisito->cihijos = $valorDocumento;
+                    break;
+                case 'crodomicilio':
+                    $requisito->crodomicilio = $valorDocumento;
+                    break;
+                case 'contrato':
+                    $requisito->contrato = $valorDocumento;
+                    break;
+                case 'cunionlibre':
+                    $requisito->cunionlibre = $valorDocumento;
+                    break;
+                case 'cnacimientounionlibre':
+                    $requisito->cnacimientounionlibre = $valorDocumento;
+                    break;
+                case 'ciunionlibre':
+                    $requisito->ciunionlibre = $valorDocumento;
+                    break;
+                case 'cdivorcio':
+                    $requisito->cdivorcio = $valorDocumento;
+                    break;
+                case 'cdefuncion':
+                    $requisito->cdefuncion = $valorDocumento;
+                    break;
+                case 'recordservicios':
+                    $requisito->recordservicios = $valorDocumento;
+                    break;
+                case 'dictamencalentenc':
+                    $requisito->dictamencalentenc = $valorDocumento;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        foreach ($documentosSeleccionados2 as $documento) {
+            $nombreCompleto = isset($nombreDocumentos2[$documento]) ? $nombreDocumentos2[$documento] : $documento;
+        $valorDocumento = $request->has($documento) && $request->input($documento) === 'NO' ? 'NO' : 'PENDIENTE';
+            switch ($documento) {
+                case 'ctrabajo':
+                    $requisito->ctrabajo = $valorDocumento;
+                    break;
+                case 'boletapago':
+                    $requisito->boletapago = $valorDocumento;
+                    break;
+                case 'egestora':
+                    $requisito->egestora = $valorDocumento;
+                    break;
+                case 'denfaccidente':
+                    $requisito->denfaccidente = $valorDocumento;
+                    break;
+                case 'actdatos':
+                    $requisito->actdatos = $valorDocumento;
+                    break;
+                case 'resolinvhijos':
+                    $requisito->resolinvhijos = $valorDocumento;
+                    break;
+                case 'infomedicasalud':
+                    $requisito->infomedicasalud = $valorDocumento;
+                    break;
+                case 'anteriordictamen':
+                    $requisito->anteriordictamen = $valorDocumento;
+                    break;
+                case 'poderciapoderado':
+                    $requisito->poderciapoderado = $valorDocumento;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        $requisito->save();
+
+        $pdf = PDF::loadView('admin.asociados.descargarchecklistclienteitatercerasolicitud', compact('cliente', 'documentosSeleccionados', 'nombreDocumentos', 'documentosSeleccionados2', 'nombreDocumentos2'));
+        $pdfName = 'Requisitos_TerceraSolicitud_' . $cliente->nombrecompleto . '.pdf';
+        return $pdf->download($pdfName);
+    }
+
 
 //CLIENTES COMUNES
 //CREAR Y EDITAR CLIENTE COMUN
@@ -5847,7 +10366,7 @@ class AsociadoController extends Controller
     {
         $nombrecompleto = $request->get('buscarpor');
 
-        $clientecomunes = ClienteComun::where('nombrecompleto','Like',"%$nombrecompleto%")->simplePaginate(20);
+        $clientecomunes = ClienteComun::where('nombrecompleto','Like',"%$nombrecompleto%")/* ->simplePaginate(20); */->get();
 
         return view('admin.asociados.listadoclientecomun', compact('asociado', 'clientecomunes'));
     }
@@ -5920,8 +10439,10 @@ class AsociadoController extends Controller
         foreach ($clientecomunData as $campo => $nuevoValor) {
             $valorAnterior = $clientecomun->$campo;
             if ($valorAnterior != $nuevoValor) {
-                Modificacionesdatos::create([
+                ModificacionesDatos::create([
                     'tabla' => 'clientescomunes',
+                    'clienteid' => $clientecomun->id,
+                    'clientenombre' => $clientecomun->nombrecompleto,
                     'columna' => $campo,
                     'datoantiguo' => $valorAnterior,
                     'datonuevo' => $nuevoValor,
@@ -6667,6 +11188,7 @@ class AsociadoController extends Controller
         
         $reprogramaciones = ProgramacionSubCliente::where('clientecomunid', $clientecomun->id)
         ->whereNotNull('motivoreprogramacion')
+        ->orderBy('deleted_at')
         ->onlyTrashed()
         ->get();
         $total = 0;
@@ -6745,8 +11267,8 @@ class AsociadoController extends Controller
         
         if ($fechaSeleccionada) {
             $accionesDisponibles = ProgramacionSubCliente::where('clientecomunid', $clientecomun->id)
-                                                    ->where('fechabateria', $fechaSeleccionada)
-                                                    ->simplePaginate(1000);
+                                    ->where('fechabateria', $fechaSeleccionada)
+                                    ->simplePaginate(1000);
         }
         $IDCliente = $clientecomun->id;
         $accionesCliente = BateriaSubCliente::where('clientecomunid', $IDCliente)->pluck('accionnombre')->toArray();
@@ -6756,19 +11278,11 @@ class AsociadoController extends Controller
         $accionesPorArea = Programacionsubcliente::where('clientecomunid', $IDCliente)
             ->get(['accionnombre', 'proveedornombre','fechabateria','fechaasignada', 'horadesde', 'horahasta']);
 
-        /* $estadoRegistrados = Estadoprogramacionsubcliente::where('clientecomunid', $IDCliente)
-                ->get(['accionnombre', 'fechabateria']);
-
-        $estadoMapeado = [];
-            foreach ($estadoRegistrados as $estado) {
-                $estadoMapeado[$estado->accionnombre][$estado->fechabateria] = true;
-            } */
-            $estadoRegistrados = Estadoprogramacionsubcliente::where('clientecomunid', $IDCliente)
-            ->get(['accionnombre', 'fechabateria', 'nrosesion']); // Agrega 'nrosesion' en la consulta
+        $estadoRegistrados = Estadoprogramacionsubcliente::where('clientecomunid', $IDCliente)
+            ->get(['accionnombre', 'fechabateria', 'nrosesion']);
         
         $estadoMapeado = [];
         foreach ($estadoRegistrados as $estado) {
-            // Modifica la clave para que incluya 'nrosesion'
             $estadoMapeado[$estado->accionnombre][$estado->fechabateria][$estado->nrosesion] = true;
         }        
 
@@ -6794,33 +11308,25 @@ class AsociadoController extends Controller
                 return empty($estadoMapeado[$accion][$fechaSeleccionada]);
             });
             
-        /* $accionesPorFecha = [];
-        foreach ($fechasBateriaPorAccion as $accion => $fecha) {
-        $accionesPorFecha[$fecha][] = $accion;
-        } */
         $accionesPorFecha = [];
         $acciones = Programacionsubcliente::where('clientecomunid', $IDCliente)
-            ->whereNotNull('fechaasignada') // Solo acciones con fecha asignada
+            ->whereNotNull('fechaasignada')
             ->where('fechabateria', $fechaSeleccionada)
             ->get(['accionnombre', 'nrosesion', 'fechaasignada']); 
 
-        // Obtener las acciones registradas con sus números de sesión
         $accionesRegistradas = Estadoprogramacionsubcliente::where('clientecomunid', $IDCliente)
-            ->get(['accionnombre', 'nrosesion']); 
+            ->get(['accionnombre', 'nrosesion', 'fechabateria']); 
 
-        // Convertir las acciones registradas en un array de combinaciones 'accionnombre - nrosesion' para facilitar la comparación
         $accionesRegistradasCombinadas = $accionesRegistradas->map(function ($accion) {
-            return $accion->accionnombre . $accion->nrosesion;
+            return $accion->accionnombre . $accion->nrosesion . $accion->fechabateria;
         })->toArray();
 
         foreach ($acciones as $accion) {
             $nombreAccion = $accion->accionnombre;
             $numeroSesion = $accion->nrosesion;
 
-            // Crear la combinación 'accionnombre - nrosesion' para compararla con las registradas
-            $accionConSesion = $nombreAccion .$numeroSesion;
+            $accionConSesion = $nombreAccion .$numeroSesion. $fechaSeleccionada;
 
-            // Solo agregar si NO está en EstadoProgramacionSubCliente
             if (!in_array($accionConSesion, $accionesRegistradasCombinadas)) {
                 $accionesPorFecha[$fechaSeleccionada][] = [
                     'nombre' => $nombreAccion,
@@ -7288,31 +11794,97 @@ class AsociadoController extends Controller
 
         return redirect()->route('admin.asociados.listadoclienteauditoria',3)->with('info', 'El cliente se creó con exito');
     }
-    public function listadoclienteauditoria(Request $request, Asociado $asociado)
+
+    public function crearclienteauditoriamomentaneo(Asociado $asociado)
     {
-        $nombrecompleto = $request->get('buscarpor');
-        $clientes = ClienteAuditoria::where('nombrecompleto', 'LIKE', "%$nombrecompleto%")
-                            ->orderBy('nombrecompleto')
-                            ->simplePaginate(20);
-        return view('admin.asociados.listadoclienteauditoria', compact('asociado', 'clientes'));
+        $suc = [
+            'COCHABAMBA' => 'COCHABAMBA',
+            'SANTA CRUZ' => 'SANTA CRUZ',
+        ];
+        $genero = [
+            'MASCULINO' => 'MASCULINO',
+            'FEMENINO' => 'FEMENINO',
+        ];
+        $estciv = [
+            'SOLTER@' => 'SOLTER@',
+            'CASAD@' => 'CASAD@',
+            'UNION LIBRE' => 'UNION LIBRE',
+            'DIVORCIAD@' => 'DIVORCIAD@',
+            'VIUD@' => 'VIUD@',
+        ];
+        $gradoins = [
+            'ANALFABETO' => 'ANALFABETO',
+            'PRIMARIA' => 'PRIMARIA',
+            'SECUNDARIA' => 'SECUNDARIA',
+            'TECNICO' => 'TECNICO',
+            'UNIVERSITARIO' => 'UNIVERSITARIO',
+            'COMPLETO' => 'COMPLETO',
+            'INCOMPLETO' => 'INCOMPLETO',
+        ];
+        $actlab = [
+            'ACTIVO' => 'ACTIVO',
+            'INACTIVO' => 'INACTIVO',
+        ];
+        $departamentos = Departamento::orderBy('departamento')->pluck('departamento', 'id');
+        $bancos = Banco::orderBy('nombrebanco')->pluck('nombrebanco', 'id');
+
+        return view('admin.asociados.crearclienteauditoriamomentaneo', compact('suc', 'asociado', 'genero', 'departamentos', 'estciv', 'gradoins', 'actlab', 'bancos'));
     }
-    public function buscarclientesauditoria(Request $request)
+    public function guardarclienteauditoriamomentaneo(StoreClienteAuditoriaRequest $request)
     {
-        $busqueda = $request->get('buscarpor');
-        $clientes = ClienteAuditoria::where(function ($query) use ($busqueda) {
-            $query->where('nombrecompleto', 'like', "%$busqueda%")
-                ->orWhere('ci', 'like', "%$busqueda%")
-                ->orWhere('id', 'like', "%$busqueda%");
-        })->simplePaginate(1000);
-        return view('admin.asociados.listadoclienteauditoria', compact('clientes'));
+        $existeCliente = ClienteAuditoria::where('ci', $request->ci)->exists();
+
+        if ($existeCliente) {
+            return redirect()->back()->withInput()->withErrors(['ci' => 'El cliente con este CI ya existe.']);
+        }
+
+        $idBanco1 = $request->input('banco1');
+        if ($idBanco1) {
+            $banco1 = Banco::findOrFail($idBanco1);
+            $bancoNombre1 = $banco1->nombrebanco;
+        } else {
+            $bancoNombre1 = "";
+        }
+        $idBanco2 = $request->input('banco2');
+        if ($idBanco2) {
+            $banco2 = Banco::findOrFail($idBanco2);
+            $bancoNombre2 = $banco2->nombrebanco;
+        } else {
+            $bancoNombre2 = "";
+        }
+        $idBanco3 = $request->input('banco3');
+        if ($idBanco3) {
+            $banco3 = Banco::findOrFail($idBanco3);
+            $bancoNombre3 = $banco3->nombrebanco;
+        } else {
+            $bancoNombre3 = "";
+        }
+
+        // Obtener el último registro según la fecha de creación
+        $ultimoRegistro = ClienteAuditoria::orderBy('created_at', 'desc')->first();
+        $ultimoId = $ultimoRegistro ? (int) filter_var($ultimoRegistro->id, FILTER_SANITIZE_NUMBER_INT) : 0;
+        $nuevoId = ($ultimoId + 1) . 'A';
+
+        $clienteData = $request->all();
+        $clienteData['banco1'] = $bancoNombre1;
+        $clienteData['banco2'] = $bancoNombre2;
+        $clienteData['banco3'] = $bancoNombre3;
+        $clienteData['id'] = $nuevoId;
+        
+        $clienteauditoria = ClienteAuditoria::create($clienteData);
+
+        return redirect()->route('admin.asociados.listadoclienteauditoria',3)->with('info', 'El cliente se creó con exito');
     }
-    public function verclienteauditoria(ClienteAuditoria $clienteauditoria)
+    public function verclienteauditoriamomentaneo(ClienteAuditoria $clienteauditoria)
     {
         $nombreusuario = auth()->user()->name; 
         $tieneRequisitos = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->exists();
         $requisitosubclientes = ProveedorInformefinal::where('clienteauditoriaid', $clienteauditoria->id)->get();
-        $cartasclientes = CartasClientes::where('clienteid', $clienteauditoria->id)->get();
+        $cartasclientes = CartasClientes::where('clienteid', $clienteauditoria->id)->orderByRaw("CASE WHEN bancoadjunto IS NULL THEN 1 ELSE 0 END, bancoadjunto ASC")->whereNull('adjunto')->get();
         $dictamenauditorias = DictamenAuditoria::where('clienteauditoriaid', $clienteauditoria->id)->get();
+        $documentacionauci = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->whereNotNull('ciasegurado')->get();
+        $documentacionaunac = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->whereNotNull('cnacasegurado')->get();
+        $informefinalau = Informefinal::where('clienteauditoriaid', $clienteauditoria->id)->get();
         $proveedores = Proveedor::whereIn('id', [3, 54])->get(['id', 'proveedor', 'celular']);
         $tieneContactos = ContactoSubCliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
         $tieneTramites = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
@@ -7321,6 +11893,19 @@ class AsociadoController extends Controller
         $tieneCotizacionaprobada = Estadocotizacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
         $tieneProgramacionatentido = Estadoprogramacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
         $tienerequisitosauditoria = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+
+        $clienteBancos =ClienteAuditoria::where('id', $clienteauditoria->id)
+            ->select('banco1', 'banco2', 'banco3')
+            ->first();
+
+        if ($clienteBancos) {
+            $banco1 = $clienteBancos->banco1;
+            $banco2 = $clienteBancos->banco2;
+            $banco3 = $clienteBancos->banco3;
+        } else {
+            $banco1 = $banco2 = $banco3 = null;
+        }
+
         $cartaconsentimientoExistente = Estadocotizacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id) 
                     ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
                     ->whereNotNull('document')
@@ -7375,9 +11960,306 @@ class AsociadoController extends Controller
             ->whereIn('tramite', ['APELACION', 'SEGUNDA SOLICITUD'])
             ->exists();
 
+        $fechas = DB::table('documentacionsubclientes')
+            ->where('clienteauditoriaid', $clienteauditoria->id)
+            ->whereNotNull('fechabateria')
+            ->whereNull('deleted_at')
+            ->select('fechabateria')
+            ->distinct()
+            ->orderBy('fechabateria', 'desc')
+            ->get();
 
-        return view('admin.asociados.verclienteauditoria', compact('cartasclientes','dictamenauditorias','requisitosubclientes','proveedores','accionesPorFecha','clienteConInvalidez','clienteConApelacionOSegunda','tramitesPorFecha','historiamedicaclienteauditoria','nombreusuario','tieneCotizacionaprobada','documentacion','tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
+        $historiaMedica = DB::table('documentacionsubclientes')
+            ->where('clienteauditoriaid', $clienteauditoria->id)
+            ->where('accion', 'HISTORIA MÉDICA')
+            ->first();
+
+        $informes = DB::table('documentacionsubclientes')
+            ->where('clienteauditoriaid', $clienteauditoria->id)
+            ->where('accion', '!=', 'HISTORIA MÉDICA')
+        ->get();
+
+        return view('admin.asociados.verclienteauditoriamomentaneo', compact('banco1','banco2','banco3','informefinalau','documentacionaunac','documentacionauci','fechas', 'historiaMedica', 'informes', 'cartasclientes','dictamenauditorias','requisitosubclientes','proveedores','accionesPorFecha','clienteConInvalidez','clienteConApelacionOSegunda','tramitesPorFecha','historiamedicaclienteauditoria','nombreusuario','tieneCotizacionaprobada','documentacion','tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
         'tieneContactos','tieneTramites','clienteauditoria','tieneRequisitos','tieneProgramacion','tieneProgramacionatentido'));
+    }
+    public function editarclienteauditoriamomentaneo(ClienteAuditoria $clienteauditoria)
+    {
+        $suc = [
+            'COCHABAMBA' => 'COCHABAMBA',
+            'SANTA CRUZ' => 'SANTA CRUZ',
+        ];
+        $genero = [
+            'MASCULINO' => 'MASCULINO',
+            'FEMENINO' => 'FEMENINO',
+        ];
+        $estciv = [
+            'SOLTER@' => 'SOLTER@',
+            'CASAD@' => 'CASAD@',
+            'UNION LIBRE' => 'UNION LIBRE',
+            'DIVORCIAD@' => 'DIVORCIAD@',
+            'VIUD@' => 'VIUD@',
+        ];
+        $gradoins = [
+            'ANALFABETO' => 'ANALFABETO',
+            'PRIMARIA' => 'PRIMARIA',
+            'SECUNDARIA' => 'SECUNDARIA',
+            'TECNICO' => 'TECNICO',
+            'UNIVERSITARIO' => 'UNIVERSITARIO',
+            'COMPLETO' => 'COMPLETO',
+            'INCOMPLETO' => 'INCOMPLETO',
+        ];
+        $actlab = [
+            'ACTIVO' => 'ACTIVO',
+            'INACTIVO' => 'INACTIVO',
+        ];
+        /* $departamentos = Departamento::orderBy('departamento')->pluck('departamento', 'departamento'); */
+        // Obtener los departamentos para el select
+        $clienteAuditoria = ClienteAuditoria::findOrFail($clienteauditoria->id);
+        
+        $departamentos = Departamento::orderBy('departamento')->pluck('departamento', 'departamento');
+
+        // Verificar si el lugarnacimiento está en la lista de departamentos
+        $lugarnacimiento = $clienteAuditoria->lugarnacimiento;
+        $isCustomPlace = !$departamentos->contains($lugarnacimiento); // Si no está en el select, es un lugar personalizado
+
+        $bancos = Banco::orderBy('nombrebanco')->pluck('nombrebanco', 'nombrebanco');
+        $bancoActual = $clienteauditoria->nombrebanco;
+
+        return view('admin.asociados.editarclienteauditoriamomentaneo', compact('clienteauditoria','suc', 'genero', 'departamentos', 'estciv', 'gradoins', 'actlab', 'bancoActual', 'bancos', 'isCustomPlace', 'lugarnacimiento'));
+    }
+    public function actualizarclienteauditoriamomentaneo(UpdateClienteAuditoriaRequest $request, ClienteAuditoria $clienteauditoria)
+    {
+        $clienteData = $request->validated();
+        foreach ($clienteData as $campo => $nuevoValor) {
+            $valorAnterior = $clienteauditoria->$campo;
+            if ($valorAnterior != $nuevoValor) {
+                ModificacionesDatos::create([
+                    'tabla' => 'clienteauditorias',
+                    'clienteid' => $clienteauditoria->id,
+                    'clientenombre' => $clienteauditoria->nombrecompleto,
+                    'columna' => $campo,
+                    'datoantiguo' => $valorAnterior,
+                    'datonuevo' => $nuevoValor,
+                    'usuarioedicionid' => Auth::id(),
+                    'usuarioedicionnombre' => Auth::user()->name,
+                ]);
+            }
+        }
+        $clienteauditoria->update($clienteData);
+
+        return redirect()->route('admin.asociados.verclienteauditoriamomentaneo', $clienteauditoria)->with('info', 'El cliente se actualizó con éxito');
+    }
+
+    public function listadoclienteauditoria(Request $request, Asociado $asociado)
+    {
+        $nombrecompleto = $request->get('buscarpor');
+        $clientes = ClienteAuditoria::where('nombrecompleto', 'LIKE', "%$nombrecompleto%")
+                            ->orderBy('nombrecompleto')
+                            /* ->simplePaginate(20); */
+                            ->get();
+        return view('admin.asociados.listadoclienteauditoria', compact('asociado', 'clientes'));
+    }
+    public function buscarclientesauditoria(Request $request)
+    {
+        $busqueda = $request->get('buscarpor');
+        $clientes = ClienteAuditoria::where(function ($query) use ($busqueda) {
+            $query->where('nombrecompleto', 'like', "%$busqueda%")
+                ->orWhere('ci', 'like', "%$busqueda%")
+                ->orWhere('id', 'like', "%$busqueda%");
+        })->simplePaginate(1000);
+        return view('admin.asociados.listadoclienteauditoria', compact('clientes'));
+    }
+    public function verclienteauditoria(ClienteAuditoria $clienteauditoria)
+    {
+        $nombreusuario = auth()->user()->name; 
+        $tieneRequisitos = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $requisitosubclientes = ProveedorInformefinal::where('clienteauditoriaid', $clienteauditoria->id)->get();
+        $cartasclientes = CartasClientes::where('clienteid', $clienteauditoria->id)->orderByRaw("CASE WHEN bancoadjunto IS NULL THEN 1 ELSE 0 END, bancoadjunto ASC")->whereNull('adjunto')->get();
+        $dictamenauditorias = DictamenAuditoria::where('clienteauditoriaid', $clienteauditoria->id)->get();
+        $documentacionauci = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->whereNotNull('ciasegurado')->get();
+        $documentacionaunac = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->whereNotNull('cnacasegurado')->get();
+        $informefinalau = Informefinal::where('clienteauditoriaid', $clienteauditoria->id)->get();
+        $proveedores = Proveedor::whereIn('id', [3, 54])->get(['id', 'proveedor', 'celular']);
+        $tieneContactos = ContactoSubCliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tieneTramites = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tieneBateria = Bateriasubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tieneProgramacion = Programacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tieneCotizacionaprobada = Estadocotizacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tieneProgramacionatentido = Estadoprogramacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+        $tienerequisitosauditoria = Requisitosclientesauditoria::where('clienteauditoriaid', $clienteauditoria->id)->exists();
+
+        $clienteBancos =ClienteAuditoria::where('id', $clienteauditoria->id)
+            ->select('banco1', 'banco2', 'banco3')
+            ->first();
+
+        if ($clienteBancos) {
+            $banco1 = $clienteBancos->banco1;
+            $banco2 = $clienteBancos->banco2;
+            $banco3 = $clienteBancos->banco3;
+        } else {
+            $banco1 = $banco2 = $banco3 = null;
+        }
+
+        $cartaconsentimientoExistente = Estadocotizacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id) 
+                    ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+                    ->whereNotNull('document')
+                    ->first();
+        $bateriaaprobadaExistente = Estadocotizacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id) 
+                    ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+                    ->first();
+        $documentacion = Documentacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+                    ->where('accion', 'HISTORIA MÉDICA')
+                    ->first();
+
+        $historiamedica = Documentacionsubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+            ->where('accion', 'HISTORIA MÉDICA')
+            ->whereNull('motivoanulacion')
+            ->first();
+        $historiamedicaclienteauditoria = $historiamedica ? $historiamedica->document : null;
+
+        $IDCliente = $clienteauditoria->id;
+        $sucursalCliente = $clienteauditoria->sucursal;
+
+        $accionesCliente = BateriaSubCliente::where('clienteauditoriaid', $IDCliente)->pluck('accionnombre')->toArray();
+
+        $fechasbateriasSubCliente = BateriaSubCliente::where('clienteauditoriaid', $IDCliente)
+            ->distinct()
+            ->pluck('fechabateria');
+
+        $fechasRegistradas = ProveedorInformefinal::where('clienteauditoriaid', $clienteauditoria->id)
+            ->pluck('fechabateria');
+
+        $fechasDisponibles = $fechasbateriasSubCliente->diff($fechasRegistradas);
+
+        $fechasBateriaPorAccion = BateriaSubCliente::whereIn('accionnombre', $accionesCliente)
+            ->where('clienteauditoriaid', $IDCliente)
+            ->whereIn('fechabateria', $fechasDisponibles)
+            ->distinct()
+            ->pluck('fechabateria', 'accionnombre');
+
+        $accionesPorFecha = [];
+        foreach ($fechasBateriaPorAccion as $accion => $fecha) {
+            $accionesPorFecha[$fecha][] = $accion;
+        }
+        $tramitesPorFecha = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->fechabateria => $item->tramite];
+            });
+        $clienteConInvalidez = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+            ->where('tramite', 'INVALIDEZ')
+            ->exists();
+
+        $clienteConApelacionOSegunda = Tramitesubcliente::where('clienteauditoriaid', $clienteauditoria->id)
+            ->whereIn('tramite', ['APELACION', 'SEGUNDA SOLICITUD'])
+            ->exists();
+
+        $fechas = DB::table('documentacionsubclientes')
+            ->where('clienteauditoriaid', $clienteauditoria->id)
+            ->whereNotNull('fechabateria')
+            ->whereNull('deleted_at')
+            ->select('fechabateria')
+            ->distinct()
+            ->orderBy('fechabateria', 'desc')
+            ->get();
+
+        $historiaMedica = DB::table('documentacionsubclientes')
+            ->where('clienteauditoriaid', $clienteauditoria->id)
+            ->where('accion', 'HISTORIA MÉDICA')
+            ->first();
+
+        $informes = DB::table('documentacionsubclientes')
+            ->where('clienteauditoriaid', $clienteauditoria->id)
+            ->where('accion', '!=', 'HISTORIA MÉDICA')
+        ->get();
+
+        return view('admin.asociados.verclienteauditoria', compact('banco1','banco2','banco3','informefinalau','documentacionaunac','documentacionauci','fechas', 'historiaMedica', 'informes', 'cartasclientes','dictamenauditorias','requisitosubclientes','proveedores','accionesPorFecha','clienteConInvalidez','clienteConApelacionOSegunda','tramitesPorFecha','historiamedicaclienteauditoria','nombreusuario','tieneCotizacionaprobada','documentacion','tienerequisitosauditoria','tieneBateria','cartaconsentimientoExistente','bateriaaprobadaExistente',
+        'tieneContactos','tieneTramites','clienteauditoria','tieneRequisitos','tieneProgramacion','tieneProgramacionatentido'));
+    }
+    /* public function adjuntaracartas(ClienteAuditoria $clienteauditoria, Request $request)
+    {
+        $idcarta = $request->input('detalle');
+        $seleccionados = $request->input('seleccionados', []);
+        $tipos = $request->input('tipos', []);
+        $usuarioregistroid = $request->input('usuarioregistroid');
+        $usuarioregistronombre = $request->input('usuarioregistronombre');
+        $clienteid = $request->input('clienteid');
+        $clientenombre = $request->input('clientenombre');
+
+        $ultimoOrden = DB::table('adjuntoacartas')
+            ->where('clienteid', $clienteid)
+            ->where('idcarta', $idcarta)
+            ->max('nroorden');
+
+        $ultimoOrden = $ultimoOrden ?? 0;
+
+        foreach ($seleccionados as $idAdjunto) {
+            $ultimoOrden++;
+
+            DB::table('adjuntoacartas')->insert([
+                'clienteid' => $clienteid,
+                'clientenombre' => $clientenombre,
+                'tipo'      => $tipos[$idAdjunto] ?? null,
+                'idcarta'   => $idcarta,
+                'idadjunto' => $idAdjunto,
+                'nroorden'  => $ultimoOrden,
+                'usuarioregistroid' => $usuarioregistroid,
+                'usuarioregistronombre' => $usuarioregistronombre,
+            ]);
+        }
+
+        return back()->with('info', 'Adjuntos guardados correctamente.');
+    } */
+    public function actualizarBanco(Request $request) 
+    {
+        $idcartas = $request->idcarta;
+        $banco = $request->banco;
+
+        if($idcartas && $banco) {
+            DB::table('cartasclientes')
+                ->whereIn('id', $idcartas)
+                ->update(['bancoadjunto' => $banco]);
+
+            return back()->with('info', 'Banco adjuntado correctamente.');
+        }
+
+        return back()->with('error', 'Seleccione al menos un documento y un banco.');
+    }
+    public function adjuntaracartas(ClienteAuditoria $clienteauditoria, Request $request)
+    {
+        $idcarta = $request->input('detalle');
+        $seleccionados = $request->input('seleccionados', []);
+        $tipos = $request->input('tipos', []);
+        $ordenes = $request->input('ordenes', []);
+        $usuarioregistroid = $request->input('usuarioregistroid');
+        $usuarioregistronombre = $request->input('usuarioregistronombre');
+        $clienteid = $request->input('clienteid');
+        $clientenombre = $request->input('clientenombre');
+
+        usort($seleccionados, function($a, $b) use ($ordenes) {
+            return $ordenes[$a] <=> $ordenes[$b];
+        });
+
+        $ultimoOrden = DB::table('adjuntoacartas')
+            ->where('clienteid', $clienteid)
+            ->where('idcarta', $idcarta)
+            ->max('nroorden') ?? 0;
+
+        foreach ($seleccionados as $idAdjunto) {
+            $ultimoOrden++;
+            DB::table('adjuntoacartas')->insert([
+                'clienteid' => $clienteid,
+                'clientenombre' => $clientenombre,
+                'tipo'      => $tipos[$idAdjunto] ?? null,
+                'idcarta'   => $idcarta,
+                'idadjunto' => $idAdjunto,
+                'nroorden'  => $ultimoOrden,
+                'usuarioregistroid' => $usuarioregistroid,
+                'usuarioregistronombre' => $usuarioregistronombre,
+            ]);
+        }
+
+        return back()->with('info', 'Adjuntos guardados correctamente.');
     }
     public function editarclienteauditoria(ClienteAuditoria $clienteauditoria)
     {
@@ -7430,8 +12312,10 @@ class AsociadoController extends Controller
         foreach ($clienteData as $campo => $nuevoValor) {
             $valorAnterior = $clienteauditoria->$campo;
             if ($valorAnterior != $nuevoValor) {
-                Modificacionesdatos::create([
+                ModificacionesDatos::create([
                     'tabla' => 'clienteauditorias',
+                    'clienteid' => $clienteauditoria->id,
+                    'clientenombre' => $clienteauditoria->nombrecompleto,
                     'columna' => $campo,
                     'datoantiguo' => $valorAnterior,
                     'datonuevo' => $nuevoValor,
@@ -7503,18 +12387,15 @@ class AsociadoController extends Controller
 
         // Obtener el trámite seleccionado
         $tramite = $request->input('tramite');
-
        
-            $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteauditoria', compact('clienteauditoria', 'tramite'));
-            $pdfName = 'Etiqueta_Auditoria_' . $clienteauditoria->nombrecompleto . '.pdf';
+        $pdf = PDF::loadView('admin.asociados.generaretiquetaclienteauditoria', compact('clienteauditoria', 'tramite'));
+        $pdfName = 'Etiqueta_Auditoria_' . $clienteauditoria->nombrecompleto . '.pdf';
 
 
-        // Guarda el PDF directamente en la carpeta 'public'
         $pdf->save(public_path($pdfName));
 
-        // Retorna la URL directamente desde 'public'
         return response()->json([
-            'pdf_url' => asset($pdfName), // Se asume que el archivo está en 'public'
+            'pdf_url' => asset($pdfName),
             'redirect_url' => route('admin.asociados.listadotramiteclienteauditoria', $clienteauditoria->id)
         ]);
     }
@@ -9046,6 +13927,7 @@ class AsociadoController extends Controller
         
         $reprogramaciones = ProgramacionSubCliente::where('clienteauditoriaid', $clienteauditoria->id)
         ->whereNotNull('motivoreprogramacion')
+        ->orderBy('deleted_at')
         ->onlyTrashed()
         ->get();
         $total = 0;
@@ -10483,7 +15365,7 @@ class AsociadoController extends Controller
                 'registroExistente','rolusuario','registroaprobadoExistente','tieneauditoriamedica','bancos','proveedores','registroaprobadoinformefinalExistente'
             ));
         }
-        public function aprobarinformefinaldirectoauditoria(Request $request, ClienteAuditoria $clienteauditoria)
+    public function aprobarinformefinaldirectoauditoria(Request $request, ClienteAuditoria $clienteauditoria)
         {
             $clienteauditorianombre = $request->input('clienteauditorianombre');
             $clienteitaId = $request->input('clienteitaid');
@@ -11341,37 +16223,61 @@ class AsociadoController extends Controller
 
 //
     public function guardarcartaclienteauditoria(ClienteAuditoria $clienteauditoria, Request $request) 
-        {
-            $archivo_name = null;
-            if ($request->hasFile('carta')) {
-                $file = $request->file('carta');
-                $carpetaCliente = public_path("/cartasclientes/{$clienteauditoria->id}");
-                if (!file_exists($carpetaCliente)) {
-                    mkdir($carpetaCliente, 0755, true);
-                }
-                $archivo_name = time() . '_' . $file->getClientOriginalName();
-                $file->move($carpetaCliente, $archivo_name);
+    {
+        $archivo_name = null;
+        if ($request->hasFile('carta')) {
+            $file = $request->file('carta');
+            $carpetaCliente = public_path("/cartasclientes/{$clienteauditoria->id}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
             }
+            $archivo_name = time() . '_' . $file->getClientOriginalName();
+            $file->move($carpetaCliente, $archivo_name);
+        }
 
-            $nombrecliente = $request->input('nombrecompleto');
-            $detalle = $request->input('detalle');
-            $fecha = $request->input('fecha');
-            $idcliente = $request->input('clienteauditoriaid');
-            $nombrecliente = $request->input('clienteauditorianombre');
-            $usuarioAutenticado = Auth::user();
+        $nombrecliente = $request->input('nombrecompleto');
+        $detalle = $request->input('detalle');
+        $fecha = $request->input('fecha');
+        $idcliente = $request->input('clienteauditoriaid');
+        $nombrecliente = $request->input('clienteauditorianombre');
+        $usuarioAutenticado = Auth::user();
 
-            CartasClientes::create([
-                'documento' => $archivo_name,
-                'detalle' => $detalle,
-                'fecha' => $fecha,
+        $cartaadjunto = $request->input('cartaadjunto');
+
+        $carta = CartasClientes::create([
+            'documento' => $archivo_name,
+            'detalle' => $detalle,
+            'fecha' => $fecha,
+            'clienteid' => $idcliente,
+            'clientenombre' => $nombrecliente,
+            'usuarioregistroid' => $usuarioAutenticado->id,
+            'usuarioregistronombre' => $usuarioAutenticado->name,
+            'adjunto' => !empty($cartaadjunto) ? 'SI' : null
+        ]);
+
+        if (!empty($request->input('cartaadjunto'))) {
+            $idcarta = $request->input('cartaadjunto');
+            $idadjunto = $carta->id;
+
+            $ultimoOrden = DB::table('adjuntoacartas')
+                ->where('clienteid', $idcliente)
+                ->where('idcarta', $idcarta)
+                ->max('nroorden');
+
+            $nuevoOrden = $ultimoOrden ? $ultimoOrden + 1 : 1;
+
+            DB::table('adjuntoacartas')->insert([
                 'clienteid' => $idcliente,
                 'clientenombre' => $nombrecliente,
+                'tipo' => 'CARTAS',
+                'idcarta' => $idcarta,
+                'idadjunto' => $idadjunto,
+                'nroorden' => $nuevoOrden,
                 'usuarioregistroid' => $usuarioAutenticado->id,
                 'usuarioregistronombre' => $usuarioAutenticado->name,
-            ]
-        );
-
-
+            ]);
+        }
+       
         return redirect()->route('admin.asociados.verclienteauditoria', $request->clienteauditoria)->with('info', 'La carta se subió con éxito');
     }
 

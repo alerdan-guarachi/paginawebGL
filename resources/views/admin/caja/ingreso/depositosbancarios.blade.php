@@ -141,7 +141,7 @@
                         </div>
                     </div>
 
-                    <table class="table table-bordered table-striped">
+                    {{-- <table class="table table-bordered table-striped">
                         <thead class="table-secondary">
                             <tr>
                                 <th>Fecha Mov.</th>
@@ -192,6 +192,74 @@
                                         @endif
                                     </td>
                                 </tr>
+                            @endforeach
+                        </tbody>
+                    </table> --}}
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-secondary text-center align-middle">
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Usuario Registro</th>
+                                <th>Total Efectivo</th>
+                                <th>Monto Depositado</th>
+                                <th>Respaldo</th>
+                                <th>Comprob.</th>
+                                <th>Bancarización</th>
+                                <th>Banco Destino</th>
+                                <th>Selec.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($registros as $registro)
+                                @php
+                                    $depositos = $registro->depositos;
+                                    $rowCount = $depositos->count() > 0 ? $depositos->count() : 1;
+                                @endphp
+
+                                @foreach ($depositos->isEmpty() ? [null] : $depositos as $index => $deposito)
+                                    <tr>
+                                        {{-- Celdas que abarcan todos los depósitos --}}
+                                        @if ($index === 0)
+                                            <td rowspan="{{ $rowCount }}" class="text-center align-middle bg-white">{{ $registro->fecha }}</td>
+                                            <td rowspan="{{ $rowCount }}" class="text-center align-middle bg-white">{{ $registro->usuarioRegistroNombre }}</td>
+                                            <td rowspan="{{ $rowCount }}" class="text-center align-middle bg-white">{{ number_format($registro->total, 2) }}</td>
+                                        @endif
+
+                                        <td class="text-center align-middle">
+                                            {{ isset($deposito->monto) ? number_format($deposito->monto, 2, '.', ',') : 'N/A' }}
+                                        </td>
+
+
+                                        <td class="text-center align-middle">
+                                            @if ($deposito && $deposito->documentorespaldo)
+                                                <a class="btn btn-sm btn-verregistros" href="{{ asset('documentacioncaja/depositosbancarios/' . $deposito->usuarioregistroid . '/' . $deposito->documentorespaldo) }}" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @else
+                                                <span class="badge badge-danger">VACÍO</span>
+                                            @endif
+                                        </td>
+
+                                        <td class="text-center align-middle">
+                                            @if ($deposito && $deposito->documentofactura)
+                                                <a class="btn btn-sm btn-verregistros" href="{{ asset('documentacioncaja/depositosbancarios/' . $deposito->usuarioregistroid . '/' . $deposito->documentofactura) }}" target="_blank">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @else
+                                                <span class="badge badge-danger">VACÍO</span>
+                                            @endif
+                                        </td>
+
+                                        <td class="text-center align-middle">{{ $deposito->bancarizacion ?? 'N/A' }}</td>
+                                        <td class="text-center align-middle">{{ $deposito->bancodestino ?? 'N/A' }}</td>
+
+                                        <td class="text-center align-middle">
+                                            @if ((!$deposito || !$deposito->documentorespaldo) && (!$deposito || !$deposito->documentofactura))
+                                                <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox">
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
                             @endforeach
                         </tbody>
                     </table>

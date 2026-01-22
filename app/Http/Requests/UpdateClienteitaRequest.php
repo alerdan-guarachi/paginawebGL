@@ -70,6 +70,9 @@ class UpdateClienteitaRequest extends FormRequest
             'tipocliente' => '',
             'paisnacimiento' => '',
             'matricula' => '',
+            'numhijostotal' => '',
+            'derivacion' => '',
+            'billeteramovil' => '',
         ]; 
         return $rules;
     }

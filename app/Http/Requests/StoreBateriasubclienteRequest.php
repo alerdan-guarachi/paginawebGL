@@ -86,6 +86,7 @@ class StoreBateriasubclienteRequest extends FormRequest
             'usuariocomprobante' => '',
             'ordenid' => '',
             'fechamora' => '',
+            'idsubproc' => '',
         ]; 
         return $rules;
         }

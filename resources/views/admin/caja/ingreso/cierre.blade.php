@@ -443,212 +443,214 @@
                             <button type="submit" class="btn btn-outline-secondary">Filtrar <i class="fas fa-search"></i></button>
                         </div>
                     </div>
-                    <table class="table table-bordered table-striped" style="background-color:#ffffff">
-                        <thead class="table-secondary">
-                            <tr>
-                                <th>ID</th>
-                                <th>Ciudad_Reg.</th>
-                                <th>Cliente/Prov.</th>
-                                <th>Mov.</th>
-                                <th>Detalle</th>
-                                <th>Transac.</th>
-                                <th>Subtotal</th>
-                                <th>Desc.</th>
-                                <th>Total</th>
-                                <th>Saldo</th>
-                                <th>Recibo</th>
-                                <th>Fact.</th>
-                                <th>Comp.</th>
-                                <th>
-                                    @can('admin.caja.ingresos.aprobarcierrecaja')
-                                    <input type="checkbox" id="selectAllAprobarCierre">
-                                    @endcan
-                                    Aprob. Cierre
-                                </th>
-                                <th>
-                                    <input type="checkbox" id="selectAllCerrarCaja"> Cerrar Caja
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($registros as $registro)
-                                @if ($registro->usuarioanulacion === null)
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped" style="background-color:#ffffff">
+                            <thead class="table-secondary">
                                 <tr>
-                                    <td class="truncar">{{ $registro->id }}</td>
-                                    <td title="{{ $registro->ciudadregistro }}" class="truncar">{{ $registro->ciudadregistro }}</td>
-                                    <td title="{{ $registro->clientenombre }} {{ $registro->proveedornombre }}" class="truncar">{{ $registro->clientenombre }} {{ $registro->proveedornombre }}</td>
-                                    <td class="truncar">{{ $registro->tipomovimiento }}</td>
-                                    {{-- <td class="truncar">{{ $registro->area }}</td> --}}
-                                    <td title="{{ $registro->detalle }}" class="truncar2">{{ $registro->detalle ?? 'SIN DETALLE' }}</td>
-                                    <td title="{{ $registro->tipotransaccion }}" class="truncar2">{{ $registro->tipotransaccion }}</td>
-                                    <td class="truncar">{{ number_format($registro->subtotal, 2) }}</td>
-                                    <td class="truncar">{{ number_format($registro->descuento, 2) }}</td>
-                                    <td title="{{ number_format($registro->montototal, 2) }} - {{ number_format($registro->descuentoatc, 2) }} = {{ number_format($registro->montototal - $registro->descuentoatc, 2) }}" class="truncar2">
-                                        {{ number_format($registro->montototal, 2) }}
-                                        @if ($registro->descuentoatc !== null && $registro->descuentoatc != 0.00)
-                                            - {{ number_format($registro->descuentoatc, 2) }} =
-                                            {{ number_format($registro->montototal - $registro->descuentoatc, 2) }}
-                                        @endif
-                                    </td>
-                                    <td class="truncar">{{ number_format($registro->saldo, 2) }}</td>
-                                    <td>
-                                        {{ $registro->nrorecibo }}
-                                        @if ($registro->documentorespaldo)
-                                            <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->documentorespaldo) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER RECIBO"><i class="fas fa-eye"></i></a>
-                                            
-                                        @else
-                                            <span class="badge badge-danger">VACIO</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($registro->docfactura)
-                                            <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA"><i class="fas fa-eye"></i></a>
-                                        @else
-                                            <span class="badge badge-danger">VACIO</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($registro->doccomprobante)
-                                        <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER COMPROBANTE"><i class="fas fa-eye"></i></a>
-                                        @else
-                                            <span class="badge badge-danger">VACIO</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        @if ($registro->estadorevisioncierre == 'CIERRE APROBADO' || $registro->estadorevisioncierre == 'FINALIZADO')
-                                            <span class="badge badge-success">CIERRE APROB.</span>
-                                        @else
-                                            @can('admin.caja.ingresos.aprobarcierrecaja')
+                                    <th>ID</th>
+                                    <th>Ciudad_Reg.</th>
+                                    <th>Cliente/Prov.</th>
+                                    <th>Mov.</th>
+                                    <th>Detalle</th>
+                                    <th>Transac.</th>
+                                    <th>Subtotal</th>
+                                    <th>Desc.</th>
+                                    <th>Total</th>
+                                    <th>Saldo</th>
+                                    <th>Recibo</th>
+                                    <th>Fact.</th>
+                                    <th>Comp.</th>
+                                    <th>
+                                        @can('admin.caja.ingresos.aprobarcierrecaja')
+                                        <input type="checkbox" id="selectAllAprobarCierre">
+                                        @endcan
+                                        Aprob. Cierre
+                                    </th>
+                                    <th>
+                                        <input type="checkbox" id="selectAllCerrarCaja"> Cerrar Caja
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($registros as $registro)
+                                    @if ($registro->usuarioanulacion === null)
+                                    <tr>
+                                        <td class="truncar">{{ $registro->id }}</td>
+                                        <td title="{{ $registro->ciudadregistro }}" class="truncar">{{ $registro->ciudadregistro }}</td>
+                                        <td title="{{ $registro->clientenombre }} {{ $registro->proveedornombre }}" class="truncar">{{ $registro->clientenombre }} {{ $registro->proveedornombre }}</td>
+                                        <td class="truncar">{{ $registro->tipomovimiento }}</td>
+                                        {{-- <td class="truncar">{{ $registro->area }}</td> --}}
+                                        <td title="{{ $registro->detalle }}" class="truncar2">{{ $registro->detalle ?? 'SIN DETALLE' }}</td>
+                                        <td title="{{ $registro->tipotransaccion }}" class="truncar2">{{ $registro->tipotransaccion }}</td>
+                                        <td class="truncar">{{ number_format($registro->subtotal, 2) }}</td>
+                                        <td class="truncar">{{ number_format($registro->descuento, 2) }}</td>
+                                        <td title="{{ number_format($registro->montototal, 2) }} - {{ number_format($registro->descuentoatc, 2) }} = {{ number_format($registro->montototal - $registro->descuentoatc, 2) }}" class="truncar2">
+                                            {{ number_format($registro->montototal, 2) }}
+                                            @if ($registro->descuentoatc !== null && $registro->descuentoatc != 0.00)
+                                                - {{ number_format($registro->descuentoatc, 2) }} =
+                                                {{ number_format($registro->montototal - $registro->descuentoatc, 2) }}
+                                            @endif
+                                        </td>
+                                        <td class="truncar">{{ number_format($registro->saldo, 2) }}</td>
+                                        <td>
+                                            {{ $registro->nrorecibo }}
+                                            @if ($registro->documentorespaldo)
+                                                <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->documentorespaldo) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER RECIBO"><i class="fas fa-eye"></i></a>
+                                                
+                                            @else
+                                                <span class="badge badge-danger">VACIO</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($registro->docfactura)
+                                                <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA"><i class="fas fa-eye"></i></a>
+                                            @else
+                                                <span class="badge badge-danger">VACIO</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($registro->doccomprobante)
+                                            <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER COMPROBANTE"><i class="fas fa-eye"></i></a>
+                                            @else
+                                                <span class="badge badge-danger">VACIO</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            @if ($registro->estadorevisioncierre == 'CIERRE APROBADO' || $registro->estadorevisioncierre == 'FINALIZADO')
+                                                <span class="badge badge-success">CIERRE APROB.</span>
+                                            @else
+                                                @can('admin.caja.ingresos.aprobarcierrecaja')
+                                                    <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox" data-type="aprobar-cierre">
+                                                @endcan
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            @if ($registro->estadorevisioncierre == 'CIERRE APROBADO')
+                                                <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox" data-type="cerrar-caja">
+                                            @elseif ($registro->estadorevisioncierre == 'FINALIZADO')
+                                                <span class="badge badge-success">FINALIZADO</span>
+                                            @else
+                                                <span class="badge badge-danger">PENDIENTE</span>
+                                            @endif
+                                        </td>                            
+                                    </tr>
+                                    @endif
+                                @endforeach
+                                @foreach ($registrosegreso as $registro)
+                                    @if ($registro->usuarioanulacion === null)
+                                    <tr>
+                                        <td class="truncar">{{ $registro->id }}</td>
+                                        <td title="{{ $registro->ciudadregistro }}" class="truncar">{{ $registro->ciudadregistro }}</td> 
+                                        <td title="{{ $registro->proveedornombre }}" class="truncar">{{ $registro->proveedornombre }}</td>
+                                        <td class="truncar2">{{ $registro->tipomovimiento }}</td>
+                                        {{-- <td class="truncar">{{ $registro->area }}</td> --}}
+                                        <td title="{{ $registro->detalle }}" class="truncar2">{{ $registro->detalle ?? 'SIN DETALLES' }}</td>
+                                        <td title="{{ $registro->tipotransaccion }}" class="truncar2">{{ $registro->tipotransaccion }}</td>
+                                        <td class="truncar">{{ number_format($registro->subtotal, 2) }}</td>
+                                        <td class="truncar">{{ number_format($registro->descuento, 2) }}</td>
+                                        <td class="truncar2">
+                                            {{ number_format($registro->montototal, 2) }}
+                                            @if ($registro->descuentoatc !== null && $registro->descuentoatc != 0.00)
+                                                - {{ number_format($registro->descuentoatc, 2) }} =
+                                                {{ number_format($registro->montototal - $registro->descuentoatc, 2) }}
+                                            @endif
+                                        </td>
+                                        <td class="truncar">{{ number_format($registro->saldo, 2) }}</td>
+                                        
+                                        <td>
+                                            {{ $registro->nrorecibo }}
+                                            @if ($registro->docrespaldoegreso)
+                                                <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docrespaldoegreso) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER RESPALDO"><i class="fas fa-eye"></i></a>
+                                            @else
+                                                <span class="badge badge-danger">VACIO</span>
+                                            @endif
+                                        </td>
+
+                                        @php
+                                            $ruta1 = public_path('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura);
+                                            $ruta2 = public_path('comprobantescuentaspagar/' . $registro->docfactura);
+
+                                            /* $ruta3 = public_path('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura2);
+                                            $ruta4 = public_path('comprobantescuentaspagar/' . $registro->docfactura2);
+
+                                            $ruta5 = public_path('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura3);
+                                            $ruta6 = public_path('comprobantescuentaspagar/' . $registro->docfactura3); */
+                                        @endphp
+
+                                        <td>
+                                            @if (!empty($registro->docfactura) && file_exists($ruta1))
+                                                <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @elseif (!empty($registro->docfactura) && file_exists($ruta2))
+                                                <a href="{{ asset('comprobantescuentaspagar/' . $registro->docfactura) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @else
+                                                <span class="badge badge-danger">VACÍO</span>
+                                            @endif
+
+                                            {{-- @if (!empty($registro->docfactura2) && file_exists($ruta4))
+                                                <a href="{{ asset('comprobantescuentaspagar/' . $registro->docfactura2) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA 2">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @elseif (!empty($registro->docfactura2) && file_exists($ruta3))
+                                                <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura2) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA 2">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @endif
+
+                                            @if (!empty($registro->docfactura3) && file_exists($ruta6))
+                                                <a href="{{ asset('comprobantescuentaspagar/' . $registro->docfactura3) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA 3">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @elseif (!empty($registro->docfactura3) && file_exists($ruta5))
+                                                <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura3) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA 3">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @endif --}}
+                                        </td>
+
+                                        @php
+                                            $ruta1 = public_path('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante);
+                                            $ruta2 = public_path('comprobantescuentaspagar/' . $registro->doccomprobante);
+                                        @endphp
+
+                                        <td>
+                                            @if (!empty($registro->doccomprobante) && file_exists($ruta1))
+                                                <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER COMPROBANTE">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @elseif (!empty($registro->doccomprobante) && file_exists($ruta2))
+                                                <a href="{{ asset('comprobantescuentaspagar/' . $registro->doccomprobante) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER COMPROBANTE">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            @else
+                                                <span class="badge badge-danger">VACÍO</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            @if ($registro->estadorevisioncierre == 'CIERRE APROBADO' || $registro->estadorevisioncierre == 'FINALIZADO')
+                                                <span class="badge badge-success">CIERRE APROB.</span>
+                                            @else
                                                 <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox" data-type="aprobar-cierre">
-                                            @endcan
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        @if ($registro->estadorevisioncierre == 'CIERRE APROBADO')
-                                            <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox" data-type="cerrar-caja">
-                                        @elseif ($registro->estadorevisioncierre == 'FINALIZADO')
-                                            <span class="badge badge-success">FINALIZADO</span>
-                                        @else
-                                            <span class="badge badge-danger">PENDIENTE</span>
-                                        @endif
-                                    </td>                            
-                                </tr>
-                                @endif
-                            @endforeach
-                            @foreach ($registrosegreso as $registro)
-                                @if ($registro->usuarioanulacion === null)
-                                <tr>
-                                    <td class="truncar">{{ $registro->id }}</td>
-                                    <td title="{{ $registro->ciudadregistro }}" class="truncar">{{ $registro->ciudadregistro }}</td> 
-                                    <td title="{{ $registro->proveedornombre }}" class="truncar">{{ $registro->proveedornombre }}</td>
-                                    <td class="truncar2">{{ $registro->tipomovimiento }}</td>
-                                    {{-- <td class="truncar">{{ $registro->area }}</td> --}}
-                                    <td title="{{ $registro->detalle }}" class="truncar2">{{ $registro->detalle ?? 'SIN DETALLES' }}</td>
-                                    <td title="{{ $registro->tipotransaccion }}" class="truncar2">{{ $registro->tipotransaccion }}</td>
-                                    <td class="truncar">{{ number_format($registro->subtotal, 2) }}</td>
-                                    <td class="truncar">{{ number_format($registro->descuento, 2) }}</td>
-                                    <td class="truncar2">
-                                        {{ number_format($registro->montototal, 2) }}
-                                        @if ($registro->descuentoatc !== null && $registro->descuentoatc != 0.00)
-                                            - {{ number_format($registro->descuentoatc, 2) }} =
-                                            {{ number_format($registro->montototal - $registro->descuentoatc, 2) }}
-                                        @endif
-                                    </td>
-                                    <td class="truncar">{{ number_format($registro->saldo, 2) }}</td>
-                                    
-                                    <td>
-                                        {{ $registro->nrorecibo }}
-                                        @if ($registro->docrespaldoegreso)
-                                            <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docrespaldoegreso) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER RESPALDO"><i class="fas fa-eye"></i></a>
-                                        @else
-                                            <span class="badge badge-danger">VACIO</span>
-                                        @endif
-                                    </td>
-
-                                    @php
-                                        $ruta1 = public_path('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura);
-                                        $ruta2 = public_path('comprobantescuentaspagar/' . $registro->docfactura);
-
-                                        /* $ruta3 = public_path('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura2);
-                                        $ruta4 = public_path('comprobantescuentaspagar/' . $registro->docfactura2);
-
-                                        $ruta5 = public_path('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura3);
-                                        $ruta6 = public_path('comprobantescuentaspagar/' . $registro->docfactura3); */
-                                    @endphp
-
-                                    <td>
-                                        @if (!empty($registro->docfactura) && file_exists($ruta1))
-                                            <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @elseif (!empty($registro->docfactura) && file_exists($ruta2))
-                                            <a href="{{ asset('comprobantescuentaspagar/' . $registro->docfactura) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @else
-                                            <span class="badge badge-danger">VACÍO</span>
-                                        @endif
-
-                                        {{-- @if (!empty($registro->docfactura2) && file_exists($ruta4))
-                                            <a href="{{ asset('comprobantescuentaspagar/' . $registro->docfactura2) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA 2">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @elseif (!empty($registro->docfactura2) && file_exists($ruta3))
-                                            <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura2) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA 2">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @endif
-
-                                        @if (!empty($registro->docfactura3) && file_exists($ruta6))
-                                            <a href="{{ asset('comprobantescuentaspagar/' . $registro->docfactura3) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA 3">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @elseif (!empty($registro->docfactura3) && file_exists($ruta5))
-                                            <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docfactura3) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER FACTURA 3">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @endif --}}
-                                    </td>
-
-                                    @php
-                                        $ruta1 = public_path('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante);
-                                        $ruta2 = public_path('comprobantescuentaspagar/' . $registro->doccomprobante);
-                                    @endphp
-
-                                    <td>
-                                        @if (!empty($registro->doccomprobante) && file_exists($ruta1))
-                                            <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->doccomprobante) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER COMPROBANTE">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @elseif (!empty($registro->doccomprobante) && file_exists($ruta2))
-                                            <a href="{{ asset('comprobantescuentaspagar/' . $registro->doccomprobante) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER COMPROBANTE">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @else
-                                            <span class="badge badge-danger">VACÍO</span>
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        @if ($registro->estadorevisioncierre == 'CIERRE APROBADO' || $registro->estadorevisioncierre == 'FINALIZADO')
-                                            <span class="badge badge-success">CIERRE APROB.</span>
-                                        @else
-                                            <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox" data-type="aprobar-cierre">
-                                        @endif
-                                    </td>
-                                    <td class="text-center">
-                                        @if ($registro->estadorevisioncierre == 'CIERRE APROBADO')
-                                            <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox" data-type="cerrar-caja">
-                                        @elseif ($registro->estadorevisioncierre == 'FINALIZADO')
-                                            <span class="badge badge-success">FINALIZADO</span>
-                                        @else
-                                            <span class="badge badge-danger">PENDIENTE</span>
-                                        @endif
-                                    </td>                            
-                                </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            @if ($registro->estadorevisioncierre == 'CIERRE APROBADO')
+                                                <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox" data-type="cerrar-caja">
+                                            @elseif ($registro->estadorevisioncierre == 'FINALIZADO')
+                                                <span class="badge badge-success">FINALIZADO</span>
+                                            @else
+                                                <span class="badge badge-danger">PENDIENTE</span>
+                                            @endif
+                                        </td>                            
+                                    </tr>
+                                    @endif
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                     
                     <style>
                         td {

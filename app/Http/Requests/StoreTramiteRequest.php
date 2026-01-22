@@ -59,6 +59,22 @@ class StoreTramiteRequest extends FormRequest
             'riesgodictamen' => '',
             'tiporiesgodictamen' => '',
             'nrodictamen' => '',
+            'nroformulario' => '',
+            'accesopension' => '',
+            'motivonopension' => '',
+            'mescobro' => '',
+            'tipocarta' => '',
+
+            'comusuemisor' => '',
+            'comusureceptor' => '',
+            'commodo' => '',
+            'comtipointerac' => '',
+            'comdetalle' => '',
+            'comtipoentrega' => '',
+            'comtipodoc' => '',
+            'nombremedico4' => '',
+            'nombremedico5' => '',
+            'capturacomunicacion' => '',
         ]; 
         return $rules;
     }

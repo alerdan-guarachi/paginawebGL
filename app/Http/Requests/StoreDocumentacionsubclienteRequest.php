@@ -54,6 +54,7 @@ class StoreDocumentacionsubclienteRequest extends FormRequest
             'programacionid' => '',
             'motivoanulacion' => '',
             'usuarioanulacion' => '',
+            'idsubproc' => '',
         ]; 
         return $rules;
     }

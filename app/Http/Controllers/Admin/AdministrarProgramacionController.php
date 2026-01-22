@@ -175,8 +175,6 @@ class AdministrarProgramacionController extends Controller
             'fechaActual'
         ));
     }
-
-
     public function documentacionpendiente(Request $request, Asociado $asociado, Cliente $cliente)
     {
         $buscar = $request->get('buscarpor');
@@ -291,13 +289,11 @@ class AdministrarProgramacionController extends Controller
 
         return view('admin.admprogramaciones.documentacionactiva', compact('cliente', 'asociado', 'clientes', 'clientes2'));
     }
-
     public function unirpdf(Request $request)
     {
 
         return view('admin.admprogramaciones.unirpdf');
     }
-
     public function upload(Request $request)
     {
         if ($request->hasFile('pdfs')) {
@@ -308,46 +304,33 @@ class AdministrarProgramacionController extends Controller
         }
         return response()->json(['success' => false]);
     }
-
     public function merge(Request $request)
-{
-    $pdf = new Fpdi();
-
-    // Obtén el array de nombres de archivos enviados en el JSON
-    $files = $request->input('files');
-
-    // Ruta donde se almacenaron los PDFs
-    $uploadPath = storage_path('app/public/uploads/');
-
-    foreach ($files as $fileName) {
-        $path = $uploadPath . $fileName;
-        if (!file_exists($path)) {
-            continue; // o manejar el error de archivo no encontrado
-        }
-        $pageCount = $pdf->setSourceFile($path);
-        for ($i = 1; $i <= $pageCount; $i++) {
-            $tpl = $pdf->importPage($i);
-            $pdf->AddPage();
-            $pdf->useTemplate($tpl);
-        }
-    }
-
-    return response()->streamDownload(function () use ($pdf) {
-        $pdf->Output('I');
-    }, 'merged.pdf');
-}
-
-
-    /* public function clientescreadoshoy(Request $request)
     {
-        $fechaActual = now()->toDateString();
+        $pdf = new Fpdi();
 
-        $clientes = Cliente::whereDate('created_at', $fechaActual)->get();
-        $clientes2 = ClienteAuditoria::whereDate('created_at', $fechaActual)->get();
-        $clientes3 = ClienteComun::whereDate('created_at', $fechaActual)->get();
+        // Obtén el array de nombres de archivos enviados en el JSON
+        $files = $request->input('files');
 
-        return view('admin.admprogramaciones.clientescreadoshoy', compact('clientes', 'clientes2', 'clientes3', 'fechaActual'));
-    } */
+        // Ruta donde se almacenaron los PDFs
+        $uploadPath = storage_path('app/public/uploads/');
+
+        foreach ($files as $fileName) {
+            $path = $uploadPath . $fileName;
+            if (!file_exists($path)) {
+                continue; // o manejar el error de archivo no encontrado
+            }
+            $pageCount = $pdf->setSourceFile($path);
+            for ($i = 1; $i <= $pageCount; $i++) {
+                $tpl = $pdf->importPage($i);
+                $pdf->AddPage();
+                $pdf->useTemplate($tpl);
+            }
+        }
+
+        return response()->streamDownload(function () use ($pdf) {
+            $pdf->Output('I');
+        }, 'merged.pdf');
+    }
     public function clientescreadoshoy(Request $request)
     {
         $fechaActual = $request->input('buscarpor', now()->toDateString());
@@ -468,7 +451,6 @@ class AdministrarProgramacionController extends Controller
             ,'contadorrequisitos'
         ));
     }
-
     public function eliminarDocumentos(Request $request)
     {
         $motivo = $request->input('motivoanulacion');
@@ -489,7 +471,6 @@ class AdministrarProgramacionController extends Controller
 
         return redirect()->back()->with('info', 'Documentos anulados con éxito.');
     }
-
     public function eliminarinformesfinal(Request $request)
     {
         $motivo = $request->input('motivoanulacion');
@@ -511,7 +492,6 @@ class AdministrarProgramacionController extends Controller
 
         return redirect()->back()->with('info', 'Documentos anulados con éxito.');
     }
-
     public function eliminarbateria(Request $request)
     {
         $motivo = $request->input('motivoanulacion');
@@ -552,40 +532,36 @@ class AdministrarProgramacionController extends Controller
 
         return redirect()->back()->with('info', 'Registros anulados con éxito.');
     }
-
     public function anularpendienterequisitos(Request $request) 
-{
-    $idRequisito = $request->input('idrequisito');
-    $seleccionados = $request->input('seleccionados5', []);
-    $accion = $request->input('accion'); // Identificar si es ANULAR o RECHAZAR
+    {
+        $idRequisito = $request->input('idrequisito');
+        $seleccionados = $request->input('seleccionados5', []);
+        $accion = $request->input('accion'); // Identificar si es ANULAR o RECHAZAR
 
-    $documento = RequisitosubCliente::find($idRequisito);
+        $documento = RequisitosubCliente::find($idRequisito);
 
-    if (!$documento) {
-        return redirect()->back()->with('error', 'Registro no encontrado.');
-    }
-
-    $valores = ($accion === 'anular') ? null : 'PENDIENTE';
-
-    foreach ($seleccionados as $campo) {
-        if (in_array($campo, [
-            'poder', 'numeropoder', 'avcci', 'cnacasegurado', 'ciasegurado',
-            'cmatrimonio', 'cnacconyuge', 'ciconyuge', 'cnacjihos', 'cihijos',
-            'denfaccidente', 'crodomicilio', 'contrato', 'ctrabajo', 'boletapago',
-            'egestora', 'actdatos', 'resolinvhijos', 'cunionlibre', 'cnacimientounionlibre',
-            'ciunionlibre', 'cdivorcio', 'cdefuncion'
-        ])) {
-            $documento->$campo = $valores;
+        if (!$documento) {
+            return redirect()->back()->with('error', 'Registro no encontrado.');
         }
+
+        $valores = ($accion === 'anular') ? null : 'PENDIENTE';
+
+        foreach ($seleccionados as $campo) {
+            if (in_array($campo, [
+                'poder', 'numeropoder', 'avcci', 'cnacasegurado', 'ciasegurado',
+                'cmatrimonio', 'cnacconyuge', 'ciconyuge', 'cnacjihos', 'cihijos',
+                'denfaccidente', 'crodomicilio', 'contrato', 'ctrabajo', 'boletapago',
+                'egestora', 'actdatos', 'resolinvhijos', 'cunionlibre', 'cnacimientounionlibre',
+                'ciunionlibre', 'cdivorcio', 'cdefuncion'
+            ])) {
+                $documento->$campo = $valores;
+            }
+        }
+
+        $documento->save();
+
+        return redirect()->back()->with('info', 'Requisitos actualizados correctamente.');
     }
-
-    $documento->save();
-
-    return redirect()->back()->with('info', 'Requisitos actualizados correctamente.');
-}
-
-
-
     public function buscarclientesporfecha(Request $request)
     {
         /* $busqueda = $request->get('buscarpor');
@@ -873,7 +849,6 @@ class AdministrarProgramacionController extends Controller
             ,'contadorrequisitos'
         ));
     }
-
     public function pagosprogramaciones(Request $request)
     {
         $fechaActual = now()->toDateString();
@@ -1115,34 +1090,31 @@ class AdministrarProgramacionController extends Controller
             )
         ->get();
 
-
-
-        
        // Usar el año y mes actuales si no se pasan
-    $year = $request->year ?? date('Y');
-    $month = $request->month ?? date('m');
+        $year = $request->year ?? date('Y');
+        $month = $request->month ?? date('m');
 
-    // Obtener los registros del mes y año especificados
-    $records = DB::table('programacionsubclientes')
-        ->selectRaw("
-            fechaasignada, 
-            SUM(CASE WHEN pagoatencion = 'PAGO PROCESADO' THEN 1 ELSE 0 END) as procesados,
-            SUM(CASE WHEN pagoatencion IS NULL THEN 1 ELSE 0 END) as sin_pago
-        ")
-        ->whereYear('fechaasignada', $year)
-        ->whereMonth('fechaasignada', $month)
-        ->whereNull('deleted_at')
-        ->groupBy('fechaasignada')
-        ->get();
+        // Obtener los registros del mes y año especificados
+        $records = DB::table('programacionsubclientes')
+            ->selectRaw("
+                fechaasignada, 
+                SUM(CASE WHEN pagoatencion = 'PAGO PROCESADO' THEN 1 ELSE 0 END) as procesados,
+                SUM(CASE WHEN pagoatencion IS NULL THEN 1 ELSE 0 END) as sin_pago
+            ")
+            ->whereYear('fechaasignada', $year)
+            ->whereMonth('fechaasignada', $month)
+            ->whereNull('deleted_at')
+            ->groupBy('fechaasignada')
+            ->get();
 
-    // Si es una solicitud AJAX, retornar los registros
-    if ($request->ajax()) {
-        return response()->json($records);
-    }
+        // Si es una solicitud AJAX, retornar los registros
+        if ($request->ajax()) {
+            return response()->json($records);
+        }
 
         return view('admin.admprogramaciones.pagosprogramaciones', compact('year', 'month', 'records','pagosprocesadosinformefinalauditoria','pagosprocesadosinformefinalita','pagosinformefinalauditoria','pagosinformefinalita','pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita','pagadosprogramacionesita','pagadosprogramacionescomun','pagadosprogramacionesauditoria','pagosprogramacionesita','pagosprogramacionescomun','pagosprogramacionesauditoria', 'fechaActual'));
     }
-    
+
     public function confirmarPagos(Request $request)
     {
         $programacionesIds = $request->input('programaciones', []);
@@ -1154,7 +1126,6 @@ class AdministrarProgramacionController extends Controller
 
         return redirect()->back()->with('info', 'Pagos confirmados correctamente.');
     }
-
     public function buscarprogramacionesporfecha(Request $request)
     {
         $fechaActual = $request->get('fecha') ?: now()->toDateString(); 
@@ -1461,27 +1432,27 @@ class AdministrarProgramacionController extends Controller
             )
         ->simplePaginate(1000);
 
-// Usar el año y mes actuales si no se pasan
-$year = $request->year ?? date('Y');
-$month = $request->month ?? date('m');
+        // Usar el año y mes actuales si no se pasan
+        $year = $request->year ?? date('Y');
+        $month = $request->month ?? date('m');
 
-// Obtener los registros del mes y año especificados
-$records = DB::table('programacionsubclientes')
-    ->selectRaw("
-        fechaasignada, 
-        SUM(CASE WHEN pagoatencion = 'PAGO PROCESADO' THEN 1 ELSE 0 END) as procesados,
-        SUM(CASE WHEN pagoatencion IS NULL THEN 1 ELSE 0 END) as sin_pago
-    ")
-    ->whereYear('fechaasignada', $year)
-    ->whereMonth('fechaasignada', $month)
-    ->whereNull('deleted_at')
-    ->groupBy('fechaasignada')
-    ->get();
+        // Obtener los registros del mes y año especificados
+        $records = DB::table('programacionsubclientes')
+            ->selectRaw("
+                fechaasignada, 
+                SUM(CASE WHEN pagoatencion = 'PAGO PROCESADO' THEN 1 ELSE 0 END) as procesados,
+                SUM(CASE WHEN pagoatencion IS NULL THEN 1 ELSE 0 END) as sin_pago
+            ")
+            ->whereYear('fechaasignada', $year)
+            ->whereMonth('fechaasignada', $month)
+            ->whereNull('deleted_at')
+            ->groupBy('fechaasignada')
+            ->get();
 
-// Si es una solicitud AJAX, retornar los registros
-if ($request->ajax()) {
-    return response()->json($records);
-}
+        // Si es una solicitud AJAX, retornar los registros
+        if ($request->ajax()) {
+            return response()->json($records);
+        }
 
         return view('admin.admprogramaciones.pagosprogramaciones', compact('year', 'month', 'records','pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita',
             'pagadosprogramacionesita',
@@ -1503,13 +1474,10 @@ if ($request->ajax()) {
 
         return redirect()->back()->with('info', 'Pagos confirmados correctamente.');
     }
-
     public function controlregistros(Request $request)
     {
         return view('admin.admprogramaciones.controlregistros');
     }
-   
-
     public function bateriascreadoshoy(Request $request)
     {
         $fechaActual = now()->toDateString();
@@ -1551,6 +1519,20 @@ if ($request->ajax()) {
         return view('admin.admprogramaciones.bateriascreadashoy', compact('bateriashoyita', 'bateriashoycomun', 'bateriashoyauditoria', 'fechaActual'));
     }
 
+    public function contratospendientes(Request $request)
+    {
+        $requisitos = Requisitosubcliente::where(function ($query) {
+            $query->where('contrato', 'PENDIENTE')
+                ->orWhere('poder', 'PENDIENTE');
+        })
+        ->get();
+
+        return view('admin.admprogramaciones.contratospendientes', compact('requisitos'));
+    }
+    public function tutorialesvideos()
+    {
+        return view('admin.admprogramaciones.tutorialesvideos');
+    }
     /**
      * Show the form for creating a new resource.
      *

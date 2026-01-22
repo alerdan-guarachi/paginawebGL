@@ -71,6 +71,7 @@ class StoreProgramacionsubclienteRequest extends FormRequest
         'comprobante' => '',
         'cheque' => '',
         'codautorizacion' => '',
+        'idsubproc' => '',
     ]; 
     return $rules;
 }

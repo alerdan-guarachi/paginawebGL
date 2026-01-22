@@ -27,10 +27,18 @@
                 <div class="d-flex flex-wrap align-items-center">
                     <form action="{{ route('buscarprogramacionclientescomun', $clientecomun) }}" method="get" class="form-inline">
                         <div class="flex-grow-1">
-                            <select name="buscarpor" class="form-control mr-sm-2">
+                            {{-- <select name="buscarpor" class="form-control mr-sm-2">
                                 <option value="" disabled selected>Fecha de Bateria</option>
                                 @foreach($fechas as $fecha)
                                     <option value="{{ $fecha }}">{{ $fecha }}</option>
+                                @endforeach
+                            </select> --}}
+                            <select name="buscarpor" class="form-control mr-sm-2">
+                                <option value="" disabled {{ request('buscarpor') ? '' : 'selected' }}>Fecha de Bateria</option>
+                                @foreach($fechas as $fecha)
+                                    <option value="{{ $fecha }}" {{ request('buscarpor') == $fecha ? 'selected' : '' }}>
+                                        {{ $fecha }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -43,47 +51,48 @@
         {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
         {!! Form::hidden('clientecomunid', $id) !!}
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-sm">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Acciones</th>
                         <th>Proveedor</th>
-                        <th>Fecha bateria</th>
-                        <th>Fecha asignada</th>
-                        <th>Hora asignada</th>
-                        <th>Estado</th>
+                        <th>Fecha_Bat.</th>
+                        <th>Fecha_Asig.</th>
+                        <th>Hora_Asig.</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Recordar</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($accionesDisponibles as $accion)
                     <?php 
-                    $mensaje = "Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: " .
-                                $accion->proveedornombre . ", para realizarse: " .
-                                $accion->areanombre . ", para la fecha: " .
-                                $accion->fechaasignada . ", a la hora: " . 
-                                $accion->horadesde . ". Que tenga un excelente día.";
-                    $direcciones = "";
-                    if (!empty($accion->direccion)) {
-                        $direcciones .= "\n\nDirección: " . $accion->direccion;
-                        if (!empty($accion->linkubicacion)) {
-                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion . ")";
+                        $mensaje = "Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: " .
+                                    $accion->proveedornombre . ", para realizarse: " .
+                                    $accion->areanombre . ", para la fecha: " .
+                                    $accion->fechaasignada . ", a la hora: " . 
+                                    $accion->horadesde . ". Que tenga un excelente día.";
+                        $direcciones = "";
+                        if (!empty($accion->direccion)) {
+                            $direcciones .= "\n\nDirección: " . $accion->direccion;
+                            if (!empty($accion->linkubicacion)) {
+                                $direcciones .= " (Ver ubicación: " . $accion->linkubicacion . ")";
+                            }
                         }
-                    }
-                    if (!empty($accion->direccion2)) {
-                        $direcciones .= "\n\nDirección: " . $accion->direccion2;
-                        if (!empty($accion->linkubicacion2)) {
-                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion2 . ")";
+                        if (!empty($accion->direccion2)) {
+                            $direcciones .= "\n\nDirección: " . $accion->direccion2;
+                            if (!empty($accion->linkubicacion2)) {
+                                $direcciones .= " (Ver ubicación: " . $accion->linkubicacion2 . ")";
+                            }
                         }
-                    }
-                    if (!empty($accion->direccion3)) {
-                        $direcciones .= "\n\nDirección: " . $accion->direccion3;
-                        if (!empty($accion->linkubicacion3)) {
-                            $direcciones .= " (Ver ubicación: " . $accion->linkubicacion3 . ")";
+                        if (!empty($accion->direccion3)) {
+                            $direcciones .= "\n\nDirección: " . $accion->direccion3;
+                            if (!empty($accion->linkubicacion3)) {
+                                $direcciones .= " (Ver ubicación: " . $accion->linkubicacion3 . ")";
+                            }
                         }
-                    }
-                    $mensaje .= $direcciones;
-                    $mensajeCodificado = urlencode($mensaje);
+                        $mensaje .= $direcciones;
+                        $mensajeCodificado = urlencode($mensaje);
                     ?>
 
                     <tr>
@@ -93,14 +102,14 @@
                         <td class="align-middle">{{ $accion->fechabateria }}</td>
                         <td class="align-middle">{{ $accion->fechaasignada }}</td>
                         <td class="align-middle">{{ $accion->horadesde }} - {{ $accion->horahasta }}</td>
-                        <td width="10px"> 
+                        <td class="text-center"> 
                             @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria][$accion->nrosesion]))
-                                <i class="fas fa-check-circle fa-2x checkverde"></i>
+                                <i class="fas fa-check-circle checkverde" style="font-size: 1.5rem;"></i>
                             @else
-                                <i class="fas fa-times-circle fa-2x text-danger"></i>
+                                <i class="fas fa-times-circle text-danger" style="font-size: 1.5rem;"></i>
                             @endif
                         </td>
-                        <td width="10px">
+                        <td class="text-center">
                             @php
                                 $cantidadDirecciones = 0;
                                 if (!empty($accion->direccion)) $cantidadDirecciones++;
@@ -221,11 +230,28 @@
                 <div class="form-group">   
                     {!! Form::label('', 'Fecha de Bateria:') !!}
                     <select class="form-control" id="fecha_bateria">
-                        <option value="" disabled selected></option>
+                        <option value="" disabled></option>
                         @foreach($accionesPorFecha as $fecha => $acciones)
-                            <option value="{{ $fecha }}">{{ $fecha }}</option>
+                            <option value="{{ $fecha }}" {{ $fecha == $fechaSeleccionada ? 'selected' : '' }}>
+                                {{ $fecha }}
+                            </option>
                         @endforeach
                     </select>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var fechaSeleccionada = "{{ $fechaSeleccionada }}";
+                            var selectFecha = document.getElementById('fecha_bateria');
+
+                            if (fechaSeleccionada) {
+                                selectFecha.value = fechaSeleccionada;
+                                document.getElementById('fechabateria').value = fechaSeleccionada;
+
+                                var event = new Event('change');
+                                selectFecha.dispatchEvent(event);
+                            }
+                        });
+                    </script>
+
                     @error('fechabateria')
                         <small class="text-danger fas fa-exclamation-circle">
                             {{$message}}
@@ -245,7 +271,6 @@
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                         {!! Form::label('', 'Acciones disponibles:') !!}
 
-                        <!-- Checkbox "Seleccionar Todo" -->
                         <div id="select-all-container" style="display: none;">
                             <label style="font-weight: bold; font-size: 14px; margin-bottom: 0;">
                                 <input type="checkbox" id="select-all" style="margin-right: 5px;">
@@ -254,21 +279,6 @@
                         </div>
                     </div>
                 
-                    {{-- <div id="acciones_select">
-                        @foreach($accionesPorFecha as $fecha => $acciones)
-                            <div class="acciones-{{ $fecha }}" style="display:none;">
-                                @foreach($acciones as $accion)
-                                    @if (in_array($accion, $accionesNoRegistradas))
-                                        <div>
-                                            <label style="font-weight: normal;">
-                                                <input type="checkbox" name="accionesSeleccionadas[]" value="{{ $accion }}" class="accion-checkbox"> {{ $accion }}
-                                            </label>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div>
-                        @endforeach
-                    </div> --}}
                     <div id="acciones_select">
                         @foreach($accionesPorFecha as $fecha => $acciones)
                             <div class="acciones-{{ $fecha }}" style="display:none;">
@@ -283,8 +293,6 @@
                             </div>
                         @endforeach
                     </div>
-                    
-                    
                     @error('accionesSeleccionadas')
                         <small class="text-danger fas fa-exclamation-circle">
                             {{$message}}
@@ -297,24 +305,19 @@
                         const selectedFecha = this.value;
                         const accionesDivs = document.querySelectorAll('.acciones-' + selectedFecha);
 
-                        // Oculta todas las acciones
                         document.querySelectorAll('[class^="acciones-"]').forEach(div => {
                             div.style.display = 'none';
                         });
 
-                        // Reinicia el estado del checkbox "Seleccionar Todo"
                         document.getElementById('select-all').checked = false;
 
-                        // Muestra las acciones para la fecha seleccionada
                         accionesDivs.forEach(div => {
                             div.style.display = 'block';
                         });
 
-                        // Obtener todos los checkboxes de acciones visibles
                         const accionesCheckboxes = document.querySelectorAll('.acciones-' + selectedFecha +
                             ' .accion-checkbox');
 
-                        // Muestra el checkbox "Seleccionar Todo" si hay acciones disponibles
                         if (accionesCheckboxes.length > 0) {
                             document.getElementById('select-all-container').style.display = 'block';
                         } else {
@@ -322,7 +325,6 @@
                         }
                     });
 
-                    // Función para manejar el "Seleccionar Todo"
                     document.getElementById('select-all').addEventListener('change', function() {
                         const isChecked = this.checked;
                         const selectedFecha = document.getElementById('fecha_bateria').value;
@@ -336,7 +338,6 @@
                         }
                     });
 
-                    // Opcional: Actualizar el estado del checkbox "Seleccionar Todo" si se desmarca algún checkbox individual
                     document.addEventListener('change', function(e) {
                         if (e.target.classList.contains('accion-checkbox')) {
                             const selectedFecha = document.getElementById('fecha_bateria').value;
@@ -346,10 +347,8 @@
                             document.getElementById('select-all').checked = allChecked;
                         }
                     });
-                    </script>
-
-                
-                                 
+                </script>
+             
                 <div class="form-group" hidden>
                     {!! Form::label('nombrecompleto', 'Nombre del Cliente:') !!}
                     {!! Form::text('nombrecompleto', $clientecomun->nombrecompleto, ['id' => 'modalNombreCompleto', 'class' => 'form-control', 'readonly']) !!}
@@ -363,7 +362,7 @@
                         </small>
                     @enderror
                 </div>
-                {!! Form::submit('Actualizar', ['class' => 'btn btn-crear']) !!}
+                {!! Form::submit('ACTUALIZAR', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
             </div>
         </div>

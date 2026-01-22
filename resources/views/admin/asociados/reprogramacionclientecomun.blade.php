@@ -26,14 +26,20 @@
                     <form action="{{ route('buscarprogramacionclientecomun', $clientecomun) }}" method="get" class="form-inline">
                         <div class="flex-grow-1">
                             <select name="buscarpor" class="form-control mr-sm-2">
-                                <option value="" disabled selected>Fecha de Bateria</option>
-                                @foreach($fechas as $fecha)
-                                    <option value="{{ $fecha }}">{{ $fecha }}</option>
+                                <option value="" disabled {{ request('buscarpor') ? '' : 'selected' }}>
+                                    Fecha de Bateria
+                                </option>
+
+                                @foreach ($fechas as $fecha)
+                                    <option value="{{ $fecha }}"
+                                        {{ request('buscarpor') == $fecha ? 'selected' : '' }}>
+                                        {{ $fecha }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
                         <input type="hidden" name="total" id="total" value="{{ $total }}">
-                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit">Buscar</button>
+                        <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit">BUSCAR</button>
                     </form>
                 </div>
             </div>
@@ -55,10 +61,10 @@
                                     <tr>
                                         <th>Responsable</th>
                                         <th>Proveedor</th>
-                                        <th>Acción</th>
+                                        <th>Estudio/Especialidad</th>
                                         <th>Motivo</th>
-                                        <th>Fecha de Batería</th>
-                                        <th>Fecha y hora de reprog.</th>
+                                        <th>Fecha_Batería</th>
+                                        <th>Fecha_Hora_Reprog.</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -85,7 +91,7 @@
 
         <div class="table-responsive">
             <table class="table table-striped">
-                <thead>
+                {{-- <thead>
                     <tr>
                         <th>Accion</th>
                         <th>Proveedor</th>
@@ -107,9 +113,34 @@
                             </abbr>
                         </td>
                     </tr>
+                    @endforeach --}}
+
+                <thead>
+                    <tr>
+                        <th>Sel.</th>
+                        <th>Estudio/Especialidad</th>
+                        <th>Proveedor</th>
+                        <th>Fecha programada</th>
+                        <th>Hora programada</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($programacionsubclientes as $item)
+                        <tr>
+                            <td>
+                                <input type="checkbox"
+                                    class="check-reprogramar"
+                                    value="{{ $item->id }}"
+                                    data-proveedor="{{ $item->proveedornombre }}">
+                            </td>
+                            <td>{{ $item->accionnombre }}</td>
+                            <td>{{ $item->proveedornombre }}</td>
+                            <td>{{ $item->fechaasignada }}</td>
+                            <td>{{ $item->horadesde }} - {{ $item->horahasta }}</td>
+                        </tr>
                     @endforeach
 
-                    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    {{-- <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
@@ -184,9 +215,98 @@
                                 </form>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
                 </tbody>
             </table>
+
+            <button type="button"
+                    class="btn btn-sm btn-reprogramacion mt-3"
+                    id="btnReprogramarSeleccionados"
+                    disabled
+                    data-toggle="modal"
+                    data-target="#reprogramarModal">
+                REPROGRAMAR SELECCIONADOS
+            </button>
+            <div class="modal fade" id="reprogramarModal">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+
+                        <form action="{{ route('admin.reprogramar.multiple') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="ids" id="idsSeleccionados">
+                            <input type="hidden" name="proveedornombre" id="proveedorSeleccionado">
+                            {!! Form::hidden('usuarioactualizacion', auth()->user()->name) !!}
+
+                            <div class="modal-header">
+                                <h5 class="modal-title">REPROGRAMACIÓN</h5>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label>Proveedor</label>
+                                    <input type="text" class="form-control" id="proveedorTexto" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label>Motivo</label>
+                                    <input type="text" name="motivoreprogramacion" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Fecha</label>
+                                    <input type="date" name="fechaasignada" class="form-control" required>
+                                </div>
+                                <div class="row">
+                                    <div class="form-group col-lg-6">
+                                        <label>Hora Desde</label>
+                                        <input type="time" name="horadesde" class="form-control" required>
+                                    </div>
+                                    <div class="form-group col-lg-6">
+                                        <label>Hora Hasta</label>
+                                        <input type="time" name="horahasta" class="form-control" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-cancelar" data-dismiss="modal">CANCELAR</button>
+                                <button type="submit" class="btn btn-reprogramar">REPROGRAMAR</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const checks = document.querySelectorAll('.check-reprogramar');
+                    const btn = document.getElementById('btnReprogramarSeleccionados');
+
+                    function validarSeleccion() {
+                        const seleccionados = [...checks].filter(c => c.checked);
+
+                        if (seleccionados.length === 0) {
+                            btn.disabled = true;
+                            return;
+                        }
+
+                        const proveedor = seleccionados[0].dataset.proveedor;
+                        const mismoProveedor = seleccionados.every(c => c.dataset.proveedor === proveedor);
+
+                        if (!mismoProveedor) {
+                            alert('SOLO PUEDES SELECCIONAR PROGRAMACIONES DEL MISMO MÉDICO');
+                            checks.forEach(c => c.checked = false);
+                            btn.disabled = true;
+                            return;
+                        }
+
+                        btn.disabled = false;
+
+                        document.getElementById('proveedorTexto').value = proveedor;
+                        document.getElementById('proveedorSeleccionado').value = proveedor;
+                        document.getElementById('idsSeleccionados').value =
+                            seleccionados.map(c => c.value).join(',');
+                    }
+
+                    checks.forEach(c => c.addEventListener('change', validarSeleccion));
+                });
+            </script>
         </div>
     </div>
 </div>

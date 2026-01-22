@@ -80,7 +80,51 @@
                 <div class="tab-pane fade show active" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
                     <div class="card">
                         <div class="card-body">
-                            <div class="table-responsive" style="max-height: 70vh;">
+                            <div class="card">
+                                <div class="card-body" style="background-color: #f7f7f7">
+                                    <div class="row" style="margin-top: -10px;">
+                                        <div class="col-md-6">
+                                            <label style="margin-bottom: -5px;"><strong>Buscar por Proveedor:</strong></label>
+                                            <input type="text" id="buscarProveedor" class="form-control" placeholder="Ingrese nombre del proveedor...">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label style="margin-bottom: -5px;"><strong>Buscar por Fecha de Pago:</strong></label>
+                                            <input type="date" id="buscarFecha" class="form-control">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const inputProveedor = document.getElementById('buscarProveedor');
+                                    const inputFecha = document.getElementById('buscarFecha');
+                                    const tablas = document.querySelectorAll('table.table-bordered tbody');
+
+                                    function filtrarTablas() {
+                                        const textoProveedor = inputProveedor.value.toLowerCase();
+                                        const textoFecha = inputFecha.value;
+                                        tablas.forEach(tbody => {
+                                            Array.from(tbody.getElementsByTagName('tr')).forEach(fila => {
+                                                const celdas = fila.getElementsByTagName('td');
+                                                const proveedor = celdas[3]?.textContent.toLowerCase() || '';
+                                                const fechaPago = celdas[5]?.textContent.trim() || '';
+                                                const coincideProveedor = proveedor.includes(textoProveedor);
+                                                const coincideFecha = !textoFecha || fechaPago.includes(textoFecha);
+
+                                                if (coincideProveedor && coincideFecha) {
+                                                    fila.style.display = '';
+                                                } else {
+                                                    fila.style.display = 'none';
+                                                }
+                                            });
+                                        });
+                                    }
+                                    inputProveedor.addEventListener('keyup', filtrarTablas);
+                                    inputFecha.addEventListener('change', filtrarTablas);
+                                });
+                            </script>
+
+                            <div class="table-responsive" style="max-height: 50vh;">
                                 <h4 style="font-weight:900;">CUENTAS POR PAGAR</h4>
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-striped">
@@ -234,29 +278,33 @@
                                 </div>
                             </div>
                             @can('admin.cuentaspagar.guardarcomprobantescxp')
-                            <div class="d-flex flex-wrap align-items-end" style="border-radius: 5px; margin-top:10px;">
-                                <div>
-                                    <label for="archivoComprobante" class="form-label"><strong>Comprobante (Obligatorio):</strong></label>
-                                    <input type="file" id="archivoComprobante" accept=".pdf,.jpg,.png" class="form-control" required>
+                                <div class="card" style=" margin-top: 20px;">
+                                    <div class="card-body" style="background-color: #f9f9f9">
+                                        <div class="row" style="margin-top: -10px;">
+                                            <div class="col-lg-3">
+                                                <label for="archivoComprobante" class="form-label"><strong>Comprobante (Obligatorio):</strong></label>
+                                                <input type="file" id="archivoComprobante" accept=".pdf,.jpg,.png" class="form-control" required>
+                                            </div>
+                                            
+                                            <div class="col-lg-3">
+                                                <label for="usuarioNotificado" class="form-label"><strong>Notificar (Obligatorio):</strong></label>
+                                                <select id="usuarioNotificado" class="form-control" required>
+                                                    <option value="">-- Seleccione --</option>
+                                                    @foreach($usuarioscomprobantes as $usuario)
+                                                        <option value="{{ $usuario->name }}">{{ $usuario->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <label for="archivoCheque" class="form-label"><strong>Cheque (Opcional):</strong></label>
+                                                <input type="file" id="archivoCheque" accept=".pdf,.jpg,.png" class="form-control">
+                                            </div>
+                                            <div class="col-lg-3 d-flex align-items-end">
+                                                <button class="btn btn-botongrisgrande" onclick="enviarSeleccionados()">GUARDAR</button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                
-                                <div class="ms-2">
-                                    <label for="usuarioNotificado" class="form-label"><strong>Notificar a (Obligatorio):</strong></label>
-                                    <select id="usuarioNotificado" class="form-control" required>
-                                        <option value="">-- Seleccione --</option>
-                                        <option value="SERGIO ARMANDO MICHEL MAITA">SERGIO ARMANDO MICHEL MAITA</option>
-                                        <option value="CRISTHIAN ALAIN DURAN SULLCA">CRISTHIAN ALAIN DURAN SULLCA</option>
-                                        <option value="JHOSELINE EVA VELASQUEZ ESCOBAR">JHOSELINE EVA VELASQUEZ ESCOBAR</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="archivoCheque" class="form-label"><strong>Cheque (Opcional):</strong></label>
-                                    <input type="file" id="archivoCheque" accept=".pdf,.jpg,.png" class="form-control">
-                                </div>
-                                <div class="d-flex align-items-end">
-                                    <button class="btn btn-botongrisgrande" onclick="enviarSeleccionados()">GUARDAR</button>
-                                </div>
-                            </div>
                             @endcan
 
                             <script>
@@ -304,20 +352,23 @@
                         <div class="col-lg-12">
                             <div class="card">
                                 <div class="card-body" style="background-color: #f7f7f7">
-                                    <div class="row align-items-end g-2">
+                                    <div class="row align-items-end g-2" style="margin-top: -10px;">
                                         <div class="col-md-4 col-lg-4">
-                                            <label class="form-label">Proveedor</label>
-                                            <input type="text" id="filtroProveedor" class="form-control" placeholder="Buscar por proveedor..." onkeyup="filtrarTabla()">
+                                            <label class="form-label" style="margin-bottom: -5px;">Proveedor</label>
+                                            {{-- <input type="text" id="filtroProveedor" class="form-control" placeholder="Buscar por proveedor..." onkeyup="filtrarTabla()"> --}}
+                                            <input type="text" id="filtroProveedor" class="form-control" placeholder="Buscar por proveedor..." onkeyup="filtrarTablas()">
                                         </div>
 
                                         <div class="col-md-4 col-lg-3">
-                                            <label class="form-label">Fecha</label>
-                                            <input type="date" id="filtroFecha" class="form-control" onchange="filtrarTabla()">
+                                            <label class="form-label" style="margin-bottom: -5px;">Fecha</label>
+                                            {{-- <input type="date" id="filtroFecha" class="form-control" onchange="filtrarTabla()"> --}}
+                                            <input type="date" id="filtroFecha" class="form-control" onchange="filtrarTablas()">
                                         </div>
 
                                         <div class="col-md-4 col-lg-3">
-                                            <label class="form-label">Tipo de Transacción</label>
-                                            <select class="form-control" id="filtroTipoTransaccion" onchange="filtrarTabla()">
+                                            <label class="form-label" style="margin-bottom: -5px;">Tipo de Transacción</label>
+                                            {{-- <select class="form-control" id="filtroTipoTransaccion" onchange="filtrarTabla()"> --}}
+                                                <select class="form-control" id="filtroTipoTransaccion" onchange="filtrarTablas()">
                                                 <option value="" disabled selected>Buscar por tipo transacción...</option>
                                                 <option value="TRANSFERENCIA BANCARIA">TRANSFERENCIA BANCARIA</option>
                                                 <option value="CHEQUE">CHEQUE</option>
@@ -382,7 +433,6 @@
 
                                                     <tr class="font-weight-bold align-middle" style="background-color: #f7f7f7">
                                                         <td class="text-center">
-                                                            {{-- <input type="checkbox" class="checkbox-grupo" data-orden="{{ $ordenId }}"> --}}
                                                             <i class="fas fa-check text-success"></i>
                                                         </td>
                                                         <td class="text-center">
@@ -407,7 +457,6 @@
                                                         <td>{{ \Carbon\Carbon::parse($item->fechaasignada)->format('d/m/Y') }}</td>
                                                         <td>{{ $tipoTransacciongeneral }}</td>
                                                     </tr>
-
                                                     <tr class="collapse bg-light" id="{{ $collapseId }}">
                                                         <th>Sel.</th>
                                                         <th>ID</th>
@@ -451,7 +500,6 @@
                                                         <td class="text-right">{{ number_format($item->montototal, 2) }}</td>
                                                     </tr>
                                                 @endforeach
-
                                                 @foreach ($agrupados1SQL as $proveedorNombre => $items)
                                                     @php
                                                         $primer = $items->first();
@@ -467,7 +515,6 @@
 
                                                     <tr class="font-weight-bold align-middle" style="background-color: #f7f7f7">
                                                         <td class="text-center">
-                                                            {{-- <input type="checkbox" class="checkbox-grupo" data-orden="{{ $ordenId }}"> --}}
                                                             <i class="fas fa-check text-success"></i>
                                                         </td>
                                                         <td class="text-center">
@@ -481,7 +528,6 @@
                                                                     <i class="fas fa-file-alt"></i>
                                                                 </a>
                                                             @endif
-
                                                             @if ($archivo2)
                                                                 <a class="btn btn-sm btn-botongris2" href="{{ asset('comprobantescuentaspagar/' . $archivo2) }}" target="_blank" title="VER CHEQUE">
                                                                     <i class="fas fa-file"></i>
@@ -506,7 +552,6 @@
                                                         <th>Transacción</th>
                                                         <th class="text-right">Monto</th>
                                                     </tr>
-
                                                     @foreach ($items as $item)
                                                         @php
                                                             $tipoplanilla = optional($item->proveedorServicio)->tipoplanilla ?? 'NO DEFINIDO';
@@ -514,7 +559,6 @@
                                                                 ->where('fechapago', $item->fechaasignada)
                                                                 ->first();
                                                             $archivoExistentefijo = \App\Models\ProveedoresServicios::where('razonsocial', $item->proveedornombre)->first();
-
                                                             $detalle = \App\Models\Detallerecibo::where('cuentapagarid', $item->id)->first();
                                                             $tipoTransaccion = $detalle->tipotransaccion ?? 'NO DEFINIDO';
                                                         @endphp
@@ -549,7 +593,6 @@
                                                         </tr>
                                                     @endforeach
                                                 @endforeach
-
                                                 @foreach ($agrupadosOtros as $ordenId => $items)
                                                     @php
                                                         $primer = $items->first();
@@ -561,10 +604,8 @@
                                                         $detalle = \App\Models\Detallerecibo::where('cuentapagarid', $primer->id)->first();
                                                         $tipoTransacciongeneral = $detalle->tipotransaccion ?? 'NO DEFINIDO';
                                                     @endphp
-
                                                     <tr class="font-weight-bold align-middle" style="background-color: #f7f7f7">
                                                         <td class="text-center">
-                                                            {{-- <input type="checkbox" class="checkbox-grupo" data-orden="{{ $ordenId }}"> --}}
                                                             <i class="fas fa-check text-success"></i>
                                                         </td>
                                                         <td class="text-center">
@@ -705,7 +746,6 @@
 
                                                     <tr class="font-weight-bold align-middle" style="background-color: #f7f7f7" data-fecha="{{ $fechaPago }}">
                                                         <td class="text-center">
-                                                            {{-- <input type="checkbox" class="checkbox-grupo-med" data-orden="{{ $ordenId }}"> --}}
                                                             <i class="fas fa-check text-success"></i>
                                                         </td>
                                                         <td class="text-center">
@@ -751,7 +791,6 @@
                                                                 ->where('fechapago', $item->fechapago)
                                                                 ->first();
                                                             $archivoExistentefijo = \App\Models\Proveedor::where('proveedor', $item->proveedorasignado)->first();
-
                                                             $detalle = \App\Models\Detallerecibo::where(function ($query) use ($item) {
                                                                     $query->where('clientenombre', $item->clienteitanombre)
                                                                         ->orWhere('clientenombre', $item->clienteauditorianombre)
@@ -764,7 +803,6 @@
                                                                 ->first();
 
                                                             $tipoTransaccion = $detalle->tipotransaccion ?? 'NO DEFINIDO';
-
                                                         @endphp
                                                         <tr class="collapse" id="{{ $collapseId }}">
                                                             <td><input type="checkbox" class="checkbox-med cuenta-med-{{ $ordenId }}" value="{{ $item->id }}"></td>
@@ -889,11 +927,80 @@
                         filtrarTabla();
                     }
                 </script>
+                <script>
+                    function hayFiltrosActivos() {
+                        return (
+                            document.getElementById('filtroProveedor').value.trim() !== '' ||
+                            document.getElementById('filtroFecha').value !== '' ||
+                            document.getElementById('filtroTipoTransaccion').value !== ''
+                        );
+                    }
+
+                    function filtrarTablas() {
+                        const proveedor = document.getElementById('filtroProveedor').value.toLowerCase().trim();
+                        const fecha = document.getElementById('filtroFecha').value;
+                        const tipo = document.getElementById('filtroTipoTransaccion').value.toLowerCase();
+
+                        filtrarTabla('tabla-proveedores-medicos', proveedor, fecha, tipo);
+                        filtrarTabla('tabla-cuentas-pagar', proveedor, fecha, tipo);
+                    }
+
+                    function filtrarTabla(tablaId, proveedor, fecha, tipo) {
+                        const filas = document.querySelectorAll(`#${tablaId} tbody tr`);
+
+                        // 🔴 SIN FILTROS → ocultar todo
+                        if (!hayFiltrosActivos()) {
+                            filas.forEach(fila => fila.style.display = 'none');
+                            return;
+                        }
+
+                        filas.forEach(fila => {
+                            const columnas = fila.querySelectorAll('td');
+                            if (columnas.length < 7) {
+                                fila.style.display = 'none';
+                                return;
+                            }
+
+                            const proveedorFila = columnas[4]?.innerText.toLowerCase() || '';
+                            const fechaFila = columnas[5]?.innerText || '';
+                            const tipoFila = columnas[6]?.innerText.toLowerCase() || '';
+
+                            let mostrar = true;
+
+                            if (proveedor && !proveedorFila.includes(proveedor)) mostrar = false;
+
+                            if (fecha) {
+                                const fechaFormateada = fecha.split('-').reverse().join('/');
+                                if (!fechaFila.includes(fechaFormateada)) mostrar = false;
+                            }
+
+                            if (tipo && !tipoFila.includes(tipo)) mostrar = false;
+
+                            fila.style.display = mostrar ? '' : 'none';
+                        });
+                    }
+
+                    function limpiarFiltros() {
+                        document.getElementById('filtroProveedor').value = '';
+                        document.getElementById('filtroFecha').value = '';
+                        document.getElementById('filtroTipoTransaccion').value = '';
+
+                        document.querySelectorAll(
+                            '#tabla-proveedores-medicos tbody tr, #tabla-cuentas-pagar tbody tr'
+                        ).forEach(fila => fila.style.display = 'none');
+                    }
+
+                    // 🔴 AL CARGAR → TODO OCULTO
+                    document.addEventListener('DOMContentLoaded', () => {
+                        document.querySelectorAll(
+                            '#tabla-proveedores-medicos tbody tr, #tabla-cuentas-pagar tbody tr'
+                        ).forEach(fila => fila.style.display = 'none');
+                    });
+                </script>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
     <div class="modal fade" id="modalQR" tabindex="-1" aria-labelledby="modalQRLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal">
             <div class="modal-content">

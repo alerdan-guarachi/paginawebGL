@@ -107,7 +107,7 @@
                                 tipoSelect.addEventListener('change', function () {
                                     if (this.value === '2') { // VENTA
                                         estadoSelect.value = 'ANULADO';
-                                        estadoSelect.disabled = true;
+                                        estadoSelect.setAttribute('readonly', true);
                                     } else if (this.value === '1') { // COMPRA
                                         estadoSelect.value = 'VALIDO';
                                         estadoSelect.disabled = false;
@@ -135,7 +135,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <script>
+                        {{-- <script>
                             document.addEventListener('DOMContentLoaded', function () {
                                 const razonInput = document.getElementById('razonsocial');
                                 const usuarioEntregaContainer = document.getElementById('usuarioentrega-container');
@@ -158,8 +158,41 @@
                                 // También ejecutar al cargar (por si el valor ya está seteado)
                                 verificarOcultamiento();
                             });
-                        </script>
+                        </script> --}}
+                        <script>
+                        document.addEventListener('DOMContentLoaded', function () {
 
+                            const razonInput = document.getElementById('razonsocial');
+                            const usuarioEntregaContainer = document.getElementById('usuarioentrega-container');
+                            const usuarioEntrega = document.getElementById('usuarioentrega');
+
+                            const razonesQueOcultanCampo = [
+                                'TELEFONICA CELULAR DE BOLIVIA S.A.',
+                                'COOPERATIVA DE SERVICIOS PUBLICOS SANTA CRUZ R.L.',
+                                'COOPERATIVA DE TELECOMUNICACIONES SANTA CRUZ R.L.',
+                                'COOPERATIVA RURAL DE ELECTRIFICACIÓN R.L.',
+                                'BOLIVIANA DE AVIACION'
+                            ];
+
+                            function verificarOcultamiento() {
+                                const valor = razonInput.value.trim().toUpperCase();
+
+                                const ocultar = razonesQueOcultanCampo.includes(valor);
+
+                                if (ocultar) {
+                                    usuarioEntregaContainer.style.display = 'none';
+                                    usuarioEntrega.removeAttribute('required');
+                                    usuarioEntrega.value = "";
+                                } else {
+                                    usuarioEntregaContainer.style.display = '';
+                                    usuarioEntrega.setAttribute('required', 'required');
+                                }
+                            }
+
+                            razonInput.addEventListener('input', verificarOcultamiento);
+                            verificarOcultamiento(); // Ejecutar al cargar
+                        });
+                        </script>
                     </div>
                     {{--<div class="form-group col-lg-4">
                             <label for="pdfFactura">Subir PDF de Factura</label>
@@ -363,6 +396,10 @@
 <a class="btn float-right btn-outline-secondary btn-sm" style="margin-right: 10px;" data-toggle="modal" data-target="#modalCodigo">
     CODIGO PERMISO
 </a>
+<a class="btn float-right btn-outline-secondary btn-sm" style="margin-right: 10px;" data-toggle="modal" data-target="#modalCierreMes">
+    CERRAR MES
+</a>
+
 <div class="modal fade" id="modalCodigo" tabindex="-1" role="dialog" aria-labelledby="modalCodigoLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -417,6 +454,41 @@
         });
     });
 </script>
+
+
+<div class="modal fade" id="modalCierreMes" tabindex="-1">
+    <div class="modal-dialog">
+        <form method="POST" action="{{ route('facturasegreso.cerrarMes') }}">
+            @csrf
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modalCodigoLabel" style="font-weight: 900;">CIERRE DE MES</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Mes y Año</label>
+                        <input type="month"
+                               name="mes_anio"
+                               class="form-control"
+                               min="{{ now()->subMonth()->format('Y-m') }}"
+                               max="{{ now()->format('Y-m') }}"
+                               required>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn-sm btn btn-outline-secondary">
+                        CERRAR MES Y ORDENAR REGISTROS
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <h1>FACTURAS IMPUESTOS</h1>
 @stop
@@ -520,6 +592,12 @@
         0% { transform: scale(1); opacity: 1; }
         50% { transform: scale(1.2); opacity: 0.7; }
         100% { transform: scale(1); opacity: 1; }
+    }
+    .table-responsive thead th {
+        position: sticky;
+        top: 0;
+        background: #f3f3f3;
+        z-index: 5;
     }
 </style>
 @stop
@@ -815,7 +893,7 @@
                 $it = number_format(($totales['totalVentas'] * 0.03), 2, '.', '');
 
 
-                $limite = $mesAnterior->copy()->addMonth()->startOfMonth()->addDays(15);
+                $limite = $mesAnterior->copy()->addMonth()->startOfMonth()->addDays(16);
 
                 // Resto igual
                 $hoy = now();
@@ -970,14 +1048,14 @@
 
             {{-- COMPRAS SCZ --}}
             <div class="tab-pane fade" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
-                <div class="table-responsive">
+                <div class="table-responsive" style="max-height: 60vh;">
                     <form action="{{ route('compras.actualizar.estado') }}" method="POST">
                         @csrf
                         <table class="table table-bordered">
                             <thead style="background-color: #f3f3f3">
                                 <tr>
                                     @can('admin.facturasegreso.cambiarvalidofacturas')
-                                    <th><input type="checkbox" id="select_all">Sel.</th>
+                                    <th>{{-- <input type="checkbox" id="select_all"> --}}Sel.</th>
                                     @endcan
                                     <th>Nro.</th>
                                     <th>Especif.</th>
@@ -1012,7 +1090,7 @@
                                         @can('admin.facturasegreso.cambiarvalidofacturas')
                                         <td><input type="checkbox" name="seleccionados[]" value="{{ $compra->id }}"></td>
                                         @endcan
-                                        <td>{{ $compra->id }}</td>
+                                        <td>{{ $compra->idfactura ?? $compra->id }}</td>
                                         <td>{{ $compra->especificacion }}</td>
                                         <td>{{ $compra->nitci }}</td>
                                         <td>{{ $compra->razonsocial }}</td>
@@ -1060,7 +1138,7 @@
 
             {{-- VENTAS SCZ --}}
             <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
-                <div class="table-responsive">
+                <div class="table-responsive" style="max-height: 60vh;">
                     <table class="table table-bordered">
                         <thead style="background-color: #f3f3f3">
                             <tr>
@@ -1095,7 +1173,7 @@
                         <tbody>
                             @foreach($ventasscz as $venta)
                                 <tr>
-                                    <td>{{ $venta->id }}</td>
+                                    <td>{{ $venta->idfactura ?? $venta->id }}</td>
                                     <td>{{ $venta->especificacion }}</td>
                                     <td>{{ $venta->fechafacturaduidim }}</td>
                                     <td>{{ $venta->nrofactura }}</td>
@@ -1158,14 +1236,14 @@
             
             {{-- COMPRAS CBBA --}}
             <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
-                <div class="table-responsive">
+                <div class="table-responsive" style="max-height: 60vh;">
                     <form action="{{ route('compras.actualizar.estado') }}" method="POST">
                         @csrf
                         <table class="table table-bordered">
                             <thead style="background-color: #f3f3f3">
                                 <tr>
                                     @can('admin.facturasegreso.cambiarvalidofacturas')
-                                    <th><input type="checkbox" id="select_all">Sel.</th>
+                                    <th>{{-- <input type="checkbox" id="select_all"> --}}Sel.</th>
                                     @endcan
                                     <th>Nro.</th>
                                     <th>Especif.</th>
@@ -1200,7 +1278,7 @@
                                         @can('admin.facturasegreso.cambiarvalidofacturas')
                                         <td><input type="checkbox" name="seleccionados[]" value="{{ $compra->id }}"></td>
                                         @endcan
-                                        <td>{{ $compra->id }}</td>
+                                        <td>{{ $compra->idfactura ?? $compra->id }}</td>
                                         <td>{{ $compra->especificacion }}</td>
                                         <td>{{ $compra->nitci }}</td>
                                         <td>{{ $compra->razonsocial }}</td>
@@ -1248,7 +1326,7 @@
 
             {{-- VENTAS CBBA --}}
             <div class="tab-pane fade" id="tab-content-5" role="tabpanel" aria-labelledby="tab-5">
-                <div class="table-responsive">
+                <div class="table-responsive" style="max-height: 60vh;">
                     <table class="table table-bordered">
                         <thead style="background-color: #f3f3f3">
                             <tr>
@@ -1283,7 +1361,7 @@
                         <tbody>
                             @foreach($ventascbba as $venta)
                                 <tr>
-                                    <td>{{ $venta->id }}</td>
+                                    <td>{{ $venta->idfactura ?? $venta->id }}</td>
                                     <td>{{ $venta->especificacion }}</td>
                                     <td>{{ $venta->fechafacturaduidim }}</td>
                                     <td>{{ $venta->nrofactura }}</td>
@@ -1431,6 +1509,7 @@
                             <table class="table table-bordered">
                                 <thead style="background-color: #f3f3f3">
                                     <tr>
+                                        <th>Estado</th>
                                         <th>Nro.</th>
                                         <th>Especif.</th>
                                         <th>Fecha_de_Factura</th>
@@ -1453,7 +1532,6 @@
                                         <th>Importe GIFT CARD</th>
                                         <th>Importe Base DF</th>
                                         <th>Débito Fiscal</th>
-                                        <th>Estado</th>
                                         <th>Codigo Control</th>
                                         <th>Tipo Compra</th>
                                         {{-- <th>Importe Sujeto_DF</th> --}}
@@ -1462,6 +1540,7 @@
                                 <tbody>
                                     @foreach($otrasventasscz as $venta)
                                         <tr>
+                                            <td>{{ $venta->estado }}</td>
                                             <td>{{ $venta->id }}</td>
                                             <td>{{ $venta->especificacion }}</td>
                                             <td>{{ $venta->fechafacturaduidim }}</td>
@@ -1484,7 +1563,6 @@
                                             <td>{{ $venta->giftcard }}</td>
                                             <td>{{ $venta->importebasecfdf }}</td>
                                             <td>{{ $venta->creditodebitofiscal }}</td>
-                                            <td>{{ $venta->estado }}</td>
                                             <td>{{ $venta->codigocontrol }}</td>
                                             <td>{{ $venta->tipo }}</td>
                                             {{-- <td>{{ $venta->importenosujetocfdf }}</td> --}}
@@ -1569,6 +1647,7 @@
                             <table class="table table-bordered">
                                 <thead style="background-color: #f3f3f3">
                                     <tr>
+                                        <th>Estado</th>
                                         <th>Nro.</th>
                                         <th>Especif.</th>
                                         <th>Fecha_de_Factura</th>
@@ -1591,7 +1670,6 @@
                                         <th>Importe GIFT CARD</th>
                                         <th>Importe Base DF</th>
                                         <th>Débito Fiscal</th>
-                                        <th>Estado</th>
                                         <th>Codigo Control</th>
                                         <th>Tipo Compra</th>
                                         {{-- <th>Importe Sujeto_DF</th> --}}
@@ -1600,6 +1678,7 @@
                                 <tbody>
                                     @foreach($otrasventascbba as $venta)
                                         <tr>
+                                            <td>{{ $venta->estado }}</td>
                                             <td>{{ $venta->id }}</td>
                                             <td>{{ $venta->especificacion }}</td>
                                             <td>{{ $venta->fechafacturaduidim }}</td>
@@ -1622,7 +1701,6 @@
                                             <td>{{ $venta->giftcard }}</td>
                                             <td>{{ $venta->importebasecfdf }}</td>
                                             <td>{{ $venta->creditodebitofiscal }}</td>
-                                            <td>{{ $venta->estado }}</td>
                                             <td>{{ $venta->codigocontrol }}</td>
                                             <td>{{ $venta->tipo }}</td>
                                             {{-- <td>{{ $venta->importenosujetocfdf }}</td> --}}

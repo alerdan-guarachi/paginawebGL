@@ -59,6 +59,7 @@ class StoreClienteRequest extends FormRequest
             'ciudadresidencia' => 'required',
             'aseguradora' => 'required',
             'referenciador' => 'required',
+            'referenciadorid' => '',
             'afp' => '',
             'numhijosmenores' => 'required',
             'alertas' => '',
@@ -69,6 +70,10 @@ class StoreClienteRequest extends FormRequest
             'tipocliente' => '',
             'paisnacimiento' => '',
             'matricula' => '',
+            'numhijostotal' => '',
+            'numhijostotal' => '',
+            'derivacion' => '',
+            'billeteramovil' => '',
         ]; 
         return $rules;
     }

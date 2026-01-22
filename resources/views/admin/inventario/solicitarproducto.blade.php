@@ -241,7 +241,7 @@
                     <div class="row">
                         <div class="form-group col-lg-6">
                             <label for="buscar_producto">Buscar producto:</label>
-                            <input list="listaProductos" id="buscar_producto" class="form-control" placeholder="Buscar producto..." oninput="actualizarProducto()">
+                            <input list="listaProductos" id="buscar_producto" name="productosolicitadousuario" class="form-control" placeholder="Buscar producto..." oninput="actualizarProducto()">
                             {{-- <datalist id="listaProductos">
                                 @foreach($productos as $producto)
                                     <option value="{{ $producto->nombreproducto }} - {{ $producto->marca }} - {{ $producto->especificacionmedida }} - {{ $producto->color }}"
@@ -404,6 +404,22 @@
             </li>     
         </ul>
     </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll('a[data-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('click', function () {
+                    localStorage.setItem('pestana_activa', this.getAttribute('href'));
+                });
+            });
+            let pestana = localStorage.getItem('pestana_activa');
+            if (pestana) {
+                const tabElement = document.querySelector(`a[href="${pestana}"]`);
+                if (tabElement) {
+                    new bootstrap.Tab(tabElement).show();
+                }
+            }
+        });
+    </script>
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
             {{-- SOLICITUDES PENDIENTES --}}
@@ -434,7 +450,7 @@
                                                 <td>{{$solicitudinventario->id}}</td>
                                                 <td>{{$solicitudinventario->usuariosolicitante}}</td>
                                                 <td>{{$solicitudinventario->sucursal}}</td>
-                                                <td>{{$solicitudinventario->productosolicitado}} - {{$solicitudinventario->cantidad}}</td>
+                                                <td>{{$solicitudinventario->productosolicitadousuario}} - {{$solicitudinventario->cantidad}}</td>
                                                 <td>{{ \Carbon\Carbon::parse($solicitudinventario->created_at)->format('Y-m-d') }}</td>
                                                 <td>{{$solicitudinventario->productoofertado}} - {{$solicitudinventario->cantidadofertado}}</td>
                                                 
@@ -452,18 +468,25 @@
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    @php
+                                                    {{-- @php
                                                         $usuariosAutorizados = [
                                                             'CARLOS ALEJANDRO GUARACHI SANDOVAL',
                                                             'DENISSE MAUREN LOPEZ FLORES',
                                                             'SERGIO ARMANDO MICHEL MAITA',
-                                                            'MARLENE ANDREA MONTELLANO ORTIZ',
-                                                            'CRISTHIAN ALAIN DURAN SULLCA',
-                                                            'JHOSELINE EVA VELASQUEZ ESCOBAR'
+                                                            'JHOSELINE EVA VELASQUEZ ESCOBAR',
+                                                            'ROGER CANDIA JUSTINIANO'
                                                         ];
-                                                    @endphp
+                                                    @endphp --}}
 
-                                                    @if(in_array(auth()->user()->name, $usuariosAutorizados) && in_array($solicitudinventario->estado, ['SOLICITADO', 'RECHAZADO', 'EN ESPERA']))
+                                                    {{-- @if(
+                                                        in_array(auth()->user()->name, $usuariosAutorizados) && 
+                                                        in_array($solicitudinventario->estado, ['SOLICITADO', 'RECHAZADO', 'EN ESPERA'])
+                                                    ) --}}
+
+                                                    @if (
+                                                        auth()->user()->hasAnyRole(['MAESTRO', 'ADMINISTRADOR', 'CONTABLE']) &&
+                                                        in_array($solicitudinventario->estado, ['SOLICITADO', 'RECHAZADO', 'EN ESPERA'])
+                                                    )
                                                     <a class="btn btn-botongris btn-sm" data-toggle="modal" data-target="#productoModal{{ $solicitudinventario->id }}" title="VER INVENTARIO">
                                                         <i class="fas fa-tag"></i>
                                                     </a>
@@ -485,7 +508,7 @@
                                                                         <div class="card-body" style="background-color: #f5f5f5; margin-bottom: -10px; margin-top: -10px;"> 
                                                                             <div class="mb-3">
                                                                                 <h5>
-                                                                                    Producto Solicitado: <span class="font-weight-bold">{{ $solicitudinventario->productosolicitado }}</span><br>
+                                                                                    Producto Solicitado: <span class="font-weight-bold">{{ $solicitudinventario->productosolicitadousuario }}</span><br>
                                                                                     Cantidad Solicitado: <span class="font-weight-bold">{{ $solicitudinventario->cantidad }}</span>
                                                                                 </h5>
                                                                             </div>
@@ -499,7 +522,7 @@
                                                                                     <li class="list-group-item">
                                                                                         <div class="d-flex justify-content-between align-items-center">
                                                                                             <div>
-                                                                                                <strong>{{ $coincidencia->nombreproducto }}</strong> - {{ $coincidencia->especificacionmedida }} - {{ $coincidencia->color }} - {{ $coincidencia->marca }}<br>
+                                                                                                <strong>{{ $coincidencia->nombreproducto }}</strong> - {{ $coincidencia->marca }} - {{ $coincidencia->especificacionmedida }} - {{ $coincidencia->color }}<br>
                                                                                                 <small>{{ $coincidencia->stockactual }}{{--  {{ $coincidencia->unidadmedida }} --}} EN STOCK</small>
                                                                                             </div>
                                                                                             <div>
@@ -592,7 +615,15 @@
                                                         }
                                                     </script>
                                                     
-                                                    @if(in_array(auth()->user()->name, $usuariosAutorizados) && $solicitudinventario->estado === 'ACEPTADO')
+                                                    {{-- @if(
+                                                        in_array(auth()->user()->name, $usuariosAutorizados) && 
+                                                        $solicitudinventario->estado === 'ACEPTADO'
+                                                    ) --}}
+
+                                                    @if (
+                                                        auth()->user()->hasAnyRole(['MAESTRO', 'ADMINISTRADOR', 'CONTABLE']) &&
+                                                        $solicitudinventario->estado === 'ACEPTADO'
+                                                    )
                                                         <button type="button" class="btn btn-botonaceptado btn-sm" data-toggle="modal" data-target="#modalSolicitante{{ Str::slug($solicitudinventario->usuariosolicitante) }}">
                                                             <i class="fas fa-archive"></i>
                                                         </button>
@@ -738,37 +769,36 @@
                         </div>
                     </form> --}}
                     <form id="formAnulacion" action="{{ route('anular.solicitudes.inventario') }}" method="POST">
-    @csrf
-    <input type="hidden" name="solicitudes_json" id="solicitudes_json">
-    <div class="form-group mt-3">
-        <div class="row justify-content-end align-items-center">
-            <div class="col-auto">
-                <label for="motivo_anulacion" class="mb-0">Motivo de Anulación:</label>
-            </div>
-            <div class="col-auto">
-                <input type="text" name="motivo_anulacion" id="motivo_anulacion" class="form-control form-control-sm" style="width: 250px;" required>
-            </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-outline-danger btn-sm">ANULAR</button>
-            </div>
-        </div>
-    </div>
-</form>
-<script>
-    document.getElementById('formAnulacion').addEventListener('submit', function (e) {
-        const checkboxes = document.querySelectorAll('.check-solicitud:checked');
-        const ids = Array.from(checkboxes).map(cb => cb.value);
-        document.getElementById('solicitudes_json').value = JSON.stringify(ids);
-    });
+                        @csrf
+                        <input type="hidden" name="solicitudes_json" id="solicitudes_json">
+                        <div class="form-group mt-3">
+                            <div class="row justify-content-end align-items-center">
+                                <div class="col-auto">
+                                    <label for="motivo_anulacion" class="mb-0">Motivo de Anulación:</label>
+                                </div>
+                                <div class="col-auto">
+                                    <input type="text" name="motivo_anulacion" id="motivo_anulacion" class="form-control form-control-sm" style="width: 250px;" required>
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">ANULAR</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <script>
+                        document.getElementById('formAnulacion').addEventListener('submit', function (e) {
+                            const checkboxes = document.querySelectorAll('.check-solicitud:checked');
+                            const ids = Array.from(checkboxes).map(cb => cb.value);
+                            document.getElementById('solicitudes_json').value = JSON.stringify(ids);
+                        });
 
-    // Checkbox select all
-    document.getElementById('selectAll')?.addEventListener('change', function () {
-        document.querySelectorAll('.check-solicitud').forEach(chk => {
-            chk.checked = this.checked;
-        });
-    });
-</script>
-
+                        // Checkbox select all
+                        document.getElementById('selectAll')?.addEventListener('change', function () {
+                            document.querySelectorAll('.check-solicitud').forEach(chk => {
+                                chk.checked = this.checked;
+                            });
+                        });
+                    </script>
                 @endcan
                 <script>
                     document.getElementById('selectAll').addEventListener('change', function() {
@@ -936,6 +966,9 @@
                                 }
                             </script>
                         </table>
+                        <div class="d-flex justify-content-center mt-3">
+                        {{ $solicitudinventarios->withQueryString()->fragment('tab-content-2')->links() }}
+                        </div>
                     </div>
                 </div>
             </div>

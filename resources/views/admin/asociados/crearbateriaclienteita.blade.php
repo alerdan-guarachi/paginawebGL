@@ -5,6 +5,299 @@
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteita', $cliente) }}">REGRESAR</a>
 @endif
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">BATERIA DEL CLIENTE</a>
+<a class="btn custom3-button btn-sm float-right" data-toggle="modal" data-target="#modalRecomendar">RECOMENDACIONES</a>
+<a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#modalPrestaciones" style="margin-right: 10px;">PRESTACIONES</a>
+<div class="modal fade" id="modalRecomendar" tabindex="-1" role="dialog" aria-labelledby="modalRecomendarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" style="font-weight: 700; color: #94c93b;">RECOMENDACIONES ESTUDIOS / ESPECIALIDADES</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body"> 
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Reg.</th>
+                                                <th>Tipo_Área</th>
+                                                <th>Área</th>
+                                                <th>Estudio/Especialidad</th>
+                                                <th>Fecha_Registro</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @php
+                                                $conCheck = [];
+                                                $sinCheck = [];
+                                            @endphp
+
+                                            @foreach($ultimosRegistros as $rec)
+                                                @php
+                                                    $existe = \DB::table('bateriasubclientes as b')
+                                                        ->join('tramitessubclientes as t', function($join) {
+                                                            $join->on('t.clienteitaid', '=', 'b.clienteitaid')
+                                                                ->on('t.fechabateria', '=', 'b.fechabateria');
+                                                        })
+                                                        ->where('b.clienteitaid', $cliente->id)
+                                                        ->where('b.accionnombre', $rec->estudioespecialidad)                                                        ->exists();
+                                                @endphp
+
+                                                @if($existe)
+                                                    @php $conCheck[] = $rec; @endphp
+                                                @else
+                                                    @php $sinCheck[] = $rec; @endphp
+                                                @endif
+                                            @endforeach
+
+                                            @forelse($sinCheck as $rec)
+                                                <tr>
+                                                    <td class="text-center">
+                                                        <i class="fas fa-times-circle text-danger"></i>
+                                                    </td>
+                                                    <td>{{ $rec->tipoarea }}</td>
+                                                    <td>{{ $rec->area }}</td>
+                                                    <td>{{ $rec->estudioespecialidad }}</td>
+                                                    <td>{{ $rec->created_at->format('Y-m-d') }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="5">NO HAY RECOMENDACIONES REGISTRADAS</td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+
+                                        <tbody id="tbody-checks" style="display: none;">
+                                            @foreach($conCheck as $rec)
+                                                <tr>
+                                                    <td class="text-center">
+                                                        <i class="fas fa-check-circle text-success"></i>
+                                                    </td>
+                                                    <td>{{ $rec->tipoarea }}</td>
+                                                    <td>{{ $rec->area }}</td>
+                                                    <td>{{ $rec->estudioespecialidad }}</td>
+                                                    <td>{{ $rec->created_at->format('Y-m-d') }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="text-center mt-2">
+                                    <button type="button" id="btnVerChecks" class="btn custom2-button btn-sm">
+                                        VER EST/ESP. REGISTRADOS
+                                    </button>
+                                </div>
+
+                                <script>
+                                    document.getElementById('btnVerChecks').addEventListener('click', function() {
+                                        const tbodyChecks = document.getElementById('tbody-checks');
+                                        if (tbodyChecks.style.display === 'none') {
+                                            tbodyChecks.style.display = '';
+                                            this.textContent = 'OCULTAR EST/ESP. REGISTRADOS';
+                                        } else {
+                                            tbodyChecks.style.display = 'none';
+                                            this.textContent = 'VER EST/ESP. REGISTRADOS';
+                                        }
+                                    });
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .btn-consen1 {
+        background-color: #ffffff;
+        color: #ed2eed;
+        border-color: #ed2eed;
+        border-radius: 5px;
+        padding: 10px 10px;
+    }
+    .btn-consen1:hover {
+        background-color: #ed2eed;
+        color: #ffffff;
+    }
+</style>
+
+<div class="modal fade" id="modalPrestaciones" tabindex="-1" role="dialog" aria-labelledby="modalPrestacionesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" style="font-weight: 700; color: #94c93b;">BATERIA PENDIENTES DE PRESTACIONES</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body"> 
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form action="{{ route('guardar.bateria') }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-bordered table-sm">
+                                            <thead class="table-secondary">
+                                                <tr>
+                                                    <th>ID_Reg.</th>
+                                                    <th>Trámite</th>
+                                                    <th>ID_Trámite</th>
+                                                    <th>Apoderado</th>
+                                                    <th>Tipo</th>
+                                                    <th>Médico_Atención</th>
+                                                    <th>Observación</th>
+                                                    <th>Estudio/Especialidad</th>
+                                                    <th>Fecha_Bateria</th>
+                                                    <th>Medico_Derivador</th>
+                                                    <th>¿Tiene_Informe?</th>
+                                                    <th>Orden_Estudio/Especialidad</th>
+                                                    <th>Acciones_Disponibles</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach($bateriaprestaciones as $bateria)
+                                                    <tr>
+                                                        <td>{{ $bateria->id }}</td>
+                                                        <td>{{ $bateria->tramite }}</td>
+                                                        <td>{{ $bateria->idtramite }}</td>
+                                                        <td>{{ $bateria->apoderado }}</td>
+                                                        <td>{{ $bateria->tipo }}</td>
+                                                        <td>{{ $bateria->nombremedico ?? 0 }}</td>
+                                                        <td>{{ $bateria->observacion ?? 0 }}</td>
+                                                        <td>{{ $bateria->estudioespecialidad }}</td>
+                                                        <td>
+                                                            <input type="date" name="pfechabateria[{{ $bateria->id }}]" class="form-control">
+                                                        </td>
+                                                        <td>
+                                                            <select name="pmedicoderivador[{{ $bateria->id }}]" class="form-control">
+                                                                @foreach($proveedoresmedicos as $proveedor)
+                                                                    <option value="{{ $proveedor->proveedor }}" {{ $proveedor->id == 3 ? 'selected' : '' }}>
+                                                                        {{ $proveedor->proveedor }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <select name="pinforme[{{ $bateria->id }}]" class="form-control" readonly>
+                                                                <option value="NO TIENE INFORME">NO TIENE</option>
+                                                                <option value="SI TIENE INFORME">SI TIENE</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <input type="file" name="porden[{{ $bateria->id }}]" class="form-control">
+                                                        </td>
+                                                        @php
+    // Convertimos el área actual en array de palabras
+    $palabrasArea = explode(' ', strtoupper($bateria->estudioespecialidad));
+
+    // Filtramos las acciones por coincidencia de al menos una palabra
+    $accionesFiltradas = $bateriaproveedores->filter(function($accion) use ($palabrasArea) {
+        foreach ($palabrasArea as $palabra) {
+            if (stripos($accion->area, $palabra) !== false) {
+                return true;
+            }
+        }
+        return false;
+    });
+@endphp
+
+                                                        <td>
+                                                            {{-- <select name="pacciondisponible[{{ $bateria->id }}]" class="form-control accion-select" data-id="{{ $bateria->id }}">
+                                                                <option value="" selected disabled>Seleccione acción...</option>
+                                                                @foreach($bateriaproveedores->where('area', $bateria->estudioespecialidad) as $accion)
+                                                                    <option value="{{ $accion->accion }}"
+                                                                        data-id="{{ $accion->id }}"
+                                                                        data-proveedor="{{ $accion->proveedor }}"
+                                                                        data-tipoarea="{{ $accion->tipoarea }}"
+                                                                        data-area="{{ $accion->area }}"
+                                                                        data-servicio="{{ $accion->servicio }}"
+                                                                        data-pagoservicio="{{ $accion->pagoservicio }}"
+                                                                        data-precio="{{ $accion->precio }}"
+                                                                        data-preciocompra="{{ $accion->preciocompra }}"
+                                                                    >
+                                                                        {{ $accion->accion }} - {{ $accion->proveedor }} - {{ $accion->precio }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select> --}}
+                                                            <select name="pacciondisponible[{{ $bateria->id }}]" class="form-control accion-select" data-id="{{ $bateria->id }}">
+    <option value="" selected disabled>Seleccione acción...</option>
+
+    @foreach($accionesFiltradas as $accion)
+        <option value="{{ $accion->accion }}"
+            data-id="{{ $accion->id }}"
+            data-proveedor="{{ $accion->proveedor }}"
+            data-tipoarea="{{ $accion->tipoarea }}"
+            data-area="{{ $accion->area }}"
+            data-servicio="{{ $accion->servicio }}"
+            data-pagoservicio="{{ $accion->pagoservicio }}"
+            data-precio="{{ $accion->precio }}"
+            data-preciocompra="{{ $accion->preciocompra }}"
+        >
+            {{ $accion->accion }} - {{ $accion->proveedor }} - {{ $accion->precio }}
+        </option>
+    @endforeach
+</select>
+
+                                                            <input type="hidden" name="paccion_id[{{ $bateria->id }}]" id="paccion_id_{{ $bateria->id }}">
+                                                            <input type="hidden" name="paccion_proveedor[{{ $bateria->id }}]" id="paccion_proveedor_{{ $bateria->id }}">
+                                                            <input type="hidden" name="paccion_tipoarea[{{ $bateria->id }}]" id="paccion_tipoarea_{{ $bateria->id }}">
+                                                            <input type="hidden" name="paccion_area[{{ $bateria->id }}]" id="paccion_area_{{ $bateria->id }}">
+                                                            <input type="hidden" name="paccion_servicio[{{ $bateria->id }}]" id="paccion_servicio_{{ $bateria->id }}">
+                                                            <input type="hidden" name="paccion_pagoservicio[{{ $bateria->id }}]" id="paccion_pagoservicio_{{ $bateria->id }}">
+                                                            <input type="hidden" name="paccion_precio[{{ $bateria->id }}]" id="paccion_precio_{{ $bateria->id }}">
+                                                            <input type="hidden" name="paccion_preciocompra[{{ $bateria->id }}]" id="paccion_preciocompra_{{ $bateria->id }}">
+                                                            <input type="hidden" name="pclienteitaid[{{ $bateria->id }}]" value="{{ $cliente->id }}">
+                                                            <input type="hidden" name="pclienteitanombre[{{ $bateria->id }}]" value="{{ $cliente->nombrecompleto }}">
+                                                        </td>
+                                                        <script>
+                                                            document.addEventListener('DOMContentLoaded', function() {
+                                                                document.querySelectorAll('.accion-select').forEach(function(select) {
+                                                                    select.addEventListener('change', function() {
+                                                                        var id = this.dataset.id;
+                                                                        var selected = this.options[this.selectedIndex];
+
+                                                                        document.getElementById('paccion_id_' + id).value = selected.dataset.id;
+                                                                        document.getElementById('paccion_proveedor_' + id).value = selected.dataset.proveedor;
+                                                                        document.getElementById('paccion_tipoarea_' + id).value = selected.dataset.tipoarea;
+                                                                        document.getElementById('paccion_area_' + id).value = selected.dataset.area;
+                                                                        document.getElementById('paccion_servicio_' + id).value = selected.dataset.servicio;
+                                                                        document.getElementById('paccion_pagoservicio_' + id).value = selected.dataset.pagoservicio;
+                                                                        document.getElementById('paccion_precio_' + id).value = selected.dataset.precio;
+                                                                        document.getElementById('paccion_preciocompra_' + id).value = selected.dataset.preciocompra;
+                                                                    });
+                                                                });
+                                                            });
+                                                        </script>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button type="submit" class="btn btn-crear btn-sm">
+                                            GUARDAR BATERIA
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
@@ -404,38 +697,38 @@
 @stop
 
 @section('content')
-    @if (session('info'))
-        <div id="alert-info" class="alert alert-success">
-            <strong>{{ session('info') }}</strong>
-        </div>
-        <script>
-            setTimeout(function() {
-                $('#alert-info').fadeOut('fast');
-            }, 5000);
-        </script>
-    @endif 
+@if (session('info'))
+    <div id="alert-info" class="alert alert-success">
+        <strong>{{ session('info') }}</strong>
+    </div>
+    <script>
+        setTimeout(function() {
+            $('#alert-info').fadeOut('fast');
+        }, 3000);
+    </script>
+@endif 
 
-    @if (session('success'))
-        <div id="alert-success" class="alert alert-success">
-            <strong>{{ session('success') }}</strong>
-        </div>
-        <script>
-            setTimeout(function() {
-                $('#alert-success').fadeOut('fast');
-            }, 5000);
-        </script>
-    @endif
+@if (session('success'))
+    <div id="alert-success" class="alert alert-success">
+        <strong>{{ session('success') }}</strong>
+    </div>
+    <script>
+        setTimeout(function() {
+            $('#alert-success').fadeOut('fast');
+        }, 3000);
+    </script>
+@endif
 
-    @if ($errors->has('mensaje'))
-        <div id="alert-error" class="alert alert-danger">
-            <strong>{{ $errors->first('mensaje') }}</strong>
-        </div>
-        <script>
-            setTimeout(function() {
-                $('#alert-error').fadeOut('fast');
-            }, 5000);
-        </script>
-    @endif
+@if ($errors->has('mensaje'))
+    <div id="alert-error" class="alert alert-danger">
+        <strong>{{ $errors->first('mensaje') }}</strong>
+    </div>
+    <script>
+        setTimeout(function() {
+            $('#alert-error').fadeOut('fast');
+        }, 3000);
+    </script>
+@endif
 
 <div class="card">
     <div class="card-body">
@@ -659,6 +952,22 @@
                 </div>
             </div>
             <button type="button" class="btn btn-crear" id="btn-crear-bateria">CREAR BATERIA</button> 
+            <script>
+                $(document).ready(function() {
+                    $('#btn-crear-bateria').prop('disabled', true);
+                    $(document).on('change', 'input[type="checkbox"]', function() {
+                        const algunMarcado = $('input[type="checkbox"]:checked').length > 0;
+                        $('#btn-crear-bateria').prop('disabled', !algunMarcado);
+                    });
+                });
+            </script>
+            <style>
+                #btn-crear-bateria:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            </style>
+
             {!! Form::close() !!}
         </div>
         @else
@@ -1033,6 +1342,17 @@
     }
     .custom2-button:hover {
         background-color: #faa625;
+        color: #ffffff;
+    }
+    .custom3-button {
+        background-color: #ffffff;
+        color: #dc1edc;
+        border-color: #dc1edc;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .custom3-button:hover {
+        background-color: #dc1edc;
         color: #ffffff;
     }
     .btn-cerrar {

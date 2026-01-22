@@ -29,6 +29,7 @@ class SolicitudInventario extends Model
         'documento' => '',
         'motivoanulacion' => '',
         'usuarioanulacion' => '',
+        'productosolicitadousuario' => '',
     ]; 
 
     protected $fillable = [
@@ -49,6 +50,7 @@ class SolicitudInventario extends Model
         'documento',
         'motivoanulacion',
         'usuarioanulacion',
+        'productosolicitadousuario',
     ];
 
 }

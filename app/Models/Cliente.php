@@ -41,6 +41,7 @@ class Cliente extends Model
         'ciudadresidencia' => '',
         'aseguradora' => '',
         'referenciador' => '',
+        'referenciadorid' => '',
         'afp' => '',
         'numhijosmenores' => '',
         'alertas' => '',
@@ -51,6 +52,9 @@ class Cliente extends Model
         'tipocliente' => '',
         'paisnacimiento' => '',
         'matricula' => '',
+        'numhijostotal' => '',
+        'derivacion' => '',
+        'billeteramovil' => '',
     ]; 
 
     protected $fillable = [
@@ -83,6 +87,7 @@ class Cliente extends Model
         'ciudadresidencia',
         'aseguradora',
         'referenciador',
+        'referenciadorid',
         'afp',
         'numhijosmenores',
         'alertas',
@@ -94,6 +99,9 @@ class Cliente extends Model
         'nombres',
         'paisnacimiento',
         'matricula',
+        'numhijostotal',
+        'derivacion',
+        'billeteramovil',
     ];
 
     public function user(){

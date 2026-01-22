@@ -64,7 +64,7 @@ return [
     */
 
     'logo' => '<b>GOOD LIFE</b> S.R.L.',
-    'logo_img' => 'img/logo.png',
+    'logo_img' => now()->month === 12 ? 'img/logonavidad.png' : 'img/logo.png',
     'logo_img_class' => 'brand-image-xs',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
@@ -86,7 +86,7 @@ return [
     'auth_logo' => [
         'enabled' => false,
         'img' => [
-            'path' => 'img/logo.png',
+            'path' => now()->month === 12 ? 'img/logonavidad.png' : 'img/logo.png',
             'alt' => 'Auth Logo',
             'class' => '',
             'width' => 50,
@@ -113,7 +113,7 @@ return [
         'enabled' => false,
         'mode' => 'cwrapper',
         'img' => [
-            'path' => 'img/logo.png',
+            'path' => now()->month === 12 ? 'img/logonavidad.png' : 'img/logo.png',
             'alt' => 'AdminLTE Preloader Image',
             'effect' => 'animation__shake',
             'width' => 500,
@@ -393,10 +393,22 @@ return [
                     'can'  => 'admin.admprogramaciones.create',
                 ], */
                 [
+                    'text' => 'Contratos y Poderes Pend.',
+                    'route'  => 'admin.admprogramaciones.contratospendientes',
+                    'icon' => 'fas fa-fw fas fa-file',
+                    'can'  => 'admin.admprogramaciones.contratospendientes',
+                ],
+                [
                     'text' => 'Reportes',
                     'route'  => 'admin.reportes.index',
                     'icon' => 'fas fa-fw fas fa-file-alt',
                     'can'  => 'admin.reportes.index',
+                ],
+                [
+                    'text' => 'Registros Prestaciones',
+                    'route' => 'reportes.resumen_tramites',
+                    'icon' => 'fas fa-fw fa-file-excel',
+                    'can'  => 'admin.controlprogramacion.registrosprestaciones',
                 ],
                 [
                     'text' => 'Registros generales',
@@ -603,20 +615,28 @@ return [
             'can'  => 'admin.tramites.index',
             'submenu' => [
                 [
+                    'text' => 'Derivar Apoderado',
+                    'route'  => 'admin.tramites.derivacionapoderados',
+                    'icon' => 'fas fa-fw fas fa-street-view',
+                    'can'  => 'admin.tramites.derivarapoderadotramite',
+                ],
+                [
                     'text' => 'Instructivas de Poder',
                     'route'  => 'admin.instructivaspoder.nuevainstructiva',
                     'icon' => 'fas fa-fw fas fa-book-reader',
+                    'can'  => 'admin.tramites.generarinstructivas',
                 ],
                 [
                     'text' => 'Proc. de Trámites Gestora',
                     'route'  => 'admin.tramites.index',
                     'icon' => 'fas fa-fw fas fa-paste',
+                    'can'  => 'admin.tramites.verasignacionestramites',
                 ],
-                [
+                /* [
                     'text' => 'Modelo Cartas/Reclamos',
                     'route'  => 'admin.tramites.modelocartareclamo',
                     'icon' => 'fas fa-fw fas fa-file',
-                ],
+                ], */
 
             ],
         ],
@@ -737,6 +757,12 @@ return [
                     'icon' => 'fas fa-money-bill-wave',
                     'can'  => 'admin.cuentasPagar.index',
                 ],
+                /* [
+                    'text' => 'Cuentas Pagar en Mora',
+                    'route'  => 'admin.caja.cuentaspagar.listacuentaspagarenmora',
+                    'icon' => 'fas fa-exclamation-circle',
+                    'can'  => 'admin.cuentasPagar.index',
+                ], */
                 [
                     'text' => 'CxP Pendientes',
                     'route'  => 'admin.caja.cuentaspagar.cpppendientes',
@@ -788,13 +814,13 @@ return [
         [
             'text' => 'Cierres de Caja',
             'icon' => 'fas fa-lock',
-            'can'  => 'admin.ingreso.index',
+            'can'  => 'admin.ingreso.cierrecaja',
             'submenu' => [
                 [
                     'text' => 'Cierre de Caja Diario',
                     'route'  => 'admin.caja.ingreso.cierre',
                     'icon' => 'fas fa-unlock-alt',
-                    'can'  => 'admin.ingreso.index',
+                    'can'  => 'admin.ingreso.cierrecaja',
                 ],
                 [
                     'text' => 'Historial de Cierres',
@@ -851,18 +877,18 @@ return [
             ],
         ],
         [
-            'text' => 'Pre-Órdenes y Órdenes',
+            'text' => 'Órdenes',
             'icon' => 'fas fa-window-restore',
             'can'  => 'admin.inventario.index',
             'submenu' => [
                 [
-                    'text' => 'Nueva Pre-Órden',
+                    'text' => 'Nueva Órden',
                     'route'  => 'admin.inventario.crearordenes',
                     'icon' => 'fas fa-file-code',
                     'can'  => 'admin.inventario.index',
                 ],
                 [
-                    'text' => 'Órdenes Pend. y Aprob.',
+                    'text' => 'Lista de Órdenes',
                     'route'  => 'admin.inventario.listaordenes',
                     'icon' => 'fas fa-sim-card',
                     'can'  => 'admin.inventario.index',
@@ -924,6 +950,12 @@ return [
             ],
         ], */
         
+        [
+            'text' => 'Video Tutoriales',
+            'route'  => 'admin.admprogramaciones.tutorialesvideos',
+            'icon' => 'fas fa-fw fas fa-play',
+            'can'  => 'admin.admprogramaciones.tutorialesvideos',
+        ],
 
         [
             'text' => 'Centro de Soporte',

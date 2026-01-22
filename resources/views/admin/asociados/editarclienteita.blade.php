@@ -17,17 +17,14 @@
         }, 5000);
     </script>
 @endif
-
-<div class="container col-lg-12">
-    <div class="card">
-        <div class="card-body">
+<div class="card">
+    <div class="card-body">
+        {!! Form::model($cliente, ['route' => ['admin.asociados.actualizarclienteita', $cliente], 'method' => 'PUT', 'files' => true]) !!}
+        {!! Form::hidden('users_id', auth()->user()->id) !!}
             <div class="row ">
                 <div class="col-lg-5">
-                    {!! Form::model($cliente, ['route' => ['admin.asociados.actualizarclienteita', $cliente], 'method' => 'PUT', 'files' => true]) !!}
-                    {!! Form::hidden('users_id', auth()->user()->id) !!}
-                    
                     <div class="row">
-                        <div class="col-lg-12">
+                        <div class="col-lg-6">
                             <div class="form-group">
                                 {!! Form::label('sucursal', 'Sucursal:') !!}
                                 {!! Form::select('sucursal', $suc, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -38,17 +35,19 @@
                                 @enderror
                             </div>
                         </div>
-                        {{-- <div class="col-lg-6">
+                        <div class="col-lg-6">
                             <div class="form-group">
-                                {!! Form::label('tipocliente', 'Tipo cliente:') !!}
-                                {!! Form::select('tipocliente', $tipocliente, null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('tipocliente')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
+                                {!! Form::label('derivacion', 'Derivación:') !!}
+                                {!! Form::select('derivacion', [
+                                    '' => '',
+                                    'PROGRAMACIÓN' => 'PROGRAMACIÓN',
+                                    'CARTERA DE CLIENTES' => 'CARTERA DE CLIENTES',
+                                ], null, ['class' => 'form-control']) !!}
+                                @error('derivacion')
+                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
                                 @enderror
                             </div>
-                        </div> --}}
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-lg-3">
@@ -85,7 +84,6 @@
                             </div>
                         </div>
                     </div>
-                    
                     {!! Form::hidden('nombrecompleto', null, ['id' => 'nombrecompleto']) !!}
                     <script>
                         document.addEventListener('DOMContentLoaded', function () {
@@ -168,31 +166,25 @@
                                 @enderror
                             </div>
                         </div>
-                    
                         <script>
                             document.addEventListener('DOMContentLoaded', function () {
                                 const fechaInput = document.getElementById('fechavencci');
                                 const checkbox = document.getElementById('indefinidaCheckbox');
                                 const hiddenInput = document.getElementById('fechavencci_hidden');
-                        
-                                // Si ya es indefinido en BD, deshabilitar el input
                                 if (checkbox.checked) {
                                     fechaInput.value = '';
                                     fechaInput.disabled = true;
                                 }
-                        
                                 checkbox.addEventListener('change', function () {
                                     if (this.checked) {
-                                        fechaInput.value = ''; // Borra la fecha
+                                        fechaInput.value = '';
                                         fechaInput.disabled = true;
-                                        hiddenInput.value = ''; // Enviar campo vacío
+                                        hiddenInput.value = '';
                                     } else {
                                         fechaInput.disabled = false;
-                                        hiddenInput.value = fechaInput.value; // Mantener la fecha en caso de desmarcar
+                                        hiddenInput.value = fechaInput.value;
                                     }
                                 });
-                        
-                                // Actualizar hidden input cuando se cambia la fecha manualmente
                                 fechaInput.addEventListener('change', function () {
                                     hiddenInput.value = fechaInput.value;
                                 });
@@ -224,17 +216,6 @@
                         </div> 
                     </div>
                     <div class="row">
-                        {{-- <div class="col-lg-4">
-                            <div class="form-group">
-                                {!! Form::label('lugarnacimiento', 'Ciudad de nac.:') !!}
-                                {!! Form::select('lugarnacimiento', $departamentos, null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('lugarnacimiento')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                        </div> --}}
                         <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('paisnacimiento', 'País de nac.:') !!}
@@ -246,15 +227,14 @@
                                     'ESPAÑA' => 'ESPAÑA',
                                     'MEXICO' => 'MEXICO',
                                     'PARAGUAY' => 'PARAGUAY',
+                                    'PERÚ' => 'PERÚ',
                                     'VENEZUELA' => 'VENEZUELA'
                                 ], $cliente->paisnacimiento, ['class' => 'form-control', 'id' => 'paisnacimiento']) !!}
                                 @error('paisnacimiento')
                                     <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
                                 @enderror
                             </div>
-                        </div>
-                        
-                        {{-- Select para ciudades si el país es Bolivia --}}
+                        </div>   
                         <div class="col-lg-3" id="select-lugar-nacimiento">
                             <div class="form-group">
                                 {!! Form::label('lugarnacimiento_select', 'Ciudad de nac.:') !!}
@@ -266,8 +246,6 @@
                                 @enderror
                             </div>
                         </div>
-                        
-                        {{-- Input para ciudades si el país NO es Bolivia --}}
                         <div class="col-lg-3" id="input-lugar-nacimiento" style="display: none;">
                             <div class="form-group">
                                 {!! Form::label('lugarnacimiento_text', 'Ciudad de nac.:') !!}
@@ -279,7 +257,6 @@
                                 @enderror
                             </div>
                         </div>
-                        
                         <script>
                             document.addEventListener('DOMContentLoaded', function () {
                                 const paisSelect = document.getElementById('paisnacimiento');
@@ -287,20 +264,18 @@
                                 const inputLugarNacimiento = document.getElementById('input-lugar-nacimiento');
                                 const selectLugarNacimientoField = document.querySelector('select[name="lugarnacimiento_select"]');
                                 const inputLugarNacimientoField = document.querySelector('input[name="lugarnacimiento_text"]');
-                        
                                 function actualizarCampos() {
                                     if (paisSelect.value === 'BOLIVIA') {
                                         selectLugarNacimiento.style.display = 'block';
                                         inputLugarNacimiento.style.display = 'none';
-                                        inputLugarNacimientoField.value = ''; // Limpiar input si se usa select
+                                        inputLugarNacimientoField.value = '';
                                     } else {
                                         selectLugarNacimiento.style.display = 'none';
                                         inputLugarNacimiento.style.display = 'block';
-                                        selectLugarNacimientoField.value = ''; // Limpiar select si se usa input
+                                        selectLugarNacimientoField.value = '';
                                     }
                                 }
-                        
-                                actualizarCampos(); // Llamar al cargar la página
+                                actualizarCampos();
                                 paisSelect.addEventListener('change', actualizarCampos);
                             });
                         </script>                        
@@ -308,7 +283,7 @@
                         <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('genero', 'Genero:') !!}
-                                {!! Form::select('genero', $genero, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                {!! Form::select('genero', $genero, null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'genero']) !!}
                                 @error('genero')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
@@ -363,7 +338,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="row">
                         <div class="col-lg-5">
                             <div class="form-group">
@@ -414,7 +388,6 @@
                                     }
                                 });
                             </script>
-                            
                         </div>
                         <div class="col-lg-3">
                             <div class="form-group">
@@ -489,7 +462,6 @@
                             </div>
                         </div>
                     </div>
-                    
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="form-group">
@@ -516,22 +488,20 @@
                             </div>
                         </div>
                     </div>
+                    <div class="form-group">
+                        {!! Form::label('aseguradora', 'Aseguradora:') !!}
+                        {!! Form::select('aseguradora', $aseguradoras, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                        @error('aseguradora')
+                            <small class="text-danger fas fa-exclamation-circle">
+                                {{$message}}
+                            </small>
+                        @enderror
+                    </div>
                     <div class="row">
-                        <div class="col-lg-7">
-                            <div class="form-group">
-                                {!! Form::label('aseguradora', 'Aseguradora:') !!}
-                                {!! Form::select('aseguradora', $aseguradoras, null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                @error('aseguradora')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="col-lg-5">
+                        <div class="col-lg-9">
                             <div class="form-group">
                                 {!! Form::label('referenciador', 'Referenciador:') !!}
-                                {!! Form::text('referenciador', null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                {!! Form::text('referenciador', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
                                 @error('referenciador')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
@@ -539,12 +509,18 @@
                                 @enderror
                             </div>
                         </div>
+                        <div class="col-lg-3">
+                            <div class="form-group">
+                                {!! Form::label('referenciadorid', 'Ref. ID:') !!}
+                                {!! Form::text('referenciadorid', null, ['id' => 'referenciadorid', 'class' => 'form-control', 'placeholder' => '', 'readonly']) !!}
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="form-group">
                                 {!! Form::label('afp', 'Gestora:') !!}
-                                {!! Form::text('afp', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'afp']) !!}
+                                {!! Form::text('afp', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'afp', 'readonly' => 'readonly']) !!}
                                 @error('afp')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
@@ -554,7 +530,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-lg-5">
+                        <div class="col-lg-4">
                             <div class="form-group">
                                 {!! Form::label('numhijosmenores', 'N. hijos < 25 años:') !!}
                                 {!! Form::text('numhijosmenores', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
@@ -565,7 +541,33 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-lg-7">
+                        <div class="col-lg-4" id="campo-hijos" style="display: none;">
+                            <div class="form-group">
+                                {!! Form::label('numhijostotal', 'Total hijos:') !!}
+                                {!! Form::text('numhijostotal', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                                @error('numhijostotal')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+                        <script>
+                            document.addEventListener("DOMContentLoaded", function () {
+                                const generoSelect = document.getElementById("genero");
+                                const campoHijos = document.getElementById("campo-hijos");
+                                function toggleCampoHijos() {
+                                    if (generoSelect.value === "FEMENINO") {
+                                        campoHijos.style.display = "block";
+                                    } else {
+                                        campoHijos.style.display = "none";
+                                    }
+                                }
+                                generoSelect.addEventListener("change", toggleCampoHijos);
+                                toggleCampoHijos();
+                            });
+                        </script>
+                        <div class="col-lg-4">
                             <div class="form-group">
                                 {!! Form::label('alertas', 'Alertas:') !!}
                                 {!! Form::text('alertas', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
@@ -578,95 +580,6 @@
                         </div>
                     </div>
                 </div>
-                {{-- <div class="col-lg-3">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="form-group">
-                                <label for="file">Foto de perfil:</label>
-                                @if($imagenCliente)
-                                    <img src="{{$imagenCliente}}" alt="Foto de perfil actual" id="vista-previa">
-                                @else
-                                    <p>ESTE CLIENTE NO TIENE FOTO</p>
-                                @endif
-                                <input type="file" class="form-control-file" id="picture" name="picture">
-                                <button type="button" id="tomar-foto" class="btningresar2">TOMAR FOTO</button>
-                                <canvas id="canvas" style="display: none;"></canvas>
-                                <img id="vista-previa" src="#" alt="Vista previa de la imagen" style="display: none;">
-                                @error('picture')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                                @enderror
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
-                <script>
-                    var cameraActive = false;
-                    var capturarBtn = document.createElement('button');
-                    capturarBtn.innerText = 'CAPTURAR FOTO';
-                    capturarBtn.setAttribute('id', 'capturar-btn');
-                    capturarBtn.classList.add('capturar-btn-style');
-                    document.getElementById('tomar-foto').addEventListener('click', function() {
-                        if (cameraActive) {
-                            return;
-                        }
-                        capturarBtn.style.display = 'block';
-                        navigator.mediaDevices.getUserMedia({ video: true })
-                        .then(function(stream) {
-                            var video = document.createElement('video');
-                            video.setAttribute('autoplay', '');
-                            video.setAttribute('id', 'camara');
-                            video.srcObject = stream;
-                            video.width = 270;
-                            video.height = 270;
-                            var videoContainer = document.createElement('div');
-                            videoContainer.setAttribute('id', 'video-container');
-                            videoContainer.appendChild(video);
-                            var buttonColumn = document.getElementById('tomar-foto').closest('.col-lg-3');
-                            buttonColumn.appendChild(videoContainer);
-                            cameraActive = true;
-                            capturarBtn.addEventListener('click', function() {
-                            var canvas = document.createElement('canvas');
-                            var ctx = canvas.getContext('2d');
-                            canvas.width = video.videoWidth;
-                            canvas.height = video.videoHeight;
-                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-                            canvas.toBlob(function(blob) {
-                                var pictureInput = document.getElementById('picture');
-                                
-                                // Eliminar el archivo actual del input de tipo file
-                                pictureInput.value = null;
-
-                                // Creamos un objeto de tipo Blob a partir del Blob
-                                var newFile = new File([blob], 'photo.png', { type: 'image/png' });
-                                var dataTransfer = new DataTransfer();
-                                dataTransfer.items.add(newFile);
-                                pictureInput.files = dataTransfer.files;
-                                    // Simulamos un evento de cambio en el campo de selección de archivo
-                                    var event = new Event('change');
-                                    pictureInput.dispatchEvent(event);
-                                    // Mostramos la vista previa de la imagen
-                                    var vistaPrevia = document.getElementById('vista-previa');
-                                    vistaPrevia.src = URL.createObjectURL(blob);
-                                    vistaPrevia.style.display = 'block';
-                                });
-                                // Detenemos la cámara y ocultamos el botón de captura
-                                stream.getTracks().forEach(track => track.stop());
-                                video.parentNode.removeChild(video);
-                                cameraActive = false;
-                                capturarBtn.style.display = 'none';
-                            });
-                            buttonColumn.appendChild(capturarBtn);
-                        })
-                        .catch(function(error) {
-                            console.log('Error al acceder a la cámara: ', error);
-                        });
-                    });
-                </script> --}}
-                <!-- Modal -->
                 <div id="cameraModal" class="modal" style="display: none;">
                     <div class="modal-content">
                         <div class="modal-body">
@@ -680,7 +593,6 @@
                         </div>
                     </div>
                 </div>       
-
                 <div class="col-lg-3">
                     <div class="row">
                         <div class="col-lg-12">
@@ -704,21 +616,17 @@
                         </div>
                     </div>
                 </div>
-
                 <script>
                     document.getElementById('abrir-modal').addEventListener('click', function(event) {
-                        event.preventDefault(); // Evitar el comportamiento predeterminado del botón
+                        event.preventDefault();
                         document.getElementById('cameraModal').style.display = 'block';
                         iniciarCamara();
                     });
-
                     document.getElementById('cerrar-modal').addEventListener('click', function() {
                         detenerCamara();
                         document.getElementById('cameraModal').style.display = 'none';
                     });
-
                     var cameraStream = null;
-
                     function iniciarCamara() {
                         navigator.mediaDevices.getUserMedia({ video: true })
                         .then(function(stream) {
@@ -731,13 +639,11 @@
                             console.log('Error al acceder a la cámara: ', error);
                         });
                     }
-
                     function detenerCamara() {
                         if (cameraStream) {
                             cameraStream.getTracks().forEach(track => track.stop());
                         }
                     }
-
                     document.getElementById('capturar-btn').addEventListener('click', function() {
                         var canvas = document.createElement('canvas');
                         var video = document.getElementById('camara');
@@ -747,17 +653,13 @@
                         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                         canvas.toBlob(function(blob) {
                             var pictureInput = document.getElementById('picture');
-                            // Eliminar el archivo actual del input de tipo file
                             pictureInput.value = null;
-                            // Creamos un objeto de tipo Blob a partir del Blob
                             var newFile = new File([blob], 'photo.png', { type: 'image/png' });
                             var dataTransfer = new DataTransfer();
                             dataTransfer.items.add(newFile);
                             pictureInput.files = dataTransfer.files;
-                            // Simulamos un evento de cambio en el campo de selección de archivo
                             var event = new Event('change');
                             pictureInput.dispatchEvent(event);
-                            // Mostramos la vista previa de la imagen
                             var vistaPrevia = document.getElementById('vista-previa');
                             vistaPrevia.src = URL.createObjectURL(blob);
                             vistaPrevia.style.display = 'block';
@@ -771,7 +673,6 @@
                         display: flex;
                         justify-content: space-between;
                     }
-
                     .modal {
                         position: fixed;
                         top: 50%;
@@ -827,13 +728,11 @@
                     .text-danger {
                         color: #dc3545;
                     }
-                </style>
-
-                {!! Form::submit('ACTUALIZAR CLIENTE', ['class' => 'btn btn-crear']) !!}
-                {!! Form::close() !!}
+                </style> 
             </div>
-         </div>
-    </div>
+        {!! Form::submit('ACTUALIZAR CLIENTE', ['class' => 'btn btn-crear btn-sm']) !!}
+        {!! Form::close() !!}
+        </div>
 </div>
 @stop
 
@@ -842,7 +741,6 @@
 <script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 
 <script>
-    // Función para calcular la edad
     function calcularEdad(fecha_nacimiento) {
         var fecha_actual = new Date();
         var fecha_nacimiento = new Date(fecha_nacimiento);
@@ -855,21 +753,17 @@
         
         return edad;
     }
-
-    // Obtener la fecha de nacimiento cuando cambie el valor del campo de fecha
     document.getElementById('fecha_nacimiento').addEventListener('change', function() {
         var fecha_nacimiento = this.value;
         var edad = calcularEdad(fecha_nacimiento);
         document.getElementById('edad').value = edad;
     });
-
-    // Calcular la edad inicial al cargar la página
     var fecha_nacimiento = document.getElementById('fecha_nacimiento').value;
     var edad = calcularEdad(fecha_nacimiento);
     document.getElementById('edad').value = edad;
 </script>
 <script>
-$('.dropify').dropify();
+    $('.dropify').dropify();
 </script>
 <script>
     function mostrarVistaPrevia(input) {
@@ -882,7 +776,6 @@ $('.dropify').dropify();
             lector.readAsDataURL(input.files[0]);
         }
     }
-
     $(document).ready(function() {
         $("#picture").change(function() {
             mostrarVistaPrevia(this);
@@ -919,7 +812,7 @@ $('.dropify').dropify();
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     
     .btn-crear:hover {
@@ -948,18 +841,6 @@ $('.dropify').dropify();
         cursor: pointer;
     }
     .capturar-btn-style:hover {
-        background-color: #94c93b;
-    }
-    .btningresar {
-        background-color: #faa625;
-        color: #fff;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 7px;
-        text-decoration: none;
-        cursor: pointer;
-    }
-    .btningresar:hover {
         background-color: #94c93b;
     }
     .btningresar2 {
@@ -1013,7 +894,7 @@ $('.dropify').dropify();
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;

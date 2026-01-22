@@ -27,9 +27,8 @@ CREAR EMPRESA
         {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
         <div class="row">
             <div class="col-lg-5">
-                
                 <div class="row">
-                    <div class="col-lg-12">
+                    <div class="col-lg-6">
                         <div class="form-group">
                             {!! Form::label('sucursal', 'Sucursal:') !!}
                             {!! Form::select('sucursal', $suc, null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -37,6 +36,19 @@ CREAR EMPRESA
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
                                 </small>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            {!! Form::label('derivacion', 'Derivación:') !!}
+                            {!! Form::select('derivacion', [
+                                '' => '',
+                                'PROGRAMACIÓN' => 'PROGRAMACIÓN',
+                                'CARTERA DE CLIENTES' => 'CARTERA DE CLIENTES',
+                            ], null, ['class' => 'form-control']) !!}
+                            @error('derivacion')
+                                <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
                             @enderror
                         </div>
                     </div>
@@ -76,7 +88,6 @@ CREAR EMPRESA
                         </div>
                     </div>
                 </div>
-                
                 {!! Form::hidden('nombrecompleto', null, ['id' => 'nombrecompleto']) !!}
                 <script>
                     document.addEventListener('DOMContentLoaded', function () {
@@ -158,12 +169,10 @@ CREAR EMPRESA
                             @enderror
                         </div>
                     </div>
-                    
                     <script>
                         document.addEventListener('DOMContentLoaded', function () {
                             const fechaInput = document.getElementById('fechavencci');
                             const checkbox = document.getElementById('indefinidaCheckbox');
-                    
                             checkbox.addEventListener('change', function () {
                                 if (this.checked) {
                                     fechaInput.value = '';
@@ -174,7 +183,6 @@ CREAR EMPRESA
                             });
                         });
                     </script>
-                    
                     <div class="col-lg-5">
                         <div class="form-group">
                             {!! Form::label('fechanacimiento', 'Fecha de nac.:') !!}
@@ -199,28 +207,6 @@ CREAR EMPRESA
                     </div>
                 </div>
                 <div class="row">
-                    {{-- <div class="col-lg-3">
-                        <div class="form-group">
-                            {!! Form::label('paisnacimiento', 'Pais de nac.:') !!}
-                            {!! Form::select('paisnacimiento', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                            @error('paisnacimiento')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-lg-3">
-                        <div class="form-group">
-                            {!! Form::label('lugarnacimiento', 'Ciudad de nac.:') !!}
-                            {!! Form::select('lugarnacimiento', $departamentos, null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                            @error('lugarnacimiento')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                    </div> --}}
                     <div class="col-lg-3">
                         <div class="form-group">
                             {!! Form::label('paisnacimiento', 'País de nac.:') !!}
@@ -233,6 +219,7 @@ CREAR EMPRESA
                                 'ESPAÑA' => 'ESPAÑA',
                                 'MEXICO' => 'MEXICO',
                                 'PARAGUAY' => 'PARAGUAY',
+                                'PERÚ' => 'PERÚ',
                                 'VENEZUELA' => 'VENEZUELA'
                             ], $cliente->paisnacimiento, ['class' => 'form-control', 'id' => 'paisnacimiento']) !!}
                             @error('paisnacimiento')
@@ -240,8 +227,6 @@ CREAR EMPRESA
                             @enderror
                         </div>
                     </div>
-                    
-                    {{-- Select para ciudades si el país es Bolivia --}}
                     <div class="col-lg-3" id="select-lugar-nacimiento">
                         <div class="form-group">
                             {!! Form::label('lugarnacimiento_select', 'Ciudad de nac.:') !!}
@@ -253,8 +238,6 @@ CREAR EMPRESA
                             @enderror
                         </div>
                     </div>
-                    
-                    {{-- Input para ciudades si el país NO es Bolivia --}}
                     <div class="col-lg-3" id="input-lugar-nacimiento" style="display: none;">
                         <div class="form-group">
                             {!! Form::label('lugarnacimiento_text', 'Ciudad de nac.:') !!}
@@ -266,7 +249,6 @@ CREAR EMPRESA
                             @enderror
                         </div>
                     </div>
-                    
                     <script>
                         document.addEventListener('DOMContentLoaded', function () {
                             const paisSelect = document.getElementById('paisnacimiento');
@@ -274,30 +256,25 @@ CREAR EMPRESA
                             const inputLugarNacimiento = document.getElementById('input-lugar-nacimiento');
                             const selectLugarNacimientoField = document.querySelector('select[name="lugarnacimiento_select"]');
                             const inputLugarNacimientoField = document.querySelector('input[name="lugarnacimiento_text"]');
-                    
                             function actualizarCampos() {
                                 if (paisSelect.value === 'BOLIVIA') {
                                     selectLugarNacimiento.style.display = 'block';
                                     inputLugarNacimiento.style.display = 'none';
-                                    inputLugarNacimientoField.value = ''; // Limpiar input si se usa select
+                                    inputLugarNacimientoField.value = '';
                                 } else {
                                     selectLugarNacimiento.style.display = 'none';
                                     inputLugarNacimiento.style.display = 'block';
-                                    selectLugarNacimientoField.value = ''; // Limpiar select si se usa input
+                                    selectLugarNacimientoField.value = '';
                                 }
                             }
-                    
-                            actualizarCampos(); // Llamar al cargar la página
+                            actualizarCampos();
                             paisSelect.addEventListener('change', actualizarCampos);
                         });
                     </script>         
-                    
-
-
                     <div class="col-lg-3">
                         <div class="form-group">
                             {!! Form::label('genero', 'Género:') !!}
-                            {!! Form::select('genero', $genero, null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                            {!! Form::select('genero', $genero, null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'genero']) !!}
                             @error('genero')
                                 <small class="text-danger fas fa-exclamation-circle">
                                     {{$message}}
@@ -352,7 +329,6 @@ CREAR EMPRESA
                         </div>
                     </div>
                 </div>
-
                 <div class="row">
                     <div class="col-lg-5">
                         <div class="form-group">
@@ -389,74 +365,60 @@ CREAR EMPRESA
                                 var codigoPais = this.value;
                                 var campoCelular = document.getElementById('celular');
                                 if (codigoPais) {
-                                    // Si hay código de país seleccionado, agregarlo al inicio sin espacio adicional
                                     campoCelular.value = codigoPais;
                                     campoCelular.focus();
                                 } else {
                                     campoCelular.value = '';
                                 }
                             });
-                    
                             document.getElementById('celular').addEventListener('input', function() {
                                 var campoCelular = document.getElementById('celular');
-                                var valorCelular = campoCelular.value.trim(); // Eliminar espacios en blanco al inicio y final
-                    
-                                // Validar si el valor comienza con un código de país
+                                var valorCelular = campoCelular.value.trim();
                                 var codigoPais = document.getElementById('pais').value;
                                 if (codigoPais && !valorCelular.startsWith(codigoPais)) {
-                                    campoCelular.value = codigoPais + valorCelular; // Agregar el código de país al inicio
+                                    campoCelular.value = codigoPais + valorCelular;
                                 } else {
-                                    campoCelular.value = valorCelular; // Mantener el número tal como está
+                                    campoCelular.value = valorCelular;
                                 }
                             });
-
                             document.addEventListener('DOMContentLoaded', function() {
-                            const paisSelect = document.getElementById('pais');
-                            const celularInput = document.getElementById('celular');
+                                const paisSelect = document.getElementById('pais');
+                                const celularInput = document.getElementById('celular');
 
-                            // Define las longitudes válidas para cada país
-                            const longitudesCelulares = {
-                                '54': 12,  // Argentina
-                                '591': 11, // Bolivia
-                                '55': 13,  // Brasil
-                                '56': 11,  // Chile
-                                '57': 12,  // Colombia
-                                '593': 12, // Ecuador
-                                '1': 11,   // Estados Unidos
-                                '34': 11,  // España
-                                '52': 12,  // México
-                                '595': 12, // Paraguay
-                                '51': 11,  // Perú
-                                '598': 12, // Uruguay
-                                '58': 12   // Venezuela
-                            };
+                                const longitudesCelulares = {
+                                    '54': 12,  // Argentina
+                                    '591': 11, // Bolivia
+                                    '55': 13,  // Brasil
+                                    '56': 11,  // Chile
+                                    '57': 12,  // Colombia
+                                    '593': 12, // Ecuador
+                                    '1': 11,   // Estados Unidos
+                                    '34': 11,  // España
+                                    '52': 12,  // México
+                                    '595': 12, // Paraguay
+                                    '51': 11,  // Perú
+                                    '598': 12, // Uruguay
+                                    '58': 12   // Venezuela
+                                };
 
-                            // Función para validar el número de teléfono
-                            function validarTelefono() {
-                                const codigoPais = paisSelect.value;
-                                const longitudEsperada = longitudesCelulares[codigoPais] || null;
-
-                                if (longitudEsperada !== null) {
-                                    if (celularInput.value.length !== longitudEsperada) {
-                                        celularInput.setCustomValidity(`El número de celular debe tener ${longitudEsperada} dígitos.`);
+                                function validarTelefono() {
+                                    const codigoPais = paisSelect.value;
+                                    const longitudEsperada = longitudesCelulares[codigoPais] || null;
+                                    if (longitudEsperada !== null) {
+                                        if (celularInput.value.length !== longitudEsperada) {
+                                            celularInput.setCustomValidity(`El número de celular debe tener ${longitudEsperada} dígitos.`);
+                                        } else {
+                                            celularInput.setCustomValidity('');
+                                        }
                                     } else {
                                         celularInput.setCustomValidity('');
                                     }
-                                } else {
-                                    celularInput.setCustomValidity('');
                                 }
-                            }
-
-                            // Añadir evento de cambio al select para actualizar la longitud esperada
-                            paisSelect.addEventListener('change', validarTelefono);
-
-                            // Añadir evento de entrada al input para validar en tiempo real
-                            celularInput.addEventListener('input', validarTelefono);
-                        });
-
+                                paisSelect.addEventListener('change', validarTelefono);
+                                celularInput.addEventListener('input', validarTelefono);
+                            });
                         </script>
                     </div>
-                    
                     <div class="col-lg-3">
                         <div class="form-group">
                             {!! Form::label('telefono', 'Teléfono:') !!}
@@ -525,7 +487,6 @@ CREAR EMPRESA
                             @enderror
                         </div>
                     </div>
-                    
                     <div class="col-lg-4">
                         <div class="form-group">
                             {!! Form::label('paisresidencia', 'Pais de Res.:') !!}
@@ -571,15 +532,56 @@ CREAR EMPRESA
                         </small>
                     @enderror
                 </div>
-                <div class="form-group">
-                    {!! Form::label('referenciador', 'Referenciador:') !!}
-                    {!! Form::text('referenciador', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
-                    @error('referenciador')
-                        <small class="text-danger fas fa-exclamation-circle">
-                            {{$message}}
-                        </small>
-                    @enderror
+                {{-- NUEVO 111225 --}}
+                @php
+                    $referenciadores = collect()
+                        ->concat(App\Models\Cliente::select('id', 'nombrecompleto')->get())
+                        /* ->concat(App\Models\ClienteAuditoria::select('id', 'nombrecompleto')->get())
+                        ->concat(App\Models\ClienteComun::select('id', 'nombrecompleto')->get()) */
+                        ->sortBy('nombrecompleto');
+                @endphp
+                <div class="row">
+                    <div class="col-lg-9">
+                        <div class="form-group">
+                            {!! Form::label('referenciador', 'Referenciador:') !!}
+                            <input list="referenciadoresList" name="referenciador" id="referenciador" class="form-control" placeholder="">
+                            <datalist id="referenciadoresList">
+                                @foreach($referenciadores as $r)
+                                    <option value="{{ $r->nombrecompleto }}" data-id="{{ $r->id }}"></option>
+                                @endforeach
+                            </datalist>
+                            @error('referenciador')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="form-group">
+                            {!! Form::label('referenciadorid', 'Ref. ID:') !!}
+                            {!! Form::text('referenciadorid', null, ['id' => 'referenciadorid', 'class' => 'form-control', 'placeholder' => '', 'readonly']) !!}
+                        </div>
+                    </div>
                 </div>
+                <script>
+                    const input = document.getElementById('referenciador');
+                    const inputId = document.getElementById('referenciadorid');
+                    const options = document.querySelectorAll('#referenciadoresList option');
+
+                    input.addEventListener('input', function() {
+                        const val = this.value;
+                        let found = false;
+
+                        options.forEach(option => {
+                            if(option.value === val) {
+                                inputId.value = option.dataset.id;
+                                found = true;
+                            }
+                        });
+                        if(!found) inputId.value = '';
+                    });
+                </script>
                 <div class="form-group">
                     {!! Form::label('afp', 'Gestora:') !!}
                     {!! Form::text('afp', $afp, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
@@ -590,9 +592,9 @@ CREAR EMPRESA
                     @enderror
                 </div>
                 <div class="row">
-                    <div class="col-lg-5">
+                    <div class="col-lg-4">
                         <div class="form-group">
-                            {!! Form::label('numhijosmenores', 'N. hijos < 25 años:') !!}
+                            {!! Form::label('numhijosmenores', 'Hijos < 25 años:') !!}
                             {!! Form::text('numhijosmenores', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
                             @error('numhijosmenores')
                                 <small class="text-danger fas fa-exclamation-circle">
@@ -601,7 +603,33 @@ CREAR EMPRESA
                             @enderror
                         </div>
                     </div>
-                    <div class="col-lg-7">
+                    <div class="col-lg-4" id="campo-hijos" style="display: none;">
+                        <div class="form-group">
+                            {!! Form::label('numhijostotal', 'Total hijos:') !!}
+                            {!! Form::text('numhijostotal', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                            @error('numhijostotal')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{$message}}
+                                </small>
+                            @enderror
+                        </div>
+                    </div>
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+                            const generoSelect = document.getElementById("genero");
+                            const campoHijos = document.getElementById("campo-hijos");
+                            function toggleCampoHijos() {
+                                if (generoSelect.value === "FEMENINO") {
+                                    campoHijos.style.display = "block";
+                                } else {
+                                    campoHijos.style.display = "none";
+                                }
+                            }
+                            generoSelect.addEventListener("change", toggleCampoHijos);
+                            toggleCampoHijos();
+                        });
+                    </script>
+                    <div class="col-lg-4">
                         <div class="form-group">
                             {!! Form::label('alertas', 'Alertas:') !!}
                             {!! Form::text('alertas', null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
@@ -702,7 +730,6 @@ CREAR EMPRESA
                     display: flex;
                     justify-content: space-between;
                 }
-
                 .modal {
                     position: fixed;
                     top: 50%;
@@ -759,7 +786,6 @@ CREAR EMPRESA
                     color: #dc3545;
                 }
             </style>
-           
         </div>
         {!! Form::submit('CREAR CLIENTE', ['class' => 'btn btn-crear']) !!}
         {!! Form::close() !!}
@@ -805,11 +831,8 @@ CREAR EMPRESA
 </div>
 <script>
     document.getElementById('crearEmpresaForm').addEventListener('submit', function (e) { 
-        e.preventDefault(); // Evitar que se recargue la página
-
+        e.preventDefault();
         let formData = new FormData(this);
-
-        // Enviar la solicitud AJAX
         fetch('{{ route('admin.asociados.crearempresa') }}', {
             method: 'POST',
             headers: {
@@ -819,22 +842,13 @@ CREAR EMPRESA
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) { // Verifica si la respuesta tiene el campo 'success' igual a true
-                // Mostrar la alerta de éxito
-                alert("La empresa ha sido registrada exitosamente.");
-                
-                // Agregar la nueva empresa al select
+            if (data.success) {
+                alert("La empresa ha sido registrada exitosamente.");  
                 let empresaSelect = document.getElementById('empresa-select');
                 let option = new Option(data.empresa.nombreempresa, data.empresa.id);
                 empresaSelect.add(option);
-
-                // Cerrar el modal
                 $('#crearEmpresaModal').modal('hide');
-
-                // Opcional: Seleccionar automáticamente la nueva empresa
                 empresaSelect.value = data.empresa.id;
-
-                // Limpiar los campos del formulario
                 document.getElementById('crearEmpresaForm').reset();
             } else {
                 alert('Hubo un error al registrar la empresa.');
@@ -843,34 +857,23 @@ CREAR EMPRESA
         .catch(error => console.error('Error:', error));
     });
 
-
     document.getElementById('actualizarEmpresasBtn').addEventListener('click', function () {
-        // Obtener el select
         let empresaSelect = document.getElementById('empresa');
-
-        // Hacer la solicitud para obtener las empresas
         fetch('{{ route('admin.asociados.obtenerEmpresas') }}')
             .then(response => response.json())
             .then(data => {
-                // Limpiar el select antes de agregar las nuevas opciones
                 empresaSelect.innerHTML = '';
-
-                // Agregar un option vacío
                 let placeholderOption = new Option('Seleccione una empresa', '');
                 empresaSelect.add(placeholderOption);
-
-                // Recargar las empresas
                 data.empresas.forEach(empresa => {
                     let option = new Option(empresa.nombreempresa, empresa.id);
                     empresaSelect.add(option);
                 });
-
-                // Opcional: Seleccionar automáticamente la primera empresa
                 if (data.empresas.length > 0) {
                     empresaSelect.value = data.empresas[0].id;
                 }
             })
-            .catch(error => console.error('Error al actualizar las empresas:', error));
+        .catch(error => console.error('Error al actualizar las empresas:', error));
     });
 </script>          
 <style>
@@ -888,7 +891,6 @@ CREAR EMPRESA
 <script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 
 <script>
-    // Función para calcular la edad
     function calcularEdad(fecha_nacimiento) {
         var fecha_actual = new Date();
         var fecha_nacimiento = new Date(fecha_nacimiento);
@@ -900,14 +902,11 @@ CREAR EMPRESA
         }
         return edad;
     }
-    // Obtener la fecha de nacimiento cuando cambie el valor del campo de fecha
     document.getElementById('fecha_nacimiento').addEventListener('change', function() {
         var fecha_nacimiento = this.value;
         var edad = calcularEdad(fecha_nacimiento);
         document.getElementById('edad').value = edad;
     });
-
-    // Calcular la edad inicial al cargar la página
     var fecha_nacimiento = document.getElementById('fecha_nacimiento').value;
     var edad = calcularEdad(fecha_nacimiento);
     document.getElementById('edad').value = edad;
@@ -926,7 +925,6 @@ $('.dropify').dropify();
             lector.readAsDataURL(input.files[0]);
         }
     }
-
     $(document).ready(function() {
         $("#picture").change(function() {
             mostrarVistaPrevia(this);
@@ -1061,5 +1059,4 @@ $('.dropify').dropify();
         color: #ffffff;
     }
 </style>
-
 @stop

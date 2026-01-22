@@ -30,6 +30,15 @@ class Tramitesubcliente extends Model
         'clienteauditorianombre' => '',
         'clientecomunid' => '',
         'clientecomunnombre' => '',
+        'fechaasignacion' => '',
+        'fechafinalizacion' => '',
+        'usuariointerid' => '',
+        'usuariointernombre' => '',
+        'motivointerrupcion' => '',
+        'archivofinalizado' => '',
+        'historiafinalizado' => '',
+        'requisitofinalizado' => '',
+        'fechainicio' => '',
     ]; 
 
     protected $fillable = [
@@ -50,12 +59,25 @@ class Tramitesubcliente extends Model
         'clienteauditorianombre',
         'clientecomunid',
         'clientecomunnombre',
+        'fechaasignacion',
+        'fechafinalizacion',
+        'usuariointerid',
+        'usuariointernombre',
+        'motivointerrupcion',
+        'archivofinalizado',
+        'historiafinalizado',
+        'requisitofinalizado',
+        'fechainicio',
     ];
 
     public function areaaccion()
     {
         return $this->hasMany(AreaAccion::class, 'areasid', 'id');
     }
-    
+    public function procedimientos()
+{
+    return $this->hasMany(Tramite::class, 'idtramite', 'id');
+}
+
 
 }

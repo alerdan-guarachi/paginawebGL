@@ -26,6 +26,7 @@ use App\Models\Aprobacioninformefinal;
 use App\Models\ProveedorInformefinal;
 use App\Models\Informefinal;
 use App\Models\Proveedor;
+use App\Models\SubTramite;
 use App\Models\Aseguradora;
 use App\Models\Contactosubcliente;
 use App\Models\Requisitosubcliente;
@@ -3391,6 +3392,7 @@ class InformeFinalController extends Controller
         ->where('p.clienteitaid', $clienteitaid)
         ->where('p.fechabateria', $fechabateria)
         ->whereNull('p.motivoreprogramacion')
+        ->whereNull('p.motivoanulacion')
         ->where('p.proveedornombre', $proveedornombre)
         ->whereNull('d.programacionid') // Solo los que no tienen documentación
         ->get();
@@ -3416,6 +3418,7 @@ class InformeFinalController extends Controller
         ->where('p.clienteauditoriaid', $clienteauditoriaid)
         ->where('p.fechabateria', $fechabateria)
         ->whereNull('p.motivoreprogramacion')
+        ->whereNull('p.motivoanulacion')
         ->where('p.proveedornombre', $proveedornombre)
         ->whereNull('d.programacionid') // Solo los que no tienen documentación
         ->get();
@@ -3498,33 +3501,65 @@ class InformeFinalController extends Controller
         $texto1 = $texto2 = $texto3 = "";
         switch ($usuario) {
             case 'CARLOS ALEJANDRO GUARACHI SANDOVAL':
-                $firmaAnteriorPath = public_path('/glfirmasello/CARDIOVIDA/FIRMA ORIGINAL CARDIOVIDA VERTICAL.png');
-                    $selloAnteriorPath = public_path('/glfirmasello/CARDIOVIDA/SELLO ORIGINAL CARDIOVIDA VERTICAL.png');
-                    $firmaAnteriorCoords = ['x' => 185, 'y' => 205, 'width' => 15, 'height' => 25];
+                if (Str::startsWith($accion, 'ESPIROMETRIA') || Str::startsWith($accion, 'ESPIROMETRÍA') || Str::startsWith($accion, 'AUDIOMETRÍA') || Str::startsWith($accion, 'AUDIOMETRIA')) {
+                    $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 187, 'y' => 205, 'width' => 20, 'height' => 37];
                     $selloAnteriorCoords = ['x' => 178, 'y' => 200, 'width' => 40, 'height' => 40];
 
-                    $firmaUltimaPath = public_path('/glfirmasello/CARDIOVIDA/FIRMA ORIGINAL CARDIOVIDA.png');
-                    $selloUltimaPath = public_path('/glfirmasello/CARDIOVIDA/SELLO ORIGINAL CARDIOVIDA.png');
-                    $firmaUltimaCoords = ['x' => 97, 'y' => 205, 'width' => 30, 'height' => 20];
-                    $selloUltimaCoords = ['x' => 90, 'y' => 205, 'width' => 40, 'height' => 40];
-                    $texto1 = "DR. IGNACIO VACA VELARDE";
-                    $texto2 = "CARDIÓLOGO - HEMODINAMISTA";
-                    $texto3 = "V-4762072 M22-8858";
+                    $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO3 ORIGINAL MARIA RENEE.png');
+                    $firmaUltimaCoords = ['x' => 31, 'y' => 240, 'width' => 25, 'height' => 30];
+                    $selloUltimaCoords = ['x' => 25, 'y' => 252, 'width' => 40, 'height' => 13];
+                    $texto1 = null;
+                    $texto2 = null;
+                    $texto3 = null;
+
+                } else {
+                    $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 187, 'y' => 205, 'width' => 20, 'height' => 37];
+                    $selloAnteriorCoords = ['x' => 178, 'y' => 200, 'width' => 40, 'height' => 40];
+
+                    $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL ULTIMA MARIA RENEE.png');
+                    $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE.png');
+                    $firmaUltimaCoords = ['x' => 90, 'y' => 186, 'width' => 35, 'height' => 40];
+                    $selloUltimaCoords = ['x' => 85, 'y' => 199, 'width' => 40, 'height' => 40];
+                    $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
+                    $texto2 = "MEDICINA LABORAL Y SALUD OCUPACIONAL";
+                    $texto3 = "M.P.A-7676725 CM:11019";
+                }
             break;
 
             case 'AGUIRRE VASQUEZ MARIA RENEE':
-                $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
-                $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE VERTICAL.png');
-                $firmaAnteriorCoords = ['x' => 187, 'y' => 205, 'width' => 20, 'height' => 37];
-                $selloAnteriorCoords = ['x' => 178, 'y' => 200, 'width' => 40, 'height' => 40];
+                if (Str::startsWith($accion, 'ESPIROMETRIA') || Str::startsWith($accion, 'ESPIROMETRÍA') || Str::startsWith($accion, 'AUDIOMETRÍA') || Str::startsWith($accion, 'AUDIOMETRIA')) {
+                    $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 187, 'y' => 205, 'width' => 20, 'height' => 37];
+                    $selloAnteriorCoords = ['x' => 178, 'y' => 200, 'width' => 40, 'height' => 40];
 
-                $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL ULTIMA MARIA RENEE.png');
-                $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE.png');
-                $firmaUltimaCoords = ['x' => 90, 'y' => 186, 'width' => 35, 'height' => 40];
-                $selloUltimaCoords = ['x' => 85, 'y' => 199, 'width' => 40, 'height' => 40];
-                $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
-                $texto2 = "MEDICINA LABORAL Y SALUD OCUPACIONAL";
-                $texto3 = "M.P.A-7676725 CM:11019";
+                    $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO3 ORIGINAL MARIA RENEE.png');
+                    $firmaUltimaCoords = ['x' => 31, 'y' => 240, 'width' => 25, 'height' => 30];
+                    $selloUltimaCoords = ['x' => 25, 'y' => 252, 'width' => 40, 'height' => 13];
+                    $texto1 = null;
+                    $texto2 = null;
+                    $texto3 = null;
+
+                } else {
+                    $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 187, 'y' => 205, 'width' => 20, 'height' => 37];
+                    $selloAnteriorCoords = ['x' => 178, 'y' => 200, 'width' => 40, 'height' => 40];
+
+                    $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL ULTIMA MARIA RENEE.png');
+                    $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE.png');
+                    $firmaUltimaCoords = ['x' => 90, 'y' => 186, 'width' => 35, 'height' => 40];
+                    $selloUltimaCoords = ['x' => 85, 'y' => 199, 'width' => 40, 'height' => 40];
+                    $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
+                    $texto2 = "MEDICINA LABORAL Y SALUD OCUPACIONAL";
+                    $texto3 = "M.P.A-7676725 CM:11019";
+                }
             break;
 
             case 'MARICELA COLQUE SANDOVAL':
@@ -3618,8 +3653,21 @@ class InformeFinalController extends Controller
 
         /* $textoFecha = "{$sucursal}, {$fechaActual}"; */
 
-        if ($usuario === 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.') {
+        /* if ($usuario === 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.') {
             $textoFecha = null;
+        } else {
+            $textoFecha = "{$sucursal}, {$fechaActual}";
+        } */
+
+        if ( 
+            $usuario === 'AGUIRRE VASQUEZ MARIA RENEE' && 
+            (Str::startsWith($accion, 'ESPIROMETRIA') || Str::startsWith($accion, 'ESPIROMETRÍA') || Str::startsWith($accion, 'AUDIOMETRÍA') || Str::startsWith($accion, 'AUDIOMETRIA'))
+        ) {
+            $textoFecha = null;
+            
+        } elseif ($usuario === 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.') {
+            $textoFecha = null;
+            
         } else {
             $textoFecha = "{$sucursal}, {$fechaActual}";
         }
@@ -3637,6 +3685,7 @@ class InformeFinalController extends Controller
         $pdf = new FPDI();
         $pageCount = $pdf->setSourceFile($uploadedPdfPath);
 
+        /* INFORME CON PIE Y FIRMA Y SELLO */
         for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {  
             $templateId = $pdf->importPage($pageNo);
             $pdf->AddPage();
@@ -3727,6 +3776,7 @@ class InformeFinalController extends Controller
             return back()->withErrors(['error' => 'El archivo PDF no contiene páginas.']);
         }
 
+        /* INFORME SOLO CON PIE DE FIRMA Y SELLO */
         for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
             $templateId = $pdf->importPage($pageNo);
             $pdf->AddPage();
@@ -3830,7 +3880,8 @@ class InformeFinalController extends Controller
         $programacionid = $request->input('programacionid');
         $usuarioid = $request->input('usuarioid');
         $usuarioregistro = $request->input('usuarioregistro');
-        
+        $idsubproc = Programacionsubcliente::where('id', $programacionid)->value('idsubproc');
+
         $documentacioncliente = Documentacionsubcliente::create(
             $request->except('accion') + [
                 'documentfirmado' => $outputFileName,
@@ -3843,9 +3894,20 @@ class InformeFinalController extends Controller
                 'image2' => $image_name2,
                 'documentword' => $archivo3_name,
                 'usuarioid' => $usuarioid,
-                'usuarioregistro' => $usuarioregistro
+                'usuarioregistro' => $usuarioregistro,
+                'idsubproc' => $idsubproc
             ]
         );
+
+        // 🔄 ACTUALIZAR SUBTRAMITE IGUAL QUE EN EL CÓDIGO ANTERIOR
+        if ($idsubproc) {
+            SubTramite::where('id', $idsubproc)
+                ->update([
+                    'informeprogramacion' => $outputFileName2,
+                    'solicitante1' => $image_name,
+                    'solicitante2' => $image_name2
+                ]);
+        }
 
         if ($documentacioncliente) {
             $usuarioAutenticado = auth()->user();
@@ -4230,7 +4292,7 @@ class InformeFinalController extends Controller
         $acciones = $request->has('acciones_seleccionadas') ? json_decode($request->input('acciones_seleccionadas'), true) : [];
 
         if (!is_array($acciones)) {
-            $acciones = []; // En caso de que sea null, lo convierte en array
+            $acciones = [];
         }
 
         $nombrecliente = $request->input('clienteitanombre');
@@ -4241,7 +4303,23 @@ class InformeFinalController extends Controller
         $fechabateria = $request->input('fechabateria');
 
         if (!empty($acciones)) {
-            foreach ($acciones as $accion) {
+            /* foreach ($acciones as $accion) {
+
+                 // 🔵 AUMENTADO — OBTENER NOMBRE REAL DE LA ACCIÓN
+                $accionNombreReal = Programacionsubcliente::where('id', $accion)
+                                    ->value('accionnombre');
+
+                // 🔵 AUMENTADO — OBTENER PROGRAMACIONID REAL SEGÚN CLIENTE + FECHA + ACCIÓN
+                $programacionReal = Programacionsubcliente::where('clienteitaid', $idcliente)
+                                    ->where('fechabateria', $fechabateria)
+                                    ->where('accionnombre', $accionNombreReal)
+                                    ->value('id');
+
+                // 🔵 AUMENTADO — OBTENER IDSUBPROC
+                $idsubproc = Programacionsubcliente::where('id', $programacionReal)
+                                ->value('idsubproc');
+
+
                 $documentacioncliente = Documentacionsubcliente::create([
                     'documentfirmado' => $outputFileName ?? null,
                     'document' => $outputFileName2 ?? null,
@@ -4249,12 +4327,62 @@ class InformeFinalController extends Controller
                     'fechabateria' => $fechabateria,
                     'clienteitanombre' => $nombrecliente,
                     'clienteitaid' => $idcliente,
-                    'programacionid' => $programacionid,
+                    'programacionid' => $programacionReal,         // 🔵 CAMBIADO
+                    'idsubproc' => $idsubproc,
                     'image' => $image_name ?? null,
                     'image2' => $image_name2 ?? null,
                     'documentword' => $archivo3_name ?? null,
                     'usuarioid' => $usuarioid,
                     'usuarioregistro' => $usuarioregistro
+                ]);
+                 // 🔵 AUMENTADO — ACTUALIZAR SUBTRAMITE
+                if ($idsubproc) {
+                    SubTramite::where('id', $idsubproc)
+                        ->update([
+                            'informeprogramacion' => $outputFileName2 ?? null,
+                            'solicitante1' => $image_name ?? null,
+                            'solicitante2' => $image_name2 ?? null
+                        ]);
+                }
+
+            } */
+            foreach ($acciones as $accion) {
+
+                $accionNombreReal = Programacionsubcliente::where('id', $accion)
+                                        ->value('accionnombre');
+
+                $registro = Programacionsubcliente::where('clienteitaid', $idcliente)
+                                ->where('fechabateria', $fechabateria)
+                                ->where('accionnombre', 'LIKE', "%{$accionNombreReal}%")
+                                ->first();
+
+                if (!$registro) {
+                    continue;
+                }
+
+                $programacionReal = $registro->id;
+                $idsubproc = $registro->idsubproc;
+
+                $documentacioncliente = Documentacionsubcliente::create([
+                    'documentfirmado' => $outputFileName ?? null,
+                    'document' => $outputFileName2 ?? null,
+                    'accion' => $accion,
+                    'fechabateria' => $fechabateria,
+                    'clienteitanombre' => $nombrecliente,
+                    'clienteitaid' => $idcliente,
+                    'programacionid' => $programacionReal,
+                    'idsubproc' => $idsubproc,
+                    'image' => $image_name ?? null,
+                    'image2' => $image_name2 ?? null,
+                    'documentword' => $archivo3_name ?? null,
+                    'usuarioid' => $usuarioid,
+                    'usuarioregistro' => $usuarioregistro
+                ]);
+
+                SubTramite::where('id', $idsubproc)->update([
+                    'informeprogramacion' => $outputFileName2 ?? null,
+                    'solicitante1' => $image_name ?? null,
+                    'solicitante2' => $image_name2 ?? null
                 ]);
             }
         }
@@ -4834,18 +4962,34 @@ class InformeFinalController extends Controller
             break;
 
             case 'AGUIRRE VASQUEZ MARIA RENEE':
-                $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
-                $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE VERTICAL.png');
-                $firmaAnteriorCoords = ['x' => 187, 'y' => 205, 'width' => 20, 'height' => 37];
-                $selloAnteriorCoords = ['x' => 178, 'y' => 200, 'width' => 40, 'height' => 40];
+                if (Str::startsWith($accion, 'ESPIROMETRIA') || Str::startsWith($accion, 'ESPIROMETRÍA') || Str::startsWith($accion, 'AUDIOMETRÍA') || Str::startsWith($accion, 'AUDIOMETRIA')) {
+                    $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 187, 'y' => 205, 'width' => 20, 'height' => 37];
+                    $selloAnteriorCoords = ['x' => 178, 'y' => 200, 'width' => 40, 'height' => 40];
 
-                $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL ULTIMA MARIA RENEE.png');
-                $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE.png');
-                $firmaUltimaCoords = ['x' => 90, 'y' => 186, 'width' => 35, 'height' => 40];
-                $selloUltimaCoords = ['x' => 85, 'y' => 199, 'width' => 40, 'height' => 40];
-                $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
-                $texto2 = "MEDICINA LABORAL Y SALUD OCUPACIONAL";
-                $texto3 = "M.P.A-7676725 CM:11019";
+                    $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO3 ORIGINAL MARIA RENEE.png');
+                    $firmaUltimaCoords = ['x' => 31, 'y' => 240, 'width' => 25, 'height' => 30];
+                    $selloUltimaCoords = ['x' => 25, 'y' => 252, 'width' => 40, 'height' => 13];
+                    $texto1 = null;
+                    $texto2 = null;
+                    $texto3 = null;
+
+                } else {
+                    $firmaAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL MARIA RENEE.png');
+                    $selloAnteriorPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE VERTICAL.png');
+                    $firmaAnteriorCoords = ['x' => 187, 'y' => 205, 'width' => 20, 'height' => 37];
+                    $selloAnteriorCoords = ['x' => 178, 'y' => 200, 'width' => 40, 'height' => 40];
+
+                    $firmaUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/FIRMA ORIGINAL ULTIMA MARIA RENEE.png');
+                    $selloUltimaPath = public_path('/glfirmasello/MARIA RENEE AGUIRRE VASQUEZ/SELLO2 ORIGINAL MARIA RENEE.png');
+                    $firmaUltimaCoords = ['x' => 90, 'y' => 186, 'width' => 35, 'height' => 40];
+                    $selloUltimaCoords = ['x' => 85, 'y' => 199, 'width' => 40, 'height' => 40];
+                    $texto1 = "DRA. MARIA RENEÉ AGUIRRE VASQUEZ";
+                    $texto2 = "MEDICINA LABORAL Y SALUD OCUPACIONAL";
+                    $texto3 = "M.P.A-7676725 CM:11019";
+                }
             break;
 
             case 'MARICELA COLQUE SANDOVAL':
@@ -4939,8 +5083,15 @@ class InformeFinalController extends Controller
 
         /* $textoFecha = "{$sucursal}, {$fechaActual}"; */
 
-        if ($usuario === 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.') {
+        if ( 
+            $usuario === 'AGUIRRE VASQUEZ MARIA RENEE' && 
+            (Str::startsWith($accion, 'ESPIROMETRIA') || Str::startsWith($accion, 'ESPIROMETRÍA') || Str::startsWith($accion, 'AUDIOMETRÍA') || Str::startsWith($accion, 'AUDIOMETRIA'))
+        ) {
             $textoFecha = null;
+            
+        } elseif ($usuario === 'INSTITUTO DE CARDIOLOGIA INTERVENCIONISTA CARDIOVIDA S.R.L.') {
+            $textoFecha = null;
+            
         } else {
             $textoFecha = "{$sucursal}, {$fechaActual}";
         }

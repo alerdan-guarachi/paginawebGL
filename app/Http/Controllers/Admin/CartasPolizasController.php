@@ -15,6 +15,7 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ClienteAuditoria;
 
 class CartasPolizasController extends Controller
 {
@@ -58,6 +59,7 @@ public function descargarsolicitudpolizas(Request $request)
     $fecha = $request->input('fecha');
     $ciudad = $request->input('ciudad');
     $opcion = $request->input('opcion');
+    $clienteid = $request->input('clienteid');
     $clienteuno = $request->input('clienteuno');
     $clienteunoci = $request->input('clienteunoci');
     $clientedos = $request->input('clientedos');
@@ -67,8 +69,9 @@ public function descargarsolicitudpolizas(Request $request)
 
     $nuevaCarta = new CartasPolizas();
     $nuevaCarta->fecha = $fecha;
-    $nuevaCarta->ciudad = $ciudad;
+    $nuevaCarta->ciudad = strtoupper($ciudad);
     $nuevaCarta->banco = $opcion;
+    $nuevaCarta->clienteunoid = $clienteid;
     $nuevaCarta->nombreclienteuno = $clienteuno;
     $nuevaCarta->ciclienteuno = $clienteunoci;
     $nuevaCarta->nombreclientedos = $clientedos;
@@ -106,6 +109,7 @@ public function descargarreclamosolicitudpolizas(Request $request)
     $fecha = $request->input('fecha');
     $ciudad = $request->input('ciudad');
     $opcion = $request->input('opcion');
+    $clienteid = $request->input('clienteid');
     $clienteuno = $request->input('clienteuno');
     $clienteunoci = $request->input('clienteunoci');
     $clientedos = $request->input('clientedos');
@@ -115,8 +119,9 @@ public function descargarreclamosolicitudpolizas(Request $request)
 
     $nuevaCarta = new CartasPolizas();
     $nuevaCarta->fecha = $fecha;
-    $nuevaCarta->ciudad = $ciudad;
+    $nuevaCarta->ciudad = strtoupper($ciudad);
     $nuevaCarta->banco = $opcion;
+    $nuevaCarta->clienteunoid = $clienteid;
     $nuevaCarta->nombreclienteuno = $clienteuno;
     $nuevaCarta->ciclienteuno = $clienteunoci;
     $nuevaCarta->nombreclientedos = $clientedos;
@@ -154,6 +159,7 @@ public function descargarreclamosolicitudpolizasgenerales(Request $request)
     $fecha = $request->input('fecha');
     $ciudad = $request->input('ciudad');
     $opcion = $request->input('opcion');
+    $clienteid = $request->input('clienteid');
     $clienteuno = $request->input('clienteuno');
     $clienteunoci = $request->input('clienteunoci');
     $clientedos = $request->input('clientedos');
@@ -163,8 +169,9 @@ public function descargarreclamosolicitudpolizasgenerales(Request $request)
 
     $nuevaCarta = new CartasPolizas();
     $nuevaCarta->fecha = $fecha;
-    $nuevaCarta->ciudad = $ciudad;
+    $nuevaCarta->ciudad = strtoupper($ciudad);
     $nuevaCarta->banco = $opcion;
+    $nuevaCarta->clienteunoid = $clienteid;
     $nuevaCarta->nombreclienteuno = $clienteuno;
     $nuevaCarta->ciclienteuno = $clienteunoci;
     $nuevaCarta->nombreclientedos = $clientedos;
@@ -207,15 +214,16 @@ public function descargarreclamosolicitudpolizasgenerales(Request $request)
     public function create()
     {
         // Consultar los datos de ambas tablas
-    $bancos = DB::table('bancos')->select('nombreBanco')->get();
-    $seguros = DB::table('segurosempresas')->select('nombreSeguro')->get();
+        $bancos = DB::table('bancos')->select('nombreBanco')->get();
+        $seguros = DB::table('segurosempresas')->select('nombreSeguro')->get();
+        $clientesAuditoria = ClienteAuditoria::all();
+        // Combinar los nombres de banco y seguro
+        $opciones = $bancos->merge($seguros);
 
-    // Combinar los nombres de banco y seguro
-    $opciones = $bancos->merge($seguros);
-
-    return view('admin.cartaspolizas.create', [
-        'opciones' => $opciones,
-    ]);
+        return view('admin.cartaspolizas.create', [
+            'opciones' => $opciones,
+            'clientesAuditoria' => $clientesAuditoria,
+        ]);
     }
 
     /**

@@ -23,7 +23,7 @@
                 <div class="col-lg-12">
                     {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.actualizarclienteauditoria', $clienteauditoria], 'method' => 'PUT']) !!}
                     {!! Form::hidden('usersid', auth()->user()->id) !!}
-                    
+                    {!! Form::hidden('tipocliente', 'FIJO') !!}
                     <div class="row">
                         <div class="col-lg-3">
                             <div class="form-group">
@@ -121,10 +121,21 @@
                             });
                         </script> --}}
                         
-                        <div class="col-lg-2">
+                        {{-- <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('fechanacimiento', 'Fecha de nacimiento:') !!}
                                 {!! Form::date('fechanacimiento', \Carbon\Carbon::now(), ['class' => 'form-control', 'id' => 'fecha_nacimiento', 'max' => \Carbon\Carbon::now()->format('Y-m-d')]) !!}
+                                @error('fechanacimiento')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div> --}}
+                        <div class="col-lg-2">
+                            <div class="form-group">
+                                {!! Form::label('fechanacimiento', 'Fecha de nac.:') !!}
+                                {!! Form::date('fechanacimiento', $clienteauditoria->fechanacimiento ?? \Carbon\Carbon::now(), ['class' => 'form-control', 'id' => 'fecha_nacimiento']) !!}
                                 @error('fechanacimiento')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{ $message }}
@@ -202,11 +213,39 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-lg-3">
+                        <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('estadocivil', 'Estado civil:') !!}
-                                {!! Form::select('estadocivil', $estciv, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                                {!! Form::select('estadocivil', $estciv, null, [
+                                    'class' => 'form-control',
+                                    'placeholder' => '',
+                                    'id' => 'estadocivil'
+                                ]) !!}
                                 @error('estadocivil')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-lg-2 conyuge-campo d-none">
+                            <div class="form-group">
+                                {!! Form::label('nombreespcon', 'Nombre Esp/Cony.:') !!}
+                                {!! Form::text('nombreespcon', null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                @error('nombreespcon')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-lg-2 conyuge-campo d-none">
+                            <div class="form-group">
+                                {!! Form::label('ciespcon', 'CI Esp/Cony.:') !!}
+                                {!! Form::text('ciespcon', null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                @error('ciespcon')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
                                     </small>
@@ -224,7 +263,7 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-lg-6">
+                        <div class="col-lg-7" id="direccion-col">
                             <div class="form-group">
                                 {!! Form::label('direccion', 'Dirección:') !!}
                                 {!! Form::text('direccion', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -235,6 +274,37 @@
                                 @enderror
                             </div>
                         </div>
+
+                        <script>
+                            function toggleConyugeCampos() {
+                                let estado = document.getElementById('estadocivil').value;
+                                let conyugeCampos = document.querySelectorAll('.conyuge-campo');
+                                let direccionCol = document.getElementById('direccion-col');
+
+                                if (estado === 'CASAD@' || estado === 'UNION LIBRE') {
+                                    conyugeCampos.forEach(el => el.classList.remove('d-none'));
+                                    direccionCol.classList.remove('col-lg-7');
+                                    direccionCol.classList.add('col-lg-3');
+                                } else {
+                                    // Ocultar campos
+                                    conyugeCampos.forEach(el => {
+                                        el.classList.add('d-none');
+                                        // Vaciar los inputs dentro del contenedor
+                                        let input = el.querySelector('input');
+                                        if (input) input.value = '';
+                                    });
+
+                                    // Restaurar tamaño de dirección
+                                    direccionCol.classList.remove('col-lg-3');
+                                    direccionCol.classList.add('col-lg-7');
+                                }
+                            }
+
+                            document.getElementById('estadocivil').addEventListener('change', toggleConyugeCampos);
+
+                            // Ejecutar al cargar la página para estado preseleccionado
+                            document.addEventListener('DOMContentLoaded', toggleConyugeCampos);
+                        </script>
                     </div>
                     <div class="row">
                         <div class="col-lg-4">

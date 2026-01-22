@@ -33,145 +33,7 @@
     </head>
 <body>
 
-    <!-- Barra de navegacion -->
-    <nav class="navbar navbar-expand-lg navbar-light shadow fixed-top" style="background-color: #e2e2e1;"> 
-        <div class="container d-flex justify-content-between align-items-center">
-            <a class="navbar-brand text-success logo h1 align-self-center" href="welcome">
-                <a href="welcome" class="navbar-brand ml-lg-3">
-                    <img src="assets/img/logo.png" style="width: 120px; height: 60px;" alt="">
-            </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
-                <div class="flex-fill">
-                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="welcome">Inicio</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="sobrenosotros">Sobre nosotros</a>
-                        </li>
-                        
-                        <li class="nav-item">
-                            <div class="dropdown" onmouseleave="closeDropdown()">
-                                <a href="#" class="nav-link dropdown-toggle" id="dropdownMenuLink" data-toggle="dropdown">Servicios</a>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                                    <a class="dropdown-item nav-link" href="asesoramientolegal">Asesoramiento Legal</a>
-                                    <a class="dropdown-item nav-link" href="medicina">Medicina</a>
-                                </div>
-                            </div>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link current-page" href="contact">Contactos</a>
-                        </li>
-                    </ul>
-                </div>
-
-                @if (Route::has('login'))
-                        <div class="d-flex justify-content-end">
-                            @auth
-                                <a href="{{ url('/home') }}" class="btn oval-button text-decoration-none d-flex align-items-center mr-2" title="Inicio">
-                                    <i class="fa fa-fw fa-home icon"></i>
-                                </a>
-                            @else
-                                <a href="{{ route('login') }}" class="btn oval-button text-decoration-none d-flex align-items-center mr-2">
-                                    <i class="fa fa-fw fa-user icon"></i>
-                                    <span class="text">Iniciar sesión</span>
-                                </a>
-                                @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="btn register-button text-decoration-none d-flex align-items-center">
-                                        <i class="fa fa-fw fa-user-plus icon"></i>
-                                        <span class="text">Registrarse</span>
-                                    </a>
-                                @endif
-                            @endauth
-                        </div>
-                    @endif
-
-
-                    <style>
-                        .oval-button {
-                            background-color: white;
-                            border: 2px solid #94c93b;
-                            border-radius: 30px;
-                            padding: 5px 10px;
-                        }
-                        .oval-button:hover {
-                            background-color: #94c93b;
-                        }
-                        .oval-button .icon {
-                            color: #94c93b;
-                            transition: color 0.3s ease;
-                            margin-right: 5px;
-                        }
-                        .oval-button:hover .icon {
-                            color: white;
-                        }
-                        .oval-button .text {
-                            color: #94c93b;
-                            transition: color 0.3s ease;
-                            font-size: 12px;
-                        }
-                        .oval-button:hover .text {
-                            color: white;
-                        }
-                        .register-button {
-                            background-color: white;
-                            border: 2px solid #faa625;
-                            border-radius: 30px;
-                            padding: 5px 10px;
-                        }
-                        .register-button:hover {
-                            background-color: #faa625;
-                        }
-                        .register-button .icon {
-                            color: #faa625;
-                            transition: color 0.3s ease;
-                            margin-right: 5px;
-                        }
-                        .register-button:hover .icon {
-                            color: white;
-                        }
-                        .register-button .text {
-                            color: #faa625;
-                            transition: color 0.3s ease;
-                            font-size: 12px;
-                        }
-                        .register-button:hover .text {
-                            color: white;
-                        }
-                    </style>
-            </div>
-            <style>
-                .current-page {
-                color: #94c93b !important;
-                }
-                .nav-link:hover {
-                color: orange !important;
-                }
-            </style>
-        </div>
-    </nav>
-
-    <!-- Modal -->
-    <div class="modal fade bg-white" id="templatemo_search" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="w-100 pt-1 mb-5 text-right">
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form action="" method="get" class="modal-content modal-body border-0 p-0">
-                <div class="input-group mb-2">
-                    <input type="text" class="form-control" id="inputModalSearch" name="q" placeholder="Search ...">
-                    <button type="submit" class="input-group-text bg-success text-light">
-                        <i class="fa fa-fw fa-search text-white"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
+    @include('encabezado')
 
     <!-- Contactos -->
     <div class="container text-center py-5" style="margin-bottom: -31px;">
@@ -203,234 +65,147 @@
             </div>
         </div>
     </div>
-<!-- <div class="team position-relative overflow-hidden mb-5" onmouseover="slideUp(this)" onmouseleave="slideDown(this)">
-                <img class="img-fluid" src="assets/img/asesoramiento/jubilacion.png" alt="">
-                <div class="position-relative text-center">
-                    <div class="team-text text-white pie">
-                        <h5 class="text-white text-uppercase">Área prestaciones</h5>
-                    </div>
-                </div>
-                <div class="button-container">
-                    <a href="#" class="btn btn-success" onclick="openWhatsApp()">Contactar por WhatsApp</a>
+    <!-- <div class="team position-relative overflow-hidden mb-5" onmouseover="slideUp(this)" onmouseleave="slideDown(this)">
+            <img class="img-fluid" src="assets/img/asesoramiento/jubilacion.png" alt="">
+            <div class="position-relative text-center">
+                <div class="team-text text-white pie">
+                    <h5 class="text-white text-uppercase">Área prestaciones</h5>
                 </div>
             </div>
-            
-            <script>
-                function openWhatsApp() {
-                    // Array de números de WhatsApp con sus respectivos nombres
-                    const contactos = [
-                        { nombre: "Lic. Jasmine", numero: "59167409620" },
-                        { nombre: "Lic. Eudal", numero: "59167409620" },
-                        { nombre: "Lic. Fernando", numero: "59167409620" }
-                    ];
-            
-                    // Mostrar un cuadro de diálogo para que el usuario elija un contacto
-                    let seleccion = prompt("Seleccione un contacto:\n\n1. " + contactos[0].nombre + "\n2. " + contactos[1].nombre + "\n3. " + contactos[2].nombre);
-            
-                    // Redireccionar a WhatsApp con el número seleccionado
-                    if (seleccion === "1") {
-                        window.location.href = "https://wa.me/" + contactos[0].numero;
-                    } else if (seleccion === "2") {
-                        window.location.href = "https://wa.me/" + contactos[1].numero;
-                    } else if (seleccion === "3") {
-                        window.location.href = "https://wa.me/" + contactos[2].numero;
-                    } else {
-                        alert("Selección no válida.");
-                    }
+            <div class="button-container">
+                <a href="#" class="btn btn-success" onclick="openWhatsApp()">Contactar por WhatsApp</a>
+            </div>
+        </div>
+        
+        <script>
+            function openWhatsApp() {
+                // Array de números de WhatsApp con sus respectivos nombres
+                const contactos = [
+                    { nombre: "Lic. Jasmine", numero: "59167409620" },
+                    { nombre: "Lic. Eudal", numero: "59167409620" },
+                    { nombre: "Lic. Fernando", numero: "59167409620" }
+                ];
+        
+                // Mostrar un cuadro de diálogo para que el usuario elija un contacto
+                let seleccion = prompt("Seleccione un contacto:\n\n1. " + contactos[0].nombre + "\n2. " + contactos[1].nombre + "\n3. " + contactos[2].nombre);
+        
+                // Redireccionar a WhatsApp con el número seleccionado
+                if (seleccion === "1") {
+                    window.location.href = "https://wa.me/" + contactos[0].numero;
+                } else if (seleccion === "2") {
+                    window.location.href = "https://wa.me/" + contactos[1].numero;
+                } else if (seleccion === "3") {
+                    window.location.href = "https://wa.me/" + contactos[2].numero;
+                } else {
+                    alert("Selección no válida.");
                 }
-            </script> -->
-<div class="container-fluid py-1">
-    <div class="container pt-3">
-        <div class="col-lg-6 m-auto">
-            <h1 class="txt3" style="margin-top: 70px;">⧻ Contáctanos ⧻</h1>
-        </div>
-        <div class="row justify-content-center text-center">
-            <div class="col-lg-6">
-                <h6 class="txt5">Santa Cruz</h6>
+            }
+    </script> -->
+    <div class="container-fluid py-1">
+        <div class="container pt-3">
+            <div class="col-lg-6 m-auto">
+                <h1 class="txt3" style="margin-top: 70px;">⧻ Contáctanos ⧻</h1>
             </div>
-        </div>
-        <div class="row justify-content-center">
-            
-            <div class="col-lg-3 col-md-6 mx-4">
-                <div class="team position-relative overflow-hidden mb-5" onmouseover="slideUp(this)" onmouseleave="slideDown(this)">
-                    <img class="img-fluid" src="assets/img/asesoramiento/1.png" alt="">
-                    <div class="position-relative text-center">
-                        <div class="team-text text-white pie">
-                            <h5 class="text-white text-uppercase">Área prestaciones</h5>
-                        </div>
-                    </div>
-                    <div class="button-container">
-                        <a href="https://wa.me/59167409620" target="_blank" class="btn btn-succes">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                        <a href="mailto:scz.prestaciones2@goodlife.com.bo" class="btn btn-succes">
-                            <i class="far fa-envelope"></i>
-                        </a>
-                    </div>
+            <div class="row justify-content-center text-center">
+                <div class="col-lg-6">
+                    <h6 class="txt5">Santa Cruz</h6>
                 </div>
             </div>
-            
-            <div class="col-lg-3 col-md-6 mx-4">
-                <div class="team position-relative overflow-hidden mb-5" onmouseover="slideUp(this)" onmouseleave="slideDown(this)">
-                    <img class="img-fluid" src="assets/img/medicina/2.png" alt="">
-                    <div class="position-relative text-center">
-                        <div class="team-text text-white pie2">
-                            <h5 class="text-white text-uppercase">Área médica</h5>
+            <div class="row justify-content-center">
+                
+                <div class="col-lg-3 col-md-6 mx-4">
+                    <div class="team position-relative overflow-hidden mb-5" onmouseover="slideUp(this)" onmouseleave="slideDown(this)">
+                        <img class="img-fluid" src="assets/img/asesoramiento/1.png" alt="">
+                        <div class="position-relative text-center">
+                            <div class="team-text text-white pie">
+                                <h5 class="text-white text-uppercase">Área prestaciones</h5>
+                            </div>
+                        </div>
+                        <div class="button-container">
+                            <a href="https://wa.me/59167409620" target="_blank" class="btn btn-succes">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <a href="mailto:scz.prestaciones2@goodlife.com.bo" class="btn btn-succes">
+                                <i class="far fa-envelope"></i>
+                            </a>
                         </div>
                     </div>
-                    <div class="button-container">>
-                        <a href="https://wa.me/59165045401" target="_blank" class="btn btn-succes">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                        <a href="mailto:fabricio.prado@goodlife.com.bo" class="btn btn-succes">
-                            <i class="far fa-envelope"></i>
-                        </a>
-                    </div>
                 </div>
-            </div> 
-        </div>
-    </div>
-</div>
-
-<div class="container-fluid py-5">
-    <div class="container pt-3">
-        <div class="row justify-content-center text-center" style="margin-top: -50px">
-            <div class="col-lg-6">
-                <h6 class="txt5">Cochabamba</h6>
-            </div>
-        </div>
-        <div class="row justify-content-center">
-
-            <div class="col-lg-3 col-md-6 mx-4"> 
-                <div class="team position-relative overflow-hidden mb-5" onmouseover="slideUp(this)" onmouseleave="slideDown(this)">
-                    <img class="img-fluid" src="assets/img/asesoramiento/1.png" alt="">
-                    <div class="position-relative text-center">
-                        <div class="team-text text-white pie">
-                            <h5 class="text-white text-uppercase">Área prestaciones</h5>
+                
+                <div class="col-lg-3 col-md-6 mx-4">
+                    <div class="team position-relative overflow-hidden mb-5" onmouseover="slideUp(this)" onmouseleave="slideDown(this)">
+                        <img class="img-fluid" src="assets/img/medicina/2.png" alt="">
+                        <div class="position-relative text-center">
+                            <div class="team-text text-white pie2">
+                                <h5 class="text-white text-uppercase">Área médica</h5>
+                            </div>
+                        </div>
+                        <div class="button-container">>
+                            <a href="https://wa.me/59165045401" target="_blank" class="btn btn-succes">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <a href="mailto:fabricio.prado@goodlife.com.bo" class="btn btn-succes">
+                                <i class="far fa-envelope"></i>
+                            </a>
                         </div>
                     </div>
-                    <div class="button-container">
-                        <a href="https://wa.me/59172222960" target="_blank" class="btn btn-succes">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                        <a href="mailto:h.prestaciones@goodlife.com.bo" class="btn btn-succes">
-                            <i class="far fa-envelope"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-3 col-md-6 mx-4">
-                <div class="team position-relative overflow-hidden mb-5" onmouseover="slideUp(this)" onmouseleave="slideDown(this)">
-                    <img class="img-fluid" src="assets/img/medicina/2.png" alt="">
-                    <div class="position-relative text-center">
-                        <div class="team-text text-white pie2">
-                            <h5 class="text-white text-uppercase">Área médica</h5>
-                        </div>
-                    </div>
-                    <div class="button-container">
-                        <a href="https://wa.me/59165045401" target="_blank" class="btn btn-succes">
-                            <i class="fab fa-whatsapp"></i>
-                        </a>
-                        <a href="mailto:fabricio.prado@goodlife.com.bo" class="btn btn-succes">
-                            <i class="far fa-envelope"></i>
-                        </a>
-                    </div>
-                </div>
+                </div> 
             </div>
         </div>
     </div>
-</div>
 
-    <!-- Pie de pagina -->
-    <footer class="bg-black" id="tempaltemo_footer">
-        <div class="container">
-            <div class="row">
-
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 border-bottom pb-3 border-light logo txt6">Santa Cruz</h2>
-                    <ul class="list-unstyled text-light custom-footer-links">
-                        <li>
-                            <i class="fas fa-map-marker-alt fa-fw"></i>
-                            <a class="text-decoration-none" href="https://maps.app.goo.gl/9YcukYKG32Kg2NeX6">Av. Rene Moreno N° 484 Esq. Ana Barba entre 1er y 2do anillo - Barrio Sur</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-phone fa-fw"></i>
-                            <a class="text-decoration-none" href="tel:65045401">65045401</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-envelope fa-fw"></i>
-                            <a class="text-decoration-none" href="mailto:scz.prestaciones2@goodlife.com.bo?subject=Asunto&body=Cuerpo del mensaje&app=OUTLOOK">scz.prestaciones2@goodlife.com.bo</a>
-                        </li>
-                    </ul>
-                </div>
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 border-bottom pb-3 border-light logo txt6">Cochabamba</h2>
-                    <ul class="list-unstyled text-light custom-footer-links">
-                        <li>
-                            <i class="fas fa-map-marker-alt fa-fw" ></i> 
-                            <a class="text-decoration-none" href="https://maps.app.goo.gl/US5TiFQpvk7gAh346">Calle Lanza entre R. Rivero y Oruro Edif. Shashelly piso 2 of. 2B</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-phone fa-fw"></i>
-                            <a class="text-decoration-none" href="tel:65045401">65045401</a>
-                        </li>
-                        <li>
-                            <i class="fa fa-envelope fa-fw"></i>
-                            <a class="text-decoration-none" href="mailto:cbbaprestaciones@goodlife.com.bo?subject=Asunto&body=Cuerpo del mensaje&app=OUTLOOK">cbbaprestaciones@goodlife.com.bo</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="col-md-4 pt-5">
-                    <h2 class="h2 text-light border-bottom pb-3 border-light">Menu</h2>
-                    <ul class="list-unstyled text-light custom-footer-links">
-                        <li><a class="text-decoration-none" href="welcome">Inicio</a></li>
-                        <li><a class="text-decoration-none" href="sobrenosotros">Sobre nosotros</a></li>
-                        <li><a class="text-decoration-none" href="asesoramientolegal">Servicio de asesoramiento legal</a></li>
-                        <li><a class="text-decoration-none" href="medicina">Servicio de medicina</a></li>
-                        <li><a class="text-decoration-none current-page" href="contact">Contactos</a></li>
-                    </ul>
-                </div>
-
-            </div>
-
-            <div class="row text-light mb-4">
-                <div class="col-12 mb-3">
-                    <div class="w-100 my-3 border-top border-light"></div>
-                </div>
-                <div class="col-auto me-auto">
-                    <ul class="list-inline text-left footer-icons">
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.facebook.com/Good.Life.Consultora.de.Pensiones/"><i class="fab fa-facebook-f fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.instagram.com/goodlife_srl/"><i class="fab fa-instagram fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.youtube.com/@goodlifesrlpensionesysalud5514"><i class="fab fa-youtube fa-lg fa-fw"></i></a>
-                        </li>
-                        <li class="list-inline-item border border-light rounded-circle text-center">
-                            <a class="text-light text-decoration-none" target="_blank" href="https://www.tiktok.com/@good_life_srl"><i class="fab fa-tiktok fa-lg fa-fw"></i></a>
-                        </li>
-                    </ul>
+    <div class="container-fluid py-5">
+        <div class="container pt-3">
+            <div class="row justify-content-center text-center" style="margin-top: -50px">
+                <div class="col-lg-6">
+                    <h6 class="txt5">Cochabamba</h6>
                 </div>
             </div>
-        </div>
+            <div class="row justify-content-center">
 
-        <div class="w-100 py-3 footerend">
-            <div class="container">
-                <div class="row pt-2">
-                    <div class="col-12">
-                        
-                            <p class="m-0 text-black">&copy; <a class="h5 logo text-dark text-decoration-none">GOOD LIFE</a>. Todos los derechos reservados.</p>
-                        
+                <div class="col-lg-3 col-md-6 mx-4"> 
+                    <div class="team position-relative overflow-hidden mb-5" onmouseover="slideUp(this)" onmouseleave="slideDown(this)">
+                        <img class="img-fluid" src="assets/img/asesoramiento/1.png" alt="">
+                        <div class="position-relative text-center">
+                            <div class="team-text text-white pie">
+                                <h5 class="text-white text-uppercase">Área prestaciones</h5>
+                            </div>
+                        </div>
+                        <div class="button-container">
+                            <a href="https://wa.me/59172222960" target="_blank" class="btn btn-succes">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <a href="mailto:h.prestaciones@goodlife.com.bo" class="btn btn-succes">
+                                <i class="far fa-envelope"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mx-4">
+                    <div class="team position-relative overflow-hidden mb-5" onmouseover="slideUp(this)" onmouseleave="slideDown(this)">
+                        <img class="img-fluid" src="assets/img/medicina/2.png" alt="">
+                        <div class="position-relative text-center">
+                            <div class="team-text text-white pie2">
+                                <h5 class="text-white text-uppercase">Área médica</h5>
+                            </div>
+                        </div>
+                        <div class="button-container">
+                            <a href="https://wa.me/59165045401" target="_blank" class="btn btn-succes">
+                                <i class="fab fa-whatsapp"></i>
+                            </a>
+                            <a href="mailto:fabricio.prado@goodlife.com.bo" class="btn btn-succes">
+                                <i class="far fa-envelope"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-    </footer>
+    @include('piepagina')
+
     <script src="assets/js/jquery-1.11.0.min.js"></script>
     <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
@@ -440,14 +215,14 @@
 </html>
 
 <script>
-function showButton(element) {
-    element.querySelector('.button-container').style.opacity = '1';
-}
+    function showButton(element) {
+        element.querySelector('.button-container').style.opacity = '1';
+    }
 
-function hideButton(element) {
-    element.querySelector('.button-container').style.opacity = '0';
-}
-function closeDropdown() {
+    function hideButton(element) {
+        element.querySelector('.button-container').style.opacity = '0';
+    }
+    function closeDropdown() {
         var dropdownMenu = document.querySelector('.dropdown-menu');
         dropdownMenu.classList.remove('show');
     }

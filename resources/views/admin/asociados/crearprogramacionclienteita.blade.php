@@ -133,6 +133,7 @@
                                                         <input type="hidden" name="bateriaid_{{ $accionSanitizada }}" value="{{ $proveedor['bateriaid'] ?? '' }}">
                                                         <input type="hidden" name="comision_{{ $accionSanitizada }}" value="{{ $proveedor['comision'] ?? '' }}">
                                                         <input type="hidden" name="medicoderivante_{{ $accionSanitizada }}" value="{{ $proveedor['medicoderivante'] ?? '' }}">
+                                                        <input type="hidden" name="idsubproc_{{ $accionSanitizada }}" value="{{ $proveedor['idsubproc'] ?? '' }}">
                                                     </div>
                                                 </div>
                                             </div>

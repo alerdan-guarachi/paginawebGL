@@ -2,7 +2,7 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{route('admin.asociados.listadoclienteauditoria', $asociado)}}">REGRESAR</a>
-<h1>NUEVO CLIENTE AUDITORIA</h1>
+<h1>NUEVO CLIENTE AUDITORIA FIJO</h1>
 @stop
 
 @section('content')
@@ -20,11 +20,10 @@
     <div class="card-body">
         <div class="row ">
             <div class="col-lg-12">
-
                 {!! Form::model($asociado, ['route' => ['admin.asociados.guardarclienteauditoria', $asociado], 'method' => 'POST']) !!}
-        
                     {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                     {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                    {!! Form::hidden('tipocliente', 'FIJO') !!}
                     <div class="row">
                         <div class="col-lg-3">
                             <div class="form-group">
@@ -72,19 +71,6 @@
                                 @enderror
                             </div>
                         </div>  
-                        {{-- <div class="col-lg-2">
-                            <div class="form-group">
-                                {!! Form::label('lugarnacimiento', 'Lugar nacimiento:') !!}
-                                {!! Form::select('lugarnacimiento', $departamentos, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
-                                @error('lugarnacimiento')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{$message}}
-                                    </small>
-                                @enderror
-                            </div>
-                        </div> --}}
-                        
-
                         <div class="col-lg-3" id="custom_place_group" style="display: none;"> 
                             <div class="form-group">
                                 {!! Form::label('custom_lugarnacimiento', 'Otro lugar de nac.:') !!}
@@ -108,28 +94,19 @@
                                 @enderror
                             </div>
                         </div>
-                        
                         <script>
                             document.getElementById('enable_custom_place').addEventListener('change', function() {
                                 if (this.checked) {
-                                    // Show the text input and hide the select input
                                     document.getElementById('custom_place_group').style.display = 'block';
                                     document.getElementById('select_place_group').style.display = 'none';
-                                    
-                                    // Clear the select input value
                                     document.querySelector('[name="lugarnacimiento"]').value = '';
                                 } else {
-                                    // Hide the text input and show the select input
                                     document.getElementById('custom_place_group').style.display = 'none';
                                     document.getElementById('select_place_group').style.display = 'block';
-                                    
-                                    // Clear the text input value
                                     document.querySelector('[name="custom_lugarnacimiento"]').value = '';
                                 }
                             });
                         </script>
-                        
-                        
                         <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('fechanacimiento', 'Fecha de nacimiento:') !!}
@@ -187,7 +164,6 @@
                                     var codigoPais = this.value;
                                     var campoCelular = document.getElementById('celular');
                                     if (codigoPais) {
-                                        // Si hay código de país seleccionado, agregarlo al inicio sin espacio adicional
                                         campoCelular.value = codigoPais;
                                         campoCelular.focus();
                                     } else {
@@ -197,24 +173,26 @@
                         
                                 document.getElementById('celular').addEventListener('input', function() {
                                     var campoCelular = document.getElementById('celular');
-                                    var valorCelular = campoCelular.value.trim(); // Eliminar espacios en blanco al inicio y final
-                        
-                                    // Validar si el valor comienza con un código de país
+                                    var valorCelular = campoCelular.value.trim();                        
                                     var codigoPais = document.getElementById('pais').value;
                                     if (codigoPais && !valorCelular.startsWith(codigoPais)) {
-                                        campoCelular.value = codigoPais + valorCelular; // Agregar el código de país al inicio
+                                        campoCelular.value = codigoPais + valorCelular;
                                     } else {
-                                        campoCelular.value = valorCelular; // Mantener el número tal como está
+                                        campoCelular.value = valorCelular;
                                     }
                                 });
                             </script>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-lg-3">
+                        <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('estadocivil', 'Estado civil:') !!}
-                                {!! Form::select('estadocivil', $estciv, null, ['class' => 'form-control', 'placeholder' => '', 'maxlength' => '45']) !!}
+                                {!! Form::select('estadocivil', $estciv, null, [
+                                    'class' => 'form-control',
+                                    'placeholder' => '',
+                                    'id' => 'estadocivil'
+                                ]) !!}
                                 @error('estadocivil')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{$message}}
@@ -222,6 +200,31 @@
                                 @enderror
                             </div>
                         </div>
+
+                        <div class="col-lg-2 conyuge-campo d-none">
+                            <div class="form-group">
+                                {!! Form::label('nombreespcon', 'Nombre Esp/Cony.:') !!}
+                                {!! Form::text('nombreespcon', null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                @error('nombreespcon')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="col-lg-2 conyuge-campo d-none">
+                            <div class="form-group">
+                                {!! Form::label('ciespcon', 'CI Esp/Cony.:') !!}
+                                {!! Form::text('ciespcon', null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                @error('ciespcon')
+                                    <small class="text-danger fas fa-exclamation-circle">
+                                        {{$message}}
+                                    </small>
+                                @enderror
+                            </div>
+                        </div>
+
                         <div class="col-lg-3">
                             <div class="form-group">
                                 {!! Form::label('lugarresidencia', 'Lugar de residencia:') !!}
@@ -233,7 +236,8 @@
                                 @enderror
                             </div>
                         </div>
-                        <div class="col-lg-6">
+
+                        <div class="col-lg-7" id="direccion-col">
                             <div class="form-group">
                                 {!! Form::label('direccion', 'Dirección:') !!}
                                 {!! Form::text('direccion', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -244,6 +248,37 @@
                                 @enderror
                             </div>
                         </div>
+
+                        <script>
+                            function toggleConyugeCampos() {
+                                let estado = document.getElementById('estadocivil').value;
+                                let conyugeCampos = document.querySelectorAll('.conyuge-campo');
+                                let direccionCol = document.getElementById('direccion-col');
+
+                                if (estado === 'CASAD@' || estado === 'UNION LIBRE') {
+                                    conyugeCampos.forEach(el => el.classList.remove('d-none'));
+                                    direccionCol.classList.remove('col-lg-7');
+                                    direccionCol.classList.add('col-lg-3');
+                                } else {
+                                    // Ocultar campos
+                                    conyugeCampos.forEach(el => {
+                                        el.classList.add('d-none');
+                                        // Vaciar los inputs dentro del contenedor
+                                        let input = el.querySelector('input');
+                                        if (input) input.value = '';
+                                    });
+
+                                    // Restaurar tamaño de dirección
+                                    direccionCol.classList.remove('col-lg-3');
+                                    direccionCol.classList.add('col-lg-7');
+                                }
+                            }
+
+                            document.getElementById('estadocivil').addEventListener('change', toggleConyugeCampos);
+
+                            // Ejecutar al cargar la página para estado preseleccionado
+                            document.addEventListener('DOMContentLoaded', toggleConyugeCampos);
+                        </script>
                     </div>
                     <div class="row">
                         <div class="col-lg-4">
@@ -279,7 +314,7 @@
                                 @enderror
                             </div>
                         </div>
-                    </div> {{-- , 'onkeypress' => 'return event.charCode >= 48 && event.charCode <= 57' --}}
+                    </div>
                     <div class="row">
                         <div class="col-lg-2"> 
                             <div class="form-group">
@@ -292,7 +327,6 @@
                                 @enderror
                             </div>
                         </div>
-                        
                         <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('nrocredito1', 'Nro. de Crédito Banco 1:') !!}
@@ -307,46 +341,34 @@
                                 <button type="button" id="show-more" class="btn btn-sm btn-link p-0">Mostrar más</button>
                             </div>
                         </div>
-                        
                         <script>
                             document.getElementById('show-more').addEventListener('click', function() {
                                 const additionalCredits = document.getElementById('additional-credits');
                                 const fields = additionalCredits.querySelectorAll('input');
-                                let hasHiddenFields = false;
-                        
-                                // Mostrar progresivamente los campos adicionales
+                                let hasHiddenFields = false;                        
                                 for (let field of fields) {
                                     if (field.style.display === 'none') {
-                                        field.style.display = 'block'; // Hacer visible el siguiente campo oculto
-                                        hasHiddenFields = true; // Indicar que todavía hay campos ocultos
-                                        break; // Salir del bucle después de mostrar un campo
+                                        field.style.display = 'block';
+                                        hasHiddenFields = true;
+                                        break;
                                     }
                                 }
-                        
-                                // Verificar si quedan campos ocultos
                                 if (!hasHiddenFields) {
-                                    this.style.display = 'none'; // Ocultar el botón si no hay más campos
+                                    this.style.display = 'none';
                                 }
                             });
-                        
-                            // Comprobación inicial al cargar la página
+
                             const checkFields = () => {
                                 const additionalCredits = document.getElementById('additional-credits');
                                 const fields = additionalCredits.querySelectorAll('input');
                                 const showMoreButton = document.getElementById('show-more');
-                        
-                                // Si todos los campos están visibles, ocultar el botón
                                 const allVisible = Array.from(fields).every(field => field.style.display !== 'none');
                                 if (allVisible) {
                                     showMoreButton.style.display = 'none';
                                 }
                             };
-                        
-                            // Llamar a la función de comprobación inicial
                             checkFields();
                         </script>
-                        
-                        
                         <div class="col-lg-2"> 
                             <div class="form-group">
                                 {!! Form::label('banco2', 'Entidad financiera 2:') !!}
@@ -358,12 +380,10 @@
                                 @enderror
                             </div>
                         </div>
-                        
                         <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('numerocuenta7', 'Nro. de Crédito Banco 2:') !!}
                                 {!! Form::text('nrocredito7', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 7']) !!}
-
                                 <div id="additional-credits-2">
                                     {!! Form::text('nrocredito8', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 8', 'style' => 'display: none;']) !!}
                                     {!! Form::text('nrocredito9', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 9', 'style' => 'display: none;']) !!}
@@ -374,7 +394,6 @@
                                 <button type="button" id="show-more-2" class="btn btn-sm btn-link p-0">Mostrar más</button>
                             </div>
                         </div>
-                        
                         <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('banco3', 'Entidad financiera 3:') !!}
@@ -386,12 +405,10 @@
                                 @enderror
                             </div>
                         </div>
-                        
                         <div class="col-lg-2">
                             <div class="form-group">
                                 {!! Form::label('numerocuenta13', 'Nro. de Crédito Banco 3:') !!}
                                 {!! Form::text('nrocredito13', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 13']) !!}
-
                                 <div id="additional-credits-3">
                                     {!! Form::text('nrocredito14', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 14', 'style' => 'display: none;']) !!}
                                     {!! Form::text('nrocredito15', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 15', 'style' => 'display: none;']) !!}
@@ -399,20 +416,16 @@
                                     {!! Form::text('nrocredito17', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 17', 'style' => 'display: none;']) !!}
                                     {!! Form::text('nrocredito18', null, ['class' => 'form-control mb-2', 'placeholder' => 'Número de Crédito 18', 'style' => 'display: none;']) !!}
                                 </div>
-
                                 <button type="button" id="show-more-3" class="btn btn-sm btn-link p-0">Mostrar más</button>
                             </div>
                         </div>
-                        
                         <script>
                             function setupShowMore(buttonId, containerId) {
                                 const button = document.getElementById(buttonId);
                                 const container = document.getElementById(containerId);
                                 const fields = container.querySelectorAll('input');
-                        
                                 button.addEventListener('click', function() {
                                     let hasHiddenFields = false;
-
                                     for (let field of fields) {
                                         if (field.style.display === 'none') {
                                             field.style.display = 'block';
@@ -420,28 +433,22 @@
                                             break;
                                         }
                                     }
-
                                     if (!hasHiddenFields) {
                                         button.style.display = 'none';
                                     }
                                 });
-
                                 const checkFields = () => {
                                     const allVisible = Array.from(fields).every(field => field.style.display !== 'none');
                                     if (allVisible) {
                                         button.style.display = 'none';
                                     }
                                 };
-
                                 checkFields();
                             }
-
                             setupShowMore('show-more-2', 'additional-credits-2');
                             setupShowMore('show-more-3', 'additional-credits-3');
                         </script>
-                        
                     </div>
-                    
                     {!! Form::submit('CREAR CLIENTE', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
             </div>
@@ -454,7 +461,7 @@
 <script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 
 <script>
-//VALIDAR QUE FECHA DE NACIMIENTO NO SEA POSTERIOR A LA FECHA ACTUAL
+    //VALIDAR QUE FECHA DE NACIMIENTO NO SEA POSTERIOR A LA FECHA ACTUAL
     var fechaNacimiento = document.getElementById('fecha_nacimiento');
     fechaNacimiento.addEventListener('change', function() {
         var selectedDate = new Date(this.value);
@@ -482,24 +489,24 @@
         }
     });
 
-//CALCULAR LA EDAD
-function calcularEdad(fecha_nacimiento) {
-    var fecha_actual = new Date();
-    var fecha_nacimiento = new Date(fecha_nacimiento);
-    
-    if (isNaN(fecha_nacimiento.getFullYear()) || fecha_nacimiento.getFullYear() < 1000) {
-        return '';
-    }
-    var edad = fecha_actual.getFullYear() - fecha_nacimiento.getFullYear();
-    var mes = fecha_actual.getMonth() - fecha_nacimiento.getMonth();
-    if (mes < 0 || (mes === 0 && fecha_actual.getDate() < fecha_nacimiento.getDate())) {
-        edad--;
-    }
+    //CALCULAR LA EDAD
+    function calcularEdad(fecha_nacimiento) {
+        var fecha_actual = new Date();
+        var fecha_nacimiento = new Date(fecha_nacimiento);
+        
+        if (isNaN(fecha_nacimiento.getFullYear()) || fecha_nacimiento.getFullYear() < 1000) {
+            return '';
+        }
+        var edad = fecha_actual.getFullYear() - fecha_nacimiento.getFullYear();
+        var mes = fecha_actual.getMonth() - fecha_nacimiento.getMonth();
+        if (mes < 0 || (mes === 0 && fecha_actual.getDate() < fecha_nacimiento.getDate())) {
+            edad--;
+        }
     return edad;
-}
+    }
 
-//VALIDAR FECHA DE NACIMIENTO
-document.getElementById('fecha_nacimiento').addEventListener('change', function() {
+    //VALIDAR FECHA DE NACIMIENTO
+    document.getElementById('fecha_nacimiento').addEventListener('change', function() {
         var fecha_nacimiento = this.value;
         var fecha_actual = new Date();
         var selectedDate = new Date(fecha_nacimiento);
@@ -520,7 +527,7 @@ document.getElementById('fecha_nacimiento').addEventListener('change', function(
         document.getElementById('edad').value = '';
     }
 
-//CANCELAR FUNCION DE LA TECLA ENTER
+    //CANCELAR FUNCION DE LA TECLA ENTER
     document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {

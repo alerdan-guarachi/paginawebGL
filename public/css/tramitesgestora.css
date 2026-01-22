@@ -963,6 +963,19 @@ h5 {
     background-color: #94c93b;
     color: #ffffff;
 }
+.btn-cancelacion {
+    background-color: #ffffff;
+    color: #e62f2f;
+    border-color: #e62f2f;
+    border-radius: 5px;
+    padding: 5px 10px;
+    /* margin-left: 10px; */
+    margin-right: 10px;
+}
+.btn-cancelacion:hover {
+    background-color: #e62f2f;
+    color: #ffffff;
+}
 .btn-comunicaciones {
     background-color: #ffffff;
     color: #78afe7;
@@ -1216,6 +1229,69 @@ td, th {
     margin-right: 5px;
 }
 .btn-botonpequeno:hover {
+    background-color: #faa625;
+    color: #ffffff;
+}
+.btn-guardarnuevo {
+    background-color:  #ffffff;
+    color: #94c93b;
+    border-color: #94c93b;
+    border-radius: 5px;
+    font-weight: bold;
+    padding: 1px 4px;
+}
+.btn-guardarnuevo:hover {
+    background-color: #94c93b;
+    color: #ffffff;
+}
+.disabled-link {
+    pointer-events: none;
+    color: gray !important;
+    opacity: 0.6;
+    cursor: default;
+}
+
+.no-seguro-label {
+    color: rgb(239, 124, 16);
+    font-size: 0.85em;
+    margin-left: 5px;
+}
+
+.dropdown-item.disabled-link:hover {
+    background-color: inherit !important;
+}
+.scroll-shadow-wrapper {
+    position: relative;
+}
+.scroll-shadow-container {
+    overflow-x: auto;
+}
+.scroll-shadow-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 100%;
+    pointer-events: none;
+    background: linear-gradient(to left, rgb(201, 244, 182), transparent);
+    transition: opacity 0.3s;
+    opacity: 1;
+    z-index: 10;
+}
+.scroll-shadow-wrapper.scrolled-right::after {
+    opacity: 0;
+}
+.btn-subirrequisitos {
+    background-color: #ffffff;
+    color: #faa625;
+    border-color: #faa625;
+    border-radius: 5px;
+    padding: 5px 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+.btn-subirrequisitos:hover {
     background-color: #faa625;
     color: #ffffff;
 }

@@ -30,4 +30,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /* NUEVO APP MOVIL */
+    'firebase' => [
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+    ],
 ];

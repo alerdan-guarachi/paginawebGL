@@ -55,6 +55,7 @@ class Programacionsubcliente extends Model
         'factura' => '',
         'usuariocomprobante' => '',
         'codautorizacion' => '',
+        'idsubproc' => '',
     ]; 
 
     protected $fillable = [
@@ -98,10 +99,11 @@ class Programacionsubcliente extends Model
         'usuarioanulacion',
         'medicoderivante',
         'comprobante',
-        'cheque' => '',
+        'cheque',
         'factura',
         'usuariocomprobante',
         'codautorizacion',
+        'idsubproc',
     ];
     public function clienteAuditoria()
     {

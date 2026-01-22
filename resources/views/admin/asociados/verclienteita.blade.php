@@ -5,8 +5,10 @@
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.listadoclienteita', ['asociado' => 6]) }}">REGRESAR</a>
 <a class="btn btn-sm float-right btn-acciones" data-toggle="modal" data-target="#ventanaModal">ACCIONES DEL CLIENTE</a>
-@if ($tieneAuditoriaMedica || $tieneApelacion || $tieneSegundasolicitud || $tieneTercerasolicitud)
-    <a class="btn btn-sm float-right btn-auditoriamedica" data-toggle="modal" data-target="#ventanaModalauditoriamedica">SERVICIOS ADICIONALES</a>
+@if ($tieneAuditoriaMedica || $tieneApelacion || $tieneSegundasolicitud || $tieneTercerasolicitud || $tieneJubilacion 
+    || $tienePensionmuerte || $tieneRetiroaportestotal || $tieneRetiroaportesparcial || $tieneMasahereditaria 
+    || $tieneCompensacioncotsenasir || $tieneApelSegSolicitud || $tieneApelTercerSolicitud || $tieneRecalificacion || $tieneApelRecalificacion)
+    <a class="btn btn-sm float-right btn-auditoriamedica" data-toggle="modal" data-target="#ventanaModalauditoriamedica">OTROS SERVICIOS</a>
 @endif
 
 @can('admin.asociados.subirdocumentacionextra')
@@ -32,224 +34,229 @@
 @endif
 
 {{-- VER DATOS DEL CLIENTE --}}
-<div class="container col-lg-12">
-    <div class="card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-lg-4">
-                    <div class="border-bottom text-center pb-4">
-                        <div style="display: flex; flex-direction: column;">
-                            <div class="image-container" style="width: 100%; height: 320px; overflow: auto;">
-                                <img src="{{asset('image/'.$cliente->image)}}" alt="Foto de perfil" class="col-md-12 mb-12" id="vista-previa" style="width: 100%; height: auto; object-fit: cover; object-position: center; " />
-                            </div>
-                            <h5>ID: {{$cliente->id}}</h5>
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="border-bottom text-center pb-4">
+                    <div style="display: flex; flex-direction: column;">
+                        <div class="image-container" style="width: 100%; height: 320px; overflow: auto;">
+                            <img src="{{asset('image/'.$cliente->image)}}" alt="Foto de perfil" class="col-md-12 mb-12" id="vista-previa" style="width: 100%; height: auto; object-fit: cover; object-position: center; " />
                         </div>
-                    </div>
-                    <div class="py-1">
-                        <p class="clearfix">
-                            <span class="float-left h6" style="font-weight: bold; color:#94c93b">
-                                Nombres
-                            </span>
-                            <span class="float-right text-muted">
-                                {{$cliente->nombres}}
-                                </a>
-                            </span>
-                        </p>
-                        <p class="clearfix">
-                            <span class="float-left" style="font-weight: bold; color:#94c93b">
-                                Apellido Paterno
-                            </span>
-                            <span class="float-right text-muted">
-                                {{$cliente->apepaterno}}
-                                </a>
-                            </span>
-                        </p>
-                        <p class="clearfix">
-                            <span class="float-left" style="font-weight: bold; color:#94c93b">
-                                Apellido Materno
-                            </span>
-                            <span class="float-right text-muted">
-                                {{$cliente->apematerno}}
-                                </a>
-                            </span>
-                        </p>
-                        <p class="clearfix">
-                            <span class="float-left" style="font-weight: bold; color:#94c93b">
-                                Sucursal
-                            </span>
-                            <span class="float-right text-muted">
-                                {{$cliente->sucursal}}
-                                </a>
-                            </span>
-                        </p>
+                        <h5>ID: {{$cliente->id}}</h5>
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <div class="profile-feed">
-                        <div class="d-flex align-items-start profile-feed-item">
-                            <div class="form-group col-md-12">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <table style="width: 100%;">
-                                            <tbody>
-                                                <tr>
-                                                    <th>Tipo de ident.</th>
-                                                    <td>{{$cliente->tipoidentificacion}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>CI</th>
-                                                    <td>{{$cliente->ci}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Complemento</th>
-                                                    <td>{{$cliente->cicomplemento ?? 0}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>C/exp.</th>
-                                                    <td>{{$cliente->ciexp ?? 0}}</td>
-                                                </tr>
-                                                <tr> 
-                                                    <th>Fecha Ven/CI</th>
-                                                    <td>{{ $cliente->fechavencci ? $cliente->fechavencci : 'INDEFINIDO' }}</td>
-                                                </tr>      
-                                                <style>
-                                                    @keyframes heartbeat {
-                                                    0%, 100% {
-                                                        transform: scale(1);
-                                                    }
-                                                    50% {
-                                                        transform: scale(1.3);
-                                                    }
-                                                    }
-                                                    .icon-pulse {
-                                                    animation: heartbeat 1s infinite;
-                                                    }
-                                                </style>
+                <div class="py-1">
+                    <p class="clearfix">
+                        <span class="float-left h6" style="font-weight: bold; color:#94c93b">
+                            Nombres
+                        </span>
+                        <span class="float-right text-muted">
+                            {{$cliente->nombres}}
+                            </a>
+                        </span>
+                    </p>
+                    <p class="clearfix" style="margin-top: -10px;">
+                        <span class="float-left" style="font-weight: bold; color:#94c93b">
+                            Apellido_Paterno
+                        </span>
+                        <span class="float-right text-muted">
+                            {{$cliente->apepaterno}}
+                            </a>
+                        </span>
+                    </p>
+                    <p class="clearfix" style="margin-top: -10px;">
+                        <span class="float-left" style="font-weight: bold; color:#94c93b">
+                            Apellido_Materno
+                        </span>
+                        <span class="float-right text-muted">
+                            {{$cliente->apematerno}}
+                            </a>
+                        </span>
+                    </p>
+                    <p class="clearfix" style="margin-top: -10px;">
+                        <span class="float-left" style="font-weight: bold; color:#94c93b">
+                            Sucursal
+                        </span>
+                        <span class="float-right text-muted">
+                            {{$cliente->sucursal}}
+                            </a>
+                        </span>
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="profile-feed">
+                    <div class="d-flex align-items-start profile-feed-item">
+                        <div class="form-group col-md-12">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table style="width: 100%;">
+                                        <tbody>
+                                            <tr>
+                                                <th>Tipo_Identidad</th>
+                                                <td>{{$cliente->tipoidentificacion}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>CI</th>
+                                                <td>{{$cliente->ci}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Complemento</th>
+                                                <td>{{$cliente->cicomplemento ?? 0}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>C/exp.</th>
+                                                <td>{{$cliente->ciexp ?? 0}}</td>
+                                            </tr>
+                                            <tr> 
+                                                <th>Fecha_Ven/CI</th>
+                                                <td>{{ $cliente->fechavencci ? $cliente->fechavencci : 'INDEFINIDO' }}</td>
+                                            </tr>      
+                                            <style>
+                                                @keyframes heartbeat {
+                                                0%, 100% {
+                                                    transform: scale(1);
+                                                }
+                                                50% {
+                                                    transform: scale(1.3);
+                                                }
+                                                }
+                                                .icon-pulse {
+                                                animation: heartbeat 1s infinite;
+                                                }
+                                            </style>
+                                            @php
+                                                use Carbon\Carbon;
+                                                $fechaNacimiento = $cliente->fechanacimiento;
+                                                $edadCalculada = $fechaNacimiento ? Carbon::parse($fechaNacimiento)->age : null;
+                                            @endphp
+                                            <tr> 
+                                                <th>Fecha_Nacimiento</th>
+                                                <td>{{ $fechaNacimiento ?? 'NINGUNO' }}</td>
+                                            </tr>      
+                                            <tr>
+                                                <th>Edad</th>
+                                                <td>
+                                                    {{ $cliente->edad }}
+                                                    @if ($fechaNacimiento && $cliente->edad != $edadCalculada)
+                                                        <i class="fas fa-exclamation-triangle text-danger icon-pulse" title="SE DEBE ACTUALIZAR SU EDAD DEL CLIENTE"></i>
+                                                    @endif
+                                                </td>
+                                            </tr>
 
-                                                @php
-                                                    use Carbon\Carbon;
-
-                                                    $fechaNacimiento = $cliente->fechanacimiento;
-                                                    $edadCalculada = $fechaNacimiento ? Carbon::parse($fechaNacimiento)->age : null;
-                                                @endphp
-
-                                                <tr> 
-                                                    <th>Fecha Nac.</th>
-                                                    <td>{{ $fechaNacimiento ?? 'NINGUNO' }}</td>
-                                                </tr>      
-                                                <tr>
-                                                    <th>Edad</th>
-                                                    <td>
-                                                        {{ $cliente->edad }}
-                                                        @if ($fechaNacimiento && $cliente->edad != $edadCalculada)
-                                                            <i class="fas fa-exclamation-triangle text-danger icon-pulse" title="SE DEBE ACTUALIZAR SU EDAD DEL CLIENTE"></i>
-                                                        @endif
-                                                    </td>
-                                                </tr>
-
-                                                <tr>
-                                                    <th>Lugar nac.</th>
-                                                    <td>{{$cliente->paisnacimiento}} - {{$cliente->lugarnacimiento}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Genero</th>
-                                                    <td>{{$cliente->genero}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Estado civil</th>
-                                                    <td>{{$cliente->estadocivil}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Email</th>
-                                                    <td>{{$cliente->email}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Profesion / Ocupacion</th>
-                                                    <td>{{$cliente->ocupacion}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Grado inst.</th>
-                                                    <td>{{$cliente->gradoinstruccion}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Celular</th>
-                                                    <td>{{$cliente->celular}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Telefono</th>
-                                                    <td>{{$cliente->telefono}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Domicilio</th>
-                                                    <td>{{$cliente->domicilio}}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            <tr>
+                                                <th>Lugar_Nacimiento</th>
+                                                <td>{{$cliente->paisnacimiento}} - {{$cliente->lugarnacimiento}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Genero</th>
+                                                <td>{{$cliente->genero}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Estado_Civil</th>
+                                                <td>{{$cliente->estadocivil}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Email</th>
+                                                <td>{{$cliente->email}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Profesión/Ocupación</th>
+                                                <td>{{$cliente->ocupacion}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Grado_Instrucción</th>
+                                                <td>{{$cliente->gradoinstruccion}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Celular</th>
+                                                <td>{{$cliente->celular}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Teléfono</th>
+                                                <td>{{$cliente->telefono}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Domicilio</th>
+                                                <td>{{$cliente->domicilio}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4">
-                    <div class="profile-feed">
-                        <div class="d-flex align-items-start profile-feed-item">
-                            <div class="form-group col-md-12">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <table style="width: 100%;">
-                                            <tbody>
+            </div>
+            <div class="col-lg-4">
+                <div class="profile-feed">
+                    <div class="d-flex align-items-start profile-feed-item">
+                        <div class="form-group col-md-12">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table style="width: 100%;">
+                                        <tbody>
+                                            <tr>
+                                                <th>Derivación</th>
+                                                <td>{{$cliente->derivacion ?? 0 }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Servicio</th>
+                                                <td>{{ implode(', ', $cliente->servicios->pluck('tramite')->unique()->toArray()) }}</td> <!-- Mostrar servicios separados por comas -->
+                                            </tr>                                
+                                            <tr>
+                                                <th>NUA/CUA</th>
+                                                <td>{{$cliente->nuacua}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Estado_Laboral</th>
+                                                <td>{{$cliente->estadolaboral}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Empresa</th>
+                                                <td>{{$cliente->empresa}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Pais_Residencia</th>
+                                                <td>{{$cliente->paisresidencia}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Dep_Residencia</th>
+                                                <td>{{$cliente->departamentoresidencia}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Ciudad_Residencia</th>
+                                                <td>{{$cliente->ciudadresidencia}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Aseguradora</th>
+                                                <td>{{$cliente->aseguradora}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Referenciador</th>
+                                                <td>{{$cliente->referenciador}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Gestora</th>
+                                                <td>{{$cliente->afp}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Hijos&lt;25</th>
+                                                <td>{{$cliente->numhijosmenores}}</td>
+                                            </tr>
+                                            @if($cliente->genero === 'FEMENINO')
                                                 <tr>
-                                                    <th>Servicio</th>
-                                                    <td>{{ implode(', ', $cliente->servicios->pluck('tramite')->unique()->toArray()) }}</td> <!-- Mostrar servicios separados por comas -->
-                                                </tr>                                
-                                                <tr>
-                                                    <th>NUA/CUA</th>
-                                                    <td>{{$cliente->nuacua}}</td>
+                                                    <th>Total_Hijos</th>
+                                                    <td>{{ $cliente->numhijostotal }}</td>
                                                 </tr>
-                                                <tr>
-                                                    <th>Estado laboral</th>
-                                                    <td>{{$cliente->estadolaboral}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Empresa</th>
-                                                    <td>{{$cliente->empresa}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Pais res.</th>
-                                                    <td>{{$cliente->paisresidencia}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Dep. res.</th>
-                                                    <td>{{$cliente->departamentoresidencia}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Ciudad res.</th>
-                                                    <td>{{$cliente->ciudadresidencia}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Aseguradora</th>
-                                                    <td>{{$cliente->aseguradora}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Referenciador</th>
-                                                    <td>{{$cliente->referenciador}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Gestora</th>
-                                                    <td>{{$cliente->afp}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>N. hijos &lt; 25</th>
-                                                    <td>{{$cliente->numhijosmenores}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Alertas</th>
-                                                    <td>{{$cliente->alertas ?? 0}}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            @endif
+                                            <tr>
+                                                <th>Alertas</th>
+                                                <td>{{$cliente->alertas ?? 0}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -291,197 +298,273 @@
                     border-left: 2px solid #c47a35;
                 }
             </style>
-            <div class="modal-body">
-                <div style="background-color: #e9fbff;  border-radius: 40px;">
-                    <div style="text-align: center;padding: 1.5px;">
-                        <strong style="color: #26a1c0; font-size:20px;">ETAPA 1</strong>
-                    </div>
-                    <div class="row text-center">
-                        @can('admin.asociados.vercontactoclienteita')
-                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                            <a href="{{ route('admin.asociados.vercontactoclienteita', $cliente) }}" class="btn btn-contactos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CONTACTOS">
-                                <i class="fas fa-users"></i>
-                                <strong>CONTACTOS</strong>
-                            </a>
+            @if($cliente->derivacion === 'PROGRAMACIÓN' || is_null($cliente->derivacion))
+                <div class="modal-body">
+                    <div style="background-color: #e9fbff;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #26a1c0; font-size:20px;">ETAPA 1</strong>
                         </div>
-                        @endcan
-
-                        @can('admin.asociados.crearbateriaclienteita')
-
-                        @if ($tieneContactos)
+                        <div class="row text-center">
+                            @can('admin.asociados.vercontactoclienteita')
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO">
-                                    <i class="fas fa-atlas"></i>
-                                    <strong>SERVICIOS</strong>
+                                <a href="{{ route('admin.asociados.vercontactoclienteita', $cliente) }}" class="btn btn-contactos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CONTACTOS">
+                                    <i class="fas fa-users"></i>
+                                    <strong>CONTACTOS</strong>
                                 </a>
                             </div>
-                        @else
+                            @endcan
+
+                            @can('admin.asociados.crearserviciocliente')
+
+                            {{-- @if ($tieneContactos) --}}
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO">
+                                        <i class="fas fa-atlas"></i>
+                                        <strong>SERVICIOS</strong>
+                                    </a>
+                                </div>
+                            {{-- @else
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-asignartramite btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO" aria-disabled="true">
+                                        <i class="fas fa-atlas"></i>
+                                        <strong>SERVICIOS</strong>
+                                    </a>
+                                </div>
+                            @endif --}}
+
+                            @endcan
+                            @can('admin.asociados.generarchecklistclienteita')
+                                @if ($tieneTramites)
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.generarchecklistclienteita', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="DERIVACION Y REQUISITOS">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="DERIVACION Y REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+                    
+                    @can('admin.asociados.crearbateriaclienteita')
+
+                    <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
+                        <div style="text-align: center; padding: 1.5px;">
+                            <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.crearbateriaclienteita')
+                                @if (($tieneRequisitos && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente || $tieneBateriaPrestaciones)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.crearbateriaclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
+                                        <i class="fas fa-charging-station"></i>
+                                        <strong>BATERIA</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-charging-station"></i>
+                                        <strong>BATERIA</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                            @can('admin.asociados.aprobacioncotizacionclienteita')
+                            @if ($tieneBateria)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.aprobacioncotizacionclienteita', $cliente) }}" class="btn btn-cotizacion btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
+                                        <i class="fas fa-donate"></i>
+                                        <strong>COTIZACIÓN</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-cotizacion btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
+                                        <i class="fas fa-donate"></i>
+                                        <strong>COTIZACIÓN</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px; background-color: #fbffe7;  border-radius: 40px;">
+                        <div style="text-align: center; padding: 1.5px;">
+                            <strong style="color: #a3bc35; font-size:20px;">ETAPA 3</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.crearprogramacionclienteita')
+                                @if ($tieneCotizacionaprobada)
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.crearprogramacionclienteita', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <strong>PROG.</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <strong>PROG.</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+
+                            @can('admin.asociados.estadoprogramacionclienteita')
+                                @if ($tieneProgramacion)
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.estadoprogramacionclienteita', $cliente) }}" class="btn btn-estado btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ESTADO DE PROGRAMACIÓN">
+                                        <i class="fas fa-calendar-check"></i>
+                                        <strong>ESTADO P.</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-estado btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-calendar-check"></i>
+                                        <strong>ESTADO P.</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tieneProgramacionatentido)
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-subirdocumento btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-subirdocumento btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px; background-color: #fff0e3;  border-radius: 40px;">
+                        <div style="text-align: center; padding: 1.5px;">
+                            <strong  style="color: #c47a35; font-size:20px;">OTROS</strong>
+                        </div>
+                        <div class="row text-center">
+                            
+                            @can('admin.asociados.editarclienteita')
                             <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-asignartramite btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO" aria-disabled="true">
-                                    <i class="fas fa-atlas"></i>
-                                    <strong>SERVICIOS</strong>
+                                <a href="{{ route('admin.asociados.editarclienteita', $cliente) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
+                                    <i class="fas fa-edit"></i>
+                                    <strong>EDITAR</strong>
                                 </a>
                             </div>
-                        @endif
+                            @endcan
 
-                        @endcan
-                        @can('admin.asociados.generarchecklistclienteita')
+                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                <button type="button" class="btn btn-proveedorinforme btn-icono btn-block" data-toggle="modal" data-target="#proveedorinformeModal" data-placement="top" title="PROVEEDOR INFORME FINAL">
+                                    <i class="fas fa-user-md"></i>
+                                    <strong>PROV. INF.</strong>
+                                </button>
+                            </div>
+
+                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                <button type="button" class="btn btn-historiamedica btn-icono btn-block" data-toggle="modal" data-target="#historialMedicoModal" data-placement="top" title="HISTORIA MÉDICA">
+                                    <i class="fas fa-archive"></i>
+                                    <strong>HIST. MED.</strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    @endcan
+                </div>
+            @endif
+
+            @if($cliente->derivacion === 'CARTERA DE CLIENTES')
+                <div class="modal-body">
+                    <div style="background-color: #e9fbff;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #26a1c0; font-size:20px;">ELIGE UNA OPCIÓN</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.vercontactoclienteita')
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.vercontactoclienteita', $cliente) }}" class="btn btn-contactos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CONTACTOS">
+                                        <i class="fas fa-users"></i>
+                                        <strong>CONTACTOS</strong>
+                                    </a>
+                                </div>
+                            @endcan
+
+                            @if ($tieneContactos)
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO">
+                                        <i class="fas fa-atlas"></i>
+                                        <strong>SERVICIOS</strong>
+                                    </a>
+                                </div>
+                            @else
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-asignartramite btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO" aria-disabled="true">
+                                        <i class="fas fa-atlas"></i>
+                                        <strong>SERVICIOS</strong>
+                                    </a>
+                                </div>
+                            @endif
+
                             @if ($tieneTramites)
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.generarchecklistclienteita', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="DERIVACION Y REQUISITOS">
-                                    <i class="fas fa-tasks"></i>
-                                    <strong>DERIV. Y REQ.</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="DERIVACION Y REQUISITOS" aria-disabled="true">
-                                    <i class="fas fa-tasks"></i>
-                                    <strong>DERIV. Y REQ.</strong>
-                                </a>
-                            </div>
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.generarchecklistclienteita', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="DERIVACION Y REQUISITOS">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="DERIVACION Y REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
                             @endif
-                        @endcan
-                    </div>
-                </div>
-                
-                @can('admin.asociados.crearbateriaclienteita')
-
-                <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
-                    <div style="text-align: center; padding: 1.5px;">
-                        <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
-                    </div>
-                    <div class="row text-center">
-                        @can('admin.asociados.crearbateriaclienteita')
-                            @if (($tieneRequisitos && $cartaconsentimientoExistente) || $tieneBateria || $bateriaaprobadaExistente)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.crearbateriaclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="CREAR BATERÍA">
-                                    <i class="fas fa-charging-station"></i>
-                                    <strong>BATERIA</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTACIÓN REQUISITOS" aria-disabled="true">
-                                    <i class="fas fa-charging-station"></i>
-                                    <strong>BATERIA</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-                        @can('admin.asociados.aprobacioncotizacionclienteita')
-                        @if ($tieneBateria)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.aprobacioncotizacionclienteita', $cliente) }}" class="btn btn-cotizacion btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN">
-                                    <i class="fas fa-donate"></i>
-                                    <strong>COTIZACIÓN</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-cotizacion btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="COTIZACIÓN DE PROGRAMACIÓN" aria-disabled="true">
-                                    <i class="fas fa-donate"></i>
-                                    <strong>COTIZACIÓN</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-                    </div>
-                </div>
-
-                <div style="margin-top: 10px; background-color: #fbffe7;  border-radius: 40px;">
-                    <div style="text-align: center; padding: 1.5px;">
-                        <strong style="color: #a3bc35; font-size:20px;">ETAPA 3</strong>
-                    </div>
-                    <div class="row text-center">
-                        @can('admin.asociados.crearprogramacionclienteita')
-                            @if ($tieneCotizacionaprobada)
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.crearprogramacionclienteita', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <strong>PROG.</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <strong>PROG.</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-
-                        @can('admin.asociados.estadoprogramacionclienteita')
-                            @if ($tieneProgramacion)
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.estadoprogramacionclienteita', $cliente) }}" class="btn btn-estado btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ESTADO DE PROGRAMACIÓN">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <strong>ESTADO P.</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-estado btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
-                                    <i class="fas fa-calendar-check"></i>
-                                    <strong>ESTADO P.</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-
-                        @can('admin.asociados.creardocumentacionclienteita')
-                            @if ($tieneProgramacionatentido)
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-subirdocumento btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
-                                    <i class="fas fa-list-alt"></i>
-                                    <strong>INFORMES</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-subirdocumento btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
-                                    <i class="fas fa-list-alt"></i>
-                                    <strong>INFORMES</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-                    </div>
-                </div>
-
-                <div style="margin-top: 10px; background-color: #fff0e3;  border-radius: 40px;">
-                    <div style="text-align: center; padding: 1.5px;">
-                        <strong  style="color: #c47a35; font-size:20px;">OTROS</strong>
-                    </div>
-                    <div class="row text-center">
-                        
-                        @can('admin.asociados.editarclienteita')
-                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                            <a href="{{ route('admin.asociados.editarclienteita', $cliente) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
-                                <i class="fas fa-edit"></i>
-                                <strong>EDITAR</strong>
-                            </a>
                         </div>
-                        @endcan
+                    </div>
 
-                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                            <button type="button" class="btn btn-proveedorinforme btn-icono btn-block" data-toggle="modal" data-target="#proveedorinformeModal" data-placement="top" title="PROVEEDOR INFORME FINAL">
-                                <i class="fas fa-user-md"></i>
-                                <strong>PROV. INF.</strong>
-                            </button>
+                    <div style="margin-top: 10px; background-color: #fff0e3;  border-radius: 40px;">
+                        <div style="text-align: center; padding: 1.5px;">
+                            <strong  style="color: #c47a35; font-size:20px;">OTROS</strong>
                         </div>
-
-                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                            <button type="button" class="btn btn-historiamedica btn-icono btn-block" data-toggle="modal" data-target="#historialMedicoModal" data-placement="top" title="HISTORIA MÉDICA">
-                                <i class="fas fa-archive"></i>
-                                <strong>HIST. MED.</strong>
-                            </button>
+                        <div class="row text-center">
+                            @can('admin.asociados.editarclienteita')
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.editarclienteita', $cliente) }}" class="btn btn-editar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="EDITAR CLIENTE">
+                                        <i class="fas fa-edit"></i>
+                                        <strong>EDITAR</strong>
+                                    </a>
+                                </div>
+                            @endcan
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <button type="button" class="btn btn-historiamedica btn-icono btn-block" data-toggle="modal" data-target="#historialMedicoModal" data-placement="top" title="HISTORIA MÉDICA">
+                                    <i class="fas fa-archive"></i>
+                                    <strong>HIST. MED.</strong>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                @endcan
-            </div>
+            @endif
             <div class="modal-footer">
                 <button type="button" class="btn btn-no" data-dismiss="modal">Cerrar</button>
             </div>
@@ -489,225 +572,663 @@
     </div>
 </div>
 
-<!-- ACCIONES DEL CLIENTE AUDITORIA MEDICA -->
+<!-- ACCIONES DEL CLIENTE OTROS SERVICIOS -->
 <div class="modal fade" id="ventanaModalauditoriamedica" tabindex="-1" role="dialog" aria-labelledby="ventanaModalauditoriamedicaLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <strong style="text-align: center; font-size:20px; margin-top: 20px;">SERVICIOS ADICIONALES</strong>
+            <strong style="text-align: center; font-size:20px; margin-top: 20px;">OTROS SERVICIOS</strong>
             {{-- AUDITORIA MEDICA --}}
             @if ($tieneAuditoriaMedica)
-            <div class="modal-body">
-                <div style="background-color: #e9fbff;  border-radius: 40px;">
-                    <div style="text-align: center;padding: 1.5px;">
-                        <strong style="color: #26a1c0; font-size:20px;">AUDITORIA MEDICA</strong>
-                    </div>
-                    <div class="row text-center">
-                        @can('admin.asociados.generarchecklistclienteita')
-                            @if ($tieneContactos)
-                                {{-- @if (!$tienerequisitosauditoria) --}}
+                <div class="modal-body">
+                    <div style="background-color: #e9fbff;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #26a1c0; font-size:20px;">AUDITORIA MEDICA</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                               {{--  @if ($tieneContactos) --}}
+                                    <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                        <a href="{{ route('admin.asociados.generarchecklistclienteitaaudi', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                            <i class="fas fa-tasks"></i>
+                                            <strong>DERIV. Y REQ.</strong>
+                                        </a>
+                                    </div>
+                                {{-- @else
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.generarchecklistclienteitaaudi', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                    <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                @endif --}}
+                            @endcan
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tienerequisitosauditoria)
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-subirdocumento2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
+                                <button type="button" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="modal" data-target="#dictamenModal" data-placement="top" title="DICTAMEN">
+                                    <i class="fas fa-file-archive"></i>
+                                    <strong>DICTAMEN</strong>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- APELACION --}}
+            @if ($tieneApelacion)
+                <div class="modal-body">
+                    <div style="background-color: #e9ffe9;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #409c3e; font-size:20px;">APELACION</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                {{-- @if ($tieneContactos) --}}
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.generarchecklistclienteitaapelacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                         <i class="fas fa-tasks"></i>
                                         <strong>DERIV. Y REQ.</strong>
                                     </a>
                                 </div>
                                 {{-- @else
                                 <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    <a href="{{ route('admin.asociados.subirdocrequisitosaudi', $cliente) }}" class="btn btn-requisitos btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="REQUISITOS" aria-disabled="true">
+                                    <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
                                         <i class="fas fa-tasks"></i>
                                         <strong>DERIV. Y REQ.</strong>
                                     </a>
                                 </div>
                                 @endif --}}
-                            @else
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-requisitos btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
-                                    <i class="fas fa-tasks"></i>
-                                    <strong>DERIV. Y REQ.</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-                        @can('admin.asociados.creardocumentacionclienteita')
-                            @if ($tienerequisitosauditoria)
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
-                                    <i class="fas fa-list-alt"></i>
-                                    <strong>INFORMES</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-subirdocumento2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
-                                    <i class="fas fa-list-alt"></i>
-                                    <strong>INFORMES</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-
-                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                            <button type="button" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="modal" data-target="#dictamenModal" data-placement="top" title="DICTAMEN">
-                                <i class="fas fa-file-archive"></i>
-                                <strong>DICTAMEN</strong>
-                            </button>
+                            @endcan
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tienerequisitosapelacion)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
                         </div>
                     </div>
                 </div>
-                
-            </div>
             @endif
 
-            @if ($tieneApelacion)
-            {{-- APELACION --}}
-            <div class="modal-body">
-                <div style="background-color: #e9ffe9;  border-radius: 40px;">
-                    <div style="text-align: center;padding: 1.5px;">
-                        <strong style="color: #409c3e; font-size:20px;">APELACION</strong>
-                    </div>
-                    <div class="row text-center">
-                        @can('admin.asociados.generarchecklistclienteita')
-                            @if ($tieneContactos)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.generarchecklistclienteitaapelacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
-                                    <i class="fas fa-tasks"></i>
-                                    <strong>DERIV. Y REQ.</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
-                                    <i class="fas fa-tasks"></i>
-                                    <strong>DERIV. Y REQ.</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-                        @can('admin.asociados.creardocumentacionclienteita')
-                            @if ($tienerequisitosapelacion)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
-                                    <i class="fas fa-list-alt"></i>
-                                    <strong>INFORMES</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
-                                    <i class="fas fa-list-alt"></i>
-                                    <strong>INFORMES</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-
-                        {{-- @can('admin.asociados.generaretiquetaclienteita')
-                        <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
-                            <a href="{{ route('admin.asociados.generaretiquetaclienteitaapelacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR ETIQUETA">
-                                <i class="fas fa-tags"></i>
-                                <strong>ETIQUETA</strong>
-                            </a>
-                        </div>
-                        @endcan --}}
-                    </div>
-                </div>
-                
-            </div>
-            @endif
-
-            @if ($tieneSegundasolicitud)
             {{-- SEGUNDA SOLICITUD --}}
-            <div class="modal-body">
-                <div style="background-color: #fbffe7;  border-radius: 40px;">
-                    <div style="text-align: center;padding: 1.5px;">
-                        <strong style="color: #a3bc35; font-size:20px;">SEGUNDA SOLICITUD</strong>
-                    </div>
-                    <div class="row text-center">
-                        @can('admin.asociados.generarchecklistclienteita')
-                            @if ($tieneContactos)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.generarchecklistclienteitasegsolicitud', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
-                                    <i class="fas fa-tasks"></i>
-                                    <strong>DERIV. Y REQ.</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
-                                    <i class="fas fa-tasks"></i>
-                                    <strong>DERIV. Y REQ.</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-                        @can('admin.asociados.creardocumentacionclienteita')
-                            @if ($tienerequisitossegundasolicitud)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
-                                    <i class="fas fa-list-alt"></i>
-                                    <strong>INFORMES</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
-                                    <i class="fas fa-list-alt"></i>
-                                    <strong>INFORMES</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
+            @if ($tieneSegundasolicitud)
+                <div class="modal-body">
+                    <div style="background-color: #fbffe7;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #a3bc35; font-size:20px;">SEGUNDA SOLICITUD</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                {{-- @if ($tieneContactos) --}}
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.generarchecklistclienteitasegsolicitud', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                {{-- @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                @endif --}}
+                            @endcan
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tienerequisitossegundasolicitud)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
                     </div>
                 </div>
-            </div>
             @endif
 
-            @if ($tieneTercerasolicitud)
-            {{-- TERCERA SOLICITUD --}}
-            <div class="modal-body">
-                <div style="background-color: #fde7ff;  border-radius: 40px;">
-                    <div style="text-align: center;padding: 1.5px;">
-                        <strong style="color: #a835bc; font-size:20px;">TERCERA SOLICITUD</strong>
-                    </div>
-                    <div class="row text-center">
-                        @can('admin.asociados.generarchecklistclienteita')
-                            @if ($tieneContactos)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.generarchecklistclienteitatercerasolicitud', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
-                                    <i class="fas fa-tasks"></i>
-                                    <strong>DERIV. Y REQ.</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-programar222 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
-                                    <i class="fas fa-tasks"></i>
-                                    <strong>DERIV. Y REQ.</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
-                        @can('admin.asociados.creardocumentacionclienteita')
-                            @if ($tienerequisitostercerasolicitud)
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
-                                    <i class="fas fa-list-alt"></i>
-                                    <strong>INFORMES</strong>
-                                </a>
-                            </div>
-                            @else
-                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                <a href="#" class="btn btn-programar222 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
-                                    <i class="fas fa-list-alt"></i>
-                                    <strong>INFORMES</strong>
-                                </a>
-                            </div>
-                            @endif
-                        @endcan
+            {{-- APELACIÓN SEGUNDA SOLICITUD --}}
+            @if ($tieneApelSegSolicitud)
+                <div class="modal-body">
+                    <div style="background-color: #fbffe7;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #a3bc35; font-size:20px;">APELACIÓN SEGUNDA SOLICITUD</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                {{-- @if ($tieneContactos) --}}
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.generarchecklistclienteitaapelsegsolicitud', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                {{-- @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                @endif --}}
+                            @endcan
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tienerequisitosapelsegsolicitud)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
                     </div>
                 </div>
-            </div>
             @endif
+
+            {{-- TERCERA SOLICITUD --}}
+            @if ($tieneTercerasolicitud)
+                <div class="modal-body">
+                    <div style="background-color: #e9fbff;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #26a1c0; font-size:20px;">TERCERA SOLICITUD</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                {{-- @if ($tieneContactos) --}}
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.generarchecklistclienteitatercerasolicitud', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                {{-- @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-subirdocumento2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                @endif --}}
+                            @endcan
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tienerequisitostercerasolicitud)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-subirdocumento2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- APELACIÓN TERCERA SOLICITUD --}}
+            @if ($tieneApelTercerSolicitud)
+                <div class="modal-body">
+                    <div style="background-color: #e9fbff;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #26a1c0; font-size:20px;">APELACIÓN TERCERA SOLICITUD</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                {{-- @if ($tieneContactos) --}}
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.generarchecklistclienteitaapeltercersolicitud', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                {{-- @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-subirdocumento2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                @endif --}}
+                            @endcan
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tienerequisitosapeltercersolicitud)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-subirdocumento2 btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- RECALIFICACIÓN --}}
+            @if ($tieneRecalificacion)
+                <div class="modal-body">
+                    <div style="background-color: #e9ffe9;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #409c3e; font-size:20px;">RECALIFICACIÓN</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    @if($tienerequisitosrecalificacion)
+                                        <a href="{{ route('admin.asociados.subirdocrequisitosrecalificacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
+                                            <i class="fas fa-tasks"></i>
+                                            <strong>REQUISITOS</strong>
+                                        </a>
+                                    @else
+                                        <a href="{{ route('admin.asociados.generarchecklistclienteitarecalificacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                            <i class="fas fa-tasks"></i>
+                                            <strong>REQUISITOS</strong>
+                                        </a>
+                                    @endif
+                                </div>
+                            @endcan
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tienerequisitosrecalificacion)
+                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                        <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                            <i class="fas fa-list-alt"></i>
+                                            <strong>INFORMES</strong>
+                                        </a>
+                                    </div>
+                                    @else
+                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                        <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                            <i class="fas fa-list-alt"></i>
+                                            <strong>INFORMES</strong>
+                                        </a>
+                                    </div>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- APELACIÓN DE RECALIFICACIÓN --}}
+            @if ($tieneApelRecalificacion)
+                <div class="modal-body">
+                    <div style="background-color: #e9ffe9;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #409c3e; font-size:20px;">APELACIÓN DE RECALIFICACIÓN</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    @if($tienerequisitosapelrecalificacion)
+                                        <a href="{{ route('admin.asociados.subirdocrequisitosapelrecalificacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
+                                            <i class="fas fa-tasks"></i>
+                                            <strong>REQUISITOS</strong>
+                                        </a>
+                                    @else
+                                        <a href="{{ route('admin.asociados.generarchecklistclienteitaapelrecalificacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                            <i class="fas fa-tasks"></i>
+                                            <strong>REQUISITOS</strong>
+                                        </a>
+                                    @endif
+                                </div>
+                            @endcan
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tienerequisitosapelrecalificacion)
+                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                        <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                            <i class="fas fa-list-alt"></i>
+                                            <strong>INFORMES</strong>
+                                        </a>
+                                    </div>
+                                    @else
+                                    <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                        <a href="#" class="btn btn-bateria btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                            <i class="fas fa-list-alt"></i>
+                                            <strong>INFORMES</strong>
+                                        </a>
+                                    </div>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- RECALIFICACIÓN SEGUNDA SOLICITUD --}}
+            @if ($tieneRecalSegSolicitud)
+                <div class="modal-body">
+                    <div style="background-color: #fbffe7;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #a3bc35; font-size:20px;">RECALIFICACIÓN SEGUNDA SOLICITUD</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                {{-- @if ($tieneContactos) --}}
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.generarchecklistclienteitarecalsegsolicitud', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                {{-- @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                @endif --}}
+                            @endcan
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tienerequisitossegundasolicitud)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD --}}
+            @if ($tieneApelRecalSegSolicitud)
+                <div class="modal-body">
+                    <div style="background-color: #fbffe7;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #a3bc35; font-size:20px;">APELACIÓN DE RECAL. SEGUNDA SOLICITUD</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                {{-- @if ($tieneContactos) --}}
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.generarchecklistclienteitaapelrecalsegsolicitud', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                {{-- @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS" aria-disabled="true">
+                                        <i class="fas fa-tasks"></i>
+                                        <strong>DERIV. Y REQ.</strong>
+                                    </a>
+                                </div>
+                                @endif --}}
+                            @endcan
+                            @can('admin.asociados.creardocumentacionclienteita')
+                                @if ($tienerequisitosapelrecalsegsolicitud)
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.creardocumentacionclienteita', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR INFORMES">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @else
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="#" class="btn btn-programar btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="PROGRAMAR CLIENTE" aria-disabled="true">
+                                        <i class="fas fa-list-alt"></i>
+                                        <strong>INFORMES</strong>
+                                    </a>
+                                </div>
+                                @endif
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- JUBILACIÓN --}}
+            @if ($tieneJubilacion)
+                <div class="modal-body">
+                    <div style="background-color: #fde7ff;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #a835bc; font-size:20px;">JUBILACIÓN</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                    <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                        @if($tienerequisitosjubilacion)
+                                            <a href="{{ route('admin.asociados.subirdocrequisitosjubilacion', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('admin.asociados.generarchecklistclienteitajubilacion', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- RETIRO DE APORTES TOTAL --}}
+            @if ($tieneRetiroaportestotal)
+                <div class="modal-body">
+                    <div style="background-color: #e9fbff;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #26a1c0; font-size:20px;">RETIRO DE APORTES TOTAL</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                    <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                        @if($tienerequisitosretiroaportestotal)
+                                            <a href="{{ route('admin.asociados.subirdocrequisitosretiroaportestotal', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('admin.asociados.generarchecklistclienteitaretiroaportestotal', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- RETIRO DE APORTES PARCIAL --}}
+            @if ($tieneRetiroaportesparcial)
+                <div class="modal-body">
+                    <div style="background-color: #e9ffe9;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #409c3e; font-size:20px;">RETIRO DE APORTES PARCIAL</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                    <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                        @if($tienerequisitosretiroaportesparcial)
+                                            <a href="{{ route('admin.asociados.subirdocrequisitosretiroaportesparcial', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('admin.asociados.generarchecklistclienteitaretiroaportesparcial', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- PENSIÓN POR MUERTE --}}
+            @if ($tienePensionmuerte)
+                <div class="modal-body">
+                    <div style="background-color: #fbffe7;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #a3bc35; font-size:20px;">PENSIÓN POR MUERTE</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                    <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                        @if($tienerequisitospensionmuerte)
+                                            <a href="{{ route('admin.asociados.subirdocrequisitospensionmuerte', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('admin.asociados.generarchecklistclienteitapensionmuerte', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- MASA HEREDITARIA --}}
+            @if ($tieneMasahereditaria)
+                <div class="modal-body">
+                    <div style="background-color: #fde7ff;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #a835bc; font-size:20px;">MASA HEREDITARIA</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                    <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                        @if($tienerequisitosmasahereditaria)
+                                            <a href="{{ route('admin.asociados.subirdocrequisitosmasahereditaria', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('admin.asociados.generarchecklistclienteitamasahereditaria', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- COMPENSACIÓN DE COTIZACIONES (SENASIR) --}}
+            @if ($tieneCompensacioncotsenasir)
+                <div class="modal-body">
+                    <div style="background-color: #e9fbff;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #26a1c0; font-size:20px;">COMPENSACIÓN DE COTIZACIONES (SENASIR)</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                    <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                        @if($tienerequisitoscompensacioncotsenasir)
+                                            <a href="{{ route('admin.asociados.subirdocrequisitoscompensacioncotsenasir', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('admin.asociados.generarchecklistclienteitacompensacioncotsenasir', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-no" data-dismiss="modal">Cerrar</button>
             </div>
@@ -716,90 +1237,89 @@
 </div>
 
 <!-- CARTAS -->
-    <div class="modal fade" id="cartasclientes" tabindex="-1" role="dialog" aria-labelledby="cartasclientesLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <strong style="text-align: center; font-size:20px; margin-top: 20px;">DOCUMENTOS DE {{ $cliente->nombrecompleto }} </strong>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <div class="card">
-                                <div class="card-body">
-                                    {!! Form::model($cliente, ['route' => ['admin.asociados.guardarcartaclienteauditoriaita', $cliente], 'method' => 'POST', 'files' => true]) !!}
-                                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                                    {!! Form::hidden('clienteitaid', $cliente->id) !!}
-                                    {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
+<div class="modal fade" id="cartasclientes" tabindex="-1" role="dialog" aria-labelledby="cartasclientesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <strong style="text-align: center; font-size:20px; margin-top: 20px;">DOCUMENTOS DE {{ $cliente->nombrecompleto }} </strong>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                {!! Form::model($cliente, ['route' => ['admin.asociados.guardarcartaclienteauditoriaita', $cliente], 'method' => 'POST', 'files' => true]) !!}
+                                {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                                {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                                {!! Form::hidden('clienteitaid', $cliente->id) !!}
+                                {!! Form::hidden('clienteitanombre', $cliente->nombrecompleto) !!}
 
-                                    <strong style="color: #94c93b">SUBIR DOCUMENTOS</strong>
-                                    <div class="form-group">
-                                        {!! Form::label('detalle', 'Detalle:') !!}
-                                        {!! Form::text('detalle', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
-                                        @error('detalle')
-                                            <small class="text-danger fas fa-exclamation-circle">
-                                                {{ $message }}
-                                            </small>
-                                        @enderror
-                                    </div>
-                                    <div class="form-group">
-                                        {!! Form::label('fecha', 'Fecha_Reg:') !!}
-                                        {!! Form::date('fecha', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
-                                        @error('fecha')
-                                            <small class="text-danger fas fa-exclamation-circle">
-                                                {{ $message }}
-                                            </small>
-                                        @enderror
-                                    </div>
-                                    <div class="form-group">
-                                        <div class="mb-3">
-                                            {!! Form::label('carta', 'Documento:', ['class' => 'form-label']) !!}
-                                            <input type="file" name="carta" id="carta" class="dropify" accept=".pdf"/>
-                                            @error('carta')
-                                                <small class="text-danger fas fa-exclamation-circle">
-                                                    {{ $message }}
-                                                </small>
-                                            @enderror
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="submit" class="btn btn-sm btn-si">GUARDAR</button>
-                                        <button type="button" class="btn btn-sm btn-no" data-dismiss="modal">CERRAR</button>
-                                    </div>
-                                    {!! Form::close() !!}
+                                <strong style="color: #94c93b">SUBIR DOCUMENTOS</strong>
+                                <div class="form-group">
+                                    {!! Form::label('detalle', 'Detalle:') !!}
+                                    {!! Form::text('detalle', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                                    @error('detalle')
+                                        <small class="text-danger fas fa-exclamation-circle">
+                                            {{ $message }}
+                                        </small>
+                                    @enderror
                                 </div>
+                                <div class="form-group">
+                                    {!! Form::label('fecha', 'Fecha_Reg:') !!}
+                                    {!! Form::date('fecha', null, ['class' => 'form-control', 'placeholder' => '', 'required']) !!}
+                                    @error('fecha')
+                                        <small class="text-danger fas fa-exclamation-circle">
+                                            {{ $message }}
+                                        </small>
+                                    @enderror
+                                </div>
+                                <div class="form-group">
+                                    <div class="mb-3">
+                                        {!! Form::label('carta', 'Documento:', ['class' => 'form-label']) !!}
+                                        <input type="file" name="carta" id="carta" class="dropify" accept=".pdf"/>
+                                        @error('carta')
+                                            <small class="text-danger fas fa-exclamation-circle">
+                                                {{ $message }}
+                                            </small>
+                                        @enderror
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-sm btn-si">GUARDAR</button>
+                                    <button type="button" class="btn btn-sm btn-no" data-dismiss="modal">CERRAR</button>
+                                </div>
+                                {!! Form::close() !!}
                             </div>
                         </div>
-                        <div class="col-lg-8">
-                            <div class="card">
-                                <div class="card-body">
-                                    <strong style="color: #94c93b">LISTADO DE DOCUMENTOS</strong>
-                                    <div class="table-responsive"></div>
-                                        <table class="table table-striped">
-                                            <thead class="table-secondary">
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <strong style="color: #94c93b">LISTADO DE DOCUMENTOS</strong>
+                                <div class="table-responsive"></div>
+                                    <table class="table table-striped">
+                                        <thead class="table-secondary">
+                                            <tr>
+                                                <th style="color: black; padding: 5px;">ID</th>
+                                                <th style="color: black; padding: 5px;">Detalle</th>
+                                                <th style="color: black; padding: 5px;">Fecha</th>
+                                                <th style="color: black; padding: 5px;">Doc.</th>
+                                                
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($cartasclientes as $cartascliente)
                                                 <tr>
-                                                    <th style="color: black; padding: 5px;">ID</th>
-                                                    <th style="color: black; padding: 5px;">Detalle</th>
-                                                    <th style="color: black; padding: 5px;">Fecha</th>
-                                                    <th style="color: black; padding: 5px;">Doc.</th>
-                                                    
+                                                    <td style="text-align: left; padding: 5px;">{{ $cartascliente->id }}</td>
+                                                    <td style="text-align: left; padding: 5px;">{{ $cartascliente->detalle }}</td>
+                                                    <td style="text-align: left; padding: 5px;">{{ $cartascliente->fecha }}</td>
+                                                    <td style="text-align: left; padding: 5px;">
+                                                        <a href="{{ asset('/cartasclientesita/' . $cliente->id . '/' . $cartascliente->documento) }}" class="btn btn-vercarta" target="_blank" title="VER DOCUMENTO">
+                                                            <i class="fas fa-file-alt"></i>
+                                                        </a>
+                                                    </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($cartasclientes as $cartascliente)
-                                                    <tr>
-                                                        <td style="text-align: left; padding: 5px;">{{ $cartascliente->id }}</td>
-                                                        <td style="text-align: left; padding: 5px;">{{ $cartascliente->detalle }}</td>
-                                                        <td style="text-align: left; padding: 5px;">{{ $cartascliente->fecha }}</td>
-                                                        <td style="text-align: left; padding: 5px;">
-                                                            <a href="{{ asset('/cartasclientesita/' . $cliente->id . '/' . $cartascliente->documento) }}" class="btn btn-vercarta" target="_blank" title="VER DOCUMENTO">
-                                                                <i class="fas fa-file-alt"></i>
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -808,6 +1328,7 @@
             </div>
         </div>
     </div>
+</div>
 
 {{-- DICTAMEN --}}
 <div class="modal fade modal-custom-height" id="dictamenModal" tabindex="-1" aria-labelledby="dictamenModalLabel" aria-hidden="true">
@@ -1211,16 +1732,15 @@
     }
     .pdf-preview {
       width: 100%;
-      height: 430px; /* Ajusta la altura del visor PDF */
+      height: 430px;
       border: none;
     }
     .titulo {
       margin-top: 50px;
       margin-left: 20px;
     }
-    /* Define el alto específico para el modal con la clase personalizada */
     .modal-custom-height .modal-dialog {
-      height: 93.5vh; /* 75% de la altura de la ventana del navegador */
+      height: 93.5vh;
     }
     .modal-custom-height .modal-content {
       height: 100%;
@@ -1228,17 +1748,17 @@
       flex-direction: column;
     }
     .modal-custom-height .modal-body {
-      overflow-y: auto; /* Permite desplazamiento vertical */
-      flex: 1; /* Permite que el contenido se expanda */
-      padding: 2rem; /* Espaciado interior */
+      overflow-y: auto;
+      flex: 1;
+      padding: 2rem;
     }
     .modal-footer {
-      justify-content: center; /* Centra los botones en el pie del modal */
+      justify-content: center;
     }
     .dropify-wrapper {
       border-radius: 0.25rem;
     }
-  </style>
+</style>
 @endsection
 @section('js')
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -1301,11 +1821,10 @@
 
 @section('css')
 <style>
-    /* Estilo para el botón deshabilitado */
     .btn.disabled, .btn.disabled:hover, .btn.disabled:focus, .btn.disabled:active {
-        pointer-events: none; /* Evita la interacción con el botón */
-        opacity: 0.6; /* Da un aspecto visual de deshabilitado */
-        cursor: not-allowed; /* Cambia el cursor para mostrar que está deshabilitado */
+        pointer-events: none;
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 </style>
 <style>
@@ -1334,20 +1853,20 @@
         color: #ffffff;
     }
     .btn-no {
-    color: #fd1d1d;
-    border-color: #fd1d1d;
+        color: #fd1d1d;
+        border-color: #fd1d1d;
     }
     .btn-no:hover {
-    background-color: #fd1d1d;
-    color: #ffffff;
+        background-color: #fd1d1d;
+        color: #ffffff;
     }
     .btn-si {
-    color: #94c93b;
-    border-color: #94c93b;
+        color: #94c93b;
+        border-color: #94c93b;
     }
     .btn-si:hover {
-    background-color: #94c93b;
-    color: #ffffff;
+        background-color: #94c93b;
+        color: #ffffff;
     }
     .custom-dropdown {
         position: relative;

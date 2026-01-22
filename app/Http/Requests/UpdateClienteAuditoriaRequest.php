@@ -33,12 +33,12 @@ class UpdateClienteAuditoriaRequest extends FormRequest
         $rules = [
             'id' => '',
             'nombrecompleto' => 'required|max:255',
-            'fechanacimiento' => 'required|max:45',
-            'ocupacionprofesion' => 'required',
+            'fechanacimiento' => '',
+            'ocupacionprofesion' => '',
             'estadocivil' => 'required|max:90',
             'ci' => 'required',
-            'genero' => 'required|max:45',
-            'lugarresidencia' => 'required',
+            'genero' => '',
+            'lugarresidencia' => '',
             'edad' => '',
             'usuarioid' => '',
             'usuarioregistro' => '',
@@ -69,6 +69,9 @@ class UpdateClienteAuditoriaRequest extends FormRequest
             'nrocredito16' => '',
             'nrocredito17' => '',
             'nrocredito18' => '',
+            'tipocliente' => '',
+            'nombreespcon' => '',
+            'ciespcon' => '',
         ]; 
         return $rules;
     }

@@ -253,9 +253,9 @@
                             <label for="bancoDestino">Nro. Banco Origen</label>
                             <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control">
                                 <option value=""></option>
-                                <option value="3000189269">3000189269</option>
-                                <option value="2505314878">2505314878</option>
-                                {{-- <option value="S/B">S/B</option> --}}
+                                @foreach ($cuentas as $cuenta)
+                                    <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                @endforeach
                             </select>
                         </div>
                         
@@ -267,9 +267,9 @@
                             <label for="bancoDestino">Nro. Banco Origen</label>
                             <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control">
                                 <option value=""></option>
-                                <option value="3000189269">3000189269</option>
-                                <option value="2505314878">2505314878</option>
-                                {{-- <option value="S/B">S/B</option> --}}
+                                @foreach ($cuentas as $cuenta)
+                                    <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -283,9 +283,9 @@
                             <label for="bancoDestino">Nro. Banco Origen</label>
                             <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control">
                                 <option value=""></option>
-                                <option value="3000189269">3000189269</option>
-                                <option value="2505314878">2505314878</option>
-                                {{-- <option value="S/B">S/B</option> --}}
+                                @foreach ($cuentas as $cuenta)
+                                    <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -1119,10 +1119,23 @@
                 tabla.innerHTML = '';
                 if (data.registros.length > 0) {
                     data.registros.forEach((registro) => {
-                        let precio = parseFloat(registro.precio.replace(',', '.'));
+                        /* let precio = parseFloat(registro.precio.replace(',', '.'));
                         let precioCompraOriginal = parseFloat(registro.preciocompra.replace(',', '.'));
 
-                        let preciocompra = (precio - precioCompraOriginal).toFixed(2);
+                        let preciocompra = (precio - precioCompraOriginal).toFixed(2); */
+
+                        let precio = parseFloat(registro.precio.replace(',', '.')); // esto ya trae el saldo si existe
+                        let precioCompraOriginal = parseFloat(registro.preciocompra.replace(',', '.'));
+
+                        let preciocompra;
+
+                        // Solo restamos si precio > preciocompra (o según tu regla)
+                        if (precio < precioCompraOriginal) {
+                            preciocompra = precio.toFixed(2); // saldo pendiente
+                        } else {
+                            preciocompra = (precio - precioCompraOriginal).toFixed(2);
+                        }
+
 
                         const fila = `
                             <tr>
@@ -1765,5 +1778,14 @@
         return lineas;
     }
 </script>
-
+<script>
+//CANCELAR FUNCION DE LA TECLA ENTER
+    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+            }
+        });
+    });
+</script>
 @stop

@@ -582,7 +582,22 @@
                     </script>                    
                 </div>
             </div>
-            {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-crear']) !!}
+            {!! Form::submit('CREAR BATERIA', ['class' => 'btn btn-crear', 'id' => 'btn-crear-bateria']) !!}
+            <script>
+                $(document).ready(function() {
+                    $('#btn-crear-bateria').prop('disabled', true);
+                    $(document).on('change', 'input[type="checkbox"]', function() {
+                        const algunMarcado = $('input[type="checkbox"]:checked').length > 0;
+                        $('#btn-crear-bateria').prop('disabled', !algunMarcado);
+                    });
+                });
+            </script>
+            <style>
+                #btn-crear-bateria:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                }
+            </style>
             {!! Form::close() !!}
         </div>
 

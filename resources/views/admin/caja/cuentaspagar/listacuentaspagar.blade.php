@@ -1,11 +1,8 @@
 @extends('adminlte::page')
 
 @section('content_header')
-{{-- <a href="{{ route('reporte.cuentaspagar') }}" class="btn btn-danger">
-    <i class="fas fa-file-pdf"></i> Generar PDF
-</a> --}}
-{{-- <a href="{{ route('reporte.cuentaspagar') }}" class="btn float-right btn-outline-secondary" style="margin-right: 10px;">REPORTE GENERAL</a> --}}
-<a href="{{ route('reporte.cuentaspagar') }}" target="_blank" class="btn float-right btn-outline-secondary btn-sm">REPORTE GENERAL PROV. MEDICOS</a>
+{{-- <a href="{{ route('reporte.cuentaspagar') }}" target="_blank" class="btn float-right btn-botongris btn-sm">REPORTE GENERAL PROV. MEDICOS</a> --}}
+<a class="btn btn-sm float-right btn-botonrojo" href="{{ route('admin.caja.cuentaspagar.listacuentaspagarenmora') }}">CUENTAS POR PAGAR POR PROVEEDOR</a>
 <h1>CUENTAS POR PAGAR</h1>
 @stop
 
@@ -14,6 +11,9 @@
 <style>
     .table td {
         padding: 5px 10px;
+    }
+    .fondo-rojo-solo {
+        background-color: #f8d7da !important;
     }
     .btn-botongris {
         background-color: #ffffff;
@@ -24,6 +24,52 @@
     }
     .btn-botongris:hover {
         background-color: #676767;
+        color: #ffffff;
+        }
+    .btn-botonrojo {
+        background-color: #ffffff;
+        color: #c51616;
+        border-color: #c51616;
+        border-radius: 5px;
+        padding: 2px 5px;
+    }
+    .btn-botonrojo:hover {
+        background-color: #c51616;
+        color: #ffffff;
+        }
+    .btn-guardarconfactura {
+        background-color: #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-right: 5px;
+    }
+    .btn-guardarconfactura:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+        }
+    .btn-guardarsinfactura {
+        background-color: #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-right: 5px;
+    }
+    .btn-guardarsinfactura:hover {
+        background-color: #faa625;
+        color: #ffffff;
+        }
+    .btn-anularfactura {
+        background-color: #ffffff;
+        color: #df1a1a;
+        border-color: #df1a1a;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-anularfactura:hover {
+        background-color: #df1a1a;
         color: #ffffff;
         }
 </style>
@@ -42,64 +88,25 @@
 @endif
 
 <div class="card">
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid justify-content-end">
-            <div class="d-flex flex-wrap align-items-center">
-                <form id="search-form" action="{{ route('buscarlistacuentaspagar') }}" method="get" class="form-inline">
-                    <div class="flex-grow-1">
-                        <input type="text" name="buscarporcliente" class="form-control mr-sm-2" placeholder="Nombre del Proveedor">
-                    </div>
-                    <button id="btn-buscar" class="btn btn-outline-secondary my-2 my-sm-0" type="submit"><i class="fas fa-search"></i></button>
-                    <button id="btn-mostrar-todo" class="btn btn-outline-secondary my-2 my-sm-0 ml-2" type="button">MOSTRAR TODO</button>
-                </form>
-            </div>
-        </div>
-    </nav>
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" id="myTabs">  
             <li class="nav-item">
                 <a class="nav-link active" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="true">
-                    CXP GENERAL
+                    CXP GENERAL PENDIENTES
                 </a>
-            </li> 
+            </li>
             <li class="nav-item">
                 <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
-                    CXP EN MORA
+                    CXP GENERAL EN MORA
                 </a>
-            </li>  
-            <li class="nav-item">
-                <a class="nav-link" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">
-                    CXP PROVEEDORES MÉDICOS
-                </a>
-            </li> 
-            <li class="nav-item">
-                <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
-                    CXP OTROS PROVEEDORES
-                </a>
-            </li>       
+            </li>
         </ul>
     </div>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            document.querySelectorAll('a[data-toggle="tab"]').forEach(tab => {
-                tab.addEventListener('click', function () {
-                    localStorage.setItem('pestana_activa', this.getAttribute('href'));
-                });
-            });
-            let pestana = localStorage.getItem('pestana_activa');
-            if (pestana) {
-                const tabElement = document.querySelector(`a[href="${pestana}"]`);
-                if (tabElement) {
-                    new bootstrap.Tab(tabElement).show();
-                }
-            }
-        });
-    </script>
 
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
             
-            {{-- CUENTAS POR PAGAR PENDIENTES --}}
+            {{-- CXP GENERAL PENDIENTES --}}
             <div class="tab-pane fade show active" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
                 <table class="table table-striped">
                     <thead style="position: sticky; top: 0; z-index: 1010; background-color: #ffffff;">
@@ -135,14 +142,9 @@
                                     }
                                 }
                             }
-                            /* $proveedoresConPendientes = $proveedoresFuturas->merge($proveedoresPasadas); */
                             $proveedoresConPendientes = $proveedoresFuturas;
                         @endphp
-                        <style>
-                            .fondo-rojo-solo {
-                                background-color: #f8d7da !important;
-                            }
-                        </style>
+
                         @foreach ($proveedoresConPendientes as $fechaasignada => $cuentas)
                                 @php
                                     $esPasada = \Illuminate\Support\Carbon::parse($fechaasignada)->lessThan(\Illuminate\Support\Carbon::today());
@@ -187,7 +189,6 @@
                                                             <form method="POST" action="{{ route('marcar.cargado') }}" class="d-inline">
                                                                 @csrf
                                                                 <input type="hidden" name="fecha" value="{{ $fechaasignada }}">
-                                                                {{-- <input type="hidden" name="nrobancoorigen" value="2505314878"> --}}
                                                                 <button type="submit" class="btn btn-sm btn-outline-success">MARCAR COMO CARGADO</button>
                                                             </form>
                                                         @endif
@@ -228,91 +229,81 @@
                                                     <div class="tab-content mt-3">
                                                         <div id="pendientes{{ Str::slug($fechaasignada) }}" class="tab-pane fade show active">
                                                             @can('admin.banco.index')
-                                                            <div class="row justify-content-center"> 
-                                                                <!-- Tarjeta Cuenta 1 -->
-                                                                <div class="col-md-6 mb-4">
-                                                                    <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
-                                                                        <div class="card-header text-center border-0 position-relative" style="background: #fffbf3; padding: 0.3rem;">
-                                                                            <h6 class="mt-2 text-uppercase font-weight-bold">BNB: N° Cuenta: 3000189269</h6>
+                                                                <div class="row justify-content-center"> 
+                                                                    <div class="col-md-4 mb-4">
+                                                                        <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
+                                                                            <div class="card-header text-center border-0 position-relative" style="background: #fffbf3; padding: 0.3rem;">
+                                                                                <h6 class="mt-2 text-uppercase font-weight-bold">BNB: N° Cuenta: 3000189269</h6>
+                                                                            </div>
+                                                                            <div class="card-body" style="text-align: left;">
+                                                                                <div class="d-flex justify-content-between" style="margin-top: -15px; margin-bottom: -15px;">
+                                                                                    <h6 class="font-weight-bold">SALDO:</h6>
+                                                                                    <p class="h5 fw-bold text-success">{{ number_format($saldoanteriorcuenta1 + $totalCuenta1Ingreso - $totalCuenta1Egreso, 2, '.', '') }} <span class="text-muted">Bs.</span></p>
+                                                                                </div>
+                                                                            </div>
                                                                         </div>
-                                                                        <div class="card-body" style="text-align: left;">
-                                                                            <div class="d-flex justify-content-between" style="margin-top: -15px; margin-bottom: -15px;">
-                                                                                <h6 class="font-weight-bold">SALDO:</h6>
-                                                                                <p class="h5 fw-bold text-success">{{ number_format($saldoanteriorcuenta1 + $totalCuenta1Ingreso - $totalCuenta1Egreso, 2, '.', '') }} <span class="text-muted">Bs.</span></p>
+                                                                    </div>
+                                                                    <div class="col-md-4 mb-4">
+                                                                        <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
+                                                                            <div class="card-header text-center border-0 position-relative" style="background: #fffbf3; padding: 0.3rem;">
+                                                                                <h6 class="mt-2 text-uppercase font-weight-bold">BNB: N° Cuenta: 2505314878</h6>
+                                                                            </div>
+                                                                            <div class="card-body" style="text-align: left;">
+                                                                                <div class="d-flex justify-content-between" style="margin-top: -15px; margin-bottom: -15px;">
+                                                                                    <h6 class="font-weight-bold">SALDO:</h6>
+                                                                                    <p class="h5 fw-bold text-success">{{ number_format($saldoanteriorcuenta2 + $totalCuenta2Ingreso - $totalCuenta2Egreso, 2, '.', '') }} <span class="text-muted">Bs.</span></p>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-4 mb-4">
+                                                                        <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
+                                                                            <div class="card-header text-center border-0 position-relative" style="background: #fffbf3; padding: 0.3rem;">
+                                                                                <h6 class="mt-2 text-uppercase font-weight-bold">BESC: N° Cuenta: 1031266712</h6>
+                                                                            </div>
+                                                                            <div class="card-body" style="text-align: left;">
+                                                                                <div class="d-flex justify-content-between" style="margin-top: -15px; margin-bottom: -15px;">
+                                                                                    <h6 class="font-weight-bold">SALDO:</h6>
+                                                                                    <p class="h5 fw-bold text-success">{{ number_format($saldoanteriorcuenta4 + $totalCuenta4Ingreso - $totalCuenta4Egreso, 2, '.', '') }} <span class="text-muted">Bs.</span></p>
+                                                                                </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <!-- Tarjeta Cuenta 2 -->
-                                                                <div class="col-md-6 mb-4">
-                                                                    <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
-                                                                        <div class="card-header text-center border-0 position-relative" style="background: #fffbf3; padding: 0.3rem;">
-                                                                            <h6 class="mt-2 text-uppercase font-weight-bold">BNB: N° Cuenta: 2505314878</h6>
-                                                                        </div>
-                                                                        <div class="card-body" style="text-align: left;">
-                                                                            <div class="d-flex justify-content-between" style="margin-top: -15px; margin-bottom: -15px;">
-                                                                                <h6 class="font-weight-bold">SALDO:</h6>
-                                                                                <p class="h5 fw-bold text-success">{{ number_format($saldoanteriorcuenta2 + $totalCuenta2Ingreso - $totalCuenta2Egreso, 2, '.', '') }} <span class="text-muted">Bs.</span></p>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <!-- Tarjeta Cuenta 3 -->
-                                                                <div class="col-md-4 mb-4" hidden>
-                                                                    <div class="card shadow-lg border-0" style="color: #495057; border-radius: 15px; overflow: hidden; position: relative;">
-                                                                        <div class="card-header text-center border-0 position-relative" style="background: rgba(0, 0, 0, 0.03); padding: 0.5rem;">
-                                                                            <h6 class="mt-2 text-uppercase font-weight-bold">BMSC: N° Cuenta: 4011113557</h6>
-                                                                        </div>
-                                                                        <div class="card-body" style="text-align: left;">
-                                                                            <div class="d-flex justify-content-between">
-                                                                                <h6 class="font-weight-bold">Saldo</h6>
-                                                                                <p class="h5 fw-bold text-success">{{ number_format($saldoanteriorcuenta3 + $totalCuenta3Ingreso - $totalCuenta3Egreso, 2, '.', '') }} <span class="text-muted">Bs.</span></p>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
                                                             @endcan
                                                             <h5 style="font-weight:900;">CUENTAS POR PAGAR</h5>
                                                             <input type="hidden" id="fechaSeleccionada{{ Str::slug($fechaasignada) }}" value="{{ $fechaasignada }}">
                                                             @php
-                                                            $cuentasFiltradas = $cuentas->whereIn('estado', ['PENDIENTE', 'SALDO PENDIENTE'])
-                                                                                        ->where('estadoaprobacion', '!=', 'RECHAZADO');
-                                                            
-                                                            $cuentasAgrupadas = $cuentasFiltradas->groupBy(function ($item) {
-                                                                $proveedorNombre = strtoupper(trim($item->proveedornombre));
-                                                            
-                                                                if ($proveedorNombre === 'TELEFONICA CELULAR DE BOLIVIA S.A.') {
-                                                                // Buscar código
-                                                                    if (preg_match('/NRO\. CODIGO (\d+)/i', $item->detalleproducto, $matches)) {
-                                                                        return $proveedorNombre . ' - CODIGO ' . $matches[1];
+                                                                $cuentasFiltradas = $cuentas->whereIn('estado', ['PENDIENTE', 'SALDO PENDIENTE'])
+                                                                                            ->where('estadoaprobacion', '!=', 'RECHAZADO');
+                                                                
+                                                                $cuentasAgrupadas = $cuentasFiltradas->groupBy(function ($item) {
+                                                                    $proveedorNombre = strtoupper(trim($item->proveedornombre));
+                                                                
+                                                                    if ($proveedorNombre === 'TELEFONICA CELULAR DE BOLIVIA S.A.') {
+                                                                        if (preg_match('/NRO\. CODIGO (\d+)/i', $item->detalleproducto, $matches)) {
+                                                                            return $proveedorNombre . ' - CODIGO ' . $matches[1];
+                                                                        }
+                                                                        if (preg_match('/NRO\. CONTRATO (\d+)/i', $item->detalleproducto, $matches)) {
+                                                                            return $proveedorNombre . ' - CONTRATO ' . $matches[1];
+                                                                        }
+                                                                        return $proveedorNombre;
                                                                     }
-                                                                    // Buscar contrato
-                                                                    if (preg_match('/NRO\. CONTRATO (\d+)/i', $item->detalleproducto, $matches)) {
-                                                                        return $proveedorNombre . ' - CONTRATO ' . $matches[1];
-                                                                    }
-                                                            
-                                                                    // Si no hay contrato ni código
-                                                                    return $proveedorNombre;
-                                                                }
 
-                                                                if ($proveedorNombre === 'BANCO NACIONAL DE BOLIVIA S.A.') {
-                                                                    if (preg_match('/GARANTIA\ HIPOTECARIA (\d+)/i', $item->detalleproducto, $matches)) {
-                                                                        return $proveedorNombre . ' - CREDITO ' . $matches[1];
+                                                                    if ($proveedorNombre === 'BANCO NACIONAL DE BOLIVIA S.A.') {
+                                                                        if (preg_match('/GARANTIA\ HIPOTECARIA (\d+)/i', $item->detalleproducto, $matches)) {
+                                                                            return $proveedorNombre . ' - CREDITO ' . $matches[1];
+                                                                        }
+                                                                        if (preg_match('/VIVIENDA\ PYME (\d+)/i', $item->detalleproducto, $matches)) {
+                                                                            return $proveedorNombre . ' - CREDITO ' . $matches[1];
+                                                                        }
+                                                                        if (preg_match('/CONSUMO\ ASALARIADO (\d+)/i', $item->detalleproducto, $matches)) {
+                                                                            return $proveedorNombre . ' - CREDITO ' . $matches[1];
+                                                                        }
+                                                                        return $proveedorNombre;
                                                                     }
-                                                                    if (preg_match('/VIVIENDA\ PYME (\d+)/i', $item->detalleproducto, $matches)) {
-                                                                        return $proveedorNombre . ' - CREDITO ' . $matches[1];
-                                                                    }
-                                                                    if (preg_match('/CONSUMO\ ASALARIADO (\d+)/i', $item->detalleproducto, $matches)) {
-                                                                        return $proveedorNombre . ' - CREDITO ' . $matches[1];
-                                                                    }
-                                                            
-                                                                    // Si no hay contrato ni código
-                                                                    return $proveedorNombre;
-                                                                }
-                                                            
-                                                                return $item->proveedornombre;
-                                                            });
+                                                                    return $item->proveedornombre;
+                                                                });
                                                             @endphp
 
                                                             <div class="table-responsive">
@@ -333,9 +324,7 @@
                                                                             $todosAprobados = $registros->every(function($r) {
                                                                                 return in_array($r->estadoaprobacion, ['APROBADO', 'CARGADO', 'SUBIDO']);
                                                                             });
-                                                                        @endphp
 
-                                                                        @php
                                                                             $primerRegistro = $registros->first();
                                                                             $tipoplanilla = optional($primerRegistro->proveedorServicio)->tipoplanilla ?? 'NO DEFINIDO';
                                                                             $bancodestino = optional($primerRegistro->proveedorServicio)->numcuenta ?? 'NO DEFINIDO';
@@ -640,6 +629,10 @@
                                                                                                                 {{ optional($registro->programacion)->fechaasignada ?? '' }}
                                                                                                             @endif
 
+                                                                                                            @if ($registro->accionnombre === 'MEDICINA LABORAL' && $registro->clientecomunid !== null)
+                                                                                                                {{ optional($registro->programacion)->fechaasignada ?? '' }}
+                                                                                                            @endif
+
                                                                                                             @if (
                                                                                                                 $registro->accionnombre === 'LAVADO DE OIDO DERECHO' || 
                                                                                                                 $registro->accionnombre === 'LAVADO DE OIDO IZQUIERDO'
@@ -688,12 +681,10 @@
 
                                                                     const fechaSeleccionada = document.getElementById('fechaSeleccionada{{ Str::slug($fechaasignada) }}').value;
 
-                                                                    // Crear formulario dinámico
                                                                     const form = document.createElement('form');
                                                                     form.method = 'POST';
                                                                     form.action = '{{ route('aprobar.registros') }}';
 
-                                                                    // Agregar token CSRF
                                                                     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
                                                                     const csrfInput = document.createElement('input');
                                                                     csrfInput.type = 'hidden';
@@ -701,7 +692,6 @@
                                                                     csrfInput.value = csrfToken;
                                                                     form.appendChild(csrfInput);
 
-                                                                    // Agregar cuentas
                                                                     cuentasIds.forEach(id => {
                                                                         const input = document.createElement('input');
                                                                         input.type = 'hidden';
@@ -710,7 +700,6 @@
                                                                         form.appendChild(input);
                                                                     });
 
-                                                                    // Agregar programaciones
                                                                     programacionesIds.forEach(id => {
                                                                         const input = document.createElement('input');
                                                                         input.type = 'hidden';
@@ -719,7 +708,6 @@
                                                                         form.appendChild(input);
                                                                     });
 
-                                                                    // Agregar fecha
                                                                     const fechaInput = document.createElement('input');
                                                                     fechaInput.type = 'hidden';
                                                                     fechaInput.name = 'fecha';
@@ -742,12 +730,10 @@
 
                                                                     const fechaSeleccionada = document.getElementById('fechaSeleccionada{{ Str::slug($fechaasignada) }}').value;
 
-                                                                    // Crear formulario dinámico
                                                                     const form = document.createElement('form');
                                                                     form.method = 'POST';
                                                                     form.action = '{{ route('rechazar.registros') }}';
 
-                                                                    // Agregar token CSRF
                                                                     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
                                                                     const csrfInput = document.createElement('input');
                                                                     csrfInput.type = 'hidden';
@@ -755,7 +741,6 @@
                                                                     csrfInput.value = csrfToken;
                                                                     form.appendChild(csrfInput);
 
-                                                                    // Agregar cuentas
                                                                     cuentasIds.forEach(id => {
                                                                         const input = document.createElement('input');
                                                                         input.type = 'hidden';
@@ -764,7 +749,6 @@
                                                                         form.appendChild(input);
                                                                     });
 
-                                                                    // Agregar programaciones
                                                                     programacionesIds.forEach(id => {
                                                                         const input = document.createElement('input');
                                                                         input.type = 'hidden';
@@ -773,7 +757,6 @@
                                                                         form.appendChild(input);
                                                                     });
 
-                                                                    // Agregar fecha
                                                                     const fechaInput = document.createElement('input');
                                                                     fechaInput.type = 'hidden';
                                                                     fechaInput.name = 'fecha';
@@ -845,9 +828,10 @@
                                                     <div class="d-flex flex-column align-items-end">
                                                         @can('admin.cuentaspagar.aprobarcxp')
                                                             <button class="btn btn-sm btn-outline-success mb-2" onclick="aprobarSeleccionados()">APROBAR CXP</button>
-                                                            <button class="btn btn-sm btn-outline-danger mb-2" onclick="rechazarSeleccionados()">RECHAZAR CXP</button>
+                                                            
                                                         @endcan
                                                         @can('admin.cuentaspagar.sugerirpagos')
+                                                            <button class="btn btn-sm btn-outline-danger mb-2" onclick="rechazarSeleccionados()">RECHAZAR CXP</button>
                                                             <button class="btn btn-sm btn-outline-primary mb-2" onclick="sugerirpagosSeleccionados2('{{ Str::slug($fechaasignada) }}')">SUGERIR PAGOS</button>
                                                         @endcan
                                                     </div>
@@ -859,7 +843,6 @@
                                                 </div>
                                                 <script>
                                                     function updateTotalByCuenta(fechaModal) {
-                                                        // Reiniciar todos los totales visibles a 0.00
                                                         document.querySelectorAll(`span[id^="total-cuentas-${fechaModal}-"]`).forEach(span => {
                                                             span.textContent = "0.00";
                                                         });
@@ -881,7 +864,7 @@
                                                                 span.textContent = totales[cuenta].toFixed(2);
                                                             }
                                                         }
-                                                        updateTotalGeneral(fechaModal); // 👈 al final
+                                                        updateTotalGeneral(fechaModal);
                                                     }
                                                     function updateTotalGeneral(fechaModal) {
                                                         document.querySelectorAll(`span[id^="total-general-${fechaModal}-"]`).forEach(span => {
@@ -892,7 +875,6 @@
                                                             span.textContent = totalGeneral.toFixed(2);
                                                         });
                                                     }
-
 
                                                     // Seleccionar todos
                                                     document.querySelectorAll('.select-all-cuentas').forEach(selectAll => {
@@ -985,12 +967,10 @@
                                                         const programacionesIds = Array.from(document.querySelectorAll('.select-item-programaciones:checked'))
                                                             .map(cb => cb.closest('tr').querySelector('td:nth-child(2)').textContent.trim());
 
-                                                        // Crear formulario dinámico
                                                         const form = document.createElement('form');
                                                         form.method = 'POST';
                                                         form.action = '{{ route('sugerir.pagos.nomora') }}';
 
-                                                        // Agregar token CSRF
                                                         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
                                                         const csrfInput = document.createElement('input');
                                                         csrfInput.type = 'hidden';
@@ -998,7 +978,6 @@
                                                         csrfInput.value = csrfToken;
                                                         form.appendChild(csrfInput);
 
-                                                        // Agregar cuentas
                                                         cuentasIds.forEach(id => {
                                                             const input = document.createElement('input');
                                                             input.type = 'hidden';
@@ -1007,7 +986,6 @@
                                                             form.appendChild(input);
                                                         });
 
-                                                        // Agregar programaciones
                                                         programacionesIds.forEach(id => {
                                                             const input = document.createElement('input');
                                                             input.type = 'hidden';
@@ -1030,7 +1008,7 @@
                 </table>
             </div>
 
-            {{-- CUENTAS POR PAGAR EN MORA --}}
+            {{-- CXP GENERAL EN MORA --}}
             <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
                 <table class="table table-striped">
                     <thead style="position: sticky; top: 0; z-index: 1010; background-color: #ffffff;">
@@ -1041,7 +1019,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php
+                        @php 
                             $cuentasPorFecha = $cuentaspagar->groupBy('fechaasignada');
                             $bateriasPorFecha = $registrosbateria->groupBy('fechapago');
                             $fechasUnicas = $cuentasPorFecha->keys()
@@ -1057,8 +1035,20 @@
                                 $fechaCarbon = Carbon::parse($fecha);
                                 $cuentas = $cuentasPorFecha->get($fecha, collect());
                                 $baterias = $bateriasPorFecha->get($fecha, collect());
-                                $hayPendienteCuentas = $cuentas->contains(fn($item) => $item->estado !== 'PAGO PROCESADO' && $item->estadoaprobacion === 'RECHAZADO');
-                                $hayPendienteBaterias = $baterias->contains(fn($item) => $item->prioridad === 'CUENTA POR PAGAR' && $item->estadoaprobacion === 'RECHAZADO');
+
+                                $hayPendienteCuentas = $cuentas->contains(function($item) use ($hoy) {
+                                    return !in_array($item->estado, ['PAGO PROCESADO', 'FINALIZADO']) && 
+                                        (
+                                            $item->estadoaprobacion === 'RECHAZADO' || 
+                                            (isset($item->fechaasignada) && Carbon::parse($item->fechaasignada)->lessThan($hoy))
+                                        );
+                                });
+
+                                $hayPendienteBaterias = $baterias->contains(function($item) use ($hoy) {
+                                    return $item->prioridad === 'CUENTA POR PAGAR' &&
+                                        ($item->estadoaprobacion === 'RECHAZADO' || 
+                                            (isset($item->fechapago) && Carbon::parse($item->fechapago)->lessThan($hoy)));
+                                });
 
                                 if ($hayPendienteCuentas || $hayPendienteBaterias) {
                                     if ($fechaCarbon->lessThanOrEqualTo($hoy)) {
@@ -1068,18 +1058,14 @@
                                     }
                                 }
                             }
+
                             $proveedoresConPendientes = $proveedoresPasadas;
                         @endphp
-                        <style>
-                            .fondo-rojo-solo {
-                                background-color: #f8d7da !important;
-                            }
-                        </style>
                         @foreach ($proveedoresConPendientes as $fechaasignada => $cuentas)
-                                @php
-                                    $esPasada = \Illuminate\Support\Carbon::parse($fechaasignada)->lessThan(\Illuminate\Support\Carbon::today());
-                                @endphp
-                                <tr class="{{ $esPasada ? 'fondo-rojo-solo' : '' }}">
+                            @php
+                                $esPasada = \Illuminate\Support\Carbon::parse($fechaasignada)->lessThan(\Illuminate\Support\Carbon::today());
+                            @endphp
+                            <tr @if($esPasada) class="table-danger" @endif>
                                 <td><i class="fas fa-check"></i></td>
                                 <td>{{ $fechaasignada }}</td>
                                 <td>
@@ -1122,9 +1108,16 @@
                                                             <h5 style="font-weight:900;">CUENTAS POR PAGAR</h5>
                                                             <input type="hidden" id="fechaSeleccionada{{ Str::slug($fechaasignada) }}" value="{{ $fechaasignada }}">
                                                             @php
-                                                                $cuentasAgrupadas = $cuentas->whereIn('estado', ['PENDIENTE', 'SALDO PENDIENTE'])
-                                                                                            ->where('estadoaprobacion', '=', 'RECHAZADO')
-                                                                                            ->groupBy('proveedornombre');
+                                                                $hoy = Carbon::today();
+                                                                $cuentasAgrupadas = $cuentas
+                                                                    ->filter(function($item) use ($hoy) {
+                                                                        return in_array($item->estado, ['PENDIENTE', 'SALDO PENDIENTE']) &&
+                                                                            (
+                                                                                $item->estadoaprobacion === 'RECHAZADO' ||
+                                                                                (isset($item->fechaasignada) && Carbon::parse($item->fechaasignada)->lessThan($hoy))
+                                                                            );
+                                                                    })
+                                                                ->groupBy('proveedornombre');
                                                             @endphp
                                                             <div class="table-responsive">
                                                                 <table class="table table-bordered table-striped">
@@ -1144,9 +1137,7 @@
                                                                             $todosAprobados = $registros->every(function($r) {
                                                                                 return in_array($r->estadoaprobacion, ['APROBADO', 'CARGADO']);
                                                                             });
-                                                                        @endphp
 
-                                                                        @php
                                                                             $primerRegistro = $registros->first();
                                                                             $tipoplanilla = optional($primerRegistro->proveedorServicio)->tipoplanilla ?? 'NO DEFINIDO';
                                                                             $bancodestino = optional($primerRegistro->proveedorServicio)->numcuenta ?? 'NO DEFINIDO';
@@ -1154,26 +1145,22 @@
                                                                         @endphp
                                                                             <tr class="font-weight-bold" style="background-color: #f7f7f7;">
                                                                                 <td>
-                                                                                    @if ($todosAprobados)
-                                                                                        <span class="badge badge-success">APROBADO</span>
-                                                                                    @else
-                                                                                        <input type="checkbox" class="select-group-cuentas2" data-group="{{ Str::slug($proveedor, '-') }}" data-fecha="{{ Str::slug($fechaasignada) }}">
-                                                                                        @php
-                                                                                            $anteriores3 = \App\Models\CuentasPagar::where('proveedornombre', $proveedor)
-                                                                                                ->where('fechaasignada', '<', $fechaasignada)
-                                                                                                ->where('estadoaprobacion', 'RECHAZADO')
-                                                                                                ->pluck('fechaasignada')
-                                                                                                ->map(function ($fecha) {
-                                                                                                    return \Carbon\Carbon::parse($fecha)->format('d/m/Y');
-                                                                                                })
-                                                                                                ->unique()
-                                                                                                ->implode(', ');
-                                                                                        @endphp
+                                                                                    <input type="checkbox" class="select-group-cuentas2" data-group="{{ Str::slug($proveedor, '-') }}" data-fecha="{{ Str::slug($fechaasignada) }}">
+                                                                                    @php
+                                                                                        $anteriores3 = \App\Models\CuentasPagar::where('proveedornombre', $proveedor)
+                                                                                            ->where('fechaasignada', '<', $fechaasignada)
+                                                                                            ->where('estadoaprobacion', 'RECHAZADO')
+                                                                                            ->pluck('fechaasignada')
+                                                                                            ->map(function ($fecha) {
+                                                                                                return \Carbon\Carbon::parse($fecha)->format('d/m/Y');
+                                                                                            })
+                                                                                            ->unique()
+                                                                                            ->implode(', ');
+                                                                                    @endphp
 
-                                                                                        @if (!empty($anteriores3))
-                                                                                            <i class="fas fa-exclamation-triangle text-warning float-end"
-                                                                                            title="Existen cuentas por pagar en mora de fecha(s): {{ $anteriores3 }}"></i>
-                                                                                        @endif
+                                                                                    @if (!empty($anteriores3))
+                                                                                        <i class="fas fa-exclamation-triangle text-warning float-end"
+                                                                                        title="Existen cuentas por pagar en mora de fecha(s): {{ $anteriores3 }}"></i>
                                                                                     @endif
                                                                                 </td>
                                                                                 <td>
@@ -1231,7 +1218,6 @@
                                                                                                     <th>Subto.</th>
                                                                                                     <th>Desc.</th>
                                                                                                     <th>Total</th>
-                                                                                                    {{-- <th>Edit.</th> --}}
                                                                                                     <th>Estado</th>
                                                                                                 </tr>
                                                                                             </thead>
@@ -1239,11 +1225,7 @@
                                                                                                 @foreach ($registros as $pendiente)
                                                                                                     <tr>
                                                                                                         <td>
-                                                                                                            @if (in_array($pendiente->estadoaprobacion, ['APROBADO', 'CARGADO']))
-                                                                                                                <span class="badge badge-success">APROBADO</span>
-                                                                                                            @else
-                                                                                                                <input type="checkbox" class="select-item-cuentas2 select-c-{{ Str::slug($proveedor, '-') }}" data-id="{{ $pendiente->id }}" data-total="{{ $pendiente->montototal }}" data-fecha="{{ $pendiente->fechaasignada }}" data-fecha-modal="{{ Str::slug($fechaasignada) }}" data-nrocuenta="{{ $pendiente->nrobancoorigen }}">
-                                                                                                            @endif
+                                                                                                            <input type="checkbox" class="select-item-cuentas2 select-c-{{ Str::slug($proveedor, '-') }}" data-id="{{ $pendiente->id }}" data-total="{{ $pendiente->montototal }}" data-fecha="{{ $pendiente->fechaasignada }}" data-fecha-modal="{{ Str::slug($fechaasignada) }}" data-nrocuenta="{{ $pendiente->nrobancoorigen }}">
                                                                                                         </td>
                                                                                                         <td hidden>{{ $pendiente->id }}</td>
                                                                                                         <td>{{ $pendiente->ordenid ?? 0 }}</td>
@@ -1252,15 +1234,12 @@
                                                                                                         <td>{{ $pendiente->fechaasignada }}</td>
                                                                                                         <td>{{ $pendiente->nrobancoorigen ?? 0 }}</td>
                                                                                                         <td>{{ $pendiente->cantidad ?? 0 }}</td>
-                                                                                                        {{-- <td>{{ $pendiente->subtotal }}</td> --}}
                                                                                                         <td>
                                                                                                             <input type="number" class="form-control form-control-sm input-subtotal" style="width: 100px;" 
                                                                                                                 data-id="{{ $pendiente->id }}"
                                                                                                                 value="{{ $pendiente->subtotal }}" readonly>
                                                                                                         </td>
                                                                                                         <td id="descuento-{{ $pendiente->id }}">{{ $pendiente->descuento }}</td>
-
-                                                                                                        {{-- <td>{{ $pendiente->montototal }}</td> --}}
                                                                                                         <td>
                                                                                                             <div class="d-flex align-items-center gap-1">
                                                                                                                 <input type="number" class="form-control form-control-sm input-total" style="width: 100px;"
@@ -1299,8 +1278,6 @@
                                                                                         const nuevoTotal = parseFloat(this.value || 0);
                                                                                         const inputSubtotal = document.querySelector(`.input-subtotal[data-id="${id}"]`);
                                                                                         const btnGuardar = document.querySelector(`.btn-guardar[data-id="${id}"]`);
-
-                                                                                        // Leer el valor del descuento desde la celda
                                                                                         const descuento = parseFloat(document.querySelector(`#descuento-${id}`)?.innerText || 0);
                                                                                         const nuevoSubtotal = nuevoTotal + descuento;
 
@@ -1392,7 +1369,20 @@
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        @foreach ($registrosbateria->where('fechapago', $fechaasignada)->where('prioridad', 'CUENTA POR PAGAR')->where('estadoaprobacion','=','RECHAZADO')->groupBy('proveedorasignado') as $proveedor => $registros)
+                                                                        @php
+                                                                            $hoy = \Carbon\Carbon::today();
+
+                                                                            $registrosFiltrados = $registrosbateria
+                                                                                ->where('fechapago', $fechaasignada)
+                                                                                ->where('prioridad', 'CUENTA POR PAGAR')
+                                                                                ->filter(function($item) use ($hoy) {
+                                                                                    return $item->estadoaprobacion === 'RECHAZADO' ||
+                                                                                        (isset($item->fechapago) && \Carbon\Carbon::parse($item->fechapago)->lessThan($hoy));
+                                                                                })
+                                                                                ->groupBy('proveedorasignado');
+                                                                        @endphp
+
+                                                                        @foreach ($registrosFiltrados as $proveedor => $registros)
                                                                             @php
                                                                                 $todosAprobados = $registros->every(function($r) {
                                                                                     return in_array($r->estadoaprobacion, ['APROBADO', 'CARGADO']);
@@ -1576,14 +1566,8 @@
                                                                             @php $slugFecha = Str::slug($fechaasignada); @endphp
                                                                             <input type="date" name="fechapagocambio" id="fechapagocambio-{{ $slugFecha }}" class="form-control mb-2">
                                                                             <button class="btn btn-sm btn-outline-primary mb-2" onclick="sugerirpagosSeleccionados('{{ $slugFecha }}')">SUGERIR PAGOS</button>
-                                                                        @can('admin.cuentaspagar.aprobarcxp')
-                                                                            {{-- <input type="date" name="fechapagocambio" id="fechapagocambio" class="form-control">
-                                                                            <button class="btn btn-sm btn-outline-primary mb-2" onclick="cambiarfechaSeleccionados()">CAMBIAR FECHA</button> --}}
-                                                                            
                                                                             <button class="btn btn-sm btn-outline-success mb-2" onclick="cambiarfechaSeleccionados('{{ $slugFecha }}')">CAMBIAR FECHA</button>
-                                                                        @endcan
                                                                     @endcan
-                                                                    {{-- <a type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">CERRAR</a> --}}
                                                                 </div>
                                                             </div>
                                                             <script>
@@ -1602,12 +1586,10 @@
                                                                         return;
                                                                     }
 
-                                                                    // Crear formulario dinámico
                                                                     const form = document.createElement('form');
                                                                     form.method = 'POST';
                                                                     form.action = '{{ route('cambiarfecha.registros') }}';
 
-                                                                    // Agregar token CSRF
                                                                     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
                                                                     const csrfInput = document.createElement('input');
                                                                     csrfInput.type = 'hidden';
@@ -1615,7 +1597,6 @@
                                                                     csrfInput.value = csrfToken;
                                                                     form.appendChild(csrfInput);
 
-                                                                    // Agregar cuentas
                                                                     cuentasIds.forEach(id => {
                                                                         const input = document.createElement('input');
                                                                         input.type = 'hidden';
@@ -1624,7 +1605,6 @@
                                                                         form.appendChild(input);
                                                                     });
 
-                                                                    // Agregar programaciones
                                                                     programacionesIds.forEach(id => {
                                                                         const input = document.createElement('input');
                                                                         input.type = 'hidden';
@@ -1633,7 +1613,6 @@
                                                                         form.appendChild(input);
                                                                     });
 
-                                                                    // Agregar fecha
                                                                     const fechaHidden = document.createElement('input');
                                                                     fechaHidden.type = 'hidden';
                                                                     fechaHidden.name = 'fechapagocambio';
@@ -1660,12 +1639,10 @@
                                                                         return;
                                                                     }
 
-                                                                    // Crear formulario dinámico
                                                                     const form = document.createElement('form');
                                                                     form.method = 'POST';
                                                                     form.action = '{{ route('sugerir.pagos') }}';
 
-                                                                    // Agregar token CSRF
                                                                     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
                                                                     const csrfInput = document.createElement('input');
                                                                     csrfInput.type = 'hidden';
@@ -1673,7 +1650,6 @@
                                                                     csrfInput.value = csrfToken;
                                                                     form.appendChild(csrfInput);
 
-                                                                    // Agregar cuentas
                                                                     cuentasIds.forEach(id => {
                                                                         const input = document.createElement('input');
                                                                         input.type = 'hidden';
@@ -1682,7 +1658,6 @@
                                                                         form.appendChild(input);
                                                                     });
 
-                                                                    // Agregar programaciones
                                                                     programacionesIds.forEach(id => {
                                                                         const input = document.createElement('input');
                                                                         input.type = 'hidden';
@@ -1691,7 +1666,6 @@
                                                                         form.appendChild(input);
                                                                     });
 
-                                                                    // Agregar fecha
                                                                     const fechaHidden = document.createElement('input');
                                                                     fechaHidden.type = 'hidden';
                                                                     fechaHidden.name = 'fechapagocambio';
@@ -1753,7 +1727,6 @@
                                                 </div>
                                                 <script>
                                                     function updateTotalByCuenta3(fechaModal) {
-                                                        // Reiniciar todos los totales visibles a 0.00
                                                         document.querySelectorAll(`span[id^="total-cuentas2-${fechaModal}-"]`).forEach(span => {
                                                             span.textContent = "0.00";
                                                         });
@@ -1775,7 +1748,7 @@
                                                                 span.textContent = totales[cuenta].toFixed(2);
                                                             }
                                                         }
-                                                        updateTotalGeneral3(fechaModal); // 👈 al final
+                                                        updateTotalGeneral3(fechaModal);
                                                     }
                                                     function updateTotalGeneral3(fechaModal) {
                                                         document.querySelectorAll(`span[id^="total-general2-${fechaModal}-"]`).forEach(span => {
@@ -1787,8 +1760,6 @@
                                                         });
                                                     }
 
-
-                                                    // Seleccionar todos
                                                     document.querySelectorAll('.select-all-cuentas2').forEach(selectAll => {
                                                         selectAll.addEventListener('change', function() {
                                                             const fechaModal = this.getAttribute('data-fecha');
@@ -1798,7 +1769,6 @@
                                                         });
                                                     });
 
-                                                    // Grupo por proveedor
                                                     document.querySelectorAll('.select-group-cuentas2').forEach(groupCheckbox => {
                                                         groupCheckbox.addEventListener('change', function() {
                                                             const fechaModal = this.getAttribute('data-fecha');
@@ -1808,7 +1778,6 @@
                                                         });
                                                     });
 
-                                                    // Ítem individual
                                                     document.querySelectorAll('.select-item-cuentas2').forEach(item => {
                                                         item.addEventListener('change', function() {
                                                             const fechaModal = this.getAttribute('data-fecha-modal');
@@ -1817,7 +1786,6 @@
                                                     });
                                                     
                                                     function updateTotalByCuenta23(fechaModal) {
-                                                        // Reiniciar todos los totales visibles a 0.00
                                                         document.querySelectorAll(`span[id^="total-programaciones2-${fechaModal}-"]`).forEach(span => {
                                                             span.textContent = "0.00";
                                                         });
@@ -1868,7 +1836,6 @@
                                                             updateTotalByCuenta23(fechaModal);
                                                         });
                                                     });
-
                                                 </script>
                                             </div>
                                         </div>
@@ -1878,315 +1845,6 @@
                         @endforeach
                     </tbody> 
                 </table> 
-            </div>
-
-            {{-- PROVEEDORES MEDICOS --}}
-            <div class="tab-pane fade" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
-                <table class="table table-striped">
-                    <thead style="position: sticky; top: 0; z-index: 1010; background-color: #ffffff;">
-                        <tr>
-                            <th style="width: 5%;"><i class="fas fa-check"></i></th>
-                            <th style="width: 85%;">Proveedor Médico</th>
-                            <th style="width: 10%;">C.Pagar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($result as $item)
-                            <tr>
-                                <td><i class="fas fa-check"></i></td>
-                                <td>{{ $item['proveedorasignado'] }}</td>
-                                <td>
-                                    <abbr title="VER REGISTROS">
-                                        <a class="btn btn-sm btn-botongris" data-toggle="modal" data-target="#modal{{ $loop->index }}"><i class="fas fa-file-medical-alt"></i></a>
-                                    </abbr>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody> 
-                </table>
-            </div>
-
-            {{-- CUENTAS POR PAGAR OTROS PROVEEDORES --}}
-            <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
-                <table class="table table-striped">
-                    <thead style="position: sticky; top: 0; z-index: 1010; background-color: #ffffff;">
-                        <tr>
-                            <th style="width: 5%;"><i class="fas fa-check"></i></th>
-                            <th style="width: 85%;">Proveedor</th>
-                            <th style="width: 10%;">C.Pagar</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php
-                            $cuentasPorProveedor = $cuentaspagar->groupBy('proveedornombre');
-                            $bateriasPorProveedor = $registrosbateria->groupBy('proveedornombre');
-
-                            use App\Models\Proveedoresservicios;
-                            $proveedoresConFactura = Proveedoresservicios::where('emision', 'FACTURA')->pluck('razonsocial');
-
-                            /* $proveedoresUnicos = $cuentasPorProveedor->keys()
-                                ->merge($bateriasPorProveedor->keys())
-                                ->unique()
-                                ->sort(); */
-                            $proveedoresUnicos = $cuentasPorProveedor->keys()
-                                ->merge($bateriasPorProveedor->keys())
-                                ->unique()
-                                ->filter(function ($proveedor) use ($proveedoresConFactura) {
-                                    return $proveedoresConFactura->contains($proveedor);
-                                })
-                                ->sort();
-
-                            $proveedoresFuturas = collect();
-                            $proveedoresPasadas = collect();
-
-                            $hoy = Carbon::today();
-
-                            foreach ($proveedoresUnicos as $proveedor) {
-                                $cuentas = $cuentasPorProveedor->get($proveedor, collect());
-                                $baterias = $bateriasPorProveedor->get($proveedor, collect());
-
-                                $hayPendienteCuentas = $cuentas->contains(fn($item) => $item->estado !== 'PAGO PROCESADO' && $item->estadoaprobacion !== 'RECHAZADO');
-                                $hayPendienteBaterias = $baterias->contains(fn($item) => $item->prioridad === 'CUENTA POR PAGAR' && $item->estadoaprobacion !== 'RECHAZADO');
-                                $tieneFechaPasada = $cuentas->concat($baterias)->contains(function ($item) use ($hoy) {
-                                    $fecha = $item->fechaasignada ?? $item->fechapago ?? null;
-                                    return $fecha && Carbon::parse($fecha)->lessThan($hoy);
-                                });
-
-                                if ($hayPendienteCuentas || $hayPendienteBaterias) {
-                                    if ($tieneFechaPasada) {
-                                        $proveedoresPasadas->put($proveedor, $cuentas);
-                                    } else {
-                                        $proveedoresFuturas->put($proveedor, $cuentas);
-                                    }
-                                }
-                            }
-
-                            $proveedoresConPendientes = $proveedoresFuturas->merge($proveedoresPasadas);
-                        @endphp
-                        @foreach ($proveedoresConPendientes as $proveedornombre => $cuentas)
-                                <tr>
-                                <td><i class="fas fa-check"></i></td>
-                                <td>{{ $proveedornombre }}</td>
-                                <td>
-                                    <abbr title="VER REGISTROS">
-                                        <button type="button" class="btn btn-sm btn-botongris" data-toggle="modal" data-target="#modalProveedor7{{ Str::slug($proveedornombre) }}">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                    </abbr>
-                                    <div class="modal fade" id="modalProveedor7{{ Str::slug($proveedornombre) }}" tabindex="-1" role="dialog">
-                                        <div class="modal-dialog modal-xxl" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header d-block text-center py-4" style="background: #efefef">
-                                                    <div class="mb-3">
-                                                        <h4 class="modal-title font-weight-bold text-wrap" style="font-size: 1.5rem; margin-bottom:10px;">
-                                                            <strong>{{ $proveedornombre }}</strong>
-                                                        </h4>
-                                                        <button type="button" class="close position-absolute" style="top: 10px; right: 10px;" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <ul class="nav nav-tabs" id="tabsProveedor7{{ Str::slug($proveedornombre) }}">
-                                                        <li class="nav-item">
-                                                            <a class="nav-link active" data-toggle="tab" href="#pendientes7{{ Str::slug($proveedornombre) }}">PAGOS PENDIENTES</a>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                            <a class="nav-link" data-toggle="tab" href="#finalizados7{{ Str::slug($proveedornombre) }}">PAGOS PROCESADOS</a>
-                                                        </li>
-                                                    </ul>
-                                                    <div class="tab-content mt-3">
-                                                        <div id="pendientes7{{ Str::slug($proveedornombre) }}" class="tab-pane fade show active">
-                                                            <input type="hidden" id="fechaSeleccionada7{{ Str::slug($proveedornombre) }}" value="{{ $proveedornombre }}">
-                                                            @php
-                                                                $cuentasAgrupadas = $cuentas->whereIn('estado', ['PENDIENTE', 'SALDO PENDIENTE'])
-                                                                                            ->where('estadoaprobacion', '!=', 'RECHAZADO')
-                                                                                            ->groupBy('proveedornombre');
-                                                            @endphp
-                                                            <form action="{{ route('cuentasporpagar.facturas.otrosprov') }}" method="POST" enctype="multipart/form-data" data-modal-id="{{ Str::slug($proveedornombre) }}">
-                                                                @csrf
-                                                                <input type="hidden" name="ids_seleccionados7" id="ids_seleccionados7_{{ Str::slug($proveedornombre) }}">
-
-                                                                <div class="table-responsive">
-                                                                    <table class="table table-striped">
-                                                                        <tbody>
-                                                                            @foreach ($cuentasAgrupadas as $proveedor => $registros)
-                                                                                <tr>
-                                                                                    <td colspan="5" class="p-0">
-                                                                                        <div class="table-responsive">
-                                                                                            <table class="table table-striped">
-                                                                                                <thead>
-                                                                                                    <tr>
-                                                                                                        <th style="background-color: #f8f9fa;">ID Reg.</th>
-                                                                                                        <th style="background-color: #f8f9fa;">Orden.ID</th>
-                                                                                                        <th style="background-color: #f8f9fa;">Tipo Orden</th>
-                                                                                                        <th style="background-color: #f8f9fa;">Detalle</th>
-                                                                                                        <th style="background-color: #f8f9fa;">Fecha Pago</th>
-                                                                                                        <th style="background-color: #f8f9fa;">N.Cta Origen</th>
-                                                                                                        <th style="background-color: #f8f9fa;">Cant.</th>
-                                                                                                        <th style="background-color: #f8f9fa;">Subto.</th>
-                                                                                                        <th style="background-color: #f8f9fa;">Desc.</th>
-                                                                                                        <th style="background-color: #f8f9fa;">Total</th>
-                                                                                                        <th style="background-color: #f8f9fa;">Cod.Aut.</th>
-                                                                                                        <th style="background-color: #f8f9fa;">N.Factura</th>
-                                                                                                        <th style="background-color: #f8f9fa;">Sel.</th>
-                                                                                                    </tr>
-                                                                                                </thead>
-                                                                                                <tbody>
-                                                                                                    @foreach ($registros as $pendiente)
-                                                                                                        <tr>
-                                                                                                            <td>{{ $pendiente->id }}</td>
-                                                                                                            <td>{{ $pendiente->ordenid ?? 0 }}</td>
-                                                                                                            <td>{{ $pendiente->tipoorden }}</td>
-                                                                                                            <td>{{ $pendiente->detalleproducto }}</td>
-                                                                                                            <td>{{ $pendiente->fechaasignada }}</td>
-                                                                                                            <td>{{ $pendiente->nrobancoorigen ?? 0 }}</td>
-                                                                                                            <td>{{ $pendiente->cantidad ?? 0 }}</td>
-                                                                                                            <td>{{ $pendiente->subtotal }}</td>
-                                                                                                            <td>{{ $pendiente->descuento }}</td>
-                                                                                                            <td>{{ $pendiente->montototal }}</td>
-                                                                                                            <td>
-                                                                                                                @if (empty($pendiente->codautorizacion))
-                                                                                                                    <span class="badge badge-danger">PENDIENTE</span>
-                                                                                                                @else
-                                                                                                                    {{ $pendiente->codautorizacion }}
-                                                                                                                @endif
-                                                                                                            </td>
-                                                                                                            <td>
-                                                                                                                @if (empty($pendiente->factura) || empty($pendiente->nrofactura))
-                                                                                                                    <span class="badge badge-danger">PENDIENTE</span>
-                                                                                                                @else
-                                                                                                                    <a href="{{ asset('comprobantescuentaspagar/' . $pendiente->factura) }}" target="_blank" class="btn btn-sm btn-botongris" title="VER FACTURA">
-                                                                                                                        <i class="fas fa-file-alt"></i>
-                                                                                                                    </a>
-                                                                                                                    {{ $pendiente->nrofactura }}
-                                                                                                                @endif
-                                                                                                            </td>
-                                                                                                            <td>
-                                                                                                                <input type="checkbox" class="select-item-cuentas-prov select-c-prov-{{ Str::slug($proveedor, '-') }}" data-id="{{ $pendiente->id }}" data-total="{{ $pendiente->montototal }}" data-fecha1="{{ $pendiente->fechaasignada }}" data-fecha1-modal="{{ Str::slug($proveedornombre) }}" data-nrocuenta="{{ $pendiente->nrobancoorigen }}">
-                                                                                                            </td>
-                                                                                                        </tr>
-                                                                                                    @endforeach
-                                                                                                </tbody>
-                                                                                            </table>
-                                                                                        </div>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            @endforeach
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-                                                                <div class="card">
-                                                                    <div class="card-body" style="background-color: #f8f8f8;">
-                                                                        <div class="row mb-3">
-                                                                            <div class="col-12 d-flex justify-content-end">
-                                                                                <div class="d-flex align-items-end flex-wrap gap-3" style=" margin-top: -15px; margin-bottom: -20px;">
-                                                                                    <div>
-                                                                                        <label for="archivo_comprobante" class="form-label">Archivo Factura</label>
-                                                                                        <input type="file" name="archivo_comprobante" id="archivo_comprobante" class="form-control form-control-sm" accept="application/pdf" required>
-                                                                                    </div>
-
-                                                                                    <div>
-                                                                                        <label for="nro_factura" class="form-label">Nro. Factura</label>
-                                                                                        <input type="text" name="nro_factura" id="nro_factura" class="form-control form-control-sm" placeholder="Nro. Factura" required>
-                                                                                    </div>
-
-                                                                                    <div style="min-width: 300px;">
-                                                                                        <label for="codigo_autorizacion" class="form-label">Cod. Autorización</label>
-                                                                                        <input type="text" name="codigo_autorizacion" id="codigo_autorizacion" class="form-control form-control-sm" placeholder="Cod. Autorización" required>
-                                                                                    </div>
-
-                                                                                    <div>
-                                                                                        <button type="submit" name="action" value="guardar" class="btn btn-outline-secondary btn-sm">
-                                                                                            <i class="fas fa-print"></i> GUARDAR
-                                                                                        </button>
-                                                                                    </div>
-                                                                                    <div>
-                                                                                        @can('admin.cuentaspagar.anularfacturas')
-                                                                                            <button type="submit" name="action" value="anular" class="btn btn-outline-danger btn-sm">
-                                                                                                <i class="fas fa-times-circle"></i> ANULAR
-                                                                                            </button>
-                                                                                        @endcan
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <script>
-                                                                    document.addEventListener('DOMContentLoaded', function () {
-                                                                        document.querySelectorAll('form[data-modal-id]').forEach(form => {
-                                                                            form.addEventListener('submit', function (e) {
-                                                                                const modalId = this.getAttribute('data-modal-id');
-                                                                                const checkboxes = document.querySelectorAll(`.select-item-cuentas-prov[data-fecha1-modal="${modalId}"]:checked`);
-                                                                                const ids = Array.from(checkboxes).map(cb => cb.getAttribute('data-id'));
-                                                                                const inputHidden = this.querySelector(`#ids_seleccionados7_${modalId}`);
-                                                                                if (inputHidden) {
-                                                                                    inputHidden.value = ids.join(',');
-                                                                                }
-                                                                            });
-                                                                        });
-                                                                    });
-                                                                </script>
-                                                            </form>
-                                                        </div>
-                                                            
-                                                        <div id="finalizados7{{ Str::slug($proveedornombre) }}" class="tab-pane fade">
-                                                            <div class="table-responsive">
-                                                                <table class="table table-striped">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th style="background-color: white">ID Reg.</th>
-                                                                            <th style="background-color: white">Proveedor</th>
-                                                                            <th style="background-color: white">Tipo_Orden</th>
-                                                                            <th style="background-color: white">Orden ID</th>
-                                                                            <th style="background-color: white">Detalle</th>
-                                                                            <th style="background-color: white">Fecha_Pagar</th>
-                                                                            <th style="background-color: white">N.Cuenta_Origen</th>
-                                                                            <th style="background-color: white">Cant.</th>
-                                                                            <th style="background-color: white">Subto.</th>
-                                                                            <th style="background-color: white">Desc.</th>
-                                                                            <th style="background-color: white">Total</th>
-                                                                            <th style="background-color: white">Estado</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        @foreach ($cuentas->where('estado', 'PAGO PROCESADO') as $finalizado)
-                                                                        <tr>
-                                                                            <td>{{ $finalizado->id }}</td>
-                                                                            <td>{{ $finalizado->proveedornombre }}</td>
-                                                                            <td>{{ $finalizado->tipoorden }}</td>
-                                                                            <td>{{ $finalizado->ordenid ?? 0 }}</td>
-                                                                            <td>{{ $finalizado->detalleproducto }}</td>
-                                                                            <td>{{ $finalizado->fechaasignada }}</td>
-                                                                            <td>{{ $finalizado->nrobancoorigen  ?? 0 }}</td>
-                                                                            <td>{{ $finalizado->cantidad ?? 0 }}</td>
-                                                                            <td>{{ $finalizado->subtotal }}</td>
-                                                                            <td>{{ $finalizado->descuento }}</td>
-                                                                            <td>{{ $finalizado->montototal }}</td>
-                                                                            <td>
-                                                                                @if ($finalizado->estado == 'PAGO PROCESADO')
-                                                                                    <span class="badge badge-success">{{ $finalizado->estado }}</span>
-                                                                                @else
-                                                                                    <span class="badge badge-danger">{{ $finalizado->estado }}</span>
-                                                                                @endif
-                                                                            </td>
-                                                                        </tr>
-                                                                        @endforeach
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody> 
-                </table>
             </div>
         </div>
     </div>
@@ -2238,7 +1896,7 @@
                         <div class="tab-pane fade show active" id="tab-content-completos-{{ $loop->index }}" role="tabpanel" aria-labelledby="tab-completos-{{ $loop->index }}">
                             <form action="{{ route('actualizarFactura') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
-                                <input type="hidden" name="action_type" id="action_type" value="guardar">
+                                <input type="hidden" name="action_type" id="action_type_{{ $loop->index }}" value="">
                                 <div class="d-flex justify-content-end align-items-center mb-3">
                                     <div class="d-flex justify-content-end align-items-center mb-3">
                                         <div class="fw-bold me-3" style="white-space: nowrap; margin-right:10px;">
@@ -2255,7 +1913,6 @@
                                     <table class="table table-striped">
                                         <thead style="position: sticky; top: 0; z-index: 1010; background-color: #f8f9fa;">
                                             <tr>
-                                                <th class="text-center"><span style="color: black; font-size: 20px;">★</span></th>
                                                 <th>ID</th>
                                                 <th>Est./Esp.</th>
                                                 <th>Tipo_Cli.</th>
@@ -2271,7 +1928,7 @@
                                                 <th>Cod.Autorización</th>
                                                 <th>N.Factura</th>
                                                 <th>
-                                                    Sel.{{-- <input type="checkbox" id="seleccionarTodos{{ $loop->index }}" class="seleccionarTodos" data-modal="{{ $loop->index }}"> --}}
+                                                    Sel.
                                                 </th>
                                             </tr>
                                         </thead>
@@ -2298,30 +1955,20 @@
                                                 
                                                 @if ($accion['accion'] !== 'INFORME FINAL')
                                                     @if (
+                                                        (
                                                             (
-                                                                ($accion['accion'] === 'PSICOLOGIA'
-                                                                    && $accion['clientecomunid'] !== null
-                                                                    && is_null($accion['clienteitaid'])
-                                                                    && is_null($accion['clienteauditoriaid'])
-                                                                    && !is_null($accion['fechaprogramacion'])
-                                                                )
-                                                                || (!is_null($accion['informedocumentacion']) && !is_null($accion['fechaprogramacion']))
+                                                                in_array($accion['accion'], ['PSICOLOGIA', 'MEDICINA LABORAL'])
+                                                                && $accion['clientecomunid'] !== null
+                                                                && is_null($accion['clienteitaid'])
+                                                                && is_null($accion['clienteauditoriaid'])
+                                                                && !is_null($accion['fechaprogramacion'])
                                                             )
-                                                            && !in_array($accion['pagoservicioinforme'], ['PROCESADO', 'PAGO PROCESADO']) 
-                                                            && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $accion['pagoservicioinforme'] ?? '')
+                                                            || (!is_null($accion['informedocumentacion']) && !is_null($accion['fechaprogramacion']))
                                                         )
+                                                        && !in_array($accion['pagoservicioinforme'], ['PROCESADO', 'PAGO PROCESADO']) 
+                                                        && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $accion['pagoservicioinforme'] ?? '')
+                                                    )
                                                     <tr>
-                                                        <td class="text-center align-middle">
-                                                            <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
-                                                                @if ($accion['prioridad'] === 'CUENTA POR PAGAR' && $accion['estadoaprobacion'] !== 'RECHAZADO')
-                                                                    <span style="color: #faa625; font-size: 20px;">★</span>
-                                                                @elseif ($accion['prioridad'] === 'PRIORITARIO')
-                                                                    <span style="color: #faa625; font-size: 20px;">★</span>
-                                                                @else
-                                                                    <input type="checkbox" class="check-prioridad" data-bateriaid="{{ $accion['id'] }}" style="transform: scale(1.0); margin: 0;">
-                                                                @endif
-                                                            </div>
-                                                        </td>
                                                         <td>{{ $accion['id'] }}</td>
                                                         <td title="{{ $accion['accion'] }}" class="truncar">{{ $accion['accion'] }}</td>
                                                         <td>
@@ -2352,6 +1999,8 @@
                                                         </td>
                                                         <td>
                                                             @if ($accion['accion'] === 'PSICOLOGIA' && $accion['clientecomunid'] !== null)
+                                                                {{ $accion['fechaprogramacion'] ?? 'PENDIENTE' }}
+                                                            @elseif ($accion['accion'] === 'MEDICINA LABORAL' && $accion['clientecomunid'] !== null)
                                                                 {{ $accion['fechaprogramacion'] ?? 'PENDIENTE' }}
                                                             @elseif ($accion['informedocumentacion'])
                                                                 {{ $accion['informedocumentacion'] }}
@@ -2401,17 +2050,6 @@
                                                             !in_array($accion['pagoservicioinformefinal'], ['PROCESADO', 'PAGO PROCESADO']) 
                                                         && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $accion['pagoservicioinformefinal'] ?? ''))
                                                     <tr>
-                                                        <td class="text-center align-middle">
-                                                            <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
-                                                                @if ($accion['prioridad'] === 'CUENTA POR PAGAR' && $accion['estadoaprobacion'] !== 'RECHAZADO')
-                                                                    <span style="color: #faa625; font-size: 20px;">★</span>
-                                                                @elseif ($accion['prioridad'] === 'PRIORITARIO')
-                                                                    <span style="color: #faa625; font-size: 20px;">★</span>
-                                                                @else
-                                                                    <input type="checkbox" class="check-prioridad" data-bateriaid="{{ $accion['id'] }}" style="transform: scale(1.0); margin: 0;">
-                                                                @endif
-                                                            </div>
-                                                        </td>
                                                         <td>{{ $accion['id'] }}</td>
                                                         <td title="{{ $accion['accion'] }}" class="truncar">{{ $accion['accion'] }}</td>
                                                         <td>
@@ -2478,40 +2116,64 @@
                                 <div class="card">
                                     <div class="card-body" style="background-color: #f8f8f8;">
                                         <div class="row mb-3">
-                                            <div class="col-12 d-flex justify-content-end">
-                                                <div class="d-flex align-items-end flex-wrap gap-3" style=" margin-top: -15px; margin-bottom: -20px;">
-                                                    <div>
-                                                        <label for="archivo_comprobante" class="form-label">Archivo Factura</label>
-                                                        <input type="file" name="documentofactura" id="documentofactura" accept=".pdf" class="form-control form-control-sm" style="max-width: 300px;" required/>
+                                            <div class="col-12">
+                                                <div class="row g-2 align-items-end">
+                                                    <div class="col-lg-3">
+                                                        <label for="archivo_comprobante" class="form-label" style="margin-bottom: -10px;">Archivo Factura</label>
+                                                        <input type="file" name="documentofactura" id="documentofactura" accept=".pdf" class="form-control form-control-sm"/>
                                                     </div>
 
-                                                    <div>
-                                                        <label for="nro_factura" class="form-label">Nro. Factura</label>
-                                                        <input type="text" class="form-control me-2 form-control-sm" id="nroFactura" name="nroFactura" placeholder="Nro. Factura" style="max-width: 150px;" required>
+                                                    <div class="col-lg-2">
+                                                        <label for="nroFactura" class="form-label" style="margin-bottom: -10px;">Nro. Factura</label>
+                                                        <input type="text" class="form-control form-control-sm" id="nroFactura" name="nroFactura" placeholder="Nro. Factura">
                                                     </div>
 
-                                                    <div style="min-width: 300px;">
-                                                        <label for="codigo_autorizacion" class="form-label">Cod. Autorización</label>
-                                                        <input type="text" class="form-control me-2 form-control-sm" id="codautorizacion" name="codautorizacion" placeholder="Cod. Autorización" style="max-width: 350px;" required>
+                                                    <div class="col-lg-3">
+                                                        <label for="codautorizacion" class="form-label" style="margin-bottom: -10px;">Cod. Autorización</label>
+                                                        <input type="text" class="form-control form-control-sm" id="codautorizacion" name="codautorizacion" placeholder="Cod. Autorización">
                                                     </div>
 
-                                                    <div>
-                                                        <button type="submit" class="btn btn-outline-secondary btn-sm me-2" onclick="document.getElementById('action_type').value='guardar'" title="GUARDAR FACTURA">
-                                                            <i class="fas fa-save"></i> GUARDAR
-                                                        </button>
+                                                    <div class="col-lg-2">
+                                                        <label for="fechaPago" class="form-label" style="margin-bottom: -10px;">Fecha de Pago</label>
+                                                        <input type="date" class="form-control form-control-sm" id="fechaPago" name="fechaPagoProv">
                                                     </div>
-                                                    <div>
-                                                        @can('admin.cuentaspagar.anularfacturas')
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="document.getElementById('action_type').value='anular'" title="ANULAR FACTURA">
-                                                            <i class="fas fa-times-circle"></i> ANULAR
-                                                        </button>
-                                                        @endcan
+
+                                                    <div class="col-lg-2">
+                                                        <label for="nrocuentabanco" class="form-label" style="margin-bottom: -10px;">Nro. Cuenta Origen:</label>
+                                                        <select class="form-control form-control-sm" name="nrocuentabanco" required>
+                                                            @foreach ($cuentasbancos as $cuenta)
+                                                                <option value="{{ $cuenta->numerocuenta }}">
+                                                                    {{ $cuenta->numerocuenta }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- BOTONES -->
+                                        <div class="d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-guardarconfactura btn-sm"
+                                                    onclick="document.getElementById('action_type_{{ $loop->index }}').value='guardar'">
+                                                 GUARDAR CON FACTURA
+                                            </button>
+
+                                            @can('admin.cuentaspagar.anularfacturas')
+                                            <button type="submit" class="btn btn-guardarsinfactura btn-sm"
+                                                    onclick="document.getElementById('action_type_{{ $loop->index }}').value='guardarsinfactura'">
+                                                 GUARDAR SIN FACTURA
+                                            </button>
+
+                                            <button type="submit" class="btn btn-anularfactura btn-sm"
+                                                    onclick="document.getElementById('action_type_{{ $loop->index }}').value='anular'">
+                                                 ANULAR FACTURA
+                                            </button>
+                                            @endcan
+                                        </div>
                                     </div>
                                 </div>
+
                             </form>
                         </div>
 
@@ -2519,7 +2181,7 @@
                         <div class="tab-pane fade" id="tab-content-pendientes-{{ $loop->index }}" role="tabpanel" aria-labelledby="tab-pendientes-{{ $loop->index }}">
                             <form action="{{ route('actualizarFactura') }}" method="POST" enctype="multipart/form-data">
                                 @csrf
-                                <input type="hidden" name="action_type" id="action_type2" value="guardar">
+                                <input type="hidden" name="action_type" id="action_type2_{{ $loop->index }}" value="">
                                 <div class="d-flex justify-content-end align-items-center mb-3">
                                     <div class="fw-bold me-3" style="white-space: nowrap; margin-right:10px;">
                                         Total: Bs. <span class="totalSeleccionados" data-tab="pendientes" data-index="{{ $loop->index }}">0.00</span>
@@ -2563,7 +2225,7 @@
                                                     }
                                                     return \Carbon\Carbon::now()->addYears(100);
                                                 });
-                                                @endphp
+                                            @endphp
                                             @foreach ($accionesOrdenadas as $accion)
                                                 @php
                                                     $hoy = \Carbon\Carbon::now();
@@ -2724,36 +2386,57 @@
                                 <div class="card">
                                     <div class="card-body" style="background-color: #f8f8f8;">
                                         <div class="row mb-3">
-                                            <div class="col-12 d-flex justify-content-end">
-                                                <div class="d-flex align-items-end flex-wrap gap-3" style=" margin-top: -15px; margin-bottom: -20px;">
-                                                    <div>
-                                                        <label for="archivo_comprobante" class="form-label">Archivo Factura</label>
-                                                        <input type="file" name="documentofactura" id="documentofactura" accept=".pdf" class="form-control form-control-sm" style="max-width: 300px;" required/>
+                                            <div class="col-12">
+                                                <div class="row g-2 align-items-end">
+                                                    <div class="col-lg-3">
+                                                        <label for="archivo_comprobante" class="form-label" style="margin-bottom: -10px;">Archivo Factura</label>
+                                                        <input type="file" name="documentofactura" id="documentofactura" accept=".pdf" class="form-control form-control-sm"/>
                                                     </div>
-
-                                                    <div>
-                                                        <label for="nro_factura" class="form-label">Nro. Factura</label>
-                                                        <input type="text" class="form-control me-2 form-control-sm" id="nroFactura" name="nroFactura" placeholder="Nro. Factura" style="max-width: 150px;" required>
+                                                    <div class="col-lg-2">
+                                                        <label for="nro_factura" class="form-label" style="margin-bottom: -10px;">Nro. Factura</label>
+                                                        <input type="text" class="form-control me-2 form-control-sm" id="nroFactura" name="nroFactura" placeholder="Nro. Factura">
                                                     </div>
-
-                                                    <div style="min-width: 300px;">
-                                                        <label for="codigo_autorizacion" class="form-label">Cod. Autorización</label>
-                                                        <input type="text" class="form-control me-2 form-control-sm" id="codautorizacion" name="codautorizacion" placeholder="Cod. Autorización" style="max-width: 350px;" required>
+                                                    <div class="col-lg-3">
+                                                        <label for="codigo_autorizacion" class="form-label" style="margin-bottom: -10px;">Cod. Autorización</label>
+                                                        <input type="text" class="form-control me-2 form-control-sm" id="codautorizacion" name="codautorizacion" placeholder="Cod. Autorización">
                                                     </div>
-
-                                                    <div>
-                                                        <button type="submit" class="btn btn-outline-secondary btn-sm me-2" onclick="document.getElementById('action_type2').value='guardar'" title="GUARDAR FACTURA">
-                                                            <i class="fas fa-save"></i> GUARDAR
-                                                        </button>
+                                                    <div class="col-lg-2">
+                                                        <label for="nro_factura" class="form-label" style="margin-bottom: -10px;">Fecha de Pago</label>
+                                                        <input type="date" class="form-control me-2 form-control-sm" id="fechaPago" name="fechaPagoProv">
                                                     </div>
-                                                    <div>
-                                                        @can('admin.cuentaspagar.anularfacturas')
-                                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="document.getElementById('action_type2').value='anular'" title="ANULAR FACTURA">
-                                                            <i class="fas fa-times-circle"></i> ANULAR
-                                                        </button>
-                                                        @endcan
+                                                    <div class="col-lg-2">
+                                                        <label for="nrocuentabanco" class="form-label" style="margin-bottom: -10px;">Nro. Cuenta Origen:</label>
+                                                        <select class="form-control form-control-sm" name="nrocuentabanco" required>
+                                                            @foreach ($cuentasbancos as $cuenta)
+                                                                <option value="{{ $cuenta->numerocuenta }}">
+                                                                    {{ $cuenta->numerocuenta }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-end">
+                                            <button type="submit" class="btn btn-guardarconfactura btn-sm"
+                                                    onclick="document.getElementById('action_type2_{{ $loop->index }}').value='guardar'">
+                                                 GUARDAR CON FACTURA
+                                            </button>
+                                            <div>
+                                                @can('admin.cuentaspagar.anularfacturas')
+                                                <button type="submit" class="btn btn-guardarsinfactura btn-sm"
+                                                        onclick="document.getElementById('action_type2_{{ $loop->index }}').value='guardarsinfactura'">
+                                                     GUARDAR SIN FACTURA
+                                                </button>
+                                                @endcan
+                                            </div>
+                                            <div>
+                                                @can('admin.cuentaspagar.anularfacturas')
+                                                <button type="submit" class="btn btn-anularfactura btn-sm"
+                                                        onclick="document.getElementById('action_type2_{{ $loop->index }}').value='anular'">
+                                                     ANULAR FACTURA
+                                                </button>
+                                                @endcan
                                             </div>
                                         </div>
                                     </div>
@@ -2934,10 +2617,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer d-flex justify-content-between">
-                    <button class="btn-priorizar btn btn-outline-success">PRIORIZAR</button>
-                    {{-- <a type="button" class="btn btn-outline-danger" data-dismiss="modal">CERRAR</a> --}}
-                </div>
             </div>
         </div>
     </div>
@@ -2956,8 +2635,8 @@
                 let total = 0;
                 tabla.querySelectorAll('tbody tr').forEach(fila => {
                     // Diferente columna para cada tipo de pestaña
-                    const nroFacturaCol = tab === 'completos' ? 14 : 12;
-                    const montoCol = tab === 'completos' ? 8 : 7;
+                    const nroFacturaCol = tab === 'completos' ? 13 : 12;
+                    const montoCol = tab === 'completos' ? 7 : 7;
 
                     const nroFactura = fila.children[nroFacturaCol]?.innerText?.trim().toLowerCase() || '';
 
@@ -3027,7 +2706,7 @@
         document.getElementById('document').addEventListener('change', function() {
           cargarVistaPrevia();
         });
-      </script>
+    </script>
     <script>
         $(document).ready(function() {
             $('.dropify').dropify({

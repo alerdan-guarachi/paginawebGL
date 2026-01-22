@@ -85,29 +85,37 @@ class FacturasEgresoController extends Controller
         $ventascbba = collect();
         $comprascbba = collect();
 
+        //NUEVO 190126
         if ($fechaDesde && $fechaHasta) {
+
+            $order = 'COALESCE(CAST(idfactura AS UNSIGNED), id)';
+
             $ventasscz = FacturasEgreso::where('tipo', 2)
                 ->whereBetween('fechafacturaduidim', [$fechaDesde, $fechaHasta])
                 ->where('estado', 'VALIDO')
                 ->where('ciudad', 'SANTA CRUZ')
+                ->orderByRaw($order)
                 ->get();
 
             $comprasscz = FacturasEgreso::where('tipo', 1)
                 ->whereBetween('fechafacturaduidim', [$fechaDesde, $fechaHasta])
                 ->where('estado', 'VALIDO')
                 ->where('ciudad', 'SANTA CRUZ')
+                ->orderByRaw($order)
                 ->get();
 
             $ventascbba = FacturasEgreso::where('tipo', 2)
                 ->whereBetween('fechafacturaduidim', [$fechaDesde, $fechaHasta])
                 ->where('estado', 'VALIDO')
                 ->where('ciudad', 'COCHABAMBA')
+                ->orderByRaw($order)
                 ->get();
 
             $comprascbba = FacturasEgreso::where('tipo', 1)
                 ->whereBetween('fechafacturaduidim', [$fechaDesde, $fechaHasta])
                 ->where('estado', 'VALIDO')
                 ->where('ciudad', 'COCHABAMBA')
+                ->orderByRaw($order)
                 ->get();
         }
 
@@ -164,6 +172,42 @@ class FacturasEgresoController extends Controller
         return view('admin.facturasegreso.index', compact('codigosPermitidos','razonesSociales','ventas', 'compras', 'fechaDesde', 
         'fechaHasta', 'totales', 'ventasscz', 'comprasscz', 'ventascbba', 'comprascbba', 'registrosImpuestos', 
         'nombresExistentes', 'usuariosEntrega','otrasventasscz','otrascomprasscz','otrasventascbba','otrascomprascbba'));
+    }
+
+    //NUEVO 190126
+    public function cerrarMes(Request $request)
+    {
+        [$anio, $mes] = explode('-', $request->mes_anio);
+
+        DB::transaction(function () use ($mes, $anio) {
+
+            $ultimoIdFactura = DB::table('facturasegreso')
+                ->whereNotNull('idfactura')
+                ->whereNull('deleted_at')
+                ->max('idfactura') ?? 0;
+
+            $facturas = DB::table('facturasegreso')
+                ->whereYear('fechafacturaduidim', $anio)
+                ->whereMonth('fechafacturaduidim', $mes)
+                ->whereNull('idfactura')
+                ->where('estado', 'VALIDO')
+                ->whereNull('deleted_at')
+                ->orderBy('fechafacturaduidim')
+                ->orderBy('id')
+                ->get();
+
+            $contador = $ultimoIdFactura + 1;
+
+            foreach ($facturas as $factura) {
+                DB::table('facturasegreso')
+                    ->where('id', $factura->id)
+                    ->update(['idfactura' => $contador]);
+
+                $contador++;
+            }
+        });
+
+        return back()->with('info', 'Cierre de mes realizado correctamente.');
     }
     public function codigocambiofacturacambiorsocial(Request $request)
     {
@@ -434,6 +478,10 @@ class FacturasEgresoController extends Controller
      */
     public function store(Request $request, FacturasEgreso $empresa)
     {
+        $request->merge([
+            'otronosujcredfiscaloiva' => $request->otronosujcredfiscaloiva ?? 0.00,
+            'tasas' => $request->tasas ?? 0.00
+        ]);
         $factura = FacturasEgreso::create($request->all());
 
         return redirect()->route('admin.facturasegreso.index', $factura)->with('info', 'La factura se registro con exito');

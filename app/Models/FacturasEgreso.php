@@ -14,6 +14,7 @@ class FacturasEgreso extends Model
     protected $table = 'facturasegreso';
     static $rules = [
         'id' => '',
+        'idfactura' => '',
         'especificacion' => '',
         'nitci' => '',
         'razonsocial' => '',
@@ -49,6 +50,7 @@ class FacturasEgreso extends Model
 
     protected $fillable = [
         'id',
+        'idfactura',
         'especificacion',
         'nitci',
         'razonsocial',

@@ -88,6 +88,7 @@ class UpdateProveedoresserviciosRequest extends FormRequest
             'tipoorden2' => '',
             'tipoorden3' => '',
             'tipoplanilla' => '',
+            'nroderivtramites' => '',
         ]; 
         return $rules;
     }

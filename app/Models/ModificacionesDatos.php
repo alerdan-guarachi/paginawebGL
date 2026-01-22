@@ -19,6 +19,8 @@ class ModificacionesDatos extends Model
         'datonuevo' => '',
         'usuarioedicionid' => '',
         'usuarioedicionnombre' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
     ]; 
 
     protected $fillable = [
@@ -29,5 +31,7 @@ class ModificacionesDatos extends Model
         'datonuevo',
         'usuarioedicionid',
         'usuarioedicionnombre',
+        'clienteid',
+        'clientenombre',
     ];
 }

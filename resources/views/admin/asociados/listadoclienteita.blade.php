@@ -75,14 +75,14 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 
 <div class="card">
     <div class="card-body">
-        <nav class="navbar navbar-expand-lg float-right">
-            <div class="container-fluid">
+        {{-- <nav class="navbar navbar-expand-lg float-right"> --}}
+            {{-- <div class="container-fluid">
                 <div class="d-flex flex-wrap align-items-center">
                     <form action="{{ route('buscarclientesita') }}" method="get" class="form-inline">
                         <div class="flex-grow-1">
@@ -91,20 +91,23 @@
                         <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit" disabled><i class="fas fa-search"></i></button>
                     </form>
                 </div>
-            </div>
-        </nav>
+            </div> --}}
+            
+        {{-- </nav> --}}
         <div class="table-responsive">
-            <table class="table table-striped">
+            <input id="buscador" class="form-control" style="width: 400px;" type="search" placeholder="BUSCAR POR ID, CI O NOMBRE DEL CLIENTE..." aria-label="Search"><br>
+            <table class="table table-striped table-sm table-bordered">
                 <thead>
                     <tr> 
                         <th style="width: 20px;">ID</th>
                         <th style="width: 200px;">Nombres y Apellidos</th>
+                        <th style="width: 150px;">Derivación</th>
                         <th style="width: 150px;">Servicio</th>
                         <th style="width: 100px;">CI</th>
                         <th style="width: 80px;">Edad</th>
                         <th style="width: 80px;">Celular</th>
                         <th style="width: 120px;">Sucursal</th>
-                        <th style="width: 50px;"></th>
+                        <th style="width: 50px;">Ver</th>
                     </tr>
                     
                 </thead>
@@ -113,6 +116,7 @@
                         <tr>
                             <td class="align-middle">{{$cliente->id}}</td>
                             <td class="align-middle">{{$cliente->nombrecompleto}}</td>
+                            <td class="align-middle">{{$cliente->derivacion ?? 0}}</td>
                             <td class="align-middle"> 
                                 @if ($cliente->servicios->isNotEmpty())
                                     {{ implode(', ', $cliente->servicios->pluck('tramite')->unique()->toArray()) }}
@@ -124,7 +128,7 @@
                             <td class="align-middle">{{$cliente->edad}}</td>
                             <td class="align-middle">{{$cliente->celular ?? 0 }}</td>
                             <td class="align-middle">{{$cliente->sucursal}}</td>
-                            @can('admin.asociados.verclienteita')
+                            {{-- @can('admin.asociados.verclienteita')
                             <td width="10px">
                                 <abbr title="VER CLIENTE">
                                     <a class="btn btn-sm btn-vercliente" href="{{ route('admin.asociados.verclienteita', $cliente) }}">
@@ -132,13 +136,52 @@
                                     </a>
                                 </abbr>
                             </td>
+                            @endcan --}}
+                            @can('admin.asociados.verclienteita')
+                                <td>
+                                    <abbr title="VER CLIENTE">
+                                        @php
+                                            $esOperativo = auth()->user()->roles->contains('name', 'OPERATIVO');
+                                            $bloquear = $esOperativo && (is_null($cliente->derivacion) || $cliente->derivacion === 'CARTERA DE CLIENTES');
+                                        @endphp
+
+                                        <a class="btn btn-sm btn-vercliente {{ $bloquear ? 'disabled' : '' }}" 
+                                        href="{{ $bloquear ? '#' : route('admin.asociados.verclienteita', $cliente) }}" 
+                                        @if($bloquear) aria-disabled="true" @endif>
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </abbr>
+                                </td>
                             @endcan
                         </tr>
                     @endforeach
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+                            const input = document.getElementById("buscador");
+                            const rows = document.querySelectorAll("table tbody tr");
+
+                            input.addEventListener("keyup", function () {
+                                const value = this.value.toLowerCase();
+
+                                rows.forEach(function (row) {
+                                    // buscamos en ID, nombrecompleto y CI
+                                    const id = row.cells[0].textContent.toLowerCase();
+                                    const nombre = row.cells[1].textContent.toLowerCase();
+                                    const ci = row.cells[4].textContent.toLowerCase();
+
+                                    if (id.includes(value) || nombre.includes(value) || ci.includes(value)) {
+                                        row.style.display = "";
+                                    } else {
+                                        row.style.display = "none";
+                                    }
+                                });
+                            });
+                        });
+                    </script>
                 </tbody>
             </table>
         </div>
-        {{ $clientes->links() }}
+        {{-- {{ $clientes->links() }} --}}
     </div>
 </div>
 

@@ -38,6 +38,7 @@ class Ordenes extends Model
         'usuariopreorden' => '',
         'sucursal' => '',
         'sucursalgasto' => '',
+        'ordenunificado' => '',
     ];
 
     // Asignación de atributos
@@ -63,6 +64,7 @@ class Ordenes extends Model
         'usuariopreorden',
         'sucursal',
         'sucursalgasto',
+        'ordenunificado',
     ];
 
     public function detalles()

@@ -27,10 +27,18 @@
                 <div class="d-flex flex-wrap align-items-center">
                     <form action="{{ route('buscarprogramacionclientesita', $cliente) }}" method="get" class="form-inline">
                         <div class="flex-grow-1">
-                            <select name="buscarpor" class="form-control mr-sm-2">
+                            {{-- <select name="buscarpor" class="form-control mr-sm-2">
                                 <option value="" disabled selected>Fecha de Bateria</option>
                                 @foreach($fechas as $fecha)
                                     <option value="{{ $fecha }}">{{ $fecha }}</option>
+                                @endforeach
+                            </select> --}}
+                            <select name="buscarpor" class="form-control mr-sm-2">
+                                <option value="" disabled {{ request('buscarpor') ? '' : 'selected' }}>Fecha de Bateria</option>
+                                @foreach($fechas as $fecha)
+                                    <option value="{{ $fecha }}" {{ request('buscarpor') == $fecha ? 'selected' : '' }}>
+                                        {{ $fecha }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
@@ -43,17 +51,17 @@
         {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
         {!! Form::hidden('clienteitaid', $id) !!}
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-sm">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Estudio/Especialidad</th>
                         <th>Proveedor</th>
-                        <th>Fecha_Bateria</th>
-                        <th>Fecha_Asignada</th>
-                        <th>Hora_Asignada</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
+                        <th>Fecha_Bat.</th>
+                        <th>Fecha_Asig.</th>
+                        <th>Hora_Asig.</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Recordar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -95,14 +103,14 @@
                             <td class="align-middle">{{ $accion->fechabateria }}</td>
                             <td class="align-middle">{{ $accion->fechaasignada }}</td>
                             <td class="align-middle">{{ $accion->horadesde }} - {{ $accion->horahasta }}</td>
-                            <td width="10px">
+                            <td class="text-center">
                                 @if(isset($estadoMapeado[$accion->accionnombre][$accion->fechabateria]))
-                                    <i class="fas fa-check-circle fa-2x checkverde"></i>
+                                    <i class="fas fa-check-circle checkverde" style="font-size: 1.5rem;"></i>
                                 @else
-                                    <i class="fas fa-times-circle fa-2x text-danger"></i>
+                                    <i class="fas fa-times-circle text-danger" style="font-size: 1.5rem;"></i>
                                 @endif
                             </td>                  
-                            <td width="10px">
+                            <td class="text-center">
                                 @php
                                     $cantidadDirecciones = 0;
                                     if (!empty($accion->direccion)) $cantidadDirecciones++;
@@ -220,11 +228,27 @@
                 <div class="form-group">   
                     {!! Form::label('', 'Fecha de Bateria:') !!}
                     <select class="form-control" id="fecha_bateria">
-                        <option value="" disabled selected></option>
+                        <option value="" disabled></option>
                         @foreach($accionesPorFecha as $fecha => $acciones)
-                            <option value="{{ $fecha }}">{{ $fecha }}</option>
+                            <option value="{{ $fecha }}" {{ $fecha == $fechaSeleccionada ? 'selected' : '' }}>
+                                {{ $fecha }}
+                            </option>
                         @endforeach
                     </select>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function () {
+                            var fechaSeleccionada = "{{ $fechaSeleccionada }}";
+                            var selectFecha = document.getElementById('fecha_bateria');
+
+                            if (fechaSeleccionada) {
+                                selectFecha.value = fechaSeleccionada;
+                                document.getElementById('fechabateria').value = fechaSeleccionada;
+
+                                var event = new Event('change');
+                                selectFecha.dispatchEvent(event);
+                            }
+                        });
+                    </script>
                     @error('fechabateria')
                         <small class="text-danger fas fa-exclamation-circle">
                             {{$message}}
@@ -328,7 +352,7 @@
                         </small>
                     @enderror
                 </div>
-                {!! Form::submit('Actualizar', ['class' => 'btn btn-crear']) !!}
+                {!! Form::submit('ACTUALIZAR', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
             </div>
         </div>

@@ -20,6 +20,8 @@ class CartasClientes extends Model
         'usuarioregistroid' => '',
         'usuarioregistronombre' => '',
         'fecha' => '',
+        'adjunto' => '',
+        'bancoadjunto' => '',
     ]; 
 
     protected $fillable = [
@@ -31,5 +33,7 @@ class CartasClientes extends Model
         'usuarioregistroid',
         'usuarioregistronombre',
         'fecha',
+        'adjunto',
+        'bancoadjunto',
     ];
 }

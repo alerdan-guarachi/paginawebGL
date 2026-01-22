@@ -47,6 +47,9 @@ use Illuminate\Support\Facades\Http;
 use App\Notifications\ComprobanteNotification;
 use App\Models\User;
 use App\Models\CCyCPdetalles;
+use App\Models\PreOrdenes;
+/* NUEVO 011225 */
+use App\Models\HistorialArqueocaja;
 
 class MovimientosCajaController extends Controller
 {
@@ -249,13 +252,15 @@ class MovimientosCajaController extends Controller
 
             $registroCierreCaja = true;
 
+            // ✅ Si existe un registro en cajacentral, debemos validar su cierre
             if ($ultimoRegistro) {
                 $fechaUltimoRegistro = Carbon::parse($ultimoRegistro->created_at)->toDateString();
 
+                // Si la fecha del último registro NO es hoy, exigimos cierre para esa fecha
                 if ($fechaUltimoRegistro !== $hoy->toDateString()) {
                     $registroCierreCaja = DB::table('cierrecaja')
                         ->where('usuariocierreid', $idUsuario)
-                        ->whereDate('created_at', $fechaUltimoRegistro)
+                        ->whereDate('fechacierre', $fechaUltimoRegistro)
                         ->exists();
                 }
             }
@@ -265,8 +270,6 @@ class MovimientosCajaController extends Controller
                 ->where('permisoSolicitado', 'admin.ingreso.index')
                 ->where('estado', 'expirado')
                 ->exists();
-
-            /*  $mostrarVista = $registroCierreCaja || $codigoAprobacion; */
 
             $tuvoEfectivoAyer = DB::table('cajacentral')
                 ->where('usuarioregistroid', $idUsuario)
@@ -289,8 +292,8 @@ class MovimientosCajaController extends Controller
             $mostrarVista = ($registroCierreCaja && !$restriccionDeposito) || $codigoAprobacion;
 
             $motivoBloqueo = null;
-            if (!$registroCierreCaja) {
-                $motivoBloqueo = 'NO CERRASTE TU CAJA EL DIA DE AYER';
+            if ($ultimoRegistro && !$registroCierreCaja) {
+                $motivoBloqueo = 'NO CERRASTE TU CAJA DEL DÍA ' . Carbon::parse($ultimoRegistro->created_at)->format('d/m/Y');
             } elseif ($restriccionDeposito) {
                 $motivoBloqueo = 'NO REGISTRASTE EL DEPÓSITO DEL EFECTIVO DE AYER ANTES DE LAS 10:00 AM.';
             }
@@ -1067,6 +1070,7 @@ class MovimientosCajaController extends Controller
                 if ($cliente) {
                     $nitci = (!empty($cliente->nitci) && $cliente->nitci != '0') ? $cliente->nitci : ($cliente->ci ?? '');
                     $complemento = $cliente->cicomplemento ?? '0';
+                    $sucursalcliente = $cliente->sucursal ?? '0';
                 }
 
                 // Insertar en facturasegreso
@@ -1095,7 +1099,7 @@ class MovimientosCajaController extends Controller
                         'estado' => 'VALIDO',
                         'codigocontrol' => '0.00',
                         'tipo' => '2',
-                        'ciudad' => $request->ciudadregistro,
+                        'ciudad' => $sucursalcliente,
                         'usuarioregistroid' => $usuarioId,
                         'usuarioregistronombre' => $usuarioNombre,
                         'created_at' => now(),
@@ -1797,13 +1801,15 @@ class MovimientosCajaController extends Controller
 
             $registroCierreCaja = true;
 
+            // ✅ Si existe un registro en cajacentral, debemos validar su cierre
             if ($ultimoRegistro) {
                 $fechaUltimoRegistro = Carbon::parse($ultimoRegistro->created_at)->toDateString();
 
+                // Si la fecha del último registro NO es hoy, exigimos cierre para esa fecha
                 if ($fechaUltimoRegistro !== $hoy->toDateString()) {
                     $registroCierreCaja = DB::table('cierrecaja')
                         ->where('usuariocierreid', $idUsuario)
-                        ->whereDate('created_at', $fechaUltimoRegistro)
+                        ->whereDate('fechacierre', $fechaUltimoRegistro)
                         ->exists();
                 }
             }
@@ -1813,8 +1819,6 @@ class MovimientosCajaController extends Controller
                 ->where('permisoSolicitado', 'admin.ingreso.index')
                 ->where('estado', 'expirado')
                 ->exists();
-
-            /*  $mostrarVista = $registroCierreCaja || $codigoAprobacion; */
 
             $tuvoEfectivoAyer = DB::table('cajacentral')
                 ->where('usuarioregistroid', $idUsuario)
@@ -1837,8 +1841,8 @@ class MovimientosCajaController extends Controller
             $mostrarVista = ($registroCierreCaja && !$restriccionDeposito) || $codigoAprobacion;
 
             $motivoBloqueo = null;
-            if (!$registroCierreCaja) {
-                $motivoBloqueo = 'NO CERRASTE TU CAJA EL DIA DE AYER';
+            if ($ultimoRegistro && !$registroCierreCaja) {
+                $motivoBloqueo = 'NO CERRASTE TU CAJA DEL DÍA ' . Carbon::parse($ultimoRegistro->created_at)->format('d/m/Y');
             } elseif ($restriccionDeposito) {
                 $motivoBloqueo = 'NO REGISTRASTE EL DEPÓSITO DEL EFECTIVO DE AYER ANTES DE LAS 10:00 AM.';
             }
@@ -2407,6 +2411,60 @@ class MovimientosCajaController extends Controller
         $mostrarVista = ($registroCierreCaja && !$restriccionDeposito) || $codigoAprobacion;
         //
 
+        /* NUEVO 011225 */
+        $registrosarqueocaja = DB::table('arqueocaja')
+            ->where('usuarioarqueoid', auth()->user()->id)
+            ->get();
+
+        foreach ($registrosarqueocaja as $registro) {
+            $fechaArqueo = now()->format('Y-m-d');
+
+            $consolidado = DB::table('consolidadoscaja')
+                ->where('usuarioconsolidadoid', $registro->usuarioarqueoid)
+                ->first();
+            $totalMonto = $consolidado ? $consolidado->consolidadoefectivo : 0;
+
+            $hayDinero = (
+                $registro->billetecorte200 != 0 ||
+                $registro->billetecorte100 != 0 ||
+                $registro->billetecorte50 != 0 ||
+                $registro->billetecorte20 != 0 ||
+                $registro->billetecorte10 != 0 ||
+                $registro->monedacorte5 != 0 ||
+                $registro->monedacorte2 != 0 ||
+                $registro->monedacorte1 != 0 ||
+                $registro->monedacorte050 != 0 ||
+                $registro->monedacorte020 != 0 ||
+                $registro->monedacorte010 != 0
+            ) && $totalMonto != 0.00;
+
+            if ($hayDinero) {
+                DB::table('historialarqueocaja')->updateOrInsert(
+                    [
+                        'usuarioarqueoid' => $registro->usuarioarqueoid,
+                        'fechaarqueo' => $fechaArqueo,
+                    ],
+                    [
+                        'usuarioarqueonombre' => $registro->usuarioarqueonombre,
+                        'billetecorte200' => $registro->billetecorte200,
+                        'billetecorte100' => $registro->billetecorte100,
+                        'billetecorte50' => $registro->billetecorte50,
+                        'billetecorte20' => $registro->billetecorte20,
+                        'billetecorte10' => $registro->billetecorte10,
+                        'monedacorte5' => $registro->monedacorte5,
+                        'monedacorte2' => $registro->monedacorte2,
+                        'monedacorte1' => $registro->monedacorte1,
+                        'monedacorte050' => $registro->monedacorte050,
+                        'monedacorte020' => $registro->monedacorte020,
+                        'monedacorte010' => $registro->monedacorte010,
+                        'totalmonto' => $totalMonto,
+                        'updated_at' => now(),
+                        'created_at' => now(),
+                    ]
+                );
+            }
+        }
+
         return view('admin.caja.ingreso.cierre', [
             'registros' => $registros,
             'registrosegreso' => $registrosegreso,
@@ -2440,7 +2498,7 @@ class MovimientosCajaController extends Controller
             ->where('preciocompra', '!=', 0.00)  */
             ->where('servicio', '<>', 'AJENO') 
             /* ->where('pagoservicio', '=', 'INTERNO') */
-            ->orderBy('clienteitanombre');
+        ->orderBy('clienteitanombre');
         
         $query2 = Bateriasubcliente::with(['estadoprogramacionsubclienteauditoria', 'documentacionsubclienteauditoria', 'programacionsubclienteauditoria','informesfinalesauditoria','pagoservicio','pagoservicioinformefinal'])
             ->whereNotNull('clienteauditoriaid')
@@ -2451,7 +2509,7 @@ class MovimientosCajaController extends Controller
             ->where('servicio', '<>', 'AJENO') 
             /* ->where('servicio', '<>', 'EXTERNO') */
             /* ->where('pagoservicio', '=', 'INTERNO') */
-            ->orderBy('clienteauditorianombre');
+        ->orderBy('clienteauditorianombre');
 
         $query3 = Bateriasubcliente::with(['estadoprogramacionsubclientecomun', 'documentacionsubclientecomun', 'programacionsubclientecomun','informesfinalescomun'])
             ->whereNotNull('clientecomunnombre')
@@ -2462,7 +2520,7 @@ class MovimientosCajaController extends Controller
             ->where('servicio', '<>', 'AJENO') 
             /* ->where('servicio', '<>', 'EXTERNO') */
             /* ->where('pagoservicio', '=', 'INTERNO') */
-            ->orderBy('clientecomunnombre');
+        ->orderBy('clientecomunnombre');
 
         if ($request->has('buscarporcliente') && $request->buscarporcliente !== '') {
             $query->whereHas('clienteita', function ($q) use ($request) {
@@ -2606,7 +2664,6 @@ class MovimientosCajaController extends Controller
             ];
         }
 
-        
         $bateriaclientesauditoria = $query2->get();
         $grouped2 = $bateriaclientesauditoria->groupBy(function($item) {
             return $item->clienteauditorianombre . '|' . $item->fechabateria;
@@ -2725,7 +2782,6 @@ class MovimientosCajaController extends Controller
                 'pagoservicioinforme' => $pagoservicioinforme,
             ];
         }
-
         
         $bateriaclientescomun = $query3->get();
         $grouped3 = $bateriaclientescomun->groupBy(function($item) {
@@ -3061,7 +3117,7 @@ class MovimientosCajaController extends Controller
         /* PAGOS PENDIENTES INTERNOS */
         $pagosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clienteitaid')
-            ->where('servicio', 'INTERNO')
+            ->where('pagoservicio', 'INTERNO')
             ->where(function ($query) {
                 $query->where(function ($query) {
                     $query->whereNull('pagoatencion')
@@ -3095,7 +3151,7 @@ class MovimientosCajaController extends Controller
 
         $pagosprogramacionescomun = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clientecomunid')
-            ->where('servicio', 'INTERNO')
+            ->where('pagoservicio', 'INTERNO')
             ->where(function ($query) {
                 $query->where(function ($query) {
                     $query->whereNull('pagoatencion')
@@ -3125,7 +3181,7 @@ class MovimientosCajaController extends Controller
 
         $pagosprogramacionesauditoria = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clienteauditoriaid')
-            ->where('servicio', 'INTERNO')
+            ->where('pagoservicio', 'INTERNO')
             ->where(function ($query) {
                 $query->where(function ($query) {
                     $query->whereNull('pagoatencion')
@@ -3157,7 +3213,7 @@ class MovimientosCajaController extends Controller
         /* PAGOS PENDIENTES EXTERNOS */
         $pagosexternosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clienteitaid')
-            ->where('servicio', 'EXTERNO')
+            ->where('pagoservicio', 'EXTERNO')
             ->where(function ($query) {
                 $query->where(function ($query) {
                     $query->whereNull('pagoatencion')
@@ -3187,7 +3243,7 @@ class MovimientosCajaController extends Controller
 
         $pagosexternosprogramacionescomun = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clientecomunid')
-            ->where('servicio', 'EXTERNO')
+            ->where('pagoservicio', 'EXTERNO')
             ->where(function ($query) {
                 $query->where(function ($query) {
                     $query->whereNull('pagoatencion')
@@ -3217,7 +3273,7 @@ class MovimientosCajaController extends Controller
 
         $pagosexternosprogramacionesauditoria = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clienteauditoriaid')
-            ->where('servicio', 'EXTERNO')
+            ->where('pagoservicio', 'EXTERNO')
             ->where(function ($query) {
                 $query->where(function ($query) {
                     $query->whereNull('pagoatencion')
@@ -3817,7 +3873,7 @@ class MovimientosCajaController extends Controller
     {
         $nombreproducto = $request->get('buscarpor');
         $sucursal = auth()->user()->sucursal;
-
+        $cuentas = CuentasBancos::where('estado', 'ACTIVO')->get();
         $proveedores = ProveedoresServicios::select('id', 'razonsocial', 'tipotransaccion', 'ciudad', 'ciudad2', 'categoria', 'bancoorigen')->orderBy('razonsocial')->get();
         $clientesIta = Cliente::select('id', 'nombrecompleto', 'sucursal')->orderBy('nombrecompleto')->get();
         $clientesAuditoria = ClienteAuditoria::select('id', 'nombrecompleto', 'sucursal')->orderBy('nombrecompleto')->get();
@@ -3825,7 +3881,7 @@ class MovimientosCajaController extends Controller
 
         $detallescxc = CCyCPdetalles::where('tipocuenta', 'CUENTA POR COBRAR')->select('id', 'detalle', 'precio')->get();
 
-        return view('admin.caja.cuentascobrar.nuevacuentacobrar', compact('clientesIta', 'clientesAuditoria', 'clientesComunes','proveedores', 'sucursal', 'detallescxc'));
+        return view('admin.caja.cuentascobrar.nuevacuentacobrar', compact('cuentas','clientesIta', 'clientesAuditoria', 'clientesComunes','proveedores', 'sucursal', 'detallescxc'));
     }
     public function guardarcuentacobrar(Request $request)
     {
@@ -4315,7 +4371,7 @@ class MovimientosCajaController extends Controller
             $horaLimite = Carbon::today()->setTime(10, 00);
             $ahora = Carbon::now();
 
-            $mostrarVista = true;
+            /* $mostrarVista = true;
 
             $ultimoRegistro = DB::table('cajacentral')
                 ->where('usuarioregistroid', $idUsuario)
@@ -4341,7 +4397,6 @@ class MovimientosCajaController extends Controller
                 ->where('estado', 'expirado')
                 ->exists();
 
-            /*  $mostrarVista = $registroCierreCaja || $codigoAprobacion; */
 
             $tuvoEfectivoAyer = DB::table('cajacentral')
                 ->where('usuarioregistroid', $idUsuario)
@@ -4366,6 +4421,60 @@ class MovimientosCajaController extends Controller
             $motivoBloqueo = null;
             if (!$registroCierreCaja) {
                 $motivoBloqueo = 'NO CERRASTE TU CAJA EL DIA DE AYER';
+            } elseif ($restriccionDeposito) {
+                $motivoBloqueo = 'NO REGISTRASTE EL DEPÓSITO DEL EFECTIVO DE AYER ANTES DE LAS 10:00 AM.';
+            } */
+            $mostrarVista = true;
+
+            $ultimoRegistro = DB::table('cajacentral')
+                ->where('usuarioregistroid', $idUsuario)
+                ->orderBy('created_at', 'desc')
+                ->first();
+
+            $registroCierreCaja = true;
+
+            // ✅ Si existe un registro en cajacentral, debemos validar su cierre
+            if ($ultimoRegistro) {
+                $fechaUltimoRegistro = Carbon::parse($ultimoRegistro->created_at)->toDateString();
+
+                // Si la fecha del último registro NO es hoy, exigimos cierre para esa fecha
+                if ($fechaUltimoRegistro !== $hoy->toDateString()) {
+                    $registroCierreCaja = DB::table('cierrecaja')
+                        ->where('usuariocierreid', $idUsuario)
+                        ->whereDate('fechacierre', $fechaUltimoRegistro)
+                        ->exists();
+                }
+            }
+
+            $codigoAprobacion = PermisoCodigo::where('usuarioSolicitante', $usuarioAutenticado)
+                ->whereDate('fechaSolicitada', $hoy->toDateString())
+                ->where('permisoSolicitado', 'admin.ingreso.index')
+                ->where('estado', 'expirado')
+                ->exists();
+
+            $tuvoEfectivoAyer = DB::table('cajacentral')
+                ->where('usuarioregistroid', $idUsuario)
+                ->whereDate('created_at', $ayer->toDateString())
+                ->where('tipotransaccion', 'EFECTIVO')
+                ->exists();
+
+            $registroDepositoHoyAntesDe10am = true;
+
+            if ($ahora->greaterThan($horaLimite)) {
+                $registroDepositoHoyAntesDe10am = DB::table('depositosbancarios')
+                    ->where('usuarioregistroid', $idUsuario)
+                    ->whereDate('created_at', $hoy->toDateString())
+                    ->whereTime('created_at', '<=', $horaLimite->toTimeString())
+                    ->exists();
+            }
+
+            $restriccionDeposito = $tuvoEfectivoAyer && !$registroDepositoHoyAntesDe10am;
+
+            $mostrarVista = ($registroCierreCaja && !$restriccionDeposito) || $codigoAprobacion;
+
+            $motivoBloqueo = null;
+            if ($ultimoRegistro && !$registroCierreCaja) {
+                $motivoBloqueo = 'NO CERRASTE TU CAJA DEL DÍA ' . Carbon::parse($ultimoRegistro->created_at)->format('d/m/Y');
             } elseif ($restriccionDeposito) {
                 $motivoBloqueo = 'NO REGISTRASTE EL DEPÓSITO DEL EFECTIVO DE AYER ANTES DE LAS 10:00 AM.';
             }
@@ -6218,6 +6327,474 @@ class MovimientosCajaController extends Controller
     }
     public function listacuentaspagar(Proveedor $proveedor, Request $request)
     {
+        $usuarioAutenticado = auth()->user()->name;
+        $esProveedor = $usuarioAutenticado->role ?? null;
+
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        
+        $query = Bateriasubcliente::with(['estadoprogramacionsubcliente', 'documentacionsubcliente', 'programacionsubcliente','informesfinales','pagoservicio','pagoservicioinformefinal','provinfofinal',
+            'estadoprogramacionsubclienteauditoria', 'documentacionsubclienteauditoria', 'programacionsubclienteauditoria','informesfinalesauditoria','provinfofinalauditoria',
+            'estadoprogramacionsubclientecomun', 'documentacionsubclientecomun', 'programacionsubclientecomun','informesfinalescomun','provinfofinalcomun','tramitesubclienteita','tramitesubclienteauditoria','tramitesubclientecomun'])
+            ->whereNotNull('proveedorasignado')
+            ->where('preciocompra', '!=', NULL)
+            ->where('preciocompra', '!=', 0)
+            ->where('preciocompra', '!=', 0.00)
+            ->where('pagoservicio','<>', 'EXTERNO')
+            ->where('proveedorasignado', '<>', 'DIAGNOSTICO MEDICO POR IMAGEN DMI') 
+            ->where('proveedorasignado', '<>', 'PROVEEDOR AJENO') 
+        ->orderBy('proveedorasignado');
+
+        if ($request->has('buscarporcliente') && $request->buscarporcliente !== '') {
+            $query->whereHas('proveedorasignado', function ($q) use ($request) {
+                $q->where('proveedorasignado', 'LIKE', '%' . $request->buscarporcliente . '%');
+            });
+        }
+
+        $bateriaproveedores = $query->get();
+        $grouped = $bateriaproveedores->groupBy(function($item) {
+            return $item->proveedorasignado;
+        });
+
+        $result = [];
+        foreach ($grouped as $key => $items) {
+            $clienteNombre = explode('|', $key)[0];
+            $estado = 'COMPLETO';
+            $accionesConEstado = [];
+
+            foreach ($items as $item) {
+
+                    $estadoProgramacion = collect([
+                            $item->estadoprogramacionsubcliente, 
+                            $item->estadoprogramacionsubclienteauditoria, 
+                            $item->estadoprogramacionsubclientecomun
+                        ])->filter();
+                        
+                        $resultadoestado = $estadoProgramacion
+                            ->flatMap(function ($estadoprogramacion) { 
+                                return $estadoprogramacion;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                            ->where('accionnombre', $item->accionnombre)
+                    ->first();  
+
+                    $programaciones = collect([
+                            $item->programacionsubcliente, 
+                            $item->programacionsubclienteauditoria, 
+                            $item->programacionsubclientecomun
+                        ])->filter();
+                    
+                        $resultadoprog = $programaciones
+                            ->flatMap(function ($programacion) { 
+                                return $programacion;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                            ->where('accionnombre', $item->accionnombre)
+                    ->first();                    
+
+                    $informesubido = collect([
+                            $item->documentacionsubcliente, 
+                            $item->documentacionsubclienteauditoria, 
+                            $item->documentacionsubclientecomun
+                        ])->filter();
+                        
+                        $resultadoinforme = $informesubido
+                            ->flatMap(function ($informe) { 
+                                return $informe;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                            ->where('accion', $item->accionnombre)
+                    ->first();           
+
+                    $informefinalsubido = collect([
+                            $item->informesfinales, 
+                            $item->informesfinalesauditoria, 
+                            $item->informesfinalescomun
+                        ])->filter();
+                        
+                        $resultadoinformefinal = $informefinalsubido
+                            ->flatMap(function ($informefinal) { 
+                                return $informefinal;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                    ->first();  
+
+                    $provinformes = collect([
+                            $item->provinfofinal, 
+                            $item->provinfofinalauditoria, 
+                            $item->provinfofinalcomun
+                        ])->filter();
+                        
+                        $resultadoprovinformes = $provinformes
+                            ->flatMap(function ($provinfo) { 
+                                return $provinfo;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                    ->first(); 
+                    
+                    $provinformes2 = collect([
+                            $item->provinfofinal, 
+                            $item->provinfofinalauditoria, 
+                            $item->provinfofinalcomun
+                        ])->filter();
+                        
+                        $resultadoprovinformes2 = $provinformes2
+                            ->flatMap(function ($provinfo) { 
+                                return $provinfo;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                            ->where('id', $item->provinfofinalid)
+                    ->first();
+
+                    $tramitesubcliente = collect([
+                            $item->tramitesubclienteita, 
+                            $item->tramitesubclienteauditoria, 
+                            $item->tramitesubclientecomun
+                        ])->filter();
+                        
+                        $resultadotramitesubcliente = $tramitesubcliente
+                            ->flatMap(function ($provinfo) { 
+                                return $provinfo;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                    ->first();
+
+                    $resultadopagoinformefinal = $item->pagoservicioinformefinal()
+                        ->where('provinfofinalid', $item->provinfofinalid)
+                        ->where('tipomovimiento', 'EGRESO')
+                    ->first();
+
+                    $pagobateria = collect([
+                        $item->programacionsubcliente,
+                        $item->programacionsubclienteauditoria,
+                        $item->programacionsubclientecomun
+                    ])->filter();
+                    
+                    $resultadopago = $pagobateria
+                        ->flatMap(fn($pago) => $pago)
+                        ->where('fechabateria', $item->fechabateria)
+                        ->where('accionnombre', $item->accionnombre)
+                    ->first();
+
+                    $preciocompra = $item->preciocompra;
+                    $pagoservicioinforme = null;
+
+                    if ($resultadopago) {
+                        $programacionId = $resultadopago->id;
+
+                        $detallerecibo = Detallerecibo::where('programacionid', $programacionId)
+                            ->where('tipomovimiento', 'EGRESO')
+                            ->orderByDesc('id')
+                            ->first();
+
+                        if ($detallerecibo) {
+                            if ($detallerecibo->estado === 'PAGO PROCESADO') {
+                                $pagoservicioinforme = $detallerecibo->created_at->toDateString();
+                            } elseif ($detallerecibo->estado === 'SALDO PENDIENTE') {
+                                $pagoservicioinforme = 'SALDO PENDIENTE';
+                                $preciocompra = $detallerecibo->saldo ?? $item->preciocompra;
+                            }
+                        } else {
+                            $pagoservicioinforme = $resultadopago->pagoatencion === 'PAGO PROCESADO' ? 'PROCESADO' : 'PENDIENTE';
+                        }
+                    } else {
+                        $pagoservicioinforme = 'PENDIENTE';
+                    }
+
+                $fechaAtencion = $resultadoestado ? $resultadoestado->fechaatencionprogramacion : null;
+                $fechaprogramacion = $resultadoprog ? $resultadoprog->fechaasignada : null;
+                $idprogramacion = $resultadoprog ? $resultadoprog->id : null;
+                $nrofacturaprog = $resultadoprog ? $resultadoprog->nrofactura : null;
+                $documentofactura = $resultadoprog ? $resultadoprog->factura : null;
+                $codautorizacion = $resultadoprog ? $resultadoprog->codautorizacion : null;
+                $informedocumentacion = $resultadoinforme ? $resultadoinforme->created_at->toDateString() : null;
+                $informedocumentacionfinal = $resultadoinformefinal ? $resultadoinformefinal->created_at->toDateString() : null;
+                $pagoservicioinformefinal = in_array($item->id, [3173, 3178, 3187, 3043]) 
+                ? 'PROCESADO' 
+                : ($resultadopagoinformefinal ? $resultadopagoinformefinal->created_at->toDateString() : null);
+                $nrofacturainformefinal = $resultadoprovinformes2 ? $resultadoprovinformes2->nrofactura : null;
+                $codautorizacioninfofinal = $resultadoprovinformes2 ? $resultadoprovinformes2->codautorizacion : null;
+                $facturainformefinal = $resultadoprovinformes2 ? $resultadoprovinformes2->factura : null;
+                $tramiteinformefinal = $resultadoprovinformes2 ? $resultadoprovinformes2->servicio : null;
+                $tramitecliente = $resultadotramitesubcliente ? $resultadotramitesubcliente->tramite : null;
+
+                $accionesConEstado[] = [
+                    'id' => $item->id,
+                    'accion' => $item->accionnombre,
+                    'servicio' => $item->servicio,
+                    'precio' => $item->precio,
+                    'pagoservicio' => $item->pagoservicio,
+                    'preciocompra' => $preciocompra,
+                    'clienteitaid' => $item->clienteitaid,
+                    'clienteitanombre' => $item->clienteitanombre,
+                    'clienteauditoriaid' => $item->clienteauditoriaid,
+                    'clienteauditorianombre' => $item->clienteauditorianombre,
+                    'clientecomunid' => $item->clientecomunid,
+                    'clientecomunnombre' => $item->clientecomunnombre,
+                    'fechaasignada' => $item->fechaasignada,
+                    'created_at' => $item->created_at,
+                    'fechaatencionprogramacion' => $fechaAtencion,
+                    'fechaprogramacion' => $fechaprogramacion,
+                    'informedocumentacion' => $informedocumentacion,
+                    'informedocumentacionfinal' => $informedocumentacionfinal,
+                    'pagoservicioinforme' => $pagoservicioinforme,
+                    'pagoservicioinformefinal' => $pagoservicioinformefinal,
+                    'idprogramacion' => $idprogramacion,
+                    'fechabateria' => $item->fechabateria,
+                    'provinfofinalid' => $item->provinfofinalid,
+                    'nrofacturaprog' => $nrofacturaprog,
+                    'documentofactura' => $documentofactura,
+                    'codautorizacion' => $codautorizacion,
+                    'nrofacturainformefinal' => $nrofacturainformefinal,
+                    'codautorizacioninfofinal' => $codautorizacioninfofinal,
+                    'facturainformefinal' => $facturainformefinal,
+                    'tramiteinformefinal' => $tramiteinformefinal,
+                    'tramitecliente' => $tramitecliente,
+                    'prioridad' => $item->prioridad,
+                    'estadoaprobacion' => $item->estadoaprobacion,
+                ];
+            }
+            $result[] = [
+                'proveedorasignado' => $item->proveedorasignado,
+                'estado' => $estado,
+                'acciones' => $accionesConEstado,
+                'fechabateria' => $item->fechabateria,
+            ];
+        }
+
+        $year = $request->year ?? date('Y');
+        $month = $request->month ?? date('m');
+        $user = auth()->user()->name;
+
+        $records = DB::table('bateriasubclientes')
+            ->selectRaw("
+                COALESCE(fechacredito, fechabateria) as fechabateria,  
+                SUM(CASE 
+                    WHEN precio IS NULL THEN 0
+                    ELSE precio 
+                END) as total_ingresos,
+                SUM(CASE 
+                    WHEN preciocompra IS NULL THEN 0
+                    ELSE preciocompra 
+                END) as total_egresos
+            ")
+            ->where('preciocompra', '!=', 0)
+            ->where('preciocompra', '!=', 0.00)
+            ->whereNotNull('preciocompra')
+            ->whereYear(DB::raw('COALESCE(fechacredito, fechabateria)'), $year)
+            ->whereMonth(DB::raw('COALESCE(fechacredito, fechabateria)'), $month)
+            ->whereNull('deleted_at')
+            ->groupBy(DB::raw('COALESCE(fechacredito, fechabateria)'))
+        ->get();
+
+        if ($request->ajax()) {
+            return response()->json($records);
+        }
+
+        $cuentaspagar = CuentasPagar::with('proveedorServicio')->get();
+
+        $registrosbateria = Bateriasubcliente::where('prioridad', 'CUENTA POR PAGAR')
+            ->leftJoin('proveedorinformesfinales', 'bateriasubclientes.provinfofinalid', '=', 'proveedorinformesfinales.id')
+            ->leftJoin('informesfinales', function ($join) {
+                $join->on(function ($q) {
+                    $q->whereColumn('bateriasubclientes.clienteitaid', 'informesfinales.clienteitaid')
+                    ->orWhereColumn('bateriasubclientes.clienteauditoriaid', 'informesfinales.clienteauditoriaid')
+                    ->orWhereColumn('bateriasubclientes.clientecomunid', 'informesfinales.clientecomunid');
+                })
+                ->whereColumn('bateriasubclientes.fechabateria', 'informesfinales.fechabateria')
+                ->whereColumn('proveedorinformesfinales.servicio', 'informesfinales.servicio')
+                ->whereNull('informesfinales.motivoanulacion');
+            })
+            ->select('bateriasubclientes.*', 'informesfinales.created_at as informe_created_at')
+            ->distinct()
+            ->with([
+                'programacion' => function ($query) {
+                    $query->select('id', 'bateriaid', 'fechaasignada', 'nrofactura', 'factura');
+                },
+                'programacion.documentacion' => function ($query) {
+                    $query->select('id', 'programacionid', 'created_at');
+                },
+                'proveedorinformefinal' => function ($query) {
+                    $query->select('id', 'nrofactura', 'factura');
+                },
+                'clienteita2:id,sucursal',
+                'clienteauditoria2:id,sucursal',
+                'clientecomun2:id,sucursal',
+            ])
+        ->get();
+        
+        foreach ($registrosbateria as $registro) {
+            $programacion = \App\Models\Programacionsubcliente::where('bateriaid', $registro->id)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($programacion) {
+                $detallerecibo = \App\Models\Detallerecibo::where('programacionid', $programacion->id)
+                    ->where('tipomovimiento', 'EGRESO')
+                    ->where('estado', 'SALDO PENDIENTE')
+                    ->orderByDesc('created_at')
+                    ->first();
+
+                if ($detallerecibo && $detallerecibo->saldo > 0) {
+                    $registro->preciocompra = $detallerecibo->saldo;
+                }
+            }
+        }
+
+        $proveedoresServicios = Proveedor::pluck('tipoplanilla', 'proveedor');
+        $proveedoresServicioscuenta = Proveedor::pluck('cuenta', 'proveedor');
+        $documentosPorFecha = PlanillasPagosGeneradas::select('tipo', 'documento', 'fechapago', 'proveedor')
+            ->get()
+        ->groupBy('fechapago');
+
+        $cuentasbancos = CuentasBancos::where('estado', 'ACTIVO')->get();
+
+
+        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 3000189269 */
+        $totalCuenta1Ingreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '3000189269')
+                    ->orWhere('nrocuentadestinodeposito', '3000189269')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('nrobancodestinoefectivo', '3000189269')
+                                ->whereNotNull('nrobancarizacionefectivo');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'ATC')
+                                ->where('nrocuentadestinoatc', '3000189269')
+                                ->whereNotNull('nrobancarizacionatc');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'CHEQUE')
+                                ->where('nrocuentadestinocheque', '3000189269')
+                                ->whereNotNull('nrobancarizacioncheque');
+                    });
+            })
+            ->where('tipomovimiento', 'INGRESO')
+            ->where('estado', '!=', 'ANULADO')
+            ->sum(DB::raw("CASE 
+                            WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
+                            THEN montototal - descuentoATC 
+                            WHEN tipotransaccion = 'EFECTIVO' 
+                            THEN montototal + diferenciafavor
+                            ELSE montototal 
+        END"));
+
+        $totalCuenta1Egreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '3000189269')
+                ->orWhere(function ($subquery) {
+                    $subquery->where('tipotransaccion', 'CHEQUE')
+                                ->where('nrocuentadestinocheque', '3000189269')
+                                ->whereNotNull('nrobancarizacioncheque');
+                });
+            })
+            ->where('tipomovimiento', 'EGRESO')
+            ->where('estado', '!=', 'ANULADO')
+        ->sum('montototal');
+
+        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 2505314878 */
+        $totalCuenta2Ingreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '2505314878')
+                    ->orWhere('nrocuentadestinodeposito', '2505314878')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('nrobancodestinoefectivo', '2505314878')
+                                ->whereNotNull('nrobancarizacionefectivo');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'ATC')
+                                ->where('nrocuentadestinoatc', '2505314878')
+                                ->whereNotNull('nrobancarizacionatc');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'CHEQUE')
+                                ->where('nrocuentadestinocheque', '2505314878')
+                                ->whereNotNull('nrobancarizacioncheque');
+                    });
+                })
+                ->where('tipomovimiento', 'INGRESO')
+                ->where('estado', '!=', 'ANULADO')
+                ->sum(DB::raw("CASE 
+                    WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
+                    THEN montototal - descuentoATC 
+                    WHEN tipotransaccion = 'EFECTIVO' 
+                    THEN montototal + diferenciafavor
+                    ELSE montototal 
+        END"));
+        
+        $totalCuenta2Egreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '2505314878')
+                ->orWhere(function ($subquery) {
+                    $subquery->where('tipotransaccion', 'CHEQUE')
+                            ->where('nrocuentadestinocheque', '2505314878')
+                            ->whereNotNull('nrobancarizacioncheque');
+                });
+            })
+            ->where('tipomovimiento', 'EGRESO')
+            ->where('estado', '!=', 'ANULADO')
+        ->sum('montototal');
+
+        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 1031266712 */
+        $totalCuenta4Ingreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '1031266712')
+                    ->orWhere('nrocuentadestinodeposito', '1031266712')
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('nrobancodestinoefectivo', '1031266712')
+                                ->whereNotNull('nrobancarizacionefectivo');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'ATC')
+                                ->where('nrocuentadestinoatc', '1031266712')
+                                ->whereNotNull('nrobancarizacionatc');
+                    })
+                    ->orWhere(function ($subquery) {
+                        $subquery->where('tipotransaccion', 'CHEQUE')
+                                ->where('nrocuentadestinocheque', '1031266712')
+                                ->whereNotNull('nrobancarizacioncheque');
+                    });
+            })
+            ->where('tipomovimiento', 'INGRESO')
+            ->where('estado', '!=', 'ANULADO')
+            ->sum(DB::raw("CASE 
+                            WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
+                            THEN montototal - descuentoATC 
+                            WHEN tipotransaccion = 'EFECTIVO' 
+                            THEN montototal + diferenciafavor
+                            ELSE montototal 
+        END"));
+
+        $totalCuenta4Egreso = DB::table('cajacentral')
+            ->where(function ($query) {
+                $query->where('nrocuentadestinotransferencia', '1031266712')
+                ->orWhere(function ($subquery) {
+                    $subquery->where('tipotransaccion', 'CHEQUE')
+                                ->where('nrocuentadestinocheque', '1031266712')
+                                ->whereNotNull('nrobancarizacioncheque');
+                });
+            })
+            ->where('tipomovimiento', 'EGRESO')
+            ->where('estado', '!=', 'ANULADO')
+        ->sum('montototal');
+
+        $saldoanteriorcuenta1 = '-174910.55';
+        $saldoanteriorcuenta2 = '34508.22';
+        $saldoanteriorcuenta4 = '0.00';
+
+        $cuentasConSaldo = [
+            '3000189269' => $saldoanteriorcuenta1 + $totalCuenta1Ingreso - $totalCuenta1Egreso,
+            '2505314878' => $saldoanteriorcuenta2 + $totalCuenta2Ingreso - $totalCuenta2Egreso,
+            '1031266712' => $saldoanteriorcuenta4 + $totalCuenta4Ingreso - $totalCuenta4Egreso,
+        ];
+
+        return view('admin.caja.cuentaspagar.listacuentaspagar', compact('registrosbateria','cuentaspagar','year','month',
+        'records','usuarioAutenticado','result','proveedor','totalCuenta1Ingreso','totalCuenta1Egreso','totalCuenta2Ingreso',
+        'totalCuenta2Egreso','saldoanteriorcuenta1','saldoanteriorcuenta2','documentosPorFecha','cuentasbancos',
+        'proveedoresServicios','proveedoresServicioscuenta','saldoanteriorcuenta4','totalCuenta4Ingreso','totalCuenta4Egreso'));
+    }
+    public function listacuentaspagarenmora(Proveedor $proveedor, Request $request)
+    {
         $fechas = Bateriasubcliente::pluck('fechabateria')->unique()->sort()->toArray();
 
         $usuarioAutenticado = auth()->user()->name;
@@ -6536,146 +7113,16 @@ class MovimientosCajaController extends Controller
         $proveedoresServicios = Proveedor::pluck('tipoplanilla', 'proveedor');
         $proveedoresServicioscuenta = Proveedor::pluck('cuenta', 'proveedor');
 
-        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 3000189269 */
-        $totalCuenta1Ingreso = DB::table('cajacentral')
-            ->where(function ($query) {
-                $query->where('nrocuentadestinotransferencia', '3000189269')
-                    ->orWhere('nrocuentadestinodeposito', '3000189269')
-                    ->orWhere(function ($subquery) {
-                        $subquery->where('nrobancodestinoefectivo', '3000189269')
-                                ->whereNotNull('nrobancarizacionefectivo');
-                    })
-                    ->orWhere(function ($subquery) {
-                        $subquery->where('tipotransaccion', 'ATC')
-                                ->where('nrocuentadestinoatc', '3000189269')
-                                ->whereNotNull('nrobancarizacionatc');
-                    })
-                    ->orWhere(function ($subquery) {
-                        $subquery->where('tipotransaccion', 'CHEQUE')
-                                ->where('nrocuentadestinocheque', '3000189269')
-                                ->whereNotNull('nrobancarizacioncheque');
-                    });
-            })
-            ->where('tipomovimiento', 'INGRESO')
-            ->where('estado', '!=', 'ANULADO')
-            ->sum(DB::raw("CASE 
-                            WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
-                            THEN montototal - descuentoATC 
-                            ELSE montototal 
-        END"));
-
-        $totalCuenta1Egreso = DB::table('cajacentral')
-            ->where(function ($query) {
-                $query->where('nrocuentadestinotransferencia', '3000189269')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('tipotransaccion', 'CHEQUE')
-                                ->where('nrocuentadestinocheque', '3000189269')
-                                ->whereNotNull('nrobancarizacioncheque');
-                });
-            })
-            ->where('tipomovimiento', 'EGRESO')
-            ->where('estado', '!=', 'ANULADO')
-        ->sum('montototal');
-
-        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 2505314878 */
-        $totalCuenta2Ingreso = DB::table('cajacentral')
-            ->where(function ($query) {
-                $query->where('nrocuentadestinotransferencia', '2505314878')
-                    ->orWhere('nrocuentadestinodeposito', '2505314878')
-                    ->orWhere(function ($subquery) {
-                        $subquery->where('nrobancodestinoefectivo', '2505314878')
-                                ->whereNotNull('nrobancarizacionefectivo');
-                    })
-                    ->orWhere(function ($subquery) {
-                        $subquery->where('tipotransaccion', 'ATC')
-                                ->where('nrocuentadestinoatc', '2505314878')
-                                ->whereNotNull('nrobancarizacionatc');
-                    })
-                    ->orWhere(function ($subquery) {
-                        $subquery->where('tipotransaccion', 'CHEQUE')
-                                ->where('nrocuentadestinocheque', '2505314878')
-                                ->whereNotNull('nrobancarizacioncheque');
-                    });
-                })
-                ->where('tipomovimiento', 'INGRESO')
-                ->where('estado', '!=', 'ANULADO')
-                ->sum(DB::raw("CASE 
-                    WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
-                    THEN montototal - descuentoATC 
-                    ELSE montototal 
-        END"));
-        
-        $totalCuenta2Egreso = DB::table('cajacentral')
-            ->where(function ($query) {
-                $query->where('nrocuentadestinotransferencia', '2505314878')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('tipotransaccion', 'CHEQUE')
-                            ->where('nrocuentadestinocheque', '2505314878')
-                            ->whereNotNull('nrobancarizacioncheque');
-                });
-            })
-            ->where('tipomovimiento', 'EGRESO')
-            ->where('estado', '!=', 'ANULADO')
-        ->sum('montototal');
-
-        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 4011113557 */
-        $totalCuenta3Ingreso = DB::table('cajacentral')
-            ->where(function ($query) {
-                $query->where('nrocuentadestinotransferencia', '4011113557')
-                    ->orWhere('nrocuentadestinodeposito', '4011113557')
-                    ->orWhere(function ($subquery) {
-                        $subquery->where('nrobancodestinoefectivo', '4011113557')
-                                ->whereNotNull('nrobancarizacionefectivo');
-                    })
-                    ->orWhere(function ($subquery) {
-                        $subquery->where('tipotransaccion', 'ATC')
-                                ->where('nrocuentadestinoatc', '4011113557')
-                                ->whereNotNull('nrobancarizacionatc');
-                    })
-                    ->orWhere(function ($subquery) {
-                        $subquery->where('tipotransaccion', 'CHEQUE')
-                                ->where('nrocuentadestinocheque', '4011113557')
-                                ->whereNotNull('nrobancarizacioncheque');
-                    });
-            })
-            ->where('tipomovimiento', 'INGRESO')
-            ->where('estado', '!=', 'ANULADO')
-            ->sum(DB::raw("CASE 
-                            WHEN tipotransaccion = 'ATC' AND nrobancarizacionatc IS NOT NULL 
-                            THEN montototal - descuentoATC 
-                            ELSE montototal 
-        END"));
-
-        $totalCuenta3Egreso = DB::table('cajacentral')
-            ->where(function ($query) {
-                $query->where('nrocuentadestinotransferencia', '4011113557')
-                ->orWhere(function ($subquery) {
-                    $subquery->where('tipotransaccion', 'CHEQUE')
-                                ->where('nrocuentadestinocheque', '4011113557')
-                                ->whereNotNull('nrobancarizacioncheque');
-                });
-            })
-            ->where('tipomovimiento', 'EGRESO')
-            ->where('estado', '!=', 'ANULADO')
-        ->sum('montototal');
-
-        $saldoanteriorcuenta1 = '-174910.55';
-        $saldoanteriorcuenta2 = '34508.22';
-        $saldoanteriorcuenta3 = '3500.00';
-
-        $cuentasConSaldo = [
-            '3000189269' => $saldoanteriorcuenta1 + $totalCuenta1Ingreso - $totalCuenta1Egreso,
-            '2505314878' => $saldoanteriorcuenta2 + $totalCuenta2Ingreso - $totalCuenta2Egreso,
-            /* '4011113557' => $saldoanteriorcuenta3 + $totalCuenta3Ingreso - $totalCuenta3Egreso, */
-        ];
 
         $documentosPorFecha = PlanillasPagosGeneradas::select('tipo', 'documento', 'fechapago', 'proveedor')
         ->get()
         ->groupBy('fechapago');
 
-        return view('admin.caja.cuentaspagar.listacuentaspagar', compact('registrosbateria','cuentaspagar','year', 'month', 'records', 'usuarioAutenticado','result', 'fechas', 'proveedor'
-                , 'totalCuenta1Ingreso', 'totalCuenta1Egreso', 'totalCuenta2Ingreso', 'totalCuenta2Egreso', 'totalCuenta3Ingreso', 'totalCuenta3Egreso'
-                , 'saldoanteriorcuenta1', 'saldoanteriorcuenta2', 'saldoanteriorcuenta3', 'documentosPorFecha', 'proveedoresServicios','proveedoresServicioscuenta'));
+        $cuentasbancos = CuentasBancos::where('estado', 'ACTIVO')->get();
+
+        return view('admin.caja.cuentaspagar.listacuentaspagarenmora', compact('registrosbateria','cuentaspagar','year',
+        'month','records','usuarioAutenticado','result','fechas','proveedor','documentosPorFecha','cuentasbancos',
+        'proveedoresServicios','proveedoresServicioscuenta'));
     }
     public function actualizarPrioridadProgramacion(Request $request)
     {
@@ -6722,7 +7169,10 @@ class MovimientosCajaController extends Controller
         $accion = $request->input('action_type');
         $nroFactura = $request->input('nroFactura');
         $codautorizacion = $request->input('codautorizacion');
+        $fechapago = $request->input('fechapago');
+        $fechaPagoProv = $request->input('fechaPagoProv');
         $seleccionados = $request->input('seleccionados', []);
+        $nrocuentabanco = $request->input('nrocuentabanco');
 
         if (empty($seleccionados)) {
             return redirect()->back()->with('error', 'No hay registros seleccionados.');
@@ -6740,10 +7190,38 @@ class MovimientosCajaController extends Controller
             // ========= REGISTROS PROGRAMACION (EXCLUYE INFORME FINAL) =========
             $registros = Programacionsubcliente::whereIn('id', $seleccionados)
                 ->whereRaw('UPPER(accionnombre) != "INFORME FINAL"')
-                ->get();
+            ->get();
 
             // ========= REGISTROS INFORME FINAL =========
             $registrosFinales = ProveedorInformefinal::whereIn('id', $seleccionados)->get();
+
+            // ========= OBTENER PROVEEDOR ASIGNADO SEGÚN ORIGEN =========
+            $proveedorAsignado = null;
+
+            if ($registros->isNotEmpty()) {
+                $proveedorAsignado = $registros->first()->proveedornombre;
+            } elseif ($registrosFinales->isNotEmpty()) {
+                $proveedorAsignado = $registrosFinales->first()->proveedorasignado;
+            }
+            $ordenExistente = BateriaSubCliente::where('fechapago', $fechaPagoProv)
+                ->where('proveedorasignado', $proveedorAsignado)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($ordenExistente) {
+                $nuevoOrdenId = $ordenExistente->ordenid;
+            } else {
+                $ultimoOrden = BateriaSubCliente::whereNotNull('ordenid')
+                    ->where('ordenid', 'LIKE', '%M')
+                    ->orderByRaw("CAST(SUBSTRING_INDEX(ordenid, 'M', 1) AS UNSIGNED) DESC")
+                    ->first();
+
+                $nuevoNumero = 1;
+                if ($ultimoOrden && preg_match('/^(\d+)M$/', $ultimoOrden->ordenid, $matches)) {
+                    $nuevoNumero = intval($matches[1]) + 1;
+                }
+                $nuevoOrdenId = $nuevoNumero . 'M';
+            }
 
             // ========= ACTUALIZAR TODOS LOS REGISTROS =========
             foreach ($registros as $registro) {
@@ -6751,6 +7229,35 @@ class MovimientosCajaController extends Controller
                 $registro->codautorizacion = $codautorizacion;
                 $registro->factura = $nombreArchivo;
                 $registro->save();
+
+                $bateria = Bateriasubcliente::find($registro->bateriaid);
+                if ($bateria) {
+                    $proveedor = Proveedor::where('proveedor', $bateria->proveedorasignado)->first();
+                    /* $bateria->fechapago = $fechaPagoProv;
+                    $bateria->prioridad = 'CUENTA POR PAGAR';
+                    if ($bateria->bancoorigen === 'CUENTA FACTURADA') {
+                        $bateria->nrobancoorigen = '3000189269';
+                    } elseif ($bateria->bancoorigen === 'CUENTA NO FACTURADA') {
+                        $bateria->nrobancoorigen = '2505314878';
+                    }
+                    $bateria->ordenid = $nuevoOrdenId;
+                    $bateria->save(); */
+
+                    if ($proveedor) {
+                        $bateria->fechapago = $fechaPagoProv;
+                        $bateria->prioridad = 'CUENTA POR PAGAR';
+
+                        // Ahora depende del proveedor
+                        /* if ($proveedor->bancoorigen === 'CUENTA FACTURADA') {
+                            $bateria->nrobancoorigen = '3000189269';
+                        } elseif ($proveedor->bancoorigen === 'CUENTA NO FACTURADA') {
+                            $bateria->nrobancoorigen = '2505314878';
+                        } */
+                        $bateria->nrobancoorigen = $nrocuentabanco;
+                        $bateria->ordenid = $nuevoOrdenId;
+                        $bateria->save();
+                    }
+                }
             }
 
             foreach ($registrosFinales as $registroFinal) {
@@ -6758,6 +7265,36 @@ class MovimientosCajaController extends Controller
                 $registroFinal->codautorizacion = $codautorizacion;
                 $registroFinal->factura = $nombreArchivo;
                 $registroFinal->save();
+
+                $bateria = Bateriasubcliente::where('provinfofinalid', $registroFinal->id)->first();
+                if ($bateria) {
+                    $proveedor = Proveedor::where('proveedor', $bateria->proveedorasignado)->first();
+                    /* $bateria->fechapago = $fechaPagoProv;
+                    $bateria->prioridad = 'CUENTA POR PAGAR';
+                    if ($bateria->bancoorigen === 'CUENTA FACTURADA') {
+                        $bateria->nrobancoorigen = '3000189269';
+                    } elseif ($bateria->bancoorigen === 'CUENTA NO FACTURADA') {
+                        $bateria->nrobancoorigen = '2505314878';
+                    }
+                    $bateria->ordenid = $nuevoOrdenId;
+                    $bateria->save(); */
+
+                    if ($proveedor) {
+                        $bateria->fechapago = $fechaPagoProv;
+                        $bateria->prioridad = 'CUENTA POR PAGAR';
+
+                        // Ahora depende del proveedor
+                        /* if ($proveedor->bancoorigen === 'CUENTA FACTURADA') {
+                            $bateria->nrobancoorigen = '3000189269';
+                        } elseif ($proveedor->bancoorigen === 'CUENTA NO FACTURADA') {
+                            $bateria->nrobancoorigen = '2505314878';
+                        } */
+
+                        $bateria->nrobancoorigen = $nrocuentabanco;
+                        $bateria->ordenid = $nuevoOrdenId;
+                        $bateria->save();
+                    }
+                }
             }
 
             // ========= REGISTRO FACTURASEGRESO PARA PROGRAMACION =========
@@ -6777,44 +7314,10 @@ class MovimientosCajaController extends Controller
                 $proveedor = Proveedor::where('proveedor', $razonsocial)->first();
                 $nit = ($proveedor && !empty($proveedor->nit) && $proveedor->nit != '0') ? $proveedor->nit : ($proveedor->ci ?? '');
 
-                /* $ciudad = $registros->first()->ciudad ?? 'NO DEFINIDO'; */
                 $ciudad = $proveedor->ciudad ?? 'NO DEFINIDO';
 
                 $usuarioId = Auth::id();
                 $usuarioNombre = Auth::user()->name;
-
-                /* DB::table('facturasegreso')->insert([
-                    'especificacion' => '1',
-                    'nitci' => $nit,
-                    'razonsocial' => $razonsocial,
-                    'codigoautorizacion' => $codautorizacion,
-                    'nrofactura' => $nroFactura,
-                    'fechafacturaduidim' => now(),
-                    'subtotal' => $subtotal,
-                    'descuento' => '0.00',
-                    'total' => $total,
-                    'importebasecfdf' => $importeBaseCFDF,
-                    'creditodebitofiscal' => $creditoDebitoFiscal,
-                    'tipo' => '1',
-                    'ciudad' => $ciudad,
-                    'estado' => 'VALIDO',
-                    'importenosujetocfdf' => $importenosujetocfdf,
-                    'usuarioregistroid' => $usuarioId,
-                    'usuarioregistronombre' => $usuarioNombre,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                    'nroduidim' => '0.00',
-                    'ice' => '0.00',
-                    'iehd' => '0.00',
-                    'ipj' => '0.00',
-                    'tasas' => '0.00',
-                    'importeyexporteexterno' => '0.00',
-                    'tasacero' => '0.00',
-                    'giftcard' => '0.00',
-                    'codigocontrol' => '0.00',
-                    'otronosujcredfiscaloiva' => '0.00',
-                    'complemento' => '0',
-                ]); */
 
                 $fechaFactura2 = now()->toDateString();
                 $registroExistente2 = DB::table('facturasegreso')
@@ -6890,39 +7393,6 @@ class MovimientosCajaController extends Controller
                 $usuarioId = Auth::id();
                 $usuarioNombre = Auth::user()->name;
 
-                /* DB::table('facturasegreso')->insert([
-                    'especificacion' => '1',
-                    'nitci' => $nit,
-                    'razonsocial' => $razonsocial,
-                    'codigoautorizacion' => $codautorizacion,
-                    'nrofactura' => $nroFactura,
-                    'fechafacturaduidim' => now(),
-                    'subtotal' => $subtotal,
-                    'descuento' => '0.00',
-                    'total' => $total,
-                    'importebasecfdf' => $importeBaseCFDF,
-                    'creditodebitofiscal' => $creditoDebitoFiscal,
-                    'tipo' => '1',
-                    'ciudad' => $ciudad,
-                    'estado' => 'VALIDO',
-                    'importenosujetocfdf' => $importenosujetocfdf,
-                    'usuarioregistroid' => $usuarioId,
-                    'usuarioregistronombre' => $usuarioNombre,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                    'nroduidim' => '0.00',
-                    'ice' => '0.00',
-                    'iehd' => '0.00',
-                    'ipj' => '0.00',
-                    'tasas' => '0.00',
-                    'importeyexporteexterno' => '0.00',
-                    'tasacero' => '0.00',
-                    'giftcard' => '0.00',
-                    'codigocontrol' => '0.00',
-                    'otronosujcredfiscaloiva' => '0.00',
-                    'complemento' => '0',
-                ]); */
-
                 $fechaFactura = now()->toDateString();
                 $registroExistente = DB::table('facturasegreso')
                     ->whereDate('fechafacturaduidim', $fechaFactura)
@@ -6991,10 +7461,92 @@ class MovimientosCajaController extends Controller
                         $registroFinal->factura = null;
                         $registroFinal->save();
                     }
+                    
                 }
             }
 
             return redirect()->back()->with('info', 'Facturas anuladas correctamente.');
+        } elseif ($accion === 'guardarsinfactura') {
+            // ========= REGISTROS PROGRAMACION (EXCLUYE INFORME FINAL) =========
+            $registros = Programacionsubcliente::whereIn('id', $seleccionados)
+                ->whereRaw('UPPER(accionnombre) != "INFORME FINAL"')
+            ->get();
+
+            // ========= REGISTROS INFORME FINAL =========
+            $registrosFinales = ProveedorInformefinal::whereIn('id', $seleccionados)->get();
+
+            // ========= OBTENER PROVEEDOR ASIGNADO SEGÚN ORIGEN =========
+            $proveedorAsignado = null;
+
+            if ($registros->isNotEmpty()) {
+                $proveedorAsignado = $registros->first()->proveedornombre;
+            } elseif ($registrosFinales->isNotEmpty()) {
+                $proveedorAsignado = $registrosFinales->first()->proveedorasignado;
+            }
+            $ordenExistente = BateriaSubCliente::where('fechapago', $fechaPagoProv)
+                ->where('proveedorasignado', $proveedorAsignado)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($ordenExistente) {
+                $nuevoOrdenId = $ordenExistente->ordenid;
+            } else {
+                $ultimoOrden = BateriaSubCliente::whereNotNull('ordenid')
+                    ->where('ordenid', 'LIKE', '%M')
+                    ->orderByRaw("CAST(SUBSTRING_INDEX(ordenid, 'M', 1) AS UNSIGNED) DESC")
+                    ->first();
+
+                $nuevoNumero = 1;
+                if ($ultimoOrden && preg_match('/^(\d+)M$/', $ultimoOrden->ordenid, $matches)) {
+                    $nuevoNumero = intval($matches[1]) + 1;
+                }
+                $nuevoOrdenId = $nuevoNumero . 'M';
+            }
+
+            // ========= ACTUALIZAR TODOS LOS REGISTROS =========
+            foreach ($registros as $registro) {
+                $registro->save();
+
+                $bateria = Bateriasubcliente::find($registro->bateriaid);
+                if ($bateria) {
+                    $proveedor = Proveedor::where('proveedor', $bateria->proveedorasignado)->first();
+                    if ($proveedor) {
+                        $bateria->fechapago = $fechaPagoProv;
+                        $bateria->prioridad = 'CUENTA POR PAGAR';
+                        /* if ($proveedor->bancoorigen === 'CUENTA FACTURADA') {
+                            $bateria->nrobancoorigen = '3000189269';
+                        } elseif ($proveedor->bancoorigen === 'CUENTA NO FACTURADA') {
+                            $bateria->nrobancoorigen = '2505314878';
+                        } */
+                        $bateria->nrobancoorigen = $nrocuentabanco;
+                        $bateria->ordenid = $nuevoOrdenId;
+                        $bateria->save();
+                    }
+                }
+            }
+
+            foreach ($registrosFinales as $registroFinal) {
+                $registroFinal->save();
+
+                $bateria = Bateriasubcliente::where('provinfofinalid', $registroFinal->id)->first();
+                if ($bateria) {
+                    $proveedor = Proveedor::where('proveedor', $bateria->proveedorasignado)->first();
+                    if ($proveedor) {
+                        $bateria->fechapago = $fechaPagoProv;
+                        $bateria->prioridad = 'CUENTA POR PAGAR';
+                        /* if ($proveedor->bancoorigen === 'CUENTA FACTURADA') {
+                            $bateria->nrobancoorigen = '3000189269';
+                        } elseif ($proveedor->bancoorigen === 'CUENTA NO FACTURADA') {
+                            $bateria->nrobancoorigen = '2505314878';
+                        } */
+                        $bateria->nrobancoorigen = $nrocuentabanco;
+                        $bateria->ordenid = $nuevoOrdenId;
+                        $bateria->save();
+                    }
+                }
+            }
+
+            return redirect()->back()->with('info', 'Registro actualizado correctamente.');
         }
 
         return redirect()->back()->with('error', 'Acción no reconocida.');
@@ -7041,9 +7593,11 @@ class MovimientosCajaController extends Controller
                 $usuarioId = Auth::id();
                 $usuarioNombre = Auth::user()->name;
 
+                //EMPRESAS EXCLUIDAS POR LA RAZON SOCIAL 
                 $razonesExcluidas = [
                     'COOPERATIVA DE SERVICIOS PUBLICOS SANTA CRUZ R.L.',
                     'COOPERATIVA RURAL DE ELECTRIFICACIÓN R.L.',
+                    'LAURA GONZALES MONTENEGRO',
                 ];
 
                 if (!in_array(strtoupper($razonsocial), $razonesExcluidas)) {
@@ -7107,6 +7661,7 @@ class MovimientosCajaController extends Controller
             }
             return back()->with('info', 'Facturas anuladas correctamente.');
         }
+        
         return back()->with('error', 'Acción no reconocida.');
     }
 
@@ -7357,11 +7912,13 @@ class MovimientosCajaController extends Controller
             foreach ($cuentasData as $cuenta) {
                 // Obtener proveedor
                 $proveedorNombre = $cuenta->proveedornombre;
+                $proveedorID = $cuenta->proveedorid;
                 $proveedor = DB::table('proveedores')
                     ->where('proveedor', $proveedorNombre)
                     ->first()
                     ?: DB::table('proveedoresservicios')
                         ->where('razonsocial', $proveedorNombre)
+                        ->where('id', $proveedorID)
                         ->first();
 
                 if (!$proveedor) continue;
@@ -8029,9 +8586,7 @@ class MovimientosCajaController extends Controller
             ];
         }
 
-        
         $cuentaspagar = CuentasPagar::with('proveedorServicio')->get();
-
 
         $registrosbateria = Bateriasubcliente::where('prioridad', 'CUENTA POR PAGAR')->orwhere('prioridad', 'PAGO PROCESADO')
             ->leftJoin('proveedorinformesfinales', 'bateriasubclientes.provinfofinalid', '=', 'proveedorinformesfinales.id')
@@ -8150,7 +8705,7 @@ class MovimientosCajaController extends Controller
         if (!$nroCuenta) {
             return back()->with('error', 'No se encontró número de cuenta para la fecha especificada.');
         }
-        if ($nroCuenta == '2505314878') {
+        if ($nroCuenta == '2505314878' || $nroCuenta == '1031266712') {
             DB::table('cuentasporpagar')
                 ->where('fechaasignada', $fecha)
                 ->where('estadoaprobacion', '=', 'APROBADO')
@@ -8411,9 +8966,7 @@ class MovimientosCajaController extends Controller
             ];
         }
 
-        
         $cuentaspagar = CuentasPagar::with('proveedorServicio')->get();
-
 
         $registrosbateria = Bateriasubcliente::where('prioridad', 'CUENTA POR PAGAR')->orwhere('prioridad', 'PAGO PROCESADO')
             ->leftJoin('proveedorinformesfinales', 'bateriasubclientes.provinfofinalid', '=', 'proveedorinformesfinales.id')
@@ -8440,7 +8993,7 @@ class MovimientosCajaController extends Controller
 
         foreach ($registrosbateria as $registro) {
             $programacion = \App\Models\Programacionsubcliente::where('bateriaid', $registro->id)
-                ->orderBy('id', 'desc') // tomar el más reciente si hay varios
+                ->orderBy('id', 'desc')
                 ->first();
 
             if ($programacion) {
@@ -8456,16 +9009,17 @@ class MovimientosCajaController extends Controller
             }
         }
 
-
         $proveedoresServicios = Proveedor::pluck('tipoplanilla', 'proveedor');
-
-
 
         $documentosPorFecha = PlanillasPagosGeneradas::select('tipo', 'documento', 'fechapago', 'proveedor')
         ->get()
         ->groupBy('fechapago');
 
-        return view('admin.caja.cuentaspagar.cppcomprobantes', compact('registrosbateria','cuentaspagar', 'usuarioAutenticado','result', 'fechas', 'proveedor', 'documentosPorFecha', 'proveedoresServicios'));
+        $usuarioscomprobantes = User::whereHas('roles', function ($q) {
+            $q->whereIn('name', ['CONTABLE', 'ADMINISTRADOR']);
+        })->orderBy('name', 'asc')->get();
+
+        return view('admin.caja.cuentaspagar.cppcomprobantes', compact('usuarioscomprobantes','registrosbateria','cuentaspagar', 'usuarioAutenticado','result', 'fechas', 'proveedor', 'documentosPorFecha', 'proveedoresServicios'));
     }
     public function actualizarComprobante(Request $request)
     {
@@ -8947,13 +9501,15 @@ class MovimientosCajaController extends Controller
 
             $registroCierreCaja = true;
 
+            // ✅ Si existe un registro en cajacentral, debemos validar su cierre
             if ($ultimoRegistro) {
                 $fechaUltimoRegistro = Carbon::parse($ultimoRegistro->created_at)->toDateString();
 
+                // Si la fecha del último registro NO es hoy, exigimos cierre para esa fecha
                 if ($fechaUltimoRegistro !== $hoy->toDateString()) {
                     $registroCierreCaja = DB::table('cierrecaja')
                         ->where('usuariocierreid', $idUsuario)
-                        ->whereDate('created_at', $fechaUltimoRegistro)
+                        ->whereDate('fechacierre', $fechaUltimoRegistro)
                         ->exists();
                 }
             }
@@ -8963,8 +9519,6 @@ class MovimientosCajaController extends Controller
                 ->where('permisoSolicitado', 'admin.ingreso.index')
                 ->where('estado', 'expirado')
                 ->exists();
-
-            /*  $mostrarVista = $registroCierreCaja || $codigoAprobacion; */
 
             $tuvoEfectivoAyer = DB::table('cajacentral')
                 ->where('usuarioregistroid', $idUsuario)
@@ -8987,8 +9541,8 @@ class MovimientosCajaController extends Controller
             $mostrarVista = ($registroCierreCaja && !$restriccionDeposito) || $codigoAprobacion;
 
             $motivoBloqueo = null;
-            if (!$registroCierreCaja) {
-                $motivoBloqueo = 'NO CERRASTE TU CAJA EL DIA DE AYER';
+            if ($ultimoRegistro && !$registroCierreCaja) {
+                $motivoBloqueo = 'NO CERRASTE TU CAJA DEL DÍA ' . Carbon::parse($ultimoRegistro->created_at)->format('d/m/Y');
             } elseif ($restriccionDeposito) {
                 $motivoBloqueo = 'NO REGISTRASTE EL DEPÓSITO DEL EFECTIVO DE AYER ANTES DE LAS 10:00 AM.';
             }
@@ -9506,6 +10060,7 @@ class MovimientosCajaController extends Controller
             if ($proveedor) {
                 $nitci = (!empty($proveedor->nit) && $proveedor->nit != '0') ? $proveedor->nit : ($proveedor->ci ?? '0');
                 $complemento = $proveedor->cicomplemento ?? '0';
+                $sucursalproveedor = $proveedor->ciudad ?? '0';
             }
 
             // Insertar en facturasegreso
@@ -9534,7 +10089,7 @@ class MovimientosCajaController extends Controller
                     'estado' => 'VALIDO',
                     'codigocontrol' => '0',
                     'tipo' => '2',
-                    'ciudad' => $request->ciudadregistro,
+                    'ciudad' => $sucursalproveedor,
                     'usuarioregistroid' => $usuarioId,
                     'usuarioregistronombre' => $usuarioNombre,
                     'created_at' => now(),
@@ -9905,6 +10460,18 @@ class MovimientosCajaController extends Controller
                             ->where('usuarioconsolidadoid', $registro->usuarioregistroid)
                             ->decrement($campo, $registro->montototal);
                     }
+
+                    $detalles = DB::table('detallerecibos')
+                        ->where('reciboid', $registro->nrorecibo)
+                        ->whereNotNull('cuentapagarid')
+                        ->pluck('cuentapagarid');
+
+                    if ($detalles->isNotEmpty()) {
+                        DB::table('cuentasporpagar')
+                            ->whereIn('id', $detalles)
+                            ->update(['estado' => 'PENDIENTE']);
+                    }
+
                 }
 
             DB::table('cajacentral')
@@ -9951,40 +10518,6 @@ class MovimientosCajaController extends Controller
         $fecha = $request->input('fecha', today()->toDateString());
         $usuarios = Consolidadocaja::select('usuarioconsolidadoID', 'usuarioconsolidadoNombre')->distinct()->get();
         $usuarioSeleccionado = $request->input('usuario', $userId);
-
-        $registros = CajaCentral::where('tipomovimiento', 'INGRESO')
-            ->where('tipotransaccion', 'EFECTIVO')
-            ->when($usuarioSeleccionado, function ($query, $usuarioSeleccionado) {
-                return $query->where('usuarioregistroid', $usuarioSeleccionado);
-            })
-            ->selectRaw('DATE(created_at) as fecha, usuarioregistroid, usuarioRegistroNombre, 
-                        SUM(montoTotal) - SUM(diferenciaContra) + SUM(diferenciaFavor) as total')
-            ->groupBy('fecha', 'usuarioregistroid', 'usuarioRegistroNombre')
-            ->orderByDesc('fecha')
-            ->get();
-
-        $depositos = DepositosBancarios::whereIn('fecha', $registros->pluck('fecha'))
-            ->whereIn('usuarioregistroid', $registros->pluck('usuarioregistroid'))
-            ->get()
-            ->keyBy(function ($item) {
-                return $item->fecha . '_' . $item->usuarioregistroid . '_' . $item->monto;
-            });
-
-        foreach ($registros as $registro) {
-            $clave = $registro->fecha . '_' . $registro->usuarioregistroid . '_' . $registro->total;
-            if (isset($depositos[$clave])) {
-                $deposito = $depositos[$clave];
-                $registro->documentorespaldo = $deposito->documentorespaldo;
-                $registro->documentofactura = $deposito->documentofactura;
-                $registro->bancarizacion = $deposito->bancarizacion;
-                $registro->bancodestino = $deposito->bancodestino;
-            } else {
-                $registro->documentorespaldo = null;
-                $registro->documentofactura = null;
-                $registro->bancarizacion = null;
-                $registro->bancodestino = null;
-            }
-        }
 
         //BLOQUEO CAJA
             $idUsuario = auth()->user()->id;
@@ -10034,6 +10567,66 @@ class MovimientosCajaController extends Controller
                 $motivoBloqueo = 'NO REGISTRASTE EL DEPÓSITO DEL EFECTIVO DE AYER ANTES DE LAS 10:00 AM.';
             }
         //
+
+        /* $registros = CajaCentral::where('tipomovimiento', 'INGRESO')
+            ->where('tipotransaccion', 'EFECTIVO')
+            ->when($usuarioSeleccionado, function ($query, $usuarioSeleccionado) {
+                return $query->where('usuarioregistroid', $usuarioSeleccionado);
+            })
+            ->selectRaw('DATE(created_at) as fecha, usuarioregistroid, usuarioRegistroNombre, 
+                        SUM(montoTotal) - SUM(diferenciaContra) + SUM(diferenciaFavor) as total')
+            ->groupBy('fecha', 'usuarioregistroid', 'usuarioRegistroNombre')
+            ->orderByDesc('fecha')
+            ->get();
+
+        $depositos = DepositosBancarios::whereIn('fecha', $registros->pluck('fecha'))
+            ->whereIn('usuarioregistroid', $registros->pluck('usuarioregistroid'))
+            ->get()
+            ->keyBy(function ($item) {
+                return $item->fecha . '_' . $item->usuarioregistroid . '_' . $item->monto;
+            });
+
+        foreach ($registros as $registro) {
+            $clave = $registro->fecha . '_' . $registro->usuarioregistroid . '_' . $registro->total;
+            if (isset($depositos[$clave])) {
+                $deposito = $depositos[$clave];
+                $registro->documentorespaldo = $deposito->documentorespaldo;
+                $registro->documentofactura = $deposito->documentofactura;
+                $registro->bancarizacion = $deposito->bancarizacion;
+                $registro->bancodestino = $deposito->bancodestino;
+            } else {
+                $registro->documentorespaldo = null;
+                $registro->documentofactura = null;
+                $registro->bancarizacion = null;
+                $registro->bancodestino = null;
+            }
+        } */
+
+            // --- Caja Central agrupada por fecha ---
+    $registros = CajaCentral::where('tipomovimiento', 'INGRESO')
+        ->where('tipotransaccion', 'EFECTIVO')
+        ->when($usuarioSeleccionado, fn($q) => $q->where('usuarioregistroid', $usuarioSeleccionado))
+        ->selectRaw('DATE(created_at) as fecha, usuarioregistroid, usuarioRegistroNombre,
+                    SUM(montoTotal - diferenciaContra + diferenciaFavor) as total')
+        ->groupBy('fecha', 'usuarioregistroid', 'usuarioRegistroNombre')
+        ->orderByDesc('fecha')
+        ->get();
+
+    // --- Depósitos Bancarios relacionados por fecha y usuario ---
+    $depositos = DepositosBancarios::whereIn('fecha', $registros->pluck('fecha'))
+        ->whereIn('usuarioregistroid', $registros->pluck('usuarioregistroid'))
+        ->orderByDesc('fecha')
+        ->get();
+
+    // Agrupar depósitos por fecha + usuario
+    $depositosAgrupados = $depositos->groupBy(fn($d) => $d->fecha . '_' . $d->usuarioregistroid);
+
+    // Vincular depósitos a los registros de caja
+    foreach ($registros as $registro) {
+        $clave = $registro->fecha . '_' . $registro->usuarioregistroid;
+        $registro->depositos = $depositosAgrupados[$clave] ?? collect();
+        $registro->montoDepositos = $registro->depositos->sum('monto');
+    }
 
         return view('admin.caja.ingreso.depositosbancarios', compact('registros', 'rolUsuario', 'usuarios', 'fecha', 'usuarioSeleccionado', 'cuentas', 'mostrarVista', 'motivoBloqueo'));
     }
@@ -10124,8 +10717,7 @@ class MovimientosCajaController extends Controller
                     'nrobancodestinoefectivo' => $request->bancodestino,
             ]);
 
-        // Actualización de la tabla ArqueoCaja
-        $arqueo = ArqueoCaja::where('usuarioarqueoid', $usuarioAutenticadoid)->first();
+        /* $arqueo = ArqueoCaja::where('usuarioarqueoid', $usuarioAutenticadoid)->first();
         if ($arqueo) {
             $arqueo->update([
                 'billetecorte200' => 0,
@@ -10142,13 +10734,44 @@ class MovimientosCajaController extends Controller
             ]);
         }
 
-        // Actualización de la tabla Consolidadocaja
         $consolidado = Consolidadocaja::where('usuarioconsolidadoid', $usuarioAutenticadoid)->first();
         if ($consolidado) {
             $consolidado->update([
                 'consolidadoefectivo' => 0.00,
                 'actualizaciondeposito' => today(),
             ]);
+        } */
+
+        /* NUEVO 011225 */
+        $usuarioId = auth()->user()->id;
+        $historial = DB::table('historialarqueocaja')
+            ->where('usuarioarqueoid', $usuarioId)
+            ->orderBy('fechaarqueo', 'desc')
+        ->first();
+
+        if ($historial) {
+            DB::table('arqueocaja')
+                ->where('usuarioarqueoid', $usuarioId)
+                ->update([
+                    'billetecorte200' => DB::raw("GREATEST(billetecorte200 - {$historial->billetecorte200}, 0)"),
+                    'billetecorte100' => DB::raw("GREATEST(billetecorte100 - {$historial->billetecorte100}, 0)"),
+                    'billetecorte50' => DB::raw("GREATEST(billetecorte50 - {$historial->billetecorte50}, 0)"),
+                    'billetecorte20' => DB::raw("GREATEST(billetecorte20 - {$historial->billetecorte20}, 0)"),
+                    'billetecorte10' => DB::raw("GREATEST(billetecorte10 - {$historial->billetecorte10}, 0)"),
+                    'monedacorte5' => DB::raw("GREATEST(monedacorte5 - {$historial->monedacorte5}, 0)"),
+                    'monedacorte2' => DB::raw("GREATEST(monedacorte2 - {$historial->monedacorte2}, 0)"),
+                    'monedacorte1' => DB::raw("GREATEST(monedacorte1 - {$historial->monedacorte1}, 0)"),
+                    'monedacorte050' => DB::raw("GREATEST(monedacorte050 - {$historial->monedacorte050}, 0)"),
+                    'monedacorte020' => DB::raw("GREATEST(monedacorte020 - {$historial->monedacorte020}, 0)"),
+                    'monedacorte010' => DB::raw("GREATEST(monedacorte010 - {$historial->monedacorte010}, 0)"),
+                    'updated_at' => now(),
+                ]);
+            DB::table('consolidadoscaja')
+                ->where('usuarioconsolidadoid', $usuarioId)
+                ->update([
+                    'consolidadoefectivo' => DB::raw("GREATEST(consolidadoefectivo - {$historial->totalmonto}, 0)"),
+                    'updated_at' => now()
+                ]);
         }
 
         return redirect()->back()->with('info', 'Registro respaldado exitosamente.');

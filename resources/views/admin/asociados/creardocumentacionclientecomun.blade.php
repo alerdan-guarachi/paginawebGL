@@ -1,8 +1,8 @@
 @extends('adminlte::page')
 
 @section('content_header')
-<a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclientecomun', $clientecomun) }}">REGRESAR</a>
-<a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">INFORMES DEL CLIENTE</a>
+<a class="btn btn-sm float-right btn-regresar btn-sm" href="{{ route('admin.asociados.verclientecomun', $clientecomun) }}">REGRESAR</a>
+<a class="btn custom2-button btn-sm float-right btn-sm" data-toggle="modal" data-target="#ventanaModal">INFORMES DEL CLIENTE</a>
 {{-- <a class="btn btn-sm float-right btn-listainformes" href="{{ route('admin.asociados.listadodocumentacionclienteita', $cliente) }}">LISTA DE INFORMES</a> --}}
 {{-- <a class="btn btn-sm float-right btn-multiple" href="{{ route('admin.asociados.documentacionmultipleclienteita', 6) }}">DOC. MÚLTIPLE</a> --}}
 
@@ -86,7 +86,7 @@
                             </small>
                             @enderror
                         </div>
-                    <button type="button" class="btn btn-regresar" data-toggle="modal" data-target="#previewModal">VISTA PREVIA</button>
+                    <button type="button" class="btn btn-sm btn-regresar" data-toggle="modal" data-target="#previewModal">VISTA PREVIA</button>
                     </div>
 
                     <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel" aria-hidden="true">
@@ -242,7 +242,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">Cerrar</button>
+                                    <button type="button" class="btn btn-cerrar btn-sm" data-dismiss="modal">Cerrar</button>
                                 </div>
                             </div>
                         </div>
@@ -360,7 +360,7 @@
                         }
                     </style>
                 </div>
-                {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
+                {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear btn-sm']) !!}
                 {!! Form::close() !!}
             </div>
         </div>
@@ -539,7 +539,7 @@
         color: #94c93b;
         border-color: #94c93b;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         }
     .btn-crear:hover {
         background-color: #94c93b;
@@ -572,7 +572,7 @@
         color: #faa625;
         border-color: #faa625;
         border-radius: 5px;
-        padding: 10px 20px;
+        padding: 5px 10px;
         margin-left: 10px;
         margin-right: 10px;
     }
@@ -596,7 +596,7 @@
         color: #2926e2;
         border-color: #2926e2;
         border-radius: 5px;
-        padding: 10px 10px;
+        padding: 5px 10px;
     }
     .btn-regresar:hover {
         background-color: #2926e2;

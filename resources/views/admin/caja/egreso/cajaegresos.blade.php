@@ -1414,5 +1414,14 @@
         return lineas;
     }
 </script>
-
+<script>
+//CANCELAR FUNCION DE LA TECLA ENTER
+    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+            }
+        });
+    });
+</script>
 @stop
