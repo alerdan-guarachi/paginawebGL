@@ -1,0 +1,49 @@
+[33mbb5693e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{0}: reset: moving to HEAD~1
+[33m54f2858[m HEAD@{1}: commit: 220126
+[33mbb5693e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{2}: reset: moving to HEAD~1
+[33m6caf238[m HEAD@{3}: reset: moving to HEAD~1
+[33m7295f96[m HEAD@{4}: commit: 210126
+[33m6caf238[m HEAD@{5}: commit: 11
+[33mbb5693e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m HEAD@{6}: commit: 11 de agosto
+[33m58cc26d[m HEAD@{7}: checkout: moving from main to main
+[33m58cc26d[m HEAD@{8}: checkout: moving from main to main
+[33m58cc26d[m HEAD@{9}: checkout: moving from main to main
+[33m58cc26d[m HEAD@{10}: commit: 11 DE JUNIO
+[33m201fa7a[m HEAD@{11}: commit: 11 DE JUNIO
+[33mc70ee21[m HEAD@{12}: commit: 1 febrero
+[33m724f6d5[m HEAD@{13}: commit: dic 21
+[33m27df3ba[m[33m ([m[1;31morigin/main[m[33m)[m HEAD@{14}: commit: 14 DE DIC
+[33m61e6611[m HEAD@{15}: commit: 10 dic
+[33m23a92fa[m HEAD@{16}: pull --tags origin main: Merge made by the 'ort' strategy.
+[33mb3ca509[m HEAD@{17}: commit: dic 3
+[33mad5985b[m HEAD@{18}: commit: nov 27
+[33m35c62a9[m HEAD@{19}: commit: nov 21
+[33m3c1aa61[m HEAD@{20}: commit: nov 16
+[33md5c348f[m HEAD@{21}: commit: noviembre 12
+[33ma230948[m HEAD@{22}: commit: noviembre 4
+[33m8365195[m HEAD@{23}: commit: octubre 23
+[33m52cfdda[m HEAD@{24}: commit: octubre 23
+[33mc86ec00[m HEAD@{25}: commit: octubre 21
+[33m662b003[m HEAD@{26}: commit: octubre 19
+[33m8b77c81[m HEAD@{27}: commit: octubre 18
+[33m080e947[m HEAD@{28}: commit: 17 octubre
+[33m4b96474[m HEAD@{29}: commit: octubre 14
+[33mec51959[m HEAD@{30}: commit: 12 oct
+[33m20ef68a[m HEAD@{31}: commit: octubre 9 seg
+[33m3909b75[m HEAD@{32}: commit: octubre 9
+[33m5abb316[m HEAD@{33}: commit: cuatro octubre
+[33m37113d7[m HEAD@{34}: commit: s
+[33md4ac80b[m HEAD@{35}: commit: a
+[33mae26432[m HEAD@{36}: commit: fg
+[33me5c8796[m HEAD@{37}: commit: Revert "Merge branch 'main' of https://github.com/alerdan-guarachi/paginawebgoodlife"
+[33m5602c79[m HEAD@{38}: reset: moving to HEAD
+[33m5602c79[m HEAD@{39}: reset: moving to HEAD
+[33m5602c79[m HEAD@{40}: commit (merge): Merge branch 'main' of https://github.com/alerdan-guarachi/paginawebgoodlife
+[33m22bb6c6[m HEAD@{41}: commit: p
+[33m1f4e496[m HEAD@{42}: commit: Nuevo commit inicial
+[33m2c5e996[m HEAD@{43}: reset: moving to HEAD~2
+[33m9c3ecda[m HEAD@{44}: reset: moving to HEAD
+[33m9c3ecda[m HEAD@{45}: commit: primer commit3
+[33m647ea12[m HEAD@{46}: commit: NUEVO PROYECTO
+[33m2c5e996[m HEAD@{47}: Branch: renamed refs/heads/master to refs/heads/main
+[33m2c5e996[m HEAD@{49}: commit (initial): primer commit
