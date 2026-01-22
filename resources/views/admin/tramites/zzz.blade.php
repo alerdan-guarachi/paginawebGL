@@ -293,3 +293,8 @@
                         </div>
                     </div>
                 </div>
+                <button type="submit"
+                                                                        class="btn btn-sm btn-subircaptura"
+                                                                        title="GUARDAR">
+                                                                    <i class="fas fa-print"></i>
+                                                                </button>
