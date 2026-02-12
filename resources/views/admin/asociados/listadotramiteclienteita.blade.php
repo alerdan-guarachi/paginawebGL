@@ -21,15 +21,15 @@
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped table-sm">
+                <table class="table table-striped table-sm table-bordered">
                     <thead>
                         <tr>
-                            <th>ID_Reg.</th>
+                            <th>ID</th>
                             <th>Servicio</th>
                             <th>Ciudad</th>
                             <th>Observaciones</th>
                             <th>Estado</th>
-                            <th class="text-center">Fecha_Bat.:</th>
+                            <th class="text-center">Fecha_Bateria</th>
                             <th>Usuario_Registro</th>
                             <th class="text-center">Tramite_Finalizado</th>
                         </tr>
@@ -52,7 +52,26 @@
                                 </td>
                                 <td>{{ $tramitesubcliente->ciudad }}</td>
                                 <td>{{ $tramitesubcliente->observaciones ?? 0 }}</td>
-                                <td>{{ $tramitesubcliente->estado }}</td>
+                                <td>
+                                    @php
+                                        $estado = $tramitesubcliente->estado;
+                                        $motivo = $tramitesubcliente->motivointerrupcion;
+                                    @endphp
+
+                                    @if($estado === 'PENDIENTE')
+                                        <span class="badge badge-warning">PENDIENTE</span>
+                                    @elseif($estado === 'FINALIZADO')
+                                        <span class="badge badge-success">FINALIZADO</span>
+                                    @elseif($estado === 'INTERRUMPIDO')
+                                        <span class="badge badge-danger">INTERRUMPIDO</span>
+                                    @else
+                                        <span class="badge badge-secondary">{{ $estado }}</span>
+                                    @endif
+
+                                    @if($motivo)
+                                        - {{ $motivo }}
+                                    @endif
+                                </td>
                                 <td class="text-center">
                                     @php
                                         $tramitesSinFecha = [
@@ -66,7 +85,7 @@
                                     @endphp
 
                                     @if(in_array($tramitesubcliente->tramite, $tramitesSinFecha))
-                                        <span class="badge badge-success">NO REQUIERE</span>
+                                        <span class="badge badge-secondary">NO REQUIERE</span>
                                     @else
                                         @if ($tramitesubcliente->fechabateria)
                                             {{ $tramitesubcliente->fechabateria }}
@@ -127,7 +146,16 @@
                                         @endif
                                     @endif
                                 </td>
-                                <td>{{ $tramitesubcliente->usuarioregistro }}</td>
+                                <td title="{{ $tramitesubcliente->usuarioregistro }}"
+                                    style="
+                                        max-width: 150px;
+                                        white-space: nowrap;
+                                        overflow: hidden;
+                                        text-overflow: ellipsis;
+                                        cursor: pointer;
+                                    ">
+                                    {{ $tramitesubcliente->usuarioregistro }}
+                                </td>
                                 <td class="text-center">
                                     {{-- SI YA EXISTE UN ARCHIVO EN DRIVE --}}
                                     @if ($tramitesubcliente->archivofinalizado)
@@ -234,12 +262,7 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 {!! Form::label('tramite', 'Servicio') !!}
-                                {!! Form::select('tramite', $tramitesDisponibles, null, [
-                                    'class' => 'form-control',
-                                    'placeholder' => 'Seleccione un trámite',
-                                    'maxlength' => '90',
-                                    'id' => 'tramite'
-                                ]) !!}
+                                {!! Form::select('tramite', $tramitesDisponibles, null, ['class' => 'form-control','placeholder' => '','id' => 'tramite','required']) !!}
                                 @error('tramite')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{ $message }}
@@ -250,11 +273,7 @@
                         <div class="col-lg-12">
                             <div class="form-group">
                                 {!! Form::label('ciudad', 'Ciudad') !!}
-                                {!! Form::select('ciudad', $ciudades, null, [
-                                    'class' => 'form-control',
-                                    'placeholder' => '',
-                                    'maxlength' => '90',
-                                ]) !!}
+                                {!! Form::select('ciudad', $ciudades, null, ['class' => 'form-control','placeholder' => '','required']) !!}
                                 @error('ciudad')
                                     <small class="text-danger fas fa-exclamation-circle">
                                         {{ $message }}
@@ -358,167 +377,11 @@
             </div>
         </div>
     </div>
-
-@stop
-
-@section('css')
-<link rel="styleheet" href="/css/admin_custom.css">
-<style>
-    h5 {
-        color: #94c93b;
-        font-family: "Segoe UI";
-        font-weight: 500;
-        margin-bottom: 0%;
-    }
-    h3 {
-        color: #94c93b;
-        font-family: "Segoe UI";
-        font-weight: 1000;
-    }
-    .btn-regresar {
-        background-color: #ffffff;
-        color: #2926e2;
-        border-color: #2926e2;
-        border-radius: 5px;
-        padding: 5px 10px;
-    }
-    .btn-regresar:hover {
-        background-color: #2926e2;
-        color: #ffffff;
-    }
-    .btn-descargar {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 1px 3px;
-    }
-    .btn-descargar:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-asignartramite {
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 5px 10px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    .btn-asignartramite:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
-    .btn-verarchivo {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 5px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    .btn-verarchivo:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-vertramite {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 5px;
-    }
-    .btn-vertramite:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-verhistoria {
-        background-color: #ffffff;
-        color: #226acf;
-        border-color: #226acf;
-        border-radius: 5px;
-        padding: 2px 5px;
-    }
-    .btn-verhistoria:hover {
-        background-color: #226acf;
-        color: #ffffff;
-    }
-    .btn-verrequisito {
-        background-color: #ffffff;
-        color: #8c28f0;
-        border-color: #8c28f0;
-        border-radius: 5px;
-        padding: 2px 5px;
-    }
-    .btn-verrequisito:hover {
-        background-color: #8c28f0;
-        color: #ffffff;
-    }
-    .btn-subirarchivo {
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 2px 5px;
-        margin-left: 10px;
-        margin-right: 10px;
-    }
-    .btn-subirarchivo:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
-    .btn-asignartramite2 {
-        background-color: #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 2px 5px;
-    }
-    .btn-asignartramite2:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
-    h1, th {
-        color: #94c93b;
-        font-family: "Segoe UI";
-        font-weight: 900;
-    }
-</style>
 @stop
 
 @section('js')
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-@if (session('eliminar') == 'ok')
-    <script>
-        Swal.fire(
-            '¡Eliminado!',
-            'El rol se eliminó con éxito',
-            'success')
-    </script>
-@endif
-
 <script>
-    $('.formulario-eliminar').submit(function(e) {
-        e.preventDefault();
-
-        Swal.fire({
-            title: '¿Estás seguro?',
-            text: "Este perfil se eliminará definitivamente",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: '¡Si, eliminar!',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                this.submit();
-            }
-        })
-    });
     $(document).ready(function() {
         $('input[name="buscarpor"]').on('keyup', function() {
             var query = $(this).val();
@@ -590,3 +453,118 @@
     });
 </script>
 @endsection
+
+@section('css')
+<link rel="styleheet" href="/css/admin_custom.css">
+<style>
+    h5 {
+        color: #94c93b;
+        font-family: "Segoe UI";
+        font-weight: 500;
+        margin-bottom: 0%;
+    }
+    h3 {
+        color: #94c93b;
+        font-family: "Segoe UI";
+        font-weight: 1000;
+        font-size: 23px;
+    }
+    .btn-regresar {
+        background-color: #ffffff;
+        color: #2926e2;
+        border-color: #2926e2;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+    .btn-regresar:hover {
+        background-color: #2926e2;
+        color: #ffffff;
+    }
+    .btn-descargar {
+        background-color: #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 1px 3px;
+    }
+    .btn-descargar:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }
+    .btn-asignartramite {
+        background-color: #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    .btn-asignartramite:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
+    .btn-vertramite {
+        background-color: #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 2px 5px;
+    }
+    .btn-vertramite:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }
+    .btn-verhistoria {
+        background-color: #ffffff;
+        color: #226acf;
+        border-color: #226acf;
+        border-radius: 5px;
+        padding: 2px 5px;
+    }
+    .btn-verhistoria:hover {
+        background-color: #226acf;
+        color: #ffffff;
+    }
+    .btn-verrequisito {
+        background-color: #ffffff;
+        color: #8c28f0;
+        border-color: #8c28f0;
+        border-radius: 5px;
+        padding: 2px 5px;
+    }
+    .btn-verrequisito:hover {
+        background-color: #8c28f0;
+        color: #ffffff;
+    }
+    .btn-subirarchivo {
+        background-color: #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 5px;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    .btn-subirarchivo:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
+    .btn-asignartramite2 {
+        background-color: #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 5px;
+    }
+    .btn-asignartramite2:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
+    h1, th {
+        color: #94c93b;
+        font-family: "Segoe UI";
+        font-weight: 900;
+    }
+</style>
+@stop

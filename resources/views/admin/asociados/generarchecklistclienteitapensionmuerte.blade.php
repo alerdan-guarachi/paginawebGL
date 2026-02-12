@@ -9,10 +9,15 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/requisitosgeneral.css') }}">
+<style>
+    h3 {
+    font-size: 23px;
+    }
+</style>
 @stop
 
 @section('content')
-    <form id="pdfForm" action="{{ route('admin.asociados.descargarchecklistclienteita', $cliente) }}" method="POST" style="display: none;">
+    <form id="pdfForm" action="{{ route('admin.asociados.descargarchecklistpensionmuerte', $cliente) }}" method="POST" style="display: none;">
         @csrf
         <input type="hidden" name="documentosSeleccionados" id="documentosSeleccionadosInput">
         <input type="hidden" name="documentosSeleccionados2" id="documentosSeleccionados2Input">
@@ -41,40 +46,46 @@
                     <input type="checkbox" name="poder" value="poder" id="poder">
                     <label for="poder">PODER Y CARNET IDENTIDAD APODERADO</label>
                 </div>
-                @if (strtolower($estadoLaboral) === 'activo')
                 <div class="form-group" style="margin-top: -10px;">
-                    <input type="checkbox" name="avcci" value="avcci" id="avcci" checked>
-                    <label for="avcci">AVC/CARNET ASEGURADO</label>
-                </div>
-                @endif
-                <div class="form-group" style="margin-top: -10px;">
-                    <input type="checkbox" name="cnactitular" value="cnactitular" id="cnactitular" checked>
-                    <label for="cnactitular" style="min-height: 20px;">CERTIFICADO NACIMIENTO TITULAR</label>
+                    <input type="checkbox" name="avcci" value="avcci" id="avcci" checked disabled>
+                    <label for="avcci">AVC/CARNET ASEGURADO TITULAR (FALLECIDO)</label>
                 </div>
                 <div class="form-group" style="margin-top: -10px;">
-                    <input type="checkbox" name="cititular" value="cititular" id="cititular" checked>
-                    <label for="cititular" style="min-height: 20px;">CARNET IDENTIDAD TITULAR</label>
+                    <input type="checkbox" name="cnactitular" value="cnactitular" id="cnactitular" checked disabled>
+                    <label for="cnactitular" style="min-height: 20px;">CERTIFICADO NACIMIENTO TITULAR (FALLECIDO)</label>
+                </div>
+                <div class="form-group" style="margin-top: -10px;">
+                    <input type="checkbox" name="cititular" value="cititular" id="cititular" checked disabled>
+                    <label for="cititular" style="min-height: 20px;">CARNET IDENTIDAD TITULAR (FALLECIDO)</label>
                 </div>
                 <div class="form-group" style="margin-top: -10px;">
                     <input type="checkbox" name="crodomicilio" value="crodomicilio" id="crodomicilio" checked disabled>
                     <label for="crodomicilio" style="min-height: 20px;">CROQUIS DE DOMICILIO</label>
                 </div>
+                <div class="form-group" style="margin-top: -10px;">
+                    <input type="checkbox" name="cdefuncion" value="cdefuncion" id="cdefuncion" checked disabled>
+                    <label for="cdefuncion" style="min-height: 20px;">CERTIFICADO DE DEFUNCIÓN</label>
+                </div>
+                <div class="form-group" style="margin-top: -10px;">
+                    <input type="checkbox" name="cmeddifuncion" value="cmeddifuncion" id="cmeddifuncion" checked disabled>
+                    <label for="cmeddifuncion" style="min-height: 20px;">CERTIFICADO MEDICO DEFUNCIÓN (ÓBITO)</label>
+                </div>
             </div>
             <div class="col-md-4" style="margin-top: 55px;">
-                @if (strtolower($estadoCivil) === 'casad@')
+                
                     <div class="form-group">
                         <input type="checkbox" name="cmatrimonio" value="cmatrimonio" id="cmatrimonio" checked>
                         <label for="cmatrimonio" style="min-height: 20px;">CERTIFICADO DE MATRIMONIO</label>
                     </div>
                     <div class="form-group" style="margin-top: -10px;">
-                        <input type="checkbox" name="cnacconyuge" value="cnacconyuge" id="cnacconyuge" checked>
-                        <label for="cnacconyuge" style="min-height: 20px;">CERTIFICADO NACIMIENTO CONYUGE</label>
+                        <input type="checkbox" name="cnacconyuge" value="cnacconyuge" id="cnacconyuge" checked disabled>
+                        <label for="cnacconyuge" style="min-height: 20px;">CERTIFICADO NACIMIENTO CONYUGE (SOLICITANTE)</label>
                     </div>
                     <div class="form-group" style="margin-top: -10px;">
-                        <input type="checkbox" name="ciconyuge" value="ciconyuge" id="ciconyuge" checked>
-                        <label for="ciconyuge" style="min-height: 20px;">CARNET IDENTIDAD CONYUGE</label>
+                        <input type="checkbox" name="ciconyuge" value="ciconyuge" id="ciconyuge" checked disabled>
+                        <label for="ciconyuge" style="min-height: 20px;">CARNET IDENTIDAD CONYUGE (SOLICITANTE)</label>
                     </div>
-                @endif
+                
                 @if (strtolower($estadoCivil) === 'union libre')
                     <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cunionlibre" value="cunionlibre" id="cunionlibre" checked>
@@ -95,12 +106,12 @@
                         <label for="cdivorcio" style="min-height: 20px;">CERTIFICADO DE DIVORCIO</label>
                     </div>
                 @endif
-                @if (strtolower($estadoCivil) === 'viud@')
+                {{-- @if (strtolower($estadoCivil) === 'viud@')
                     <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cdefuncion" value="cdefuncion" id="cdefuncion" checked>
-                        <label for="cdefuncion" style="min-height: 20px;">CERTIFICADO DE DIFUNCIÓN</label>
+                        <label for="cdefuncion" style="min-height: 20px;">CERTIFICADO DE DEFUNCIÓN</label>
                     </div>
-                @endif
+                @endif --}}
                 @if ($numHijosMenores > 0 || $numHijosMenores !== null)
                     <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cnacjihos" value="cnacjihos" id="cnacjihos" checked>
@@ -115,10 +126,7 @@
                     <input type="checkbox" name="actdatos" value="actdatos" id="actdatos" checked>
                     <label for="actdatos" style="min-height: 20px;">ACTUALIZACIÓN DE DATOS</label>
                 </div>
-                <div class="form-group" style="margin-top: -10px;">
-                    <input type="checkbox" name="cmeddifuncion" value="cmeddifuncion" id="cmeddifuncion" checked>
-                    <label for="cmeddifuncion" style="min-height: 20px;">CERTIFICADO MEDICO DIFUNCION</label>
-                </div>
+                
             </div>
             <div class="col-md-4">
                 <h4 style="font-weight: 600; color: #94c93b; margin-bottom: 20px;">DOCUMENTACIÓN ADICIONAL</h4>

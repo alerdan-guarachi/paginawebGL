@@ -33,12 +33,12 @@ class StoreTramitesubclienteRequest extends FormRequest
             'id' => '',
             'tramite' => 'max:255',
             'clienteitaid' => 'max:45',
-            'clienteitanombre' => 'max:45',
+            'clienteitanombre' => 'max:255',
             'apoderadoasignado' => 'max:255',
             'usuarioinicial' => 'max:255',
             'usuariofinal' => 'max:45',
             'estado' => 'max:45',
-            'observaciones' => 'max:45',
+            'observaciones' => 'max:255',
             'ciudad' => 'max:45',
             'usuarioid' => 'max:45',
             'usuarioregistro' => 'max:90',
@@ -54,6 +54,9 @@ class StoreTramitesubclienteRequest extends FormRequest
             'motivointerrupcion' => '',
             'archivofinalizado' => '',
             'fechainicio' => '',
+            'clienteid' => '',
+            'clientenombre' => '',
+            'tipocliente' => '',
         ]; 
         return $rules;
     }

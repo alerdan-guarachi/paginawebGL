@@ -41,7 +41,7 @@ class StoreProveedorInformefinalRequest extends FormRequest
         'clienteauditorianombre' => '',
         'fechabateria' => '',
         'proveedorasignado' => 'required',
-        'celularproveedor' => 'required',
+        'celularproveedor' => '',
         'usuarioid' => 'required',
         'usuarioregistro' => '',
         'pagoinforme' => '',
@@ -59,6 +59,9 @@ class StoreProveedorInformefinalRequest extends FormRequest
         'comprobante' => '',
         'cheque' => '',
         'codautorizacion' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
+        'tipocliente' => '',
     ]; 
     return $rules;
 }

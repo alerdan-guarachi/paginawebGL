@@ -28,7 +28,7 @@ class ClienteReferenciadoNotification extends Notification
     {
         return [
             'titulo' => 'Nuevo Cliente Referenciado',
-            'mensaje' => 'Has ganado 20 GoodBits por referenciar a ' . $this->cliente->nombrecompleto,
+            'mensaje' => 'Has ganado 20 GoodPoints por referenciar a ' . $this->cliente->nombrecompleto,
         ];
     }
 }

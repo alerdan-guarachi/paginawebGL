@@ -155,6 +155,24 @@ Route::get('/documentos/{userId}', function($userId) {
     // Obtener documentos relacionados
     $documentos = DB::table('documentacionsubclientes')
         ->where('clienteitaid', $clienteId)
+        ->where('accion', '!=', 'DIAGNÓSTICO MÉDICO')
+        ->get();
+
+    return response()->json($documentos);
+});
+
+Route::get('/baterias/{userId}', function($userId) {
+    $clienteId = DB::table('users')
+        ->where('id', $userId)
+        ->value('clienteid');
+
+    if (!$clienteId) {
+        return response()->json(['message' => 'Cliente no encontrado'], 404);
+    }
+    $documentos = DB::table('bateriasubclientes')
+        ->where('clienteitaid', $clienteId)
+        ->where('accionnombre', '!=', 'INFORME FINAL')
+        ->where('proveedorasignado', '!=', 'PROVEEDOR AJENO')
         ->get();
 
     return response()->json($documentos);

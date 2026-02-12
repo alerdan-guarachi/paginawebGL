@@ -16,7 +16,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 
@@ -396,7 +396,8 @@
     h3 {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 1000;
+        font-weight: 800;
+        font-size: 23px;
         }
     .btn-actualizarestado {
         background-color:  #ffffff;

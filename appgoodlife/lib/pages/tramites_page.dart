@@ -20,7 +20,7 @@ class _TramitesPageState extends State<TramitesPage> {
   final Color verde = Color(0xFF94C93B);
 
   Future<void> cargarTramites() async {
-    final url = Uri.parse("http://192.168.0.20:8000/api/tramites/${widget.usuarioId}");
+    final url = Uri.parse("http://192.168.88.224:8000/api/tramites/${widget.usuarioId}");
     final resp = await http.get(url);
 
     if (resp.statusCode == 200) {
@@ -58,15 +58,38 @@ class _TramitesPageState extends State<TramitesPage> {
             orElse: () => null,
           );
 
-          final String estadoTexto = tramite['estado'] == 'PENDIENTE'
-              ? 'EN CURSO'
-              : tramite['estado'] ?? 'SIN ESTADO';
-          final Color estadoColor = tramite['estado'] == 'PENDIENTE'
-              ? Colors.orange.shade700
-              : Colors.blueGrey;
+          // ▼▼▼ LÓGICA DE ESTADO MEJORADA ▼▼▼
+          final String estado = (tramite['estado'] ?? 'SIN ESTADO').toUpperCase();
+          String estadoTexto;
+          Color estadoColor;
+          bool isClickable;
+
+          switch (estado) {
+            case 'PENDIENTE':
+              estadoTexto = 'EN CURSO';
+              estadoColor = Colors.orange.shade700;
+              isClickable = true;
+              break;
+            case 'FINALIZADO':
+              estadoTexto = 'FINALIZADO';
+              estadoColor = Color(0xFF94C93B);
+              isClickable = false;
+              break;
+            case 'INTERRUMPIDO':
+              estadoTexto = 'INTERRUMPIDO';
+              estadoColor = Colors.red.shade700;
+              isClickable = false;
+              break;
+            default:
+              estadoTexto = estado;
+              estadoColor = Colors.blueGrey;
+              isClickable = true;
+              break;
+          }
 
           return Card(
-            elevation: 3,
+            elevation: isClickable ? 3 : 1,
+            color: isClickable ? Colors.white : Colors.grey.shade100,
             margin: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
@@ -81,6 +104,7 @@ class _TramitesPageState extends State<TramitesPage> {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
+                      color: isClickable ? Colors.black87 : Colors.grey.shade600,
                     ),
                   ),
                   subtitle: detalle == null
@@ -95,29 +119,33 @@ class _TramitesPageState extends State<TramitesPage> {
                         "Documento: ${detalle["documento"]}",
                     style: TextStyle(fontSize: 12),
                   ),
-                  trailing: Icon(Icons.arrow_forward_ios, size: 18),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => DetalleTramitePage(
-                          tramiteId: tramite["id"].toString(),
-                          nombreTramite: tramite["tramite"] ?? "Trámite",
-                        ),
-                      ),
-                    );
-                  },
+                  // ▼▼▼ ICONO Y ACCIÓN CONDICIONAL ▼▼▼
+                  trailing: isClickable
+                      ? Icon(Icons.arrow_forward_ios, size: 18)
+                      : Icon(Icons.lock_outline, size: 18, color: Colors.grey),
+                  onTap: isClickable
+                      ? () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => DetalleTramitePage(
+                                tramiteId: tramite["id"].toString(),
+                                nombreTramite: tramite["tramite"] ?? "Trámite",
+                              ),
+                            ),
+                          );
+                        }
+                      : null, // Desactiva el onTap si no es clickeable
                 ),
-                // ▼▼▼ WIDGET PARA LA ETIQUETA DE ESTADO (MODIFICADO) ▼▼▼
                 Positioned(
-                  bottom: 0, // Anclado a la parte inferior
-                  right: 0,  // Anclado a la derecha
+                  bottom: 0,
+                  right: 0,
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: estadoColor,
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10), // Esquina redondeada ahora es la superior izquierda
+                        topLeft: Radius.circular(10),
                       ),
                     ),
                     child: Text(

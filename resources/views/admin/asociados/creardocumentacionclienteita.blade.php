@@ -55,7 +55,6 @@
                             @enderror
                         </div>
                         <input type="hidden" id="fechabateria" name="fechabateria">
-
                         <div class="form-group" id="acciones_select" style="display: none;">
                             {!! Form::label('', 'Acciones disponibles:') !!}
                             <div id="acciones_disponibles">
@@ -76,7 +75,6 @@
                             }
                         </style>
                     </div>
-
                     <div class="col-lg-3">
                         <div class="form-group">
                             {!! Form::label('file', 'Informe:') !!}
@@ -87,9 +85,8 @@
                             </small>
                             @enderror
                         </div>
-                    <button type="button" class="btn btn-sm btn-regresar" data-toggle="modal" data-target="#previewModal">VISTA PREVIA</button>
+                        <button type="button" class="btn btn-sm btn-regresar" data-toggle="modal" data-target="#previewModal">VISTA PREVIA</button>
                     </div>
-
                     <div class="modal fade" id="previewModal" tabindex="-1" role="dialog" aria-labelledby="previewModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-lg" role="document">
                             <div class="modal-content">
@@ -264,87 +261,6 @@
                             });
                         });
                     </script>
-                    
-                    <style>
-                        table tbody tr {
-                            line-height: 0.8;
-                        }
-                        table tbody tr td {
-                            padding: 4px 5px;
-                            vertical-align: middle;
-                        }
-                        table tbody tr:nth-child(odd) {
-                            background-color: #f1f1f1;
-                        }
-                        table tbody tr:nth-child(even) {
-                            background-color: #ffffff;
-                        }
-                        table tbody tr td[style*="color: red;"] {
-                            font-weight: normal;
-                        }
-                        .btn-verinforme,
-                        .btn-verimagen {
-                            background-color: #ffffff;
-                            border-radius: 5px;
-                            padding: 2px 4px;
-                            font-size: 12px;
-                            margin: 0;
-                            border: 1px solid transparent;
-                            margin-bottom: -8px;
-                            margin-top: -8px;
-                        }
-                        .btn-verinforme {
-                            color: #faa625;
-                            border-color: #faa625;
-                        }
-                        .btn-verinforme:hover {
-                            background-color: #faa625;
-                            color: #ffffff;
-                        }
-                        .btn-verimagen {
-                            color: #25b6fa;
-                            border-color: #25b6fa;
-                        }
-                        .btn-verimagen:hover {
-                            background-color: #25b6fa;
-                            color: #ffffff;
-                        }
-
-                        .btn-docfirmado {
-                            background-color: #ffffff;
-                            border-radius: 5px;
-                            padding: 2px 4px;
-                            font-size: 12px;
-                            margin: 0;
-                            border: 1px solid transparent;
-                            margin-bottom: -8px;
-                            margin-top: -8px;
-                            color: #be26dc;
-                            border-color: #be26dc;
-                        }
-
-                        .btn-docfirmado:hover {
-                            background-color: #be26dc;
-                            color: #ffffff;
-                        }
-                        .btn-docword {
-                            background-color: #ffffff;
-                            border-radius: 5px;
-                            padding: 2px 4px;
-                            font-size: 12px;
-                            margin: 0;
-                            border: 1px solid transparent;
-                            margin-bottom: -8px;
-                            margin-top: -8px;
-                            color: #262cdc;
-                            border-color: #262cdc;
-                        }
-
-                        .btn-docword:hover {
-                            background-color: #262cdc;
-                            color: #ffffff;
-                        }
-                    </style>
                 </div>
                 {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
@@ -511,7 +427,8 @@
     h3 {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 1000;
+        font-weight: 800;
+        font-size: 23px;
         }
     .btn-crear {
         background-color:  #ffffff;
@@ -603,6 +520,86 @@
     }
     .btn-listainformes:hover {
         background-color: #493535;
+        color: #ffffff;
+    }
+</style>
+<style>
+    table tbody tr {
+        line-height: 0.8;
+    }
+    table tbody tr td {
+        padding: 4px 5px;
+        vertical-align: middle;
+    }
+    table tbody tr:nth-child(odd) {
+        background-color: #f1f1f1;
+    }
+    table tbody tr:nth-child(even) {
+        background-color: #ffffff;
+    }
+    table tbody tr td[style*="color: red;"] {
+        font-weight: normal;
+    }
+    .btn-verinforme,
+    .btn-verimagen {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 2px 4px;
+        font-size: 12px;
+        margin: 0;
+        border: 1px solid transparent;
+        margin-bottom: -8px;
+        margin-top: -8px;
+    }
+    .btn-verinforme {
+        color: #faa625;
+        border-color: #faa625;
+    }
+    .btn-verinforme:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }
+    .btn-verimagen {
+        color: #25b6fa;
+        border-color: #25b6fa;
+    }
+    .btn-verimagen:hover {
+        background-color: #25b6fa;
+        color: #ffffff;
+    }
+
+    .btn-docfirmado {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 2px 4px;
+        font-size: 12px;
+        margin: 0;
+        border: 1px solid transparent;
+        margin-bottom: -8px;
+        margin-top: -8px;
+        color: #be26dc;
+        border-color: #be26dc;
+    }
+
+    .btn-docfirmado:hover {
+        background-color: #be26dc;
+        color: #ffffff;
+    }
+    .btn-docword {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 2px 4px;
+        font-size: 12px;
+        margin: 0;
+        border: 1px solid transparent;
+        margin-bottom: -8px;
+        margin-top: -8px;
+        color: #262cdc;
+        border-color: #262cdc;
+    }
+
+    .btn-docword:hover {
+        background-color: #262cdc;
         color: #ffffff;
     }
 </style>

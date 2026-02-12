@@ -31,8 +31,9 @@ class StoreEstadoprogramacionsubclienteRequest extends FormRequest
     {
         $rules = [
             'id' => '',
-            'clientebancoid' => '',
-            'clientebanconombre' => '',
+            'clienteid' => '',
+            'clientenombre' => '',
+            'tipocliente' => '',
             'clientecomunid' => '',
             'clientecomunnombre' => '',
             'clienteitaid' => '',
@@ -52,6 +53,7 @@ class StoreEstadoprogramacionsubclienteRequest extends FormRequest
             'usuarioanulacion' => '',
             'nrosesion' => '',
             'idsubproc' => '',
+            'clientebanconombre' => '',
         ]; 
         return $rules;
     }

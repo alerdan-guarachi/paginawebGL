@@ -80,7 +80,7 @@ class _GoodBitsPageState extends State<GoodBitsPage> {
                 iconColor: naranja,
 
                 title: Text(
-                  "¿Qué son los GoodBits?",
+                  "¿Qué son los GoodPoints?",
                   style: TextStyle(
                     color: Colors.black87,
                     fontWeight: FontWeight.w600,
@@ -90,13 +90,13 @@ class _GoodBitsPageState extends State<GoodBitsPage> {
 
                 children: [
                   Text(
-                    "Los GoodBits son un beneficio que GOOD LIFE otorga a sus clientes por recomendar nuestros servicios.\n\n"
-                        "Si una persona se registra como cliente en GOOD LIFE y te elige como referenciador, tú ganas 20 GoodBits automáticamente.\n\n"
-                        "Los GoodBits funcionan como saldo disponible que puedes utilizarlos como descuento en servicios ofrecidos por GOOD LIFE.\n\n"
-                        "Mientras más recomiendes, más GoodBits acumulas. ¡Es nuestra forma de agradecer tu confianza!",
+                    "Los GoodPoints son un beneficio que GOOD LIFE otorga a sus clientes por recomendar nuestros servicios.\n\n"
+                        "Si una persona se registra como cliente en GOOD LIFE y te elige como referenciador, tú ganas 20 GoodPoints automáticamente.\n\n"
+                        "Los GoodPoints funcionan como saldo disponible que puedes utilizarlos como descuento en servicios ofrecidos por GOOD LIFE.\n\n"
+                        "Mientras más recomiendes, más GoodPoints acumulas. ¡Es nuestra forma de agradecer tu confianza!",
                     style: TextStyle(
-                      fontSize: 14,
-                      height: 1.5,
+                      fontSize: 13,
+                      height: 1.3,
                       color: Colors.black87,
                     ),
                   ),
@@ -148,7 +148,7 @@ class _GoodBitsPageState extends State<GoodBitsPage> {
                         height: 78,
                         child: ClipOval(
                           child: Image.asset(
-                            'assets/goodbits.png',
+                            'assets/goodpoints.png',
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -163,7 +163,7 @@ class _GoodBitsPageState extends State<GoodBitsPage> {
                   Text(
                     "Saldo Disponible:",
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: Colors.black87,
                     ),
@@ -176,7 +176,7 @@ class _GoodBitsPageState extends State<GoodBitsPage> {
                       Text(
                         "${saldo.toStringAsFixed(2)}",
                         style: TextStyle(
-                          fontSize: 40,
+                          fontSize: 33,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
@@ -185,9 +185,9 @@ class _GoodBitsPageState extends State<GoodBitsPage> {
                       SizedBox(height: 1),
 
                       Text(
-                        "GoodBits",
+                        "GoodPoints",
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 15,
                           fontWeight: FontWeight.w400,
                           color: Colors.black54,
                         ),

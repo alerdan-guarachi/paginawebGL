@@ -325,6 +325,32 @@ return [
             'can'  => 'admin.mensajes.create',
         ],
 
+        [
+            'text' => 'Asesorías',
+            'icon' => 'fas fa-fw fas fa-user-nurse',
+            'can'  => 'admin.asesoramiento.listaprogramaciones',
+            'submenu' => [
+                [
+                    'text' => 'Horarios de Atención',
+                    'route'  => 'admin.asesoramiento.horarios',
+                    'icon' => 'fas fa-fw fas fa-clock',
+                    'can'  => 'admin.asesoramiento.horarios',
+                ],
+                [
+                    'text' => 'Lista de Atención',
+                    'route'  => 'admin.asesoramiento.listaprogramaciones',
+                    'icon' => 'fas fa-fw fas fa-calendar-alt',
+                    'can'  => 'admin.asesoramiento.listaprogramaciones',
+                ],
+                [
+                    'text' => 'Agendar Asesoría',
+                    'route'  => 'admin.asesoramiento.progasesoramiento',
+                    'icon' => 'fas fa-fw fas fa-calendar-plus',
+                    'can'  => 'admin.asesoramiento.progasesoramiento',
+                ],
+            ],
+        ],
+
         /* [
             'text' => 'EXCEL',
             'route'  => 'upload.excel',

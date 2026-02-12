@@ -31,9 +31,11 @@ class StoreProgramacionsubclienteRequest extends FormRequest
 {
     $rules = [
         'id' => '',
-        'clientebancoid' => '',
+        'clienteid' => '',
         'clientenombre' => '',
+        'tipocliente' => '',
         'proveedornombre' => '',
+        'proveedorid' => '',
         'accionnombre' => '',
         'areanombre' => '',
         'horaasignada' => '',

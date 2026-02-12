@@ -14,7 +14,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
     <div class="card">
@@ -418,7 +418,8 @@ $('.dropify').dropify();
     h3 {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 1000;
+        font-weight: 800;
+        font-size: 23px;
         }
     h1, th {
         color:#94c93b; 

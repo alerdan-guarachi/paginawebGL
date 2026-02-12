@@ -16,7 +16,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 
@@ -27,12 +27,6 @@
                 <div class="d-flex flex-wrap align-items-center">
                     <form action="{{ route('buscarprogramacionclientescomun', $clientecomun) }}" method="get" class="form-inline">
                         <div class="flex-grow-1">
-                            {{-- <select name="buscarpor" class="form-control mr-sm-2">
-                                <option value="" disabled selected>Fecha de Bateria</option>
-                                @foreach($fechas as $fecha)
-                                    <option value="{{ $fecha }}">{{ $fecha }}</option>
-                                @endforeach
-                            </select> --}}
                             <select name="buscarpor" class="form-control mr-sm-2">
                                 <option value="" disabled {{ request('buscarpor') ? '' : 'selected' }}>Fecha de Bateria</option>
                                 @foreach($fechas as $fecha)
@@ -433,7 +427,8 @@
     h3 {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 1000;
+        font-weight: 800;
+        font-size: 23px;
         }
     .btn-actualizarestado {
         background-color:  #ffffff;

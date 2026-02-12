@@ -623,4 +623,595 @@ class ProveedorController extends Controller
         'saldoanteriorcuenta2','saldoanteriorcuenta3','documentosPorFecha','cuentasbancos','proveedoresServicios',
         'proveedoresServicioscuenta','saldoanteriorcuenta4','totalCuenta4Ingreso','totalCuenta4Egreso'));
     }
+
+    public function listacuentascobrar(Cliente $cliente, ClienteAuditoria $clienteauditoria, ClienteComun $clientecomun, Request $request)
+    {
+        $usuarioAutenticado = auth()->user()->name;
+        $esProveedor = $usuarioAutenticado->role ?? null;
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $cuentaspagar = CuentasCobrar::all();  
+
+        $query = Bateriasubcliente::with(['estadoprogramacionsubcliente', 
+            'documentacionsubcliente', 
+            'programacionsubcliente',
+            'informesfinales',
+            'pagoservicio',
+            'pagoservicioinformefinal'])
+            ->whereNotNull('clienteitaid')
+            ->where('servicio', '<>', 'AJENO') 
+        ->orderBy('clienteitanombre');
+        
+        $query2 = Bateriasubcliente::with(['estadoprogramacionsubclienteauditoria', 
+            'documentacionsubclienteauditoria', 
+            'programacionsubclienteauditoria',
+            'informesfinalesauditoria',
+            'pagoservicio',
+            'pagoservicioinformefinal'])
+            ->whereNotNull('clienteauditoriaid')
+            ->where('servicio', '<>', 'AJENO') 
+        ->orderBy('clienteauditorianombre');
+
+        $query3 = Bateriasubcliente::with(['estadoprogramacionsubclientecomun', 
+            'documentacionsubclientecomun', 
+            'programacionsubclientecomun',
+            'informesfinalescomun'])
+            ->whereNotNull('clientecomunnombre')
+            ->where('servicio', '<>', 'AJENO') 
+        ->orderBy('clientecomunnombre');
+
+        $query4 = Bateriasubcliente::with(['estadoprogramacionsubcliente', 'documentacionsubcliente', 'programacionsubcliente','informesfinales','pagoservicio','pagoservicioinformefinal','provinfofinal',
+            'estadoprogramacionsubclienteauditoria', 'documentacionsubclienteauditoria', 'programacionsubclienteauditoria','informesfinalesauditoria','provinfofinalauditoria',
+            'estadoprogramacionsubclientecomun', 'documentacionsubclientecomun', 'programacionsubclientecomun','informesfinalescomun','provinfofinalcomun'])
+            ->whereNotNull('proveedorasignado')
+            ->where('preciocompra', '!=', NULL)
+            ->where('preciocompra', '!=', 0)
+            ->where('preciocompra', '!=', 0.00)
+            ->where('pagoservicio', '=', 'EXTERNO')
+            ->where('proveedorasignado', '<>', 'PROVEEDOR AJENO') 
+        ->orderBy('proveedorasignado');
+
+        if ($request->has('buscarporcliente') && $request->buscarporcliente !== '') {
+            $query->whereHas('clienteita', function ($q) use ($request) {
+                $q->where('clienteitanombre', 'LIKE', '%' . $request->buscarporcliente . '%');
+            });
+        }
+
+        if ($request->has('buscarporcliente') && $request->buscarporcliente !== '') {
+            $query2->whereHas('clienteauditoria', function ($q) use ($request) {
+                $q->where('clienteauditorianombre', 'LIKE', '%' . $request->buscarporcliente . '%');
+            });
+        }
+
+        if ($request->has('buscarporcliente') && $request->buscarporcliente !== '') {
+            $query3->whereHas('clientecomun', function ($q) use ($request) {
+                $q->where('clientecomunnombre', 'LIKE', '%' . $request->buscarporcliente . '%');
+            });
+        }
+
+        if ($request->has('buscarporcliente') && $request->buscarporcliente !== '') {
+            $query4->whereHas('proveedorasignado', function ($q) use ($request) {
+                $q->where('proveedorasignado', 'LIKE', '%' . $request->buscarporcliente . '%');
+            });
+        }
+
+        $bateriaclientesita = $query->get();
+        $grouped = $bateriaclientesita->groupBy(function($item) {
+            return $item->clienteitanombre . '|' . $item->fechabateria;
+        });
+        $result = [];
+        foreach ($grouped as $key => $items) {
+            $clienteNombre = explode('|', $key)[0];
+            $fechabateria = explode('|', $key)[1];
+
+            $clienteitaid = $items->first()->clienteitaid;
+
+            $tramites = TramiteSubCliente::where('clienteitaid', $clienteitaid)
+                ->where('fechabateria', $fechabateria)
+                ->get();
+            $tramiteNombre = $tramites->isEmpty() ? ['SIN SERVICIO'] : $tramites->pluck('tramite')->toArray();
+
+            $usuarioRegistro = Cliente::where('id', $items->first()->clienteitaid)
+                ->first();
+
+            $usuarioregistro = $usuarioRegistro ? $usuarioRegistro->sucursal : null;
+            $clienteitaid = $items->first()->clienteitaid;
+        
+            $estado = 'COMPLETO';
+            $accionesConEstado = [];
+
+            foreach ($items as $item) {
+                $estadoProgramacion = $item->estadoprogramacionsubcliente
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accionnombre', $item->accionnombre)
+                ->first();
+                
+                $programacionasignada = $item->programacionsubcliente
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accionnombre', $item->accionnombre)
+                ->first();
+                
+                $informesubido = $item->documentacionsubcliente
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accion', $item->accionnombre)
+                ->first();
+                
+                $informefinalsubido = $item->informesfinales
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accion', 'INFORME FINAL')
+                ->first();
+
+                $resultadopagoinformefinal = $item->pagoservicioinformefinal
+                    ->where('provinfofinalid', $item->provinfofinalid)
+                    ->where('tipomovimiento', 'INGRESO')
+                ->first();
+
+                    $resultadopago = $item->programacionsubcliente
+                        ->where('fechabateria', $item->fechabateria)
+                        ->where('accionnombre', $item->accionnombre)
+                        ->first();
+                    
+                    if ($resultadopago) {
+                        $programacionId = $resultadopago->id;
+                        $programacionfechabateria = $resultadopago->fechabateria;
+                        $programacioncliente = $resultadopago->clienteitaid;
+                        $programacionaccion = $resultadopago->accionnombre;
+
+                        $detallerecibo = Detallerecibo::where('programacionid', $programacionId)
+                                                      ->where('tipomovimiento', 'INGRESO')
+                                                      ->first();
+
+                        $resultadopagobateria = Bateriasubcliente::where('fechabateria', $programacionfechabateria)
+                                                      ->where('accionnombre', $programacionaccion)
+                                                      ->where('clienteitaid', $programacioncliente)
+                                                      ->first();
+                    
+                        if ($detallerecibo) {
+                            $pagoservicioinforme = $detallerecibo->created_at->toDateString();
+                        } else {
+                            $pagoservicioinforme = $resultadopagobateria->pagoatencion === 'PAGO PROCESADO' ? 'PROCESADO' : null;
+                        }
+                    } else {
+                        $pagoservicioinforme = null;
+                    }
+
+                $fechaAtencion = $estadoProgramacion ? $estadoProgramacion->fechaatencionprogramacion : null;
+                $fechaprogramacion = $programacionasignada ? $programacionasignada->fechaasignada : null;
+                $informedocumentacion = $informesubido ? $informesubido->created_at->toDateString() : null;
+                $informedocumentacionfinal = $informefinalsubido ? $informefinalsubido->created_at->toDateString() : null;
+                $pagoservicioinformefinal = in_array($item->id, [5505, 5506, 5507, 5508, 5509, 5510, 5511, 5512, 5513, 5514, 5515, 5516, 5517, 5518, 5519, 5520, 5521, 5522, 5523, 5524, 5525, 5526, 5527, 5528, 5529, 5530, 5531, 5532]) 
+                ? 'PROCESADO' 
+                : ($resultadopagoinformefinal ? $resultadopagoinformefinal->created_at->toDateString() : null);
+
+                $accionesConEstado[] = [
+                    'id' => $item->id,
+                    'accion' => $item->accionnombre,
+                    'servicio' => $item->servicio,
+                    'cantidadcuotas' => $item->cantidadcuotas,
+                    'precio' => $item->precio,
+                    'pagoservicio' => $item->pagoservicio,
+                    'preciocompra' => $item->preciocompra,
+                    'proveedorasignado' => $item->proveedorasignado,
+                    'fechaasignada' => $item->fechaasignada,
+                    'created_at' => $item->created_at,
+                    'fechaatencionprogramacion' => $fechaAtencion,
+                    'fechaprogramacion' => $fechaprogramacion,
+                    'informedocumentacion' => $informedocumentacion,
+                    'informedocumentacionfinal' => $informedocumentacionfinal,
+                    'clienteitanombre' => $item->clienteitanombre,
+                    'fechabateria' => $item->fechabateria,
+                    'pagoservicioinforme' => $pagoservicioinforme,
+                    'pagoservicioinformefinal' => $pagoservicioinformefinal,
+                ];
+            }
+            $result[] = [
+                'clienteitaid' => $clienteitaid,
+                'clienteitanombre' => $clienteNombre,
+                'fechabateria' => $fechabateria,
+                'tramite' => $tramiteNombre,
+                'estado' => $estado,
+                'acciones' => $accionesConEstado,
+                'usuarioregistro' => $usuarioregistro,
+                'pagoservicioinforme' => $pagoservicioinforme,
+            ];
+        }
+
+        $bateriaclientesauditoria = $query2->get();
+        $grouped2 = $bateriaclientesauditoria->groupBy(function($item) {
+            return $item->clienteauditorianombre . '|' . $item->fechabateria;
+        });
+        $result2 = [];
+        foreach ($grouped2 as $key => $items) {
+            $clienteNombre = explode('|', $key)[0];
+            $fechabateria = explode('|', $key)[1];
+
+            $clienteauditoriaid = $items->first()->clienteauditoriaid;
+
+            $tramites = TramiteSubCliente::where('clienteauditoriaid', $clienteauditoriaid)
+                ->where('fechabateria', $fechabateria)
+                ->get();
+            $tramiteNombre = $tramites->isEmpty() ? ['SIN SERVICIO'] : $tramites->pluck('tramite')->toArray();
+
+            $usuarioRegistro = ClienteAuditoria::where('id', $items->first()->clienteauditoriaid)
+                ->first();
+
+            $usuarioregistro = $usuarioRegistro ? $usuarioRegistro->sucursal : null;
+            $clienteauditoriaid = $items->first()->clienteauditoriaid;
+        
+            $estado = 'COMPLETO';
+            $accionesConEstado = [];
+
+            foreach ($items as $item) {
+                $estadoProgramacion = $item->estadoprogramacionsubclienteauditoria
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accionnombre', $item->accionnombre)
+                    ->first();
+                
+                $programacionasignada = $item->programacionsubclienteauditoria
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accionnombre', $item->accionnombre)
+                    ->first();
+                
+                $informesubido = $item->documentacionsubclienteauditoria
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accion', $item->accionnombre)
+                    ->first();
+                
+                $informefinalsubido = $item->informesfinalesauditoria
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accion', 'INFORME FINAL')
+                    ->first();
+
+                $resultadopagoinformefinal = $item->pagoservicioinformefinal
+                    ->where('provinfofinalid', $item->provinfofinalid)
+                    ->where('tipomovimiento', 'INGRESO')
+                ->first();
+
+                $resultadopago = $item->programacionsubclienteauditoria
+                        ->where('fechabateria', $item->fechabateria)
+                        ->where('accionnombre', $item->accionnombre)
+                        ->first();
+                    
+                    if ($resultadopago) {
+                        $programacionId = $resultadopago->id;
+                        $programacionfechabateria = $resultadopago->fechabateria;
+                        $programacioncliente = $resultadopago->clienteauditoriaid;
+                        $programacionaccion = $resultadopago->accionnombre;
+
+                        $detallerecibo = Detallerecibo::where('programacionid', $programacionId)
+                                                      ->where('tipomovimiento', 'INGRESO')
+                                                      ->first();
+
+                        $resultadopagobateria = Bateriasubcliente::where('fechabateria', $programacionfechabateria)
+                                                      ->where('accionnombre', $programacionaccion)
+                                                      ->where('clienteauditoriaid', $programacioncliente)
+                                                      ->first();
+                    
+                        if ($detallerecibo) {
+                            $pagoservicioinforme = $detallerecibo->created_at->toDateString();
+                        } else {
+                            $pagoservicioinforme = $resultadopagobateria->pagoatencion === 'PAGO PROCESADO' ? 'PROCESADO' : null;
+                        }
+                    } else {
+                        $pagoservicioinforme = null;
+                    }
+
+                $fechaAtencion = $estadoProgramacion ? $estadoProgramacion->fechaatencionprogramacion : null;
+                $fechaprogramacion = $programacionasignada ? $programacionasignada->fechaasignada : null;
+                $informedocumentacion = $informesubido ? $informesubido->created_at->toDateString() : null;
+                $informedocumentacionfinal = $informefinalsubido ? $informefinalsubido->created_at->toDateString() : null;
+                $pagoservicioinformefinal = $resultadopagoinformefinal ? $resultadopagoinformefinal->created_at->toDateString() : null;
+
+                $accionesConEstado[] = [
+                    'id' => $item->id,
+                    'accion' => $item->accionnombre,
+                    'servicio' => $item->servicio,
+                    'precio' => $item->precio,
+                    'cantidadcuotas' => $item->cantidadcuotas,
+                    'pagoservicio' => $item->pagoservicio,
+                    'preciocompra' => $item->preciocompra,
+                    'proveedorasignado' => $item->proveedorasignado,
+                    'fechaasignada' => $item->fechaasignada,
+                    'created_at' => $item->created_at,
+                    'fechaatencionprogramacion' => $fechaAtencion,
+                    'fechaprogramacion' => $fechaprogramacion,
+                    'informedocumentacion' => $informedocumentacion,
+                    'informedocumentacionfinal' => $informedocumentacionfinal,
+                    'clienteauditorianombre' => $item->clienteauditorianombre,
+                    'fechabateria' => $item->fechabateria,
+                    'pagoservicioinforme' => $pagoservicioinforme,
+                    'pagoservicioinformefinal' => $pagoservicioinformefinal,
+                ];
+            }
+            $result2[] = [
+                'clienteauditoriaid' => $clienteauditoriaid,
+                'clienteauditorianombre' => $clienteNombre,
+                'fechabateria' => $fechabateria,
+                'tramite' => $tramiteNombre,
+                'estado' => $estado,
+                'acciones' => $accionesConEstado,
+                'usuarioregistro' => $usuarioregistro,
+                'pagoservicioinforme' => $pagoservicioinforme,
+            ];
+        }
+        
+        $bateriaclientescomun = $query3->get();
+        $grouped3 = $bateriaclientescomun->groupBy(function($item) {
+            return $item->clientecomunnombre . '|' . $item->fechabateria;
+        });
+        $result3 = [];
+        foreach ($grouped3 as $key => $items) {
+            $clienteNombre = explode('|', $key)[0];
+            $fechabateria = explode('|', $key)[1];
+
+            $clientecomunid = $items->first()->clientecomunid;
+
+            $tramites = TramiteSubCliente::where('clientecomunid', $clientecomunid)
+                ->where('fechabateria', $fechabateria)
+                ->get();
+            $tramiteNombre = $tramites->isEmpty() ? ['SIN SERVICIO'] : $tramites->pluck('tramite')->toArray();
+
+            $usuarioRegistro = ClienteComun::where('id', $items->first()->clientecomunid)
+                ->first();
+
+            $usuarioregistro = $usuarioRegistro ? $usuarioRegistro->sucursal : null;
+            $clientecomunid = $items->first()->clientecomunid;
+        
+            $estado = 'COMPLETO';
+            $accionesConEstado = [];
+
+            foreach ($items as $item) {
+                $estadoProgramacion = $item->estadoprogramacionsubclientecomun
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accionnombre', $item->accionnombre)
+                    ->first();
+                
+                $programacionasignada = $item->programacionsubclientecomun
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accionnombre', $item->accionnombre)
+                    ->first();
+                
+                $informesubido = $item->documentacionsubclientecomun
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accion', $item->accionnombre)
+                    ->first();
+
+                    $resultadopagoinformefinal = $item->pagoservicioinformefinal
+                    ->where('provinfofinalid', $item->provinfofinalid)
+                    ->where('tipomovimiento', 'INGRESO')
+                ->first();
+
+                $resultadopago = $item->programacionsubclientecomun
+                        ->where('fechabateria', $item->fechabateria)
+                        ->where('accionnombre', $item->accionnombre)
+                        ->first();
+                    
+                    if ($resultadopago) {
+                        $programacionId = $resultadopago->id;
+                        $programacionfechabateria = $resultadopago->fechabateria;
+                        $programacioncliente = $resultadopago->clientecomunid;
+                        $programacionaccion = $resultadopago->accionnombre;
+
+                        $detallerecibo = Detallerecibo::where('programacionid', $programacionId)
+                                                      ->where('tipomovimiento', 'INGRESO')
+                                                      ->first();
+
+                        $resultadopagobateria = Bateriasubcliente::where('fechabateria', $programacionfechabateria)
+                                                      ->where('accionnombre', $programacionaccion)
+                                                      ->where('clientecomunid', $programacioncliente)
+                                                      ->first();
+                    
+                        if ($detallerecibo) {
+                            $pagoservicioinforme = $detallerecibo->created_at->toDateString();
+                        } else {
+                            $pagoservicioinforme = $resultadopagobateria?->pagoatencion === 'PAGO PROCESADO' ? 'PROCESADO' : null;
+                        }
+                    } else {
+                        $pagoservicioinforme = null;
+                    }
+
+                $pagoservicioinformefinal = $resultadopagoinformefinal ? $resultadopagoinformefinal->created_at->toDateString() : null;
+
+                $fechaAtencion = $estadoProgramacion ? $estadoProgramacion->fechaatencionprogramacion : null;
+                $fechaprogramacion = $programacionasignada ? $programacionasignada->fechaasignada : null;
+                $informedocumentacion = $informesubido ? $informesubido->created_at->toDateString() : null;
+                $informedocumentacionfinal = $informefinalsubido ? $informefinalsubido->created_at->toDateString() : null;
+                $pagoingreso = $informefinalsubido ? $informefinalsubido->estado->toDateString() : null;
+
+                $accionesConEstado[] = [
+                    'id' => $item->id,
+                    'accion' => $item->accionnombre,
+                    'servicio' => $item->servicio,
+                    'precio' => $item->precio,
+                    'pagoservicio' => $item->pagoservicio,
+                    'cantidadcuotas' => $item->cantidadcuotas,
+                    'preciocompra' => $item->preciocompra,
+                    'proveedorasignado' => $item->proveedorasignado,
+                    'fechaasignada' => $item->fechaasignada,
+                    'created_at' => $item->created_at,
+                    'fechaatencionprogramacion' => $fechaAtencion,
+                    'fechaprogramacion' => $fechaprogramacion,
+                    'informedocumentacion' => $informedocumentacion,
+                    'informedocumentacionfinal' => $informedocumentacionfinal,
+                    'pagoingreso' => $pagoingreso,
+                    'clientecomunnombre' => $item->clientecomunnombre,
+                    'fechabateria' => $item->fechabateria,
+                    'pagoservicioinforme' => $pagoservicioinforme,
+                    'pagoservicioinformefinal' => $pagoservicioinformefinal,
+                ];
+            }
+            $result3[] = [
+                'clientecomunid' => $clientecomunid,
+                'clientecomunnombre' => $clienteNombre,
+                'fechabateria' => $fechabateria,
+                'tramite' => $tramiteNombre,
+                'estado' => $estado,
+                'acciones' => $accionesConEstado,
+                'usuarioregistro' => $usuarioregistro,
+                'pagoservicioinforme' => $pagoservicioinforme,
+            ];
+        }
+
+        $bateriaproveedores = $query4->get();
+        $grouped = $bateriaproveedores->groupBy(function($item) {
+            return $item->proveedorasignado;
+        });
+
+        $result4 = [];
+        foreach ($grouped as $key => $items) {
+            $clienteNombre = explode('|', $key)[0];
+            $estado = 'COMPLETO';
+            $accionesConEstado = [];
+
+            foreach ($items as $item) {
+
+                    $estadoProgramacion = collect([
+                            $item->estadoprogramacionsubcliente, 
+                            $item->estadoprogramacionsubclienteauditoria, 
+                            $item->estadoprogramacionsubclientecomun
+                        ])->filter();
+                        
+                        $resultadoestado = $estadoProgramacion
+                            ->flatMap(function ($estadoprogramacion) { 
+                                return $estadoprogramacion;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                            ->where('accionnombre', $item->accionnombre)
+                    ->first();  
+
+                    $programaciones = collect([
+                            $item->programacionsubcliente, 
+                            $item->programacionsubclienteauditoria, 
+                            $item->programacionsubclientecomun
+                        ])->filter();
+                    
+                        $resultadoprog = $programaciones
+                            ->flatMap(function ($programacion) { 
+                                return $programacion;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                            ->where('accionnombre', $item->accionnombre)
+                    ->first();                    
+
+                    $informesubido = collect([
+                            $item->documentacionsubcliente, 
+                            $item->documentacionsubclienteauditoria, 
+                            $item->documentacionsubclientecomun
+                        ])->filter();
+                        
+                        $resultadoinforme = $informesubido
+                            ->flatMap(function ($informe) { 
+                                return $informe;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                            ->where('accion', $item->accionnombre)
+                    ->first();           
+
+                    $informefinalsubido = collect([
+                            $item->informesfinales, 
+                            $item->informesfinalesauditoria, 
+                            $item->informesfinalescomun
+                        ])->filter();
+                        
+                        $resultadoinformefinal = $informefinalsubido
+                            ->flatMap(function ($informefinal) { 
+                                return $informefinal;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                    ->first();  
+
+                    $provinformes = collect([
+                            $item->provinfofinal, 
+                            $item->provinfofinalauditoria, 
+                            $item->provinfofinalcomun
+                        ])->filter();
+                        
+                        $resultadoprovinformes = $provinformes
+                            ->flatMap(function ($provinfo) { 
+                                return $provinfo;
+                            })
+                            ->where('fechabateria', $item->fechabateria)
+                    ->first();  
+
+                    $resultadopagoinformefinal = $item->pagoservicioinformefinal()
+                        ->where('provinfofinalid', $item->provinfofinalid)
+                        ->where('tipomovimiento', 'INGRESO')
+                    ->first();
+
+                    $pagobateria = collect([
+                        $item->programacionsubcliente,
+                        $item->programacionsubclienteauditoria,
+                        $item->programacionsubclientecomun
+                    ])->filter();
+                    
+                    $resultadopago = $pagobateria
+                        ->flatMap(fn($pago) => $pago)
+                        ->where('fechabateria', $item->fechabateria)
+                        ->where('accionnombre', $item->accionnombre)
+                        ->first();
+                    
+                    if ($resultadopago) {
+                        $programacionId = $resultadopago->id;
+                        $detallerecibo = Detallerecibo::where('programacionid', $programacionId)
+                                                      ->where('tipomovimiento', 'INGRESO')
+                                                      ->first();
+                    
+                        if ($detallerecibo) {
+                            $pagoservicioinforme = $detallerecibo->created_at->toDateString();
+                        } else {
+                            $pagoservicioinforme = $resultadopago->pagoatencion === 'PAGO PROCESADO' ? 'PROCESADO' : null;
+                        }
+                    } else {
+                        $pagoservicioinforme = null;
+                    }
+
+                $fechaAtencion = $resultadoestado ? $resultadoestado->fechaatencionprogramacion : null;
+                $fechaprogramacion = $resultadoprog ? $resultadoprog->fechaasignada : null;
+                $idprogramacion = $resultadoprog ? $resultadoprog->id : null;
+                $nrofacturaprog = $resultadoprog ? $resultadoprog->nrofactura : null;
+                $informedocumentacion = $resultadoinforme ? $resultadoinforme->created_at->toDateString() : null;
+                $informedocumentacionfinal = $resultadoinformefinal ? $resultadoinformefinal->created_at->toDateString() : null;
+                $pagoservicioinformefinal = in_array($item->id, [3173, 3178, 3187, 3043]) 
+                ? 'PROCESADO' 
+                : ($resultadopagoinformefinal ? $resultadopagoinformefinal->created_at->toDateString() : null);
+                $nrofacturainformefinal = $resultadoprovinformes ? $resultadoprovinformes->nrofactura : null;
+
+                $accionesConEstado[] = [
+                    'id' => $item->id,
+                    'accion' => $item->accionnombre,
+                    'servicio' => $item->servicio,
+                    'precio' => $item->precio,
+                    'pagoservicio' => $item->pagoservicio,
+                    'preciocompra' => $item->preciocompra,
+                    'clienteitaid' => $item->clienteitaid,
+                    'clienteitanombre' => $item->clienteitanombre,
+                    'clienteauditoriaid' => $item->clienteauditoriaid,
+                    'clienteauditorianombre' => $item->clienteauditorianombre,
+                    'clientecomunid' => $item->clientecomunid,
+                    'clientecomunnombre' => $item->clientecomunnombre,
+                    'fechaasignada' => $item->fechaasignada,
+                    'created_at' => $item->created_at,
+                    'fechaatencionprogramacion' => $fechaAtencion,
+                    'fechaprogramacion' => $fechaprogramacion,
+                    'informedocumentacion' => $informedocumentacion,
+                    'informedocumentacionfinal' => $informedocumentacionfinal,
+                    'pagoservicioinforme' => $pagoservicioinforme,
+                    'pagoservicioinformefinal' => $pagoservicioinformefinal,
+                    'idprogramacion' => $idprogramacion,
+                    'fechabateria' => $item->fechabateria,
+                    'provinfofinalid' => $item->provinfofinalid,
+                    'nrofacturaprog' => $nrofacturaprog,
+                    'nrofacturainformefinal' => $nrofacturainformefinal,
+                ];
+            }
+            $result4[] = [
+                'proveedorasignado' => $item->proveedorasignado,
+                'estado' => $estado,
+                'acciones' => $accionesConEstado,
+                'fechabateria' => $item->fechabateria,
+            ];
+        }
+
+        return view('admin.caja.cuentascobrar.listacuentascobrar', compact('cuentaspagar','usuarioAutenticado',
+            'result', 'cliente','result2', 'clienteauditoria','result3', 'clientecomun','result4'));
+    }
 }

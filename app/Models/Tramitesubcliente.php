@@ -15,13 +15,13 @@ class Tramitesubcliente extends Model
     static $rules = [
         'id' => '',
         'tramite' => 'max:255',
-        'clienteitaid' => 'required|max:45',
-        'clienteitanombre' => 'required|max:45',
+        'clienteitaid' => 'max:45',
+        'clienteitanombre' => 'max:255',
         'apoderadoasignado' => 'max:255',
         'usuarioinicial' => 'max:255',
         'usuariofinal' => 'max:45',
-        'estado' => 'max:45',
-        'observaciones' => 'max:45',
+        'estado' => 'max:255',
+        'observaciones' => 'max:255',
         'ciudad' => 'max:45',
         'usuarioid' => 'max:45',
         'usuarioregistro' => 'max:90',
@@ -39,6 +39,9 @@ class Tramitesubcliente extends Model
         'historiafinalizado' => '',
         'requisitofinalizado' => '',
         'fechainicio' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
+        'tipocliente' => '',
     ]; 
 
     protected $fillable = [
@@ -68,6 +71,9 @@ class Tramitesubcliente extends Model
         'historiafinalizado',
         'requisitofinalizado',
         'fechainicio',
+        'clienteid',
+        'clientenombre',
+        'tipocliente',
     ];
 
     public function areaaccion()

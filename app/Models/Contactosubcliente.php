@@ -13,6 +13,9 @@ class Contactosubcliente extends Model
 
     static $rules = [
         'id' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
+        'tipocliente' => '',
         'clienteitaid' => 'max:45',
         'clienteitanombre' => 'max:90',
         'clientecomunid' => 'max:45',
@@ -26,12 +29,15 @@ class Contactosubcliente extends Model
         'telefonocontacto' => 'numeric|max:90',
         'parentesco' => 'required|max:45',
         'usuarioid' => 'required|max:45',
-        'usuarioregistro' => 'required|max:45',
+        'usuarioregistro' => 'required|max:255',
 
     ]; 
 
     protected $fillable = [
         'id',
+        'clienteid',
+        'clientenombre',
+        'tipocliente',
         'clienteitaid',
         'clienteitanombre',
         'clientecomunid',

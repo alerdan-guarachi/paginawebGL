@@ -9,6 +9,11 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/requisitosgeneral.css') }}">
+<style>
+    h3 {
+    font-size: 23px;
+    }
+</style>
 @stop
 
 @section('content')

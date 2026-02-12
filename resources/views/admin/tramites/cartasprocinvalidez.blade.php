@@ -512,7 +512,7 @@
                                                             let filasActuales = tabla.querySelectorAll('tr').length;
                                                             let i = filasActuales + 1;
                                                             for (const clave in agrupados) {
-                                                                if (i > 10) break;
+                                                                if (i > 30) break;
                                                                 const especialidad = clave;
                                                                 const detalle = tipoDocumento;
                                                                 const hojas = agrupados[clave].totalHojas;

@@ -378,7 +378,7 @@ public function index(Request $request)
     
     $query->where('cajacentral.estado', '<>', 'ANULADO');
 
-    $detalles = $query->get();
+    $detalles = $query->simplePaginate(500);
     /* $totalMontototal = $detalles->sum('montototal'); */
     $totalMontototal = $detalles->sum(function ($detalle) {
         return $detalle->montototal - ($detalle->descuentoatc ?? 0);

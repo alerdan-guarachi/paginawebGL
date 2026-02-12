@@ -59,7 +59,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="form-group col-lg-4" id="campoTipopension" style="display: none;">
+                                    <div class="form-group col-lg-3" id="campoTipopension" style="display: none;">
                                         {!! Form::label('tipopension', 'Tipo Pensión:') !!}
                                         <select name="tipopension" class="form-control form-control-sm">
                                             <option value="">Selecciona una opción</option>
@@ -67,17 +67,56 @@
                                             <option value="DERIVADA DE INVALIDEZ">DERIVADA DE INVALIDEZ</option>
                                         </select>
                                     </div>
+                                    <div class="form-group col-lg-3" id="campoGenerofallecido" style="display: none;">
+                                        {!! Form::label('generofallecido', 'Género (Fallecido):') !!}
+                                        <select name="generofallecido" class="form-control form-control-sm">
+                                            <option value="">Selecciona una opción</option>
+                                            <option value="MASCULINO">MASCULINO</option>
+                                            <option value="FEMENINO">FEMENINO</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-lg-4" id="campoNombrefallecido" style="display: none;">
+                                        {!! Form::label('nombrefallecido', 'Nombre (Fallecido):') !!}
+                                        <input type="text" class="form-control form-control-sm" id="nombrefallecido" name="nombrefallecido">
+                                    </div>
+                                    <div class="form-group col-lg-2" id="campoCifallecido" style="display: none;">
+                                        {!! Form::label('cifallecido', 'CI (Fallecido):') !!}
+                                        <input type="text" class="form-control form-control-sm" id="cifallecido" name="cifallecido">
+                                    </div>
+
                                     <script>
                                         document.addEventListener("DOMContentLoaded", function () {
                                             const tipoPdfSelect = document.getElementById("tipoPdfSelect");
                                             const campoTipopension = document.getElementById("campoTipopension");
+                                            const campoGenerofallecido = document.getElementById("campoGenerofallecido");
+                                            const campoNombrefallecido = document.getElementById("campoNombrefallecido");
+                                            const campoCifallecido = document.getElementById("campoCifallecido");
+
                                             function toggleTipopension() {
+
                                                 if (tipoPdfSelect.value === "PENSIÓN POR MUERTE") {
+
                                                     campoTipopension.style.display = "block";
-                                                } else {
+                                                    campoGenerofallecido.style.display = "block";
+                                                    campoNombrefallecido.style.display = "block";
+                                                    campoCifallecido.style.display = "block";
+
+                                                } else if (tipoPdfSelect.value === "MASA HEREDITARIA") {
+
                                                     campoTipopension.style.display = "none";
+                                                    campoGenerofallecido.style.display = "block";
+                                                    campoNombrefallecido.style.display = "block";
+                                                    campoCifallecido.style.display = "block";
+
+                                                } else {
+
+                                                    campoTipopension.style.display = "none";
+                                                    campoGenerofallecido.style.display = "none";
+                                                    campoNombrefallecido.style.display = "none";
+                                                    campoCifallecido.style.display = "none";
                                                 }
                                             }
+
                                             tipoPdfSelect.addEventListener("change", toggleTipopension);
                                             toggleTipopension();
                                         });

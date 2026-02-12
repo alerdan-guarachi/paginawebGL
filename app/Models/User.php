@@ -27,6 +27,8 @@ class User extends Authenticatable
         'sucursal',
         'clienteid',
         'fcm_token',
+        'contrasena',
+        'estado',
     ];
 
     /**
@@ -41,6 +43,8 @@ class User extends Authenticatable
         'sucursal',
         'clienteid',
         'fcm_token',
+        'contrasena',
+        'estado',
     ];
 
     /**

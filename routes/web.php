@@ -45,6 +45,7 @@ use App\Models\Recibo;
 use App\Http\Controllers\ExcelController;
 use App\Http\Controllers\Admin\PartnersController;
 use App\Http\Controllers\Admin\AssistancesController;
+use App\Http\Controllers\Admin\AsesoramientoController;
 
 //APP MOVIL
 use App\Http\Controllers\Api\AuthController;
@@ -55,6 +56,24 @@ Route::get('/asesoramientolegal', [App\Http\Controllers\PaginawebController::cla
 Route::get('/contact', [App\Http\Controllers\PaginawebController::class, 'contact'])->name('contact');
 Route::get('/medicina', [App\Http\Controllers\PaginawebController::class, 'medicina'])->name('medicina');
 Route::get('/sobrenosotros', [App\Http\Controllers\PaginawebController::class, 'sobrenosotros'])->name('sobrenosotros');
+
+//ASESORAMIENTO
+    Route::resource('asesoramiento', AsesoramientoController::class)->names('admin.asesoramiento');
+
+    Route::get('/agendarasesoria', [AsesoramientoController::class, 'programarasesoria'])->name('programarasesoria');
+    Route::get('/horarios', [AsesoramientoController::class, 'horarios'])->name('admin.asesoramiento.horarios');
+    Route::post('/horarios', [AsesoramientoController::class, 'store'])->name('admin.asesoramiento.store');
+    Route::put('/horarios/{id}', [AsesoramientoController::class, 'update'])->name('admin.asesoramiento.update');
+    Route::post('/horarios/{id}/toggle', [AsesoramientoController::class, 'toggle'])->name('admin.asesoramiento.toggle');
+    Route::post('/bloqueos', [AsesoramientoController::class, 'bloquear'])->name('admin.asesoramiento.bloquear');
+    Route::get('/progasesoramiento', [AsesoramientoController::class, 'progasesoramiento'])->name('admin.asesoramiento.progasesoramiento');
+    Route::get('/listaprogramaciones', [AsesoramientoController::class, 'listaprogramaciones'])->name('admin.asesoramiento.listaprogramaciones');
+    Route::get('/progasesoramiento/horarios/{asesor}/{dia}',[AsesoramientoController::class, 'horariosPorDia'])->name('admin.asesoramiento.progasesoramiento.horarios');
+    Route::post('/progasesoramiento/guardar', [AsesoramientoController::class, 'guardarProgramacion'])->name('admin.asesoramiento.guardar');
+    Route::get('/progasesoramiento/ocupados/{asesor}/{fecha}',[AsesoramientoController::class, 'horariosOcupados'])->name('admin.asesoramiento.ocupados');
+    Route::get('/asesoramiento/ticket-imagen/{id}', [AsesoramientoController::class, 'ticketImagen'])->name('admin.asesoramiento.ticket.imagen');
+    Route::post('/asesoria/actualizar-estado', [AsesoramientoController::class, 'actualizarEstado'])->name('asesoria.actualizarEstado');
+//
 
 Auth::routes();
 
@@ -181,6 +200,9 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::get('detallemovimientos', [BancoController::class, 'detallemovimientos'])->name('admin.banco.detallemovimientos');
 //
 
+//ASESORAMIENTO
+    
+//
 //INVENTARIO
     Route::get('crearactivofijo', [InventarioController::class, 'crearactivofijo'])->name('admin.inventario.crearactivofijo');
     Route::post('guardaractivofijo', [InventarioController::class, 'guardaractivofijo'])->name('admin.inventario.guardaractivofijo');
@@ -656,6 +678,13 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
 
     //CREAR Y EDITAR CLIENTE ITA
         Route::get('asociados/crearclienteita/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@crearclienteita')->name('admin.asociados.crearclienteita');
+        
+        //NUEVO 090226
+        Route::get('asociados/pasaraclienteita/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@pasaraclienteita')->name('admin.asociados.pasaraclienteita');
+        Route::post('asociados/guardarpreclienteita/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@guardarpreclienteita')->name('admin.asociados.guardarpreclienteita');
+        Route::post('/clientes/{cliente}/crear-usuario',[AsociadoController::class, 'crearUsuario'])->name('clientes.crearUsuario');
+        //
+
         Route::post('asociados/guardarclienteita/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@guardarclienteita')->name('admin.asociados.guardarclienteita');
         Route::get('asociados/listadoclienteita/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@listadoclienteita')->name('admin.asociados.listadoclienteita');
         Route::get('asociados/documentacionmultipleclienteita/{asociado}', 'App\Http\Controllers\Admin\AsociadoController@documentacionmultipleclienteita')->name('admin.asociados.documentacionmultipleclienteita');
@@ -715,6 +744,7 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
         Route::get('asociados/generaretiquetaclienteitasegundasolicitud/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@generaretiquetaclienteitasegundasolicitud')->name('admin.asociados.generaretiquetaclienteitasegundasolicitud');
         Route::get('asociados/generarchecklistclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@generarchecklistclienteita')->name('admin.asociados.generarchecklistclienteita');
         Route::post('asociados/descargarchecklistclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@descargarchecklistclienteita')->name('admin.asociados.descargarchecklistclienteita');
+        Route::post('asociados/descargarchecklistpensionmuerte/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@descargarchecklistpensionmuerte')->name('admin.asociados.descargarchecklistpensionmuerte');
         Route::get('asociados/subirdocrequisitos/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@subirdocrequisitos')->name('admin.asociados.subirdocrequisitos');
         Route::put('asociados/guardardocrequisitos/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardardocrequisitos')->name('admin.asociados.guardardocrequisitos');
         Route::post('asociados/descargarsolochecklistclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@descargarSOLOchecklistclienteITA')->name('admin.asociados.descargarsolochecklistclienteita');

@@ -1323,210 +1323,161 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-lg-4">
-                            <strong style="color: #94c93b">ASIGNAR PROVEEDOR</strong>
-                            <div class="form-group" style="margin-top: 15px"> 
-                                <strong>Fecha Batería:</strong>
-                                <select id="select-fechas" name="fechabateria" class="form-control" 
-                                        data-tramites='@json($tramitesPorFecha)' 
-                                        data-cliente-con-invalidez="{{ $clienteConInvalidez ? 'true' : 'false' }}"
-                                        data-cliente-con-apelacion-segunda="{{ $clienteConApelacionOSegunda ? 'true' : 'false' }}">
-                                    <option value=""></option>
-                                    @foreach($accionesPorFecha as $fecha => $acciones)
-                                        <option value="{{ $fecha }}">{{ $fecha }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                {!! Form::label('tramite', 'Trámite asignado:') !!}
-                                {!! Form::text('tramite', null, ['class' => 'form-control', 'placeholder' => '' , 'readonly' => 'readonly' ]) !!}
-                                @error('tramite')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{ $message }}
-                                    </small>
-                                @enderror
-                            </div>
-                            
-                            <script>
-                            document.addEventListener('DOMContentLoaded', function () {
-                                const selectFechas = document.getElementById('select-fechas');
-                                const tramiteInput = document.querySelector('input[name="tramite"]');
+                            <div class="card">
+                                <div class="card-body">
+                                    <strong style="color: #94c93b">ASIGNAR PROVEEDOR</strong>
+                                    <div class="form-group" style="margin-top: 15px"> 
+                                        <strong>Fecha Batería:</strong>
+                                        <select id="select-fechas" name="fechabateria" class="form-control" required
+                                                data-tramites='@json($tramitesPorFecha)' 
+                                                data-cliente-con-invalidez="{{ $clienteConInvalidez ? 'true' : 'false' }}"
+                                                data-cliente-con-apelacion-segunda="{{ $clienteConApelacionOSegunda ? 'true' : 'false' }}">
+                                            <option value=""></option>
+                                            @foreach($accionesPorFecha as $fecha => $acciones)
+                                                <option value="{{ $fecha }}">{{ $fecha }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        {!! Form::label('tramite', 'Trámite asignado:') !!}
+                                        {!! Form::text('tramite', null, ['class' => 'form-control', 'placeholder' => '' , 'readonly' => 'readonly', 'required']) !!}
+                                    </div>
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            const selectFechas = document.getElementById('select-fechas');
+                                            const tramiteInput = document.querySelector('input[name="tramite"]');
 
-                                if (selectFechas) {
-                                    // Obtén los datos de trámites desde el atributo data-tramites
-                                    const tramitesPorFecha = JSON.parse(selectFechas.getAttribute('data-tramites'));
+                                            if (selectFechas) {
+                                                // Obtén los datos de trámites desde el atributo data-tramites
+                                                const tramitesPorFecha = JSON.parse(selectFechas.getAttribute('data-tramites'));
 
-                                    // Escucha cambios en el select
-                                    selectFechas.addEventListener('change', function () {
-                                        const fechaSeleccionada = this.value;
+                                                // Escucha cambios en el select
+                                                selectFechas.addEventListener('change', function () {
+                                                    const fechaSeleccionada = this.value;
 
-                                        // Busca el trámite correspondiente a la fecha seleccionada
-                                        if (tramitesPorFecha[fechaSeleccionada]) {
-                                            tramiteInput.value = tramitesPorFecha[fechaSeleccionada];
-                                        } else {
-                                            tramiteInput.value = ''; // Limpia el campo si no hay trámite
-                                        }
-                                    });
-                                }
-                            });
-
-                            </script>
-                            <div class="form-group">
-                                {!! Form::label('proveedorasignado', 'Proveedor:') !!}
-                                {!! Form::select('proveedorasignado', $proveedores->pluck('proveedor', 'id'), null, [
-                                    'class' => 'form-control', 
-                                    'id' => 'proveedorasignado', 
-                                    'placeholder' => ''
-                                ]) !!}
-                                @error('proveedorasignado')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{ $message }}
-                                    </small>
-                                @enderror
-                            </div>
-                            <div class="form-group" hidden>
-                                {!! Form::label('celularproveedor', 'Celular del proveedor:') !!}
-                                {!! Form::text('celularproveedor', null, ['class' => 'form-control', 'id' => 'celularproveedor', 'readonly' => true]) !!}
-                                @error('celularproveedor')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{ $message }}
-                                    </small>
-                                @enderror
-                            </div>
-                            <div class="form-group"> 
-                                {!! Form::label('precio', 'Precio:') !!}
-                                {!! Form::text('precio', null, [
-                                    'class' => 'form-control', 
-                                    'id' => 'precio', 
-                                    'placeholder' => '',
-                                    'readonly' => auth()->user()->name !== 'CARLOS ALEJANDRO GUARACHI SANDOVAL' && auth()->user()->name !== 'DENISSE MAUREN LOPEZ FLORES' && auth()->user()->name !== 'JHOSELINE EVA VELASQUEZ ESCOBAR' && auth()->user()->name !== 'VANESSA MAMANI HUANACO' ? 'readonly' : null
-                                ]) !!}
-                                @error('precio')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{ $message }}
-                                    </small>
-                                @enderror
-                            </div>
-                            
-                            
-                            <div class="form-group" hidden>
-                                {!! Form::label('preciocompra', 'Precio Compra:') !!}
-                                {!! Form::text('preciocompra', null, ['class' => 'form-control', 'id' => 'preciocompra', 'placeholder' => '' ]) !!}
-                                @error('preciocompra')
-                                    <small class="text-danger fas fa-exclamation-circle">
-                                        {{ $message }}
-                                    </small>
-                                @enderror
-                            </div>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                const selectFechas = document.getElementById('select-fechas');
-                                const tramiteInput = document.querySelector('input[name="tramite"]');
-                                const precioInput = document.getElementById('precio');
-                                const proveedorSelect = document.getElementById('proveedorasignado');
-                                const precioCompraInput = document.getElementById('preciocompra');
-
-                                // Variables para verificar registros del cliente
-                                const clienteConInvalidez = selectFechas.getAttribute('data-cliente-con-invalidez') === 'true';
-                                const clienteConApelacionOSegunda = selectFechas.getAttribute('data-cliente-con-apelacion-segunda') === 'true';
-
-                                // Escucha cambios en el select Fecha Batería
-                                selectFechas.addEventListener('change', function () {
-                                    const fechaSeleccionada = this.value;
-
-                                    // Simulación de lógica para obtener el trámite basado en la fecha seleccionada
-                                    const tramitesPorFecha = JSON.parse(this.getAttribute('data-tramites'));
-                                    if (tramitesPorFecha[fechaSeleccionada]) {
-                                        const tramiteAutorellenado = tramitesPorFecha[fechaSeleccionada];
-                                        tramiteInput.value = tramiteAutorellenado;
-
-                                        // Autorellena el precio según el trámite
-                                        if (tramiteAutorellenado === 'AUDITORIA MEDICA' || tramiteAutorellenado === 'INVALIDEZ') {
-                                            precioInput.value = '2100.00'; // "AUDITORIA MEDICA" y "INVALIDEZ" siempre son 2100.00
-                                        } else if (tramiteAutorellenado === 'APELACION' || tramiteAutorellenado === 'SEGUNDA SOLICITUD') {
-                                            // Si el cliente tiene "INVALIDEZ"
-                                            if (clienteConInvalidez) {
-                                                precioInput.value = '1100.00';
-                                            } else {
-                                                precioInput.value = '2100.00'; // Si no tiene "INVALIDEZ"
+                                                    // Busca el trámite correspondiente a la fecha seleccionada
+                                                    if (tramitesPorFecha[fechaSeleccionada]) {
+                                                        tramiteInput.value = tramitesPorFecha[fechaSeleccionada];
+                                                    } else {
+                                                        tramiteInput.value = ''; // Limpia el campo si no hay trámite
+                                                    }
+                                                });
                                             }
-                                        } else {
-                                            precioInput.value = ''; // Limpia si no coincide
-                                        }
-                                    } else {
-                                        tramiteInput.value = '';
-                                        precioInput.value = ''; // Limpia si no hay trámite asociado
-                                    }
-                                });
-
-                                // Escucha cambios en el select Proveedor
-                                proveedorSelect.addEventListener('change', function () {
-                                    const proveedorSeleccionado = proveedorSelect.options[proveedorSelect.selectedIndex].text;
-
-                                    if (proveedorSeleccionado === 'AGUIRRE VASQUEZ MARIA RENEE') {
-                                        precioCompraInput.value = '250.00';
-                                    } else if (proveedorSeleccionado === 'MARIA ANGELA LOZANO FLORES') {
-                                        precioCompraInput.value = '400.00';
-                                    } else {
-                                        precioCompraInput.value = ''; // Limpia si no coincide
-                                    }
-                                });
-                            });
-
-
-                            </script>
-                            
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function() {
-                                    var proveedores = @json($proveedores);
-                                    var selectProveedor = document.getElementById('proveedorasignado');
-                                    var celularProveedor = document.getElementById('celularproveedor');
-                        
-                                    selectProveedor.addEventListener('change', function() {
-                                        var selectedId = parseInt(this.value);
-                                        
-                                        var proveedorSeleccionado = proveedores.find(function(proveedor) {
-                                            return proveedor.id === selectedId;
                                         });
-                                        
-                                        if (proveedorSeleccionado) {
-                                            celularProveedor.value = '591' + proveedorSeleccionado.celular;
-                                        } else {
-                                            celularProveedor.value = '';
-                                        }
-                                    });
-                                });
-                            </script>
-                        
-                            <div class="modal-footer" style="margin-top: 30px;">
-                                <button type="submit" class="btn btn-si">Asignar</button>
-                                <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">Cerrar</button>
+                                    </script>
+                                    <div class="form-group">
+                                        {!! Form::label('proveedorasignado', 'Proveedor:') !!}
+                                        {!! Form::select('proveedorasignado', $proveedores->pluck('proveedor', 'id'), null, [
+                                            'class' => 'form-control', 
+                                            'id' => 'proveedorasignado', 
+                                            'placeholder' => '', 'required'
+                                        ]) !!}
+                                    </div>
+                                    <div class="form-group"> 
+                                        {!! Form::label('precio', 'Precio:') !!}
+                                        {!! Form::text('precio', null, [
+                                            'class' => 'form-control', 
+                                            'id' => 'precio', 
+                                            'placeholder' => '',
+                                            'readonly' => auth()->user()->name !== 'CARLOS ALEJANDRO GUARACHI SANDOVAL' && auth()->user()->name !== 'DENISSE MAUREN LOPEZ FLORES' && auth()->user()->name !== 'JHOSELINE EVA VELASQUEZ ESCOBAR' && auth()->user()->name !== 'VANESSA MAMANI HUANACO' ? 'readonly' : null, 'required'
+                                        ]) !!}
+                                    </div>
+                                    <div class="form-group" hidden>
+                                        {!! Form::label('preciocompra', 'Precio Compra:') !!}
+                                        {!! Form::text('preciocompra', null, ['class' => 'form-control', 'id' => 'preciocompra', 'placeholder' => '' ]) !!}
+                                    </div>
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            const selectFechas = document.getElementById('select-fechas');
+                                            const tramiteInput = document.querySelector('input[name="tramite"]');
+                                            const precioInput = document.getElementById('precio');
+                                            const proveedorSelect = document.getElementById('proveedorasignado');
+                                            const precioCompraInput = document.getElementById('preciocompra');
+
+                                            // Variables para verificar registros del cliente
+                                            const clienteConInvalidez = selectFechas.getAttribute('data-cliente-con-invalidez') === 'true';
+                                            const clienteConApelacionOSegunda = selectFechas.getAttribute('data-cliente-con-apelacion-segunda') === 'true';
+
+                                            // Escucha cambios en el select Fecha Batería
+                                            selectFechas.addEventListener('change', function () {
+                                                const fechaSeleccionada = this.value;
+
+                                                // Simulación de lógica para obtener el trámite basado en la fecha seleccionada
+                                                const tramitesPorFecha = JSON.parse(this.getAttribute('data-tramites'));
+                                                if (tramitesPorFecha[fechaSeleccionada]) {
+                                                    const tramiteAutorellenado = tramitesPorFecha[fechaSeleccionada];
+                                                    tramiteInput.value = tramiteAutorellenado;
+
+                                                    // Autorellena el precio según el trámite
+                                                    if (tramiteAutorellenado === 'AUDITORIA MEDICA' || tramiteAutorellenado === 'INVALIDEZ') {
+                                                        precioInput.value = '2100.00'; // "AUDITORIA MEDICA" y "INVALIDEZ" siempre son 2100.00
+                                                    } else if (tramiteAutorellenado === 'APELACION' || tramiteAutorellenado === 'SEGUNDA SOLICITUD') {
+                                                        // Si el cliente tiene "INVALIDEZ"
+                                                        if (clienteConInvalidez) {
+                                                            precioInput.value = '1100.00';
+                                                        } else {
+                                                            precioInput.value = '2100.00'; // Si no tiene "INVALIDEZ"
+                                                        }
+                                                    } else {
+                                                        precioInput.value = ''; // Limpia si no coincide
+                                                    }
+                                                } else {
+                                                    tramiteInput.value = '';
+                                                    precioInput.value = ''; // Limpia si no hay trámite asociado
+                                                }
+                                            });
+
+                                            // Escucha cambios en el select Proveedor
+                                            proveedorSelect.addEventListener('change', function () {
+                                                const proveedorSeleccionado = proveedorSelect.options[proveedorSelect.selectedIndex].text;
+
+                                                if (proveedorSeleccionado === 'AGUIRRE VASQUEZ MARIA RENEE') {
+                                                    precioCompraInput.value = '250.00';
+                                                } else if (proveedorSeleccionado === 'MARIA ANGELA LOZANO FLORES') {
+                                                    precioCompraInput.value = '400.00';
+                                                } else {
+                                                    precioCompraInput.value = ''; // Limpia si no coincide
+                                                }
+                                            });
+                                        });
+                                    </script>
+                                    <div class="modal-footer" style="margin-top: 30px;">
+                                        <button type="submit" class="btn btn-si">Asignar</button>
+                                        <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">Cerrar</button>
+                                    </div>
+                                    {!! Form::close() !!}
+                                </div>
                             </div>
-                            {!! Form::close() !!}
                         </div>
 
                         <div class="col-lg-8">
-                            <strong style="color: #94c93b">PROVEEDORES ASIGNADOS</strong> 
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th style="color: black">Bateria</th>
-                                        <th style="color: black">Servicio</th>
-                                        <th style="color: black">Proveedor</th>
-                                        {{-- <th style="color: black">Celular</th> --}}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($requisitosubclientes as $requisitosubcliente)
-                                        <tr>
-                                            <td style="text-align: left">{{ $requisitosubcliente->fechabateria }}</td>
-                                            <td style="text-align: left">{{ $requisitosubcliente->servicio }}</td>
-                                            <td style="text-align: left">{{ $requisitosubcliente->proveedorasignado }}</td>
-                                            {{-- <td style="text-align: left">{{ $requisitosubcliente->celularproveedor }}</td> --}}
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <strong style="color: #94c93b">PROVEEDORES ASIGNADOS</strong> 
+                                        <table class="table table-striped table-sm table-bordered">
+                                            <thead>
+                                                <tr>
+                                                    <th style="color: black">ID</th>
+                                                    <th style="color: black">Bateria</th>
+                                                    <th style="color: black">Servicio</th>
+                                                    <th style="color: black">Proveedor</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($requisitosubclientes as $requisitosubcliente)
+                                                    <tr>
+                                                        <td style="text-align: left">{{ $requisitosubcliente->id }}</td>
+                                                        <td style="text-align: left">{{ $requisitosubcliente->fechabateria }}</td>
+                                                        <td style="text-align: left">{{ $requisitosubcliente->servicio }}</td>
+                                                        <td style="text-align: left">{{ $requisitosubcliente->proveedorasignado }}</td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1543,56 +1494,41 @@
                     <h3>{{$clienteauditoria->nombrecompleto}}</h3>
                 </div>
                 {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardarhistoriamedicaauditoria', $clienteauditoria], 'method' => 'POST', 'files' => true]) !!}
-                {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-
-                @if($documentacion)
-                {{-- <div class="modal-body text-center">
-                    <!-- Visor PDF -->
-                    <iframe class="pdf-preview" src="{{ route('ver.documentoauditoria', $documentacion->id) }}" type="application/pdf"></iframe>
-
-                    <a href="{{ route('ver.documentoauditoria', $documentacion->id) }}" class="btn btn-verhistoriamedica" target="_blank">
-                        <strong>VER HIST. MED.</strong>
-                    </a>
-                </div> --}}
-
-                <div class="modal-body text-center">
-                    <!-- Vista previa del documento -->
-                    <div class="pdf-preview-container mb-3">
-                        <iframe 
-                            src="{{ asset('/historiamedicaauditoria/' . $clienteauditoria->id . '/extracted/' . $historiamedicaclienteauditoria) }}" 
-                            width="100%" 
-                            height="400px" 
-                            frameborder="0" 
-                            style="border: 1px solid #ccc;">
-                        </iframe>
-                    </div><br>
-
-                    <!-- Botón para ver el documento completo -->
-                    <a href="{{ asset('/historiamedicaauditoria/' . $clienteauditoria->id . '/extracted/' . $historiamedicaclienteauditoria) }}" 
-                    class="btn btn-verhistoriamedica" 
-                    target="_blank">
-                        <i class="fas fa-book-medical"></i> Ver Documento Completo
-                    </a>
-                </div>
-                @else
-                <div class="modal-body" style="margin-top: 50px;">
-                    <div class="mb-3">
-                        {!! Form::label('file', 'Documento:', ['class' => 'form-label']) !!}
-                        <input type="file" name="archivo" id="archivo" class="dropify" accept=".pdf"/>
-                        @error('archivo')
-                            <div class="text-danger">
-                                <i class="fas fa-exclamation-circle"></i> {{$message}}
+                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                    @if($documentacion)
+                        <div class="modal-body text-center">
+                            <div class="pdf-preview-container mb-3">
+                                <iframe 
+                                    src="{{ asset('/historiamedicaauditoria/' . $clienteauditoria->id . '/extracted/' . $historiamedicaclienteauditoria) }}" 
+                                    width="100%" 
+                                    height="400px" 
+                                    frameborder="0" 
+                                    style="border: 1px solid #ccc;">
+                                </iframe>
+                            </div><br>
+                            <a href="{{ asset('/historiamedicaauditoria/' . $clienteauditoria->id . '/extracted/' . $historiamedicaclienteauditoria) }}" class="btn btn-verhistoriamedica btn-sm" target="_blank">
+                                VER HISTORIA COMPLETA
+                            </a>
+                        </div>
+                    @else
+                        <div class="modal-body" style="margin-top: 50px;">
+                            <div class="mb-3">
+                                {!! Form::label('file', 'Documento:', ['class' => 'form-label']) !!}
+                                <input type="file" name="archivo" id="archivo" class="dropify" accept=".pdf"/>
+                                @error('archivo')
+                                    <div class="text-danger">
+                                        <i class="fas fa-exclamation-circle"></i> {{$message}}
+                                    </div>
+                                @enderror
                             </div>
-                        @enderror
-                    </div>
-                    <input type="text" class="form-control" id="accion" name="accion" value="HISTORIA MÉDICA" hidden>
-                </div>
-                <div class="modal-footer" style="margin-top: 50px;">
-                    <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">Cerrar</button>
-                    <button type="submit" class="btn btn-si">Subir Doc.</button>
-                </div>
-                @endif
+                            <input type="text" class="form-control" id="accion" name="accion" value="HISTORIA MÉDICA" hidden>
+                        </div>
+                        <div class="modal-footer" style="margin-top: 50px;">
+                            <button type="submit" class="btn btn-si btn-sm">GUARDAR</button>
+                            <button type="button" class="btn btn-no btn-sm" data-dismiss="modal" aria-label="Cerrar">CERRAR</button>
+                        </div>
+                    @endif
                 {!! Form::close() !!}
             </div>
         </div>
@@ -1715,7 +1651,8 @@ $('.dropify').dropify();
     h3 {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 1000;
+        font-weight: 800;
+        font-size: 23px;
         }
     #vista-previa {
         display: block;

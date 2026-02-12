@@ -15,7 +15,7 @@
 <script>
     setTimeout(function() {
         $('#alert-info').fadeOut('fast');
-    }, 5000);
+    }, 3000);
 </script>
 @endif
 <div class="card">
@@ -91,30 +91,6 @@
 
         <div class="table-responsive">
             <table class="table table-striped">
-                {{-- <thead>
-                    <tr>
-                        <th>Accion</th>
-                        <th>Proveedor</th>
-                        <th>Fecha programada</th>
-                        <th>Hora programada</th>
-                        <th colspan="3"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($programacionsubclientes as $programacionsubcliente)
-                    <tr>
-                        <td>{{$programacionsubcliente->accionnombre}} {{$programacionsubcliente->nrosesion}}</td>
-                        <td>{{$programacionsubcliente->proveedornombre}}</td>
-                        <td>{{$programacionsubcliente->fechaasignada}}</td>
-                        <td>{{$programacionsubcliente->horadesde}} - {{$programacionsubcliente->horahasta}}</td>
-                        <td width="10px">
-                            <abbr title="Reprogramar">
-                                <button type="button" class="btn btn-sm fas fa-list-alt btn-eliminar" data-id="{{ $programacionsubcliente->id }}" data-proveedor="{{ $programacionsubcliente->proveedornombre }}" data-toggle="modal" data-target="#deleteModal"></button>
-                            </abbr>
-                        </td>
-                    </tr>
-                    @endforeach --}}
-
                 <thead>
                     <tr>
                         <th>Sel.</th>
@@ -139,83 +115,6 @@
                             <td>{{ $item->horadesde }} - {{ $item->horahasta }}</td>
                         </tr>
                     @endforeach
-
-                    {{-- <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="deleteModalLabel">REPROGRAMAR</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <form id="deleteForm" action="" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <div class="modal-body">
-                                        {!! Form::hidden('usuarioactualizacion', auth()->user()->name) !!}
-                                        <div class="form-group">
-                                            <label for="motivoreprogramacion">Motivo de Reprogramación:</label>
-                                            <input type="text" name="motivoreprogramacion" id="motivoreprogramacion" class="form-control" required>
-                                        </div>
-
-                                        <div class="form-group">
-                                            {!! Form::label('proveedornombre', 'Proveedor:') !!}
-                                            <input type="text" name="proveedornombre" id="proveedornombre" class="form-control" readonly>
-                                        </div>
-
-                                        <!-- Campo dinámico para ingresar texto si es "Proveedor Ajeno" -->
-                                        <div class="form-group" id="proveedorajeno-container" style="display: none;">
-                                            {!! Form::label('proveedorajeno', 'Ingrese el nombre del Proveedor Ajeno:') !!}
-                                            {!! Form::text('proveedorajeno', null, [
-                                                'class' => 'form-control',
-                                                'id' => 'proveedorajeno',
-                                            ]) !!}
-                                            @error('proveedorajeno')
-                                                <small
-                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                            @enderror
-                                        </div>
-
-                                        <!-- Campo para la fecha de reprogramación -->
-                                        <div class="form-group">
-                                            {!! Form::label('fechaasignada', 'Fecha de Reprogramación:') !!}
-                                            {!! Form::date('fechaasignada', null, ['class' => 'form-control', 'required' => true]) !!}
-                                            @error('fechaasignada')
-                                                <small
-                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                            @enderror
-                                        </div>
-
-                                        <!-- Campo para la hora desde -->
-                                        <div class="form-group">
-                                            {!! Form::label('horadesde', 'Hora Desde:') !!}
-                                            {!! Form::time('horadesde', null, ['class' => 'form-control', 'required' => true]) !!}
-                                            @error('horadesde')
-                                                <small
-                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                            @enderror
-                                        </div>
-
-                                        <!-- Campo para la hora hasta -->
-                                        <div class="form-group">
-                                            {!! Form::label('horahasta', 'Hora Hasta:') !!}
-                                            {!! Form::time('horahasta', null, ['class' => 'form-control', 'required' => true]) !!}
-                                            @error('horahasta')
-                                                <small
-                                                    class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                            @enderror
-                                        </div>
-                                        
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-cancelar" data-dismiss="modal">CANCELAR</button>
-                                        <button type="submit" class="btn btn-reprogramar">REPROGRAMAR</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div> --}}
                 </tbody>
             </table>
 
@@ -376,7 +275,8 @@
         h3 {
             color: #94c93b;
             font-family: "Segoe UI";
-            font-weight: 1000;
+            font-weight: 800;
+            font-size: 23px;
         }
         .btn-buscar {
             background-color: #ffffff;

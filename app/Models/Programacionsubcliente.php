@@ -12,11 +12,11 @@ class Programacionsubcliente extends Model
     use SoftDeletes;
     static $rules = [
         'id' => '',
-        'clientebancoid' => '',
+        'clienteid' => '',
         'clientenombre' => '',
-        /* 'clienteid' => 'required|max:45', */
+        'tipocliente' => '',
         'proveedornombre' => '',
-        /* 'proveedorid' => 'required|max:45', */
+        'proveedorid' => '',
         'horaasignada' => '',
         'fechaasignada' => '',
         'usuarioid' => '',
@@ -60,11 +60,11 @@ class Programacionsubcliente extends Model
 
     protected $fillable = [
         'id',
-        'clientebancoid',
+        'clienteid',
         'clientenombre',
-        /* 'clienteid', */
+        'tipocliente',
         'proveedornombre',
-/*         'proveedorid', */
+        'proveedorid',
         'horaasignada',
         'fechaasignada',
         'usuarioid',

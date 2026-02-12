@@ -52,6 +52,9 @@ class StoreInformefinalRequest extends FormRequest
         'motivoanulacion' => '',
         'usuarioanulacion' => '',
         'servicio' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
+        'tipocliente' => '',
     ]; 
     return $rules;
 }

@@ -30,7 +30,7 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
 
   Future<void> cargarProcedimientos() async {
     final url = Uri.parse(
-        "http://192.168.0.20:8000/api/tramite/${widget.tramiteId}");
+        "http://192.168.88.224:8000/api/tramite/${widget.tramiteId}");
     final resp = await http.get(url);
 
     if (resp.statusCode == 200) {
@@ -68,7 +68,7 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
     final sub = p["nivelprocedimiento"] ?? "";
     final documento = p["document"] ?? "";
 
-    final urlString = "http://192.168.0.20:8000/tramitesclientesita/$clienteId/$tramite/$sub/$documento";
+    final urlString = "http://192.168.88.224:8000/tramitesclientesita/$clienteId/$tramite/$sub/$documento";
     final url = Uri.parse(urlString);
 
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
@@ -109,26 +109,26 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              tipo,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w600, fontSize: 14),
-                            ),
-                            SizedBox(height: 6),
+                            // Text(
+                            //   tipo,
+                            //   style: TextStyle(
+                            //       fontWeight: FontWeight.w600, fontSize: 14),
+                            // ),
+                            // SizedBox(height: 6),
                             Text(
                               _nivelSub(p),
                               style: TextStyle(fontSize: 12),
                             ),
-                            if (tipo != "PROCEDIMIENTO" &&
-                                ["SOLICITUD", "ADJUNTO / RESPUESTA", "CARTA / RECLAMO", "MISIVA LIBRE"]
-                                    .contains(tipo.toUpperCase()))
-                              Padding(
-                                padding: const EdgeInsets.only(top: 4),
-                                child: Text(
-                                  "Tipo: $tipoCarta",
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                              ),
+                            // if (tipo != "PROCEDIMIENTO" &&
+                            //     ["SOLICITUD", "ADJUNTO / RESPUESTA", "CARTA / RECLAMO", "MISIVA LIBRE"]
+                            //         .contains(tipo.toUpperCase()))
+                            //   Padding(
+                            //     padding: const EdgeInsets.only(top: 4),
+                            //     child: Text(
+                            //       "Tipo: $tipoCarta",
+                            //       style: TextStyle(fontSize: 12),
+                            //     ),
+                            //   ),
                             Padding(
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(

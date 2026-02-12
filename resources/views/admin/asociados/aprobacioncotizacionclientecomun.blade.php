@@ -9,77 +9,7 @@
     'buscarporservicio' => $servicioSeleccionado,
     'buscarporarea' => implode(',', $areasSeleccionadas),
     'total' => $total
-]) }}" {{-- onclick="confirmarGeneracionPdf(event)" --}}>GENERAR PDF</a>
-
-{{-- <script>
-    function confirmarGeneracionPdf(event) {
-        event.preventDefault();
-
-        const confirmacion = confirm("Posteriormente también debe generar el consentimiento informado para la realización de evaluaciones y estudios médicos adicionales.");
-        if (confirmacion) {
-
-            window.location.href = event.target.href;
-        }
-    }
-</script> --}}
-    
-
-{{-- <!-- SweetAlert2 CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
-<!-- SweetAlert2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<script>
-    function confirmarGeneracionPdf(event) {
-        event.preventDefault(); // Evita la redirección inmediata
-        
-        Swal.fire({
-            title: 'AVISO',
-            text: "POSTERIORMENTE TAMBIÉN DEBE GENERAR EL CONSENTIMIENTO INFORMADO PARA LA REALIZACIÓN DE EVALUACIONES Y ESTUDIOS MÉDICOS ADICIONALES",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Entendido',
-            cancelButtonText: 'Cancelar',
-            customClass: {
-                confirmButton: 'btn-entendido', // Clase personalizada para el botón "Entendido"
-                cancelButton: 'btn-cancelar'    // Clase personalizada para el botón "Cancelar"
-            }
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Si el usuario confirma, redirige a la ruta para generar el PDF
-                window.location.href = "{{ route('admin.asociados.generarpdfcotizacionclienteita', [
-                    'cliente' => $cliente->id,
-                    'buscarporfecha' => $fechaSeleccionada,
-                    'buscarporservicio' => $servicioSeleccionado,
-                    'buscarporarea' => implode(',', $areasSeleccionadas),
-                    'total' => $total
-                ]) }}";
-            }
-        });
-    }
-</script> --}}
-<style>
-    .btn-entendido {
-        background-color: #6acf81; /* Verde */
-        color: white;
-    }
-
-    .btn-cancelar {
-        background-color: #f36573; /* Rojo */
-        color: white;
-    }
-</style>
-
-
-
-{{-- {!! Form::open(['route' => 'generar.pdf.consentimientoinformado', 'method' => 'post', 'enctype' => 'multipart/form-data']) !!}
-    <a class="btn btn-consentimientoinformado btn-sm float-right" href="#" onclick="event.preventDefault(); this.closest('form').submit();">CONS. INFORMADO</a>
-    {!! Form::hidden('clienteitaid', $cliente->id, ['class' => 'form-control']) !!}
-    {!! Form::hidden('nombres', $cliente->nombres, ['class' => 'form-control']) !!}
-    {!! Form::hidden('apepaterno', $cliente->apepaterno, ['class' => 'form-control']) !!}
-    {!! Form::hidden('apematerno', $cliente->apematerno, ['class' => 'form-control']) !!}
-{!! Form::close() !!} --}}
+]) }}" >GENERAR PDF</a>
 
 <h5>COTIZACIÓN DE PROGRAMACIÓN DE:</h5>
 <h3>{{$clientecomun->nombrecompleto}}</h3>
@@ -93,7 +23,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 
@@ -113,23 +43,6 @@
                 <div class="d-flex flex-wrap align-items-center">
                     <form action="{{ route('buscarbateriaclientecomun', $clientecomun) }}" method="get" class="form-inline">
                         <div class="flex-grow-1">
-                            {{-- <select name="buscarporservicio" class="form-control mr-sm-2" id="">
-                                <option value="" disabled selected>Servicio</option>
-                                    <option value="INTERNO">INTERNO</option>
-                                    <option value="EXTERNO">EXTERNO</option>
-                                    <option value="AJENO">AJENO</option>
-                            </select>
-                            <select name="buscarporfecha" class="form-control mr-sm-2" id="select-fecha">
-                                <option value="" disabled selected>Fecha de Bateria</option>
-                                @foreach($fechas as $fecha)
-                                    <option value="{{ $fecha }}" {{ $fechaSeleccionada == $fecha ? 'selected' : '' }}>
-                                        {{ $fecha }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <select name="buscarporarea[]" class="form-control mr-sm-2" id="select-area" multiple>
-                            </select> --}}
-
                             <div class="form-row align-items-center">
                                 <div class="col-auto">
                                     <label for="buscarporservicio">Servicio:</label>
@@ -142,7 +55,6 @@
                                         <option value="AJENO">AJENO</option>
                                     </select>
                                 </div>
-                                
                                 <div class="col-auto">
                                     <label for="buscarporfecha">Fecha de Batería:</label>
                                 </div>
@@ -156,7 +68,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-
                                 <div class="col-auto">
                                     <label for="buscarporarea">Est/Esp::</label>
                                 </div>
@@ -165,7 +76,6 @@
                                     </select>
                                 </div>
                             </div>
-                            
                         </div>
                         <input type="hidden" name="total" id="total" value="{{ $total }}">
                         <button id="btn-buscar" class="btn btn-buscar my-2 my-sm-0" type="submit">Buscar</button>
@@ -173,56 +83,39 @@
                 </div>
             </div>
         </nav>
-        <style>
-            #select-area {
-                width: 200px; /* Ajusta el ancho aquí */
-                height: 100px; /* Ajusta la altura aquí */
-                overflow-y: auto; /* Agrega una barra de desplazamiento si es necesario */
-            }
-        </style>
+        
         <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const selectFecha = document.getElementById('select-fecha');
-            const selectArea = document.getElementById('select-area');
-        
-            // Crear un mapa de áreas por fecha desde los datos del backend
-            const areasPorFecha = @json($areasPorFecha);
-        
-            // Función para actualizar las opciones del select de área basado en la fecha seleccionada
-            function actualizarAreas(fecha) {
-                if (!fecha || !areasPorFecha[fecha]) {
-                    selectArea.innerHTML = '<option value="" disabled selected>Área</option>';
-                    return;
+            document.addEventListener('DOMContentLoaded', function() {
+                const selectFecha = document.getElementById('select-fecha');
+                const selectArea = document.getElementById('select-area');
+                const areasPorFecha = @json($areasPorFecha);
+                function actualizarAreas(fecha) {
+                    if (!fecha || !areasPorFecha[fecha]) {
+                        selectArea.innerHTML = '<option value="" disabled selected>Área</option>';
+                        return;
+                    }
+            
+                    const areas = areasPorFecha[fecha];
+                    selectArea.innerHTML = '';
+                    
+                    areas.forEach(area => {
+                        const option = document.createElement('option');
+                        option.value = area;
+                        option.textContent = area;
+                        selectArea.appendChild(option);
+                    });
+                    @foreach($areasSeleccionadas as $selectedArea)
+                        selectArea.querySelector(`option[value="{{ $selectedArea }}"]`).selected = true;
+                    @endforeach
                 }
-        
-                const areas = areasPorFecha[fecha];
-                selectArea.innerHTML = ''; // Limpiar opciones existentes
-                
-                areas.forEach(area => {
-                    const option = document.createElement('option');
-                    option.value = area;
-                    option.textContent = area;
-                    selectArea.appendChild(option);
+                if (selectFecha.value) {
+                    actualizarAreas(selectFecha.value);
+                }
+                selectFecha.addEventListener('change', function() {
+                    actualizarAreas(this.value);
                 });
-        
-                // Seleccionar las áreas previamente seleccionadas si existen
-                @foreach($areasSeleccionadas as $selectedArea)
-                    selectArea.querySelector(`option[value="{{ $selectedArea }}"]`).selected = true;
-                @endforeach
-            }
-        
-            // Actualizar áreas cuando se carga la página si ya hay una fecha seleccionada
-            if (selectFecha.value) {
-                actualizarAreas(selectFecha.value);
-            }
-        
-            // Actualizar áreas cuando cambia la fecha seleccionada
-            selectFecha.addEventListener('change', function() {
-                actualizarAreas(this.value);
             });
-        });
         </script>
-        
 
         @if($bateriasubclientes->isEmpty())
         @else
@@ -270,8 +163,7 @@
                         }
                     });
                 });
-                </script>
-                
+            </script>  
         @endif
     </div>
 </div>
@@ -298,17 +190,6 @@
         });
     });
 </script>
-
-{{-- <script>
-    var precios = document.querySelectorAll('.precio');
-    var total = 0;
-    precios.forEach(function(precio) {
-        total += parseFloat(precio.textContent);
-    });
-    var totalFormateado = total.toLocaleString('es-ES', { minimumFractionDigits: 2 });
-    var filaTotal = '<tr style="background-color: #fcecd4;"><td colspan="5">TOTAL</td><td>' + totalFormateado + '</td></tr>';
-    document.querySelector('#tablaPrecios tbody').insertAdjacentHTML('beforeend', filaTotal);
-</script> --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var filas = document.querySelectorAll('#tablaPrecios tbody tr');
@@ -396,6 +277,7 @@
         color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 1000;
+        font-size: 23px;
         }
     .btn-crear {
         background-color:  #ffffff;
@@ -427,7 +309,6 @@
         border-color: #faa625;
         border-radius: 5px;
         padding: 5px 50px;
-
     }
     .custom-button:hover {
         background-color: #faa625;
@@ -466,6 +347,19 @@
     .btn-regresar:hover {
         background-color: #2926e2;
         color: #ffffff;
+    }
+    #select-area {
+        width: 200px;
+        height: 100px;
+        overflow-y: auto;
+    }
+    .btn-entendido {
+        background-color: #6acf81;
+        color: white;
+    }
+    .btn-cancelar {
+        background-color: #f36573;
+        color: white;
     }
 </style>
 @stop

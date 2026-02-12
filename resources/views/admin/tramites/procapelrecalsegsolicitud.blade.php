@@ -854,41 +854,6 @@
                                                 </thead>
                                                 <tbody>
                                                     {{-- FORMULARIO DE VALIDACION DE PODER --}}
-                                                    {{-- <tr>
-                                                        <td class="align-middle text-center">
-                                                            <p class="mb-0">FORMULARIO DE VALIDACIÓN DE PODER</p>
-                                                            @if (!$documentoformval)
-                                                                <input type="hidden" name="tramite[formulariovalidacion]" value="APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD">
-                                                                <input type="hidden" name="nivelprocedimiento[formulariovalidacion]" value="NOTIFICACIÓN DE PODER">
-                                                                <input type="hidden" name="subprocedimiento[formulariovalidacion]" value="FORMULARIO DE VALIDACIÓN DE PODER">
-                                                            @endif
-                                                        </td>
-                                                        <td class="align-middle text-center">
-                                                            @if ($documentoformval)
-                                                                <p class="mb-0">{{ \Carbon\Carbon::parse($documentoformval->fechasubida)->format('d-m-Y') }}</p>
-                                                            @else
-                                                                <input type="date" class="form-control text-center" name="fechasubida[formulariovalidacion]" value="{{ \Carbon\Carbon::now()->toDateString() }}" {{ $puedeEditarFecha ? '' : 'readonly' }}>
-                                                            @endif
-                                                        </td>
-                                                        <td class="align-middle text-center">
-                                                            @if ($documentoformval)
-                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/FORMULARIO DE VALIDACIÓN DE PODER/{$documentoformval->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
-                                                                @if ($puedeEditarArchivo)
-                                                                    <div class="d-flex align-items-center justify-content-center gap-2" style="margin-top:5px;">
-                                                                        <input type="file" name="archivo_reemplazo" class="dropify" accept="application/pdf">
-                                                                        <button type="submit" name="accion" value="reemplazarArchivo" class="btn btn-sm btn-subirarchivos" title="REEMPLAZAR ARCHIVO">
-                                                                            <i class="fas fa-upload"></i>
-                                                                        </button>
-                                                                        <input type="hidden" name="tramite_reemplazo_id" value="{{ $documentoformval->id }}">
-                                                                    </div>
-                                                                @endif
-                                                            @else
-                                                                <input type="file" name="archivo[formulariovalidacion]" class="dropify mx-auto d-block" accept="application/pdf">
-                                                            @endif
-                                                        </td>
-                                                    </tr> --}}
-
-                                                    {{-- NUEVO 081125 --}}
                                                     <tr id="fila-formulariovalidacion" style="{{ $documentoformval ? '' : 'display:none;' }}">
                                                         <td class="align-middle text-center">
                                                             <p class="mb-0">FORMULARIO DE VALIDACIÓN DE PODER</p>
@@ -907,7 +872,7 @@
                                                         </td>
                                                         <td class="align-middle text-center">
                                                             @if ($documentoformval)
-                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/FORMULARIO DE VALIDACIÓN DE PODER/{$documentoformval->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
+                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/NOTIFICACIÓN DE PODER/{$documentoformval->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
                                                                 @if ($puedeEditarArchivo)
                                                                     <div class="d-flex align-items-center justify-content-center gap-2" style="margin-top:5px;">
                                                                         <input type="file" name="archivo_reemplazo" class="dropify" accept="application/pdf">
@@ -8874,27 +8839,23 @@
                     <div class="tab-content" id="tabs-solicitudes-contenido">
                         <div class="tab-pane fade show active" id="solicitudes-content-1" role="tabpanel" aria-labelledby="solicitudes-tab-1">
                             <div class="table-responsive">
-                                <form action="{{ route('admin.tramites.guardarVariasSolicitudes', $cliente) }}" method="POST" enctype="multipart/form-data" id="formNuevasSolicitudes">
-                                    {!! Form::hidden('apoderado', $apoderadoAsignado) !!}
-                                    {!! Form::hidden('tramite', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD') !!}
-                                    {!! Form::hidden('idtramite', $idTramite) !!}
-                                    @csrf
-                                    <table class="table table-bordered table-striped table-sm mt-4">
-                                        <thead class="table-secondary text-center">
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Nro.</th>
-                                                <th>Nivel Procedimiento</th>
-                                                <th>Sub Procedimiento</th>
-                                                <th>Documento Solicitud</th>
-                                                <th>Observación a Respuesta</th>
-                                                <th>Nota Cite a Respuesta</th>
-                                                <th>Fecha Cite a Respuesta</th>
-                                                <th>Fecha Respuesta</th>
-                                                <th>Documento Respuesta</th>
-                                                <th>Acción</th>
-                                            </tr>
-                                        </thead>
+                                <table class="table table-bordered table-sm">
+                                    <thead class="thead-light">
+                                        <tr class="text-center">
+                                            <th>ID</th>
+                                            <th>Nro.</th>
+                                            <th>Nivel Procedimiento</th>
+                                            <th>Solicitud</th>
+                                            <th>Solicitud Generada</th>
+                                            <th>Solicitud Sellada</th>
+                                            <th>Observación a Respuesta</th>
+                                            <th>Nota Cite a Respuesta</th>
+                                            <th>Fecha Cite a Respuesta</th>
+                                            <th>Fecha Respuesta</th>
+                                            <th>Documento Respuesta</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
                                         @forelse ($listasolicitudes as $solicitud)
                                             <tr class="text-center">
                                                 <td>{{ $solicitud->id }}</td>
@@ -8906,105 +8867,98 @@
                                                     class="btn btn-sm btn-verdocumento fas fa-eye"
                                                     title="VER SOLICITUD" target="_blank"></a>
                                                 </td>
-                                                <td>{{ $solicitud->observaciones ?? 0 }}</td>
-                                                <td>{{ $solicitud->citenota ?? 0 }}</td>
-                                                <td>{{ $solicitud->fechacitenota ?? 0 }}</td>
-                                                <td>{{ $solicitud->fechainclusion ?? 0 }}</td>
-                                                <td>
-                                                    @if($solicitud->document2)
-                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/SOLICITUDES/{$solicitud->document2}") }}"
-                                                        class="btn btn-sm btn-verdocumento fas fa-eye"
-                                                        title="VER SOLICITUD" target="_blank"></a>
-                                                    @else
-                                                        0
-                                                    @endif
-                                                </td>
-                                                <td></td>
+                                                <form action="{{ route('admin.tramites.guardarrespuesta', $cliente) }}" method="POST" enctype="multipart/form-data">
+                                                    @csrf
+                                                    <td>
+                                                        @if ($solicitud->document2)
+                                                            <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/SOLICITUDES/{$solicitud->document2}") }}"
+                                                            class="btn btn-sm btn-verdocumento"
+                                                            title="VER CARTA SELLADA" target="_blank"><i class="fas fa-eye"></i></a>
+                                                        @else
+                                                            <div class="row gx-2">
+                                                                <div class="col">
+                                                                    <input type="file" name="document2solicitud" 
+                                                                        class="form-control form-control-sm" 
+                                                                        accept="application/pdf">
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        <input type="hidden" name="tramite_id" value="{{ $solicitud->id }}">
+                                                        <input type="hidden" name="nombretramite" value="APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD">
+
+                                                        @if ($solicitud->observaciones)
+                                                            <div>{{ $solicitud->observaciones }}</div>
+                                                        @else
+                                                            <input type="text" name="observacionessolicitud" class="form-control form-control-sm" placeholder="Observación" required>
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($solicitud->citenota)
+                                                            <div>{{ $solicitud->citenota }}</div>
+                                                        @else
+                                                            <input type="text" name="citenotasolicitud" class="form-control form-control-sm" placeholder="Cite Nota">
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($solicitud->fechacitenota)
+                                                            <div>{{ $solicitud->fechacitenota }}</div>
+                                                        @else
+                                                            <input type="date" name="fechacitenotasolicitud" class="form-control form-control-sm">
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($solicitud->fechainclusion)
+                                                            <div>{{ $solicitud->fechainclusion }}</div>
+                                                        @else
+                                                            <input type="date" name="fechainclusionsolicitud" class="form-control form-control-sm">
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if ($solicitud->document3)
+                                                            <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/SOLICITUDES/{$solicitud->document3}") }}"
+                                                            class="btn btn-sm btn-verdocumento"
+                                                            title="VER RESPUESTA" target="_blank"><i class="fas fa-eye"></i></a>
+                                                        @else
+                                                            <div class="row gx-2">
+                                                                <div class="col">
+                                                                    <input type="file" name="document3solicitud" 
+                                                                        class="form-control form-control-sm archivo-input1" 
+                                                                        accept="application/pdf" required>
+                                                                </div>
+                                                                <div class="col-auto">
+                                                                    <button type="submit" class="btn btn-guardarnuevo guardar-btn1">
+                                                                        <i class="fas fa-print"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    </td>
+                                                    <script>
+                                                        document.addEventListener('DOMContentLoaded', function() {
+                                                            const inputs = document.querySelectorAll('.archivo-input1');
+                                                            inputs.forEach(input => {
+                                                                input.addEventListener('change', function() {
+                                                                    const button = this.closest('.row').querySelector('.guardar-btn1');
+                                                                    if (this.files.length > 0) {
+                                                                        button.removeAttribute('disabled');
+                                                                    } else {
+                                                                        button.setAttribute('disabled', true);
+                                                                    }
+                                                                });
+                                                            });
+                                                        });
+                                                    </script>
+                                                </form>
                                             </tr>
                                         @empty
                                             <tr>
                                                 <td colspan="10">NO HAY REGISTROS DE TIPO "SOLICITUD"</td>
                                             </tr>
                                         @endforelse
-                                        <tbody id="tbody-nuevas-filas" class="text-center">
-
-                                        </tbody>
-                                    </table>
-
-                                    <div class="d-flex mt-3">
-                                        <button type="button" class="btn btn-outline-primary btn-sm" id="btnAgregarFila">
-                                            <i class="fas fa-plus"></i> Agregar Fila
-                                        </button>
-                                        <button type="submit" class="btn btn-outline-success btn-sm" id="btnGuardarTodo1" disabled>
-                                            <i class="fas fa-save"></i> Guardar Todo
-                                        </button>
-                                    </div>
-                                </form>
-                                <script>
-                                    document.addEventListener('DOMContentLoaded', function () {
-                                        const tbody = document.getElementById('tbody-nuevas-filas');
-                                        const btnAgregar = document.getElementById('btnAgregarFila');
-                                        const btnGuardarTodo1 = document.getElementById('btnGuardarTodo1');
-
-                                        let contador = 0;
-
-                                        btnAgregar.addEventListener('click', () => {
-                                            contador++;
-                                            const fila = document.createElement('tr');
-                                            fila.innerHTML = `
-                                                <td><input type="text" name="solicitudes[${contador}][id]" class="form-control form-control-sm" readonly></td>
-                                                <td><input type="text" name="solicitudes[${contador}][nro]" class="form-control form-control-sm" readonly></td>
-                                                <td>
-                                                    <select name="solicitudes[${contador}][nivelprocedimiento]" class="form-control form-control-sm" required>
-                                                        <option value="">-- Seleccione --</option>
-                                                        <option value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO">SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO</option>
-                                                        <option value="COMPRA DE SERVICIOS">COMPRA DE SERVICIOS</option>
-                                                        <option value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA">SOLICITUD DE INFORMACIÓN COMPLEMENTARIA</option>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <select name="solicitudes[${contador}][subprocedimiento]" class="form-control form-control-sm" required>
-                                                        <option value="">-- Seleccione --</option>
-                                                        <option value="ABONO EN CUENTA">ABONO EN CUENTA</option>
-                                                        <option value="ACTUALIZACIÓN DE DATOS">ACTUALIZACIÓN DE DATOS</option>
-                                                        <option value="CAMBIO DE C.E. A PASAPORTE">CAMBIO DE C.E. A PASAPORTE</option>
-                                                        <option value="COMPRA DE SERVICIOS">COMPRA DE SERVICIOS</option>
-                                                        <option value="COPIA LEGALIZADA DE CONTRATO">COPIA LEGALIZADA DE CONTRATO</option>
-                                                        <option value="COPIA LEGALIZADA DE DICTAMEN">COPIA LEGALIZADA DE DICTAMEN</option>
-                                                        <option value="EVALUACIÓN POR MEDICINA DEL TRABAJO">EVALUACIÓN POR MEDICINA DEL TRABAJO</option>
-                                                        <option value="HISTORIA CLÍNICA LEGALIZADA">HISTORIA CLÍNICA LEGALIZADA</option>
-                                                        <option value="INCLUSIÓN DE INFORMES MÉDICOS">INCLUSIÓN DE INFORMES MÉDICOS</option>
-                                                        <option value="INFORME DEL EMPLEADOR">INFORME DEL EMPLEADOR</option>
-                                                        <option value="INFORME MÉDICO">INFORME MÉDICO</option>
-                                                        <option value="MODIFICACIÓN DE CITE">MODIFICACIÓN DE CITE</option>
-                                                        <option value="NO DESCUENTO 3%">NO DESCUENTO 3%</option>
-                                                        <option value="RECALIFICACIÓN DE DICTAMEN">RECALIFICACIÓN DE DICTAMEN</option>
-                                                        <option value="REACTIVACIÓN DE TRÁMITE">REACTIVACIÓN DE TRÁMITE</option>
-                                                        <option value="UNIFICACIÓN DE CUA">UNIFICACIÓN DE CUA</option>
-                                                    </select>
-                                                </td>
-                                                <td><input type="file" name="solicitudes[${contador}][document]" accept="application/pdf" class="form-control form-control-sm" required></td>
-                                                <td><input type="text" name="solicitudes[${contador}][observacion]" class="form-control form-control-sm"></td>
-                                                <td><input type="text" name="solicitudes[${contador}][citenota]" class="form-control form-control-sm"></td>
-                                                <td><input type="date" name="solicitudes[${contador}][fechacitenota]" class="form-control form-control-sm"></td>
-                                                <td><input type="date" name="solicitudes[${contador}][fechainclusion]" class="form-control form-control-sm"></td>
-                                                <td><input type="file" name="solicitudes[${contador}][document2]" accept="application/pdf" class="form-control form-control-sm"></td>
-                                                <td><button type="button" class="btn btn-danger btn-sm btnEliminarFila"><i class="fas fa-trash"></i></button></td>
-                                            `;
-                                            tbody.appendChild(fila);
-                                            btnGuardarTodo1.removeAttribute('disabled');
-                                        });
-
-                                        tbody.addEventListener('click', e => {
-                                            if (e.target.closest('.btnEliminarFila')) {
-                                                e.target.closest('tr').remove();
-                                                if (tbody.children.length === 0) {
-                                                    btnGuardarTodo1.setAttribute('disabled', true);
-                                                }
-                                            }
-                                        });
-                                    });
-                                </script>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -9304,66 +9258,107 @@
                                                     </script>
                                                 </form>
                                             </tr>
-                                            @if($carta->document4)
-                                                <tr class="bg-light">
-                                                    <td colspan="13">
-                                                        <div class="row g-2">
-                                                            <div class="col-md-5">
-                                                                <strong>Nombre de Formulario:</strong> FORMULARIO DE RECLAMO Y SUGERENCIA - SIP APS
-                                                            </div>
-                                                            <div class="col-md-3">
-                                                                <strong>Nro. Formulario:</strong> {{ $carta->nroformulario ?? '-' }}
-                                                            </div>
-                                                            <div class="col-md-2">
-                                                                <strong>Fecha:</strong> {{ $carta->fechaestadotramite ?? '-' }}
-                                                            </div>
-                                                            <div class="col-md-2">
-                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/CARTAS Y RECLAMOS/{$carta->document4}") }}"
-                                                                class="btn btn-sm btn-verdocumento"
-                                                                target="_blank">
-                                                                <i class="fas fa-eye"></i> Ver Formulario
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @else
-                                                <tr class="collapse bg-light" id="formExtra{{ $carta->id }}">
-                                                    <td colspan="13">
-                                                        <form action="{{ route('admin.tramites.guardarrespuestacartaformulario', $cliente) }}"
-                                                            method="POST" enctype="multipart/form-data">
-                                                            @csrf
-                                                            <input type="hidden" name="tramite_id" value="{{ $carta->id }}">
-                                                            <input type="hidden" name="nombretramite" value="APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD">
-                                                            <input type="hidden" name="proceso" value="CARTAS Y RECLAMOS">
-                                                            <div class="row g-2 align-items-end">
+                                            <tr class="bg-light {{ !$carta->corsolicitud ? 'collapse' : '' }}" id="formExtra{{ $carta->id }}">
+                                                <td colspan="13">
+                                                    <form action="{{ route('admin.tramites.guardarrespuestacartaformulario', $cliente) }}"
+                                                        method="POST" enctype="multipart/form-data">
+                                                        @csrf
+                                                        <input type="hidden" name="tramite_id" value="{{ $carta->id }}">
+                                                        <input type="hidden" name="nombretramite" value="APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD">
+                                                        <input type="hidden" name="proceso" value="CARTAS Y RECLAMOS">
+                                                        <div class="row g-2 align-items-end">
+                                                            @if(!$carta->corsolicitud)
                                                                 <div class="col-md-3">
+                                                                    <label>Nombre de Formulario:</label>
                                                                     <input type="text" name="corsolicitudcarta" 
                                                                         class="form-control form-control-sm" 
                                                                         value="FORMULARIO DE RECLAMO Y SUGERENCIA - SIP APS" readonly>
                                                                 </div>
+                                                            @else
                                                                 <div class="col-md-3">
+                                                                    <strong>Nombre de Form.:</strong> FORMULARIO DE RECLAMO Y SUGERENCIA - SIP APS
+                                                                </div>
+                                                            @endif
+                                                            @if(!$carta->nroformulario)
+                                                                <div class="col-md-2">
+                                                                    <label>Nro. Formulario:</label>
                                                                     <input type="text" name="nroformulariocarta" class="form-control form-control-sm" placeholder="Nro. Formulario" required>
                                                                 </div>
+                                                            @else
                                                                 <div class="col-md-2">
+                                                                    <strong>Nro. Form.:</strong> {{ $carta->nroformulario ?? '-' }}
+                                                                </div>
+                                                            @endif
+                                                            @if(!$carta->fechaestadotramite)
+                                                                <div class="col-md-2">
+                                                                    <label>Fecha de Formulario:</label>
                                                                     <input type="date" name="fechaestadotramitecarta" 
                                                                         class="form-control form-control-sm" required>
                                                                 </div>
-                                                                <div class="col-md-3">
+                                                            @else
+                                                                <div class="col-md-2">
+                                                                    <strong>Fecha Form.:</strong> {{ $carta->fechaestadotramite ?? '-' }}
+                                                                </div>
+                                                            @endif
+                                                            @if(!$carta->document4)
+                                                                <div class="col-md-1">
+                                                                    <label>Formulario:</label>
                                                                     <input type="file" name="document4carta" 
                                                                         class="form-control form-control-sm" 
-                                                                        accept="application/pdf" required>
+                                                                        accept="application/pdf">
                                                                 </div>
+                                                            @else
+                                                                <div class="col-md-1">
+                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/CARTAS Y RECLAMOS/{$carta->document4}") }}"
+                                                                    class="btn btn-sm btn-verdocumento"
+                                                                    target="_blank">
+                                                                    <i class="fas fa-eye"></i> Ver Formulario
+                                                                    </a>
+                                                                </div>
+                                                            @endif
+                                                            @if(!$carta->document5)
+                                                                <div class="col-md-1">
+                                                                    <label>Resp. Gestora:</label>
+                                                                    <input type="file" name="document5carta" 
+                                                                        class="form-control form-control-sm" 
+                                                                        accept="application/pdf">
+                                                                </div>
+                                                            @else
+                                                                <div class="col-md-1">
+                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/CARTAS Y RECLAMOS/{$carta->document5}") }}"
+                                                                        class="btn btn-sm btn-verdocumento"
+                                                                        target="_blank">
+                                                                        <i class="fas fa-eye"></i> Ver Resp. Gestora
+                                                                    </a>
+                                                                </div>
+                                                            @endif
+                                                            @if(!$carta->document6)
+                                                                <div class="col-md-1">
+                                                                    <label>Resp. APS:</label>
+                                                                    <input type="file" name="document6carta" 
+                                                                        class="form-control form-control-sm" 
+                                                                        accept="application/pdf">
+                                                                </div>
+                                                            @else
+                                                                <div class="col-md-1">
+                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/CARTAS Y RECLAMOS/{$carta->document6}") }}"
+                                                                        class="btn btn-sm btn-verdocumento"
+                                                                        target="_blank">
+                                                                        <i class="fas fa-eye"></i> Ver Resp. APS
+                                                                    </a>
+                                                                </div>
+                                                            @endif
+                                                            @if(!($carta->document4 && $carta->document5 && $carta->document6))
                                                                 <div class="col-md-1">
                                                                     <button type="submit" class="btn btn-guardarnuevo btn-sm" title="GUARDAR FORMULARIO">
                                                                         <i class="fas fa-save"></i>
                                                                     </button>
                                                                 </div>
-                                                            </div>
-                                                        </form>
-                                                    </td>
-                                                </tr>
-                                            @endif
+                                                            @endif
+                                                        </div>
+                                                    </form>
+                                                </td>
+                                            </tr>
                                         @empty
                                             <tr>
                                                 <td colspan="10">NO HAY REGISTROS DE TIPO "CARTA / RECLAMO"</td>

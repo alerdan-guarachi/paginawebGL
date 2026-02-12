@@ -704,12 +704,15 @@
                     <div class="modal-dialog modal-xl" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                @if($tramiteinicio)
-                                    <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE TRÁMITE</h5>
-                                @endif
-                                @if($tramitecontinuidad)
-                                    <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE PODER</h5>
-                                @endif
+                                <div class="d-flex align-items-center">
+                                    @if($tramiteinicio)
+                                        <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE TRÁMITE</h5>
+                                    @endif
+                                    @if($tramitecontinuidad)
+                                        <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE PODER</h5>
+                                    @endif
+                                    <a class="btn btn-sm btn-subirrequisitos ml-2" href="{{ route('admin.asociados.subirdocrequisitospensionmuerte', $cliente->id) }}">VER REQUISITOS</a>
+                                </div>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -1065,7 +1068,7 @@
                                                         </td>
                                                         <td class="align-middle text-center">
                                                             @if ($documentoformval)
-                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/PENSIÓN POR MUERTE/FORMULARIO DE VALIDACIÓN DE PODER/{$documentoformval->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
+                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/PENSIÓN POR MUERTE/NOTIFICACIÓN DE PODER/{$documentoformval->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
                                                                 @if ($puedeEditarArchivo)
                                                                     <div class="d-flex align-items-center justify-content-center gap-2" style="margin-top:5px;">
                                                                         <input type="file" name="archivo_reemplazo" class="dropify" accept="application/pdf">
@@ -1117,18 +1120,17 @@
                                                 </tbody>
                                             </table>
 
-                                            <table class="table table-bordered table-sm align-middle text-center">
-                                                <thead class="thead-light">
-                                                    <tr>
-                                                        <th style="width: 40%;">SUB_PROCEDIMIENTO</th>
-                                                        <th style="width: 20%;">FECHA_REGISTRO</th>
-                                                        <th style="width: 20%;">TIPO_DOCUMENTO</th>
-                                                        <th style="width: 20%;">DOCUMENTO</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @if ($cliente->paisnacimiento !== 'BOLIVIA')
-
+                                            @if ($cliente->paisnacimiento !== 'BOLIVIA')
+                                                <table class="table table-bordered table-sm align-middle text-center">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th style="width: 40%;">SUB_PROCEDIMIENTO</th>
+                                                            <th style="width: 20%;">FECHA_REGISTRO</th>
+                                                            <th style="width: 20%;">TIPO_DOCUMENTO</th>
+                                                            <th style="width: 20%;">DOCUMENTO</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
                                                         {{-- FORMULARIO DE RECEPCIÓN --}}
                                                         @php
                                                             $formulariosrecepcion = $cliente->tramites()->where('subprocedimiento', 'FORMULARIO DE RECEPCIÓN DE DOCUMENTOS EXTRANJEROS')->where('tramite', 'PENSIÓN POR MUERTE')->get();
@@ -1493,9 +1495,9 @@
                                                                 });
                                                             </script>
                                                         @endif
-                                                    @endif
-                                                </tbody>
-                                            </table>
+                                                    </tbody>
+                                                </table>
+                                            @endif
                                         </div>
                                     </div>
                                     {{-- @if (!$documento4 && !$validaciondocext) --}}

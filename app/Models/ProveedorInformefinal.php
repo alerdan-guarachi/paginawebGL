@@ -24,7 +24,7 @@ class ProveedorInformefinal extends Model
         'clienteauditorianombre' => '',
         'fechabateria' => '',
         'proveedorasignado' => 'required',
-        'celularproveedor' => 'required',
+        'celularproveedor' => '',
         'usuarioid' => 'required',
         'usuarioregistro' => '',
         'precio' => 'required',
@@ -45,6 +45,9 @@ class ProveedorInformefinal extends Model
         'factura' => '',
         'usuariocomprobante' => '',
         'codautorizacion' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
+        'tipocliente' => '',
     ]; 
 
     protected $fillable = [
@@ -80,6 +83,9 @@ class ProveedorInformefinal extends Model
         'factura',
         'usuariocomprobante',
         'codautorizacion',
+        'clienteid',
+        'clientenombre',
+        'tipocliente',
     ];
     /* public function programacionSubcliente()
     {

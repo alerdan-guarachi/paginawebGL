@@ -731,12 +731,15 @@
                     <div class="modal-dialog modal-xl" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                @if($tramiteinicio)
-                                    <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE TRÁMITE</h5>
-                                @endif
-                                @if($tramitecontinuidad)
-                                    <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE PODER</h5>
-                                @endif
+                                <div class="d-flex align-items-center">
+                                    @if($tramiteinicio)
+                                        <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE TRÁMITE</h5>
+                                    @endif
+                                    @if($tramitecontinuidad)
+                                        <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE PODER</h5>
+                                    @endif
+                                    <a class="btn btn-sm btn-subirrequisitos ml-2" href="{{ route('admin.asociados.subirdocrequisitosmasahereditaria', $cliente->id) }}">VER REQUISITOS</a>
+                                </div>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -1092,7 +1095,7 @@
                                                         </td>
                                                         <td class="align-middle text-center">
                                                             @if ($documentoformval)
-                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/MASA HEREDITARIA/FORMULARIO DE VALIDACIÓN DE PODER/{$documentoformval->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
+                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/MASA HEREDITARIA/NOTIFICACIÓN DE PODER/{$documentoformval->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
                                                                 @if ($puedeEditarArchivo)
                                                                     <div class="d-flex align-items-center justify-content-center gap-2" style="margin-top:5px;">
                                                                         <input type="file" name="archivo_reemplazo" class="dropify" accept="application/pdf">

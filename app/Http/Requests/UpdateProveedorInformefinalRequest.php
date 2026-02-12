@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateClienteComunRequest extends FormRequest
+class UpdateProveedorInformefinalRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -42,7 +42,7 @@ class UpdateClienteComunRequest extends FormRequest
         'clienteauditorianombre' => 'max:45',
         'fechabateria' => '',
         'proveedorasignado' => 'required|max:45',
-        'celularproveedor' => 'required|max:45',
+        'celularproveedor' => 'max:45',
         'usuarioid' => 'required',
         'usuarioregistro' => 'max:45',
         'nrofactura' => '',
@@ -50,6 +50,9 @@ class UpdateClienteComunRequest extends FormRequest
         'comprobante' => '',
         'cheque' => '',
         'codautorizacion' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
+        'tipocliente' => '',
         ]; 
         return $rules;
     }

@@ -2,39 +2,44 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.0.20:8000';
+  static const String baseUrl = 'http://192.168.88.224:8000';
 
-  // =============================================================
-  // ▼ SE HA MODIFICADO ESTA FUNCIÓN ▼
-  // =============================================================
   static Future<Map<String, dynamic>> login(String email, String password, {String? fcmToken}) async {
     final url = Uri.parse('$baseUrl/api/login');
 
-    // Construimos el cuerpo de la petición
     final Map<String, String> body = {
       'email': email,
       'password': password,
     };
 
-    // Añadimos el fcm_token si está presente
     if (fcmToken != null) {
       body['fcm_token'] = fcmToken;
     }
 
     final response = await http.post(
         url,
-        headers: {'Accept': 'application/json'}, // Es buena práctica añadir esto
+        headers: {'Accept': 'application/json'},
         body: body
     );
 
     if (response.statusCode == 200) return json.decode(response.body);
 
-    print('Error en login: ${response.body}'); // Imprimir error para depurar
+    print('Error en login: ${response.body}');
     throw Exception('Credenciales inválidas');
   }
-  // =============================================================
-  // ▲ FIN DE LA FUNCIÓN MODIFICADA ▲
-  // =============================================================
+
+  // ... (otros métodos)
+
+  // ▼▼▼ NUEVA FUNCIÓN AÑADIDA ▼▼▼
+  static Future<List<dynamic>> getBaterias(String userId) async {
+    final url = Uri.parse('$baseUrl/api/baterias/$userId');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error al obtener las programaciones');
+    }
+  }
 
   static Future<Map<String, dynamic>> register(String name, String email, String password) async {
     final url = Uri.parse('$baseUrl/api/register');
@@ -68,19 +73,17 @@ class ApiService {
     throw Exception('Error al obtener proveedores');
   }
 
-  // Dentro de ApiService
   static Future<Map<String, dynamic>> getClienteByUserId(String userId) async {
-    final url = Uri.parse('$baseUrl/api/clientes/$userId'); // Ajusta según tu endpoint
+    final url = Uri.parse('$baseUrl/api/clientes/$userId');
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
-      return json.decode(response.body); // Debe retornar un Map con los datos del cliente
+      return json.decode(response.body);
     } else {
       throw Exception('Error al obtener datos del cliente');
     }
   }
 
-  // Dentro de ApiService
   static Future<List<dynamic>> getDocumentosByUserId(String userId) async {
     final url = Uri.parse('$baseUrl/api/documentos/$userId');
     final response = await http.get(url);
@@ -111,5 +114,4 @@ class ApiService {
   static Future<void> marcarLeida(String id) async {
     await http.post(Uri.parse('$baseUrl/api/notificaciones/$id/leer'));
   }
-
 }

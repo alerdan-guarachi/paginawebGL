@@ -6,9 +6,10 @@ import 'areas_page.dart';
 import 'goodbits_page.dart';
 import 'atencion_medicos_page.dart';
 import '../widgets/good_life_loader.dart';
-import 'documentos_page.dart'; // Ajusta la ruta según tu proyecto
-import 'tramites_page.dart'; // Ajusta la ruta según tu proyecto
-import 'notificaciones_page.dart'; // Ajusta la ruta según tu proyecto
+import 'documentos_page.dart';
+import 'tramites_page.dart';
+import 'notificaciones_page.dart';
+import 'programaciones_page.dart'; // 1. IMPORTAR LA NUEVA PÁGINA
 
 class HomePage extends StatefulWidget {
   final String nombreUsuario;
@@ -47,9 +48,14 @@ class _HomePageState extends State<HomePage> {
   void cerrarSesion(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('nombreUsuario');
-    Navigator.pushReplacement(
+    await prefs.remove('sucursalUsuario');
+    await prefs.remove('usuarioId');
+    await prefs.remove('token');
+
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => LoginPage()),
+      (Route<dynamic> route) => false,
     );
   }
 
@@ -60,7 +66,6 @@ class _HomePageState extends State<HomePage> {
         builder: (_) => NotificacionesPage(usuarioId: widget.usuarioId),
       ),
     );
-    // Al regresar, actualizamos el contador
     _loadUnreadCount();
   }
 
@@ -79,12 +84,14 @@ class _HomePageState extends State<HomePage> {
                   Container(
                     width: 70,
                     height: 70,
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
-                    child: ClipOval(
-                      child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset('assets/iconogoodlife.png', fit: BoxFit.contain),
                     ),
                   ),
                   SizedBox(height: 10),
@@ -98,8 +105,8 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // NUEVA OPCIÓN: Atención Médicos
             ListTile(
+              dense: true,
               leading: Icon(Icons.medical_services, color: verde),
               title: Text('Atención Médicos'),
               onTap: () {
@@ -145,18 +152,26 @@ class _HomePageState extends State<HomePage> {
               },
             ),
 
-            // Otras opciones
+            // 2. ACCIÓN DEL BOTÓN MODIFICADA
             ListTile(
+              dense: true,
               leading: Icon(Icons.calendar_month, color: verde),
               title: Text('Programaciones Médicas'),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProgramacionesPage(usuarioId: widget.usuarioId),
+                  ),
+                );
+              },
             ),
 
             ListTile(
+              dense: true,
               leading: Icon(Icons.description, color: verde),
               title: Text('Informes Médicos'),
               onTap: () async {
-                // Obtener el usuarioId del SharedPreferences
                 final prefs = await SharedPreferences.getInstance();
                 final usuarioId = prefs.getString('usuarioId');
 
@@ -176,6 +191,7 @@ class _HomePageState extends State<HomePage> {
             ),
 
             ListTile(
+              dense: true,
               leading: Icon(Icons.assignment, color: verde),
               title: Text('Trámites'),
               onTap: () async {
@@ -193,8 +209,8 @@ class _HomePageState extends State<HomePage> {
               },
             ),
 
-
             ListTile(
+              dense: true,
               leading: Icon(Icons.account_balance_wallet, color: verde),
               title: Text('Billetera Móvil'),
               onTap: () {
@@ -208,6 +224,7 @@ class _HomePageState extends State<HomePage> {
             ),
 
             ListTile(
+              dense: true,
               leading: Icon(Icons.notifications, color: verde),
               title: const Text('Notificaciones'),
               trailing: _unreadCount > 0
@@ -226,28 +243,36 @@ class _HomePageState extends State<HomePage> {
               onTap: _navigateToNotificaciones,
             ),
 
-
             Spacer(),
 
             ListTile(
-              leading: Icon(Icons.logout,
-                  color: Colors.red),
+              dense: true,
+              leading: Icon(Icons.logout, color: Colors.red),
               title: Text('Cerrar sesión'),
-              onTap: () { showDialog( context: context,
-                builder: (_) => AlertDialog( title: Text('Confirmar'),
-                  content: Text('¿Deseas cerrar sesión?'),
-                  actions: [ TextButton( onPressed: () => Navigator.pop(context),
-                    child: Text('Cancelar'), ),
-                    ElevatedButton( style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                      onPressed: () { Navigator.pop(context); cerrarSesion(context); },
-                      child: Text('Sí, cerrar', style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
-                ),
-              );
-                },
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: Text('Confirmar'),
+                    content: Text('¿Deseas cerrar sesión?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text('Cancelar'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          cerrarSesion(context);
+                        },
+                        child: Text('Sí, cerrar', style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-
           ],
         ),
       ),

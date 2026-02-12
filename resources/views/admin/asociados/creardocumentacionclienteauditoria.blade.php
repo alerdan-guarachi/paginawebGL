@@ -5,7 +5,6 @@
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#ventanaModal">INFORMES DEL CLIENTE</a>
 {{-- <a class="btn btn-sm float-right btn-listainformes" href="{{ route('admin.asociados.listadodocumentacionclienteita', $cliente) }}">LISTA DE INFORMES</a> --}}
 {{-- <a class="btn btn-sm float-right btn-multiple" href="{{ route('admin.asociados.documentacionmultipleclienteita', 6) }}">DOC. MÚLTIPLE</a> --}}
-
 <h5>SUBIR INFORMES DE:</h5>
 <h3>{{$clienteauditoria->nombrecompleto}}</h3>
 @stop
@@ -18,7 +17,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 <div class="card">
@@ -55,20 +54,6 @@
                             @enderror
                         </div>
                         <input type="hidden" id="fechabateria" name="fechabateria">
-                        
-                        {{-- <div class="form-group" id="acciones_select">
-                            {!! Form::label('', 'Acciones disponibles:') !!}
-                            <select class="form-control" id="accion" name="accion">
-                                <option value="" disabled selected></option>
-                            </select>
-                            @error('accion')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{$message}}
-                                </small>
-                            @enderror
-                        </div>
-                        <input type="hidden" id="accionselec" name="accionselec"> --}}
-
                         <div class="form-group" id="acciones_select" style="display: none;">
                             {!! Form::label('', 'Acciones disponibles:') !!}
                             <div id="acciones_disponibles"></div>
@@ -79,9 +64,8 @@
                             @enderror
                         </div>
                         <style>
-                            /* Estilo para que los labels de las acciones no se muestren en negritas */
                             #acciones_disponibles label {
-                                font-weight: normal; /* Evita que las etiquetas sean gruesas */
+                                font-weight: normal;
                             }
                         </style>
                         <input type="hidden" id="accionselec" name="accionselec">
@@ -109,9 +93,6 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                             </div>
-                            {{-- <div class="modal-body">
-                            <iframe id="document-preview" style="width: 100%; height: 500px; border: none;"></iframe>
-                            </div> --}}
                             <div class="modal-body">
                                 <object id="document-preview" type="application/pdf" style="width: 100%; height: 500px;">
                                     <p><a id="pdf-download" href="#" target="_blank">Descargar</a></p>
@@ -268,7 +249,6 @@
                                 const selectedFecha = this.value;
                                 
                                 allActionRows.forEach(function(actionRow) {
-                                    // Muestra solo las filas de la fecha seleccionada
                                     if (actionRow.id === 'acciones-' + selectedFecha) {
                                         actionRow.style.display = "table-row";
                                     } else {
@@ -278,98 +258,6 @@
                             });
                         });
                     </script>
-                    
-                    <style>
-                        /* Reduce el interlineado entre filas */
-                        table tbody tr {
-                            line-height: 0.8; /* Menor interlineado */
-                        }
-                    
-                        table tbody tr td {
-                            padding: 4px 5px; /* Reduce el padding para disminuir el espacio vertical */
-                            vertical-align: middle; /* Asegura la alineación vertical en el medio */
-                        }
-                    
-                        /* Colorear las filas impares */
-                        table tbody tr:nth-child(odd) {
-                            background-color: #f1f1f1; /* Color de fondo para filas impares */
-                        }
-                    
-                        table tbody tr:nth-child(even) {
-                            background-color: #ffffff; /* Color de fondo para filas pares */
-                        }
-                    
-                        /* Asegura que el color rojo se aplique a todos los textos cuando no está registrado */
-                        table tbody tr td[style*="color: red;"] {
-                            font-weight: normal; /* Resalta más el texto en rojo */
-                        }
-                    
-                        .btn-verinforme,
-                        .btn-verimagen {
-                            background-color: #ffffff;
-                            border-radius: 5px;
-                            padding: 2px 4px; /* Reduce el padding para botones */
-                            font-size: 12px; /* Tamaño de fuente más pequeño */
-                            margin: 0; /* Elimina el margen para evitar espacios extra */
-                            border: 1px solid transparent; /* Establecer un borde */
-                            margin-bottom: -8px;
-                            margin-top: -8px;
-                        }
-                    
-                        .btn-verinforme {
-                            color: #faa625;
-                            border-color: #faa625;
-                        }
-                    
-                        .btn-verinforme:hover {
-                            background-color: #faa625;
-                            color: #ffffff;
-                        }
-                    
-                        .btn-verimagen {
-                            color: #25b6fa;
-                            border-color: #25b6fa;
-                        }
-                    
-                        .btn-verimagen:hover {
-                            background-color: #25b6fa;
-                            color: #ffffff;
-                        }
-                        .btn-docfirmado {
-                            background-color: #ffffff;
-                            border-radius: 5px;
-                            padding: 2px 4px;
-                            font-size: 12px;
-                            margin: 0;
-                            border: 1px solid transparent;
-                            margin-bottom: -8px;
-                            margin-top: -8px;
-                            color: #be26dc;
-                            border-color: #be26dc;
-                        }
-
-                        .btn-docfirmado:hover {
-                            background-color: #be26dc;
-                            color: #ffffff;
-                        }
-                        .btn-docword {
-                            background-color: #ffffff;
-                            border-radius: 5px;
-                            padding: 2px 4px;
-                            font-size: 12px;
-                            margin: 0;
-                            border: 1px solid transparent;
-                            margin-bottom: -8px;
-                            margin-top: -8px;
-                            color: #262cdc;
-                            border-color: #262cdc;
-                        }
-
-                        .btn-docword:hover {
-                            background-color: #262cdc;
-                            color: #ffffff;
-                        }
-                    </style>
                 </div>
                 {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear']) !!}
                 {!! Form::close() !!}
@@ -383,87 +271,37 @@
 <script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/js/dropify.min.js"></script>
-{{-- <script>
-        $(document).ready(function(){
-            $('#fecha_bateria').on('change', function(){
-                $('#accion').val('');
-                $('#accionselec').val('');
-            });
-            $('#accion').on('change', function(){o
-                var selectedOption = $(this).val();
-                $('#accionselec').val(selectedOption);
-            });
-        });
-        
-        document.getElementById('fecha_bateria').addEventListener('change', function() {
-        var fechaSeleccionada = this.value;
-        var accionesDisponibles = document.getElementById('accion');
-        accionesDisponibles.innerHTML = '';
-        var accionesNoRegistradasPorFecha = @json($accionesNoRegistradasPorFecha);
-
-        var opcionVacia = document.createElement('option');
-        opcionVacia.value = '';
-        opcionVacia.text = '';
-        accionesDisponibles.appendChild(opcionVacia);
-
-        if (accionesNoRegistradasPorFecha[fechaSeleccionada]) {
-            accionesNoRegistradasPorFecha[fechaSeleccionada].forEach(function(accion) {
-                var opcion = document.createElement('option');
-                opcion.value = accion.accionnombre;
-                opcion.text = accion.accionnombre;
-                accionesDisponibles.appendChild(opcion);
-            });
-        }
-
-        document.getElementById('acciones_select').style.display = 'block';
-    });
-
-    $(document).ready(function() {
-        $('#fechabateria').change(function() {
-            var selectedOption = $(this).children("option:selected").text();
-                $('#fechaSeleccionada').val(selectedOption);
-            });
-        });
-        document.getElementById('fecha_bateria').addEventListener('change', function() {
-            var selectedDate = this.value;
-                document.getElementById('fechabateria').value = selectedDate;
-    });
-</script> --}}
 
 <script>
     $(document).ready(function(){
         $('#fecha_bateria').on('change', function(){
-            $('#accionselec').val('');  // Limpia el valor previo
+            $('#accionselec').val('');
         });
 
         document.getElementById('fecha_bateria').addEventListener('change', function() {
             var fechaSeleccionada = this.value;
             var accionesContainer = document.getElementById('acciones_disponibles');
-            accionesContainer.innerHTML = '';  // Limpia los checkboxes previos
+            accionesContainer.innerHTML = '';
             var accionesNoRegistradasPorFecha = @json($accionesNoRegistradasPorFecha);
 
             if (accionesNoRegistradasPorFecha[fechaSeleccionada]) {
                 accionesNoRegistradasPorFecha[fechaSeleccionada].forEach(function(accion) {
-                    // Crear el checkbox
                     var checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.name = 'acciones[]';
                     checkbox.value = accion.accionnombre;
                     checkbox.id = 'accion_' + accion.accionnombre;
 
-                    // Crear la etiqueta del checkbox
                     var label = document.createElement('label');
                     label.htmlFor = 'accion_' + accion.accionnombre;
                     label.textContent = accion.accionnombre;
 
-                    // Añadir checkbox y etiqueta al contenedor
                     accionesContainer.appendChild(checkbox);
                     accionesContainer.appendChild(label);
                     accionesContainer.appendChild(document.createElement('br'));
                 });
             }
 
-            // Mostrar el div de acciones
             document.getElementById('acciones_select').style.display = 'block';
         });
     });
@@ -473,9 +311,7 @@
         document.getElementById('fechabateria').value = selectedDate;
     });
 </script>
-
 <script>
-    // Función para cargar la vista previa del documento seleccionado en el iframe del modal
     function cargarVistaPrevia() {
       var archivo = document.getElementById('archivo').files[0];
       if (archivo) {
@@ -488,11 +324,10 @@
       }
     }
   
-    // Evento cuando se selecciona un archivo
     document.getElementById('archivo').addEventListener('change', function() {
       cargarVistaPrevia();
     });
-  </script>
+</script>
 <script>
     $(document).ready(function() {
         $('.dropify').dropify({
@@ -535,7 +370,7 @@
         }
     });
 
-//CANCELAR FUNCION DE LA TECLA ENTER
+    //CANCELAR FUNCION DE LA TECLA ENTER
     document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
@@ -570,6 +405,7 @@
         color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 1000;
+        font-size: 23px;
         }
     .btn-crear {
         background-color:  #ffffff;
@@ -661,6 +497,83 @@
     }
     .btn-listainformes:hover {
         background-color: #493535;
+        color: #ffffff;
+    }
+</style>
+<style>
+    table tbody tr {
+        line-height: 0.8;
+    }
+    table tbody tr td {
+        padding: 4px 5px;
+        vertical-align: middle;
+    }
+    table tbody tr:nth-child(odd) {
+        background-color: #f1f1f1;
+    }
+    table tbody tr:nth-child(even) {
+        background-color: #ffffff;
+    }
+    table tbody tr td[style*="color: red;"] {
+        font-weight: normal;
+    }
+    .btn-verinforme,
+    .btn-verimagen {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 2px 4px;
+        font-size: 12px;
+        margin: 0;
+        border: 1px solid transparent;
+        margin-bottom: -8px;
+        margin-top: -8px;
+    }
+    .btn-verinforme {
+        color: #faa625;
+        border-color: #faa625;
+    }
+    .btn-verinforme:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }
+    .btn-verimagen {
+        color: #25b6fa;
+        border-color: #25b6fa;
+    }
+    .btn-verimagen:hover {
+        background-color: #25b6fa;
+        color: #ffffff;
+    }
+    .btn-docfirmado {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 2px 4px;
+        font-size: 12px;
+        margin: 0;
+        border: 1px solid transparent;
+        margin-bottom: -8px;
+        margin-top: -8px;
+        color: #be26dc;
+        border-color: #be26dc;
+    }
+    .btn-docfirmado:hover {
+        background-color: #be26dc;
+        color: #ffffff;
+    }
+    .btn-docword {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 2px 4px;
+        font-size: 12px;
+        margin: 0;
+        border: 1px solid transparent;
+        margin-bottom: -8px;
+        margin-top: -8px;
+        color: #262cdc;
+        border-color: #262cdc;
+    }
+    .btn-docword:hover {
+        background-color: #262cdc;
         color: #ffffff;
     }
 </style>

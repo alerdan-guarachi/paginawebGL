@@ -44,7 +44,6 @@
                     <input type="hidden" name="clientenombre" id="clientenombre">
                     <input type="hidden" name="apoderadoanterior" id="apoderadoanterior">
                     <input type="hidden" name="fechaasignacionanterior" id="fechaasignacionanterior">
-
                     <div class="mb-2">
                         <label for="estadointerrupcion">Estado</label>
                         <select class="form-control" name="estadointerrupcion">
@@ -53,7 +52,6 @@
                             <option value="INTERRUMPIDO">INTERRUMPIR</option>
                         </select>
                     </div>
-
                     <div class="mb-2">
                         <label for="motivocambio">Motivo de la Finalización/Interrupción</label>
                         <textarea name="motivocambio" id="motivocambio" class="form-control" required></textarea>
@@ -68,19 +66,15 @@
     document.addEventListener('DOMContentLoaded', function() {
         const buscarInput = document.getElementById('buscarTramiteId');
         const tabla = document.getElementById('resultadoTramite').querySelector('tbody');
-
         buscarInput.addEventListener('keyup', function(e) {
         if(e.key !== 'Enter') return;
             const id = this.value.trim();
             if(!id) return tabla.innerHTML = '';
-
             fetch("{{ url('tramites/buscarpendiente') }}/" + id)
-
             .then(res => res.json())
             .then(data => {
                 tabla.innerHTML = '';
                 if(!data) return;
-
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${data.id}</td>
@@ -92,24 +86,100 @@
                     <td>${data.ciudad}</td>
                 `;
                 tabla.appendChild(row);
-
-                // llenar hidden del formulario
                 document.getElementById('tramiteid').value = data.id;
                 document.getElementById('clienteid').value = data.clienteitaid;
                 document.getElementById('clientenombre').value = data.clienteitanombre;
                 document.getElementById('apoderadoanterior').value = data.apoderadoasignado;
                 document.getElementById('fechaasignacionanterior').value = data.fechaasignacion;
-
             });
         });
     });
 </script>
-
 <h1>TRÁMITES PARA LA GESTORA PÚBLICA</h1>
 @stop
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/tramitesgestora.css') }}">
+<style>
+    #tablaTramites2 thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8fdf2;
+        z-index: 10;
+    }
+    #tablaTramites thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8fdf2;
+        z-index: 10;
+    }
+    #tablaProgramaciones thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8fdf2;
+        z-index: 10;
+    }
+    #tablaTramites3 thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8fdf2;
+        z-index: 10;
+    }
+    #tablaTramites4 thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8fdf2;
+        z-index: 10;
+    }
+    .table-responsive {
+        max-height: 65vh;
+        overflow-y: auto;
+    }
+    .btn-vertramite {
+        background-color: #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 2px 5px;
+    }
+    .btn-vertramite:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }
+    .btn-verhistoria {
+        background-color: #ffffff;
+        color: #226acf;
+        border-color: #226acf;
+        border-radius: 5px;
+        padding: 2px 5px;
+    }
+    .btn-verhistoria:hover {
+        background-color: #226acf;
+        color: #ffffff;
+    }
+    .btn-verrequisito {
+        background-color: #ffffff;
+        color: #8c28f0;
+        border-color: #8c28f0;
+        border-radius: 5px;
+        padding: 2px 5px;
+    }
+    .btn-verrequisito:hover {
+        background-color: #8c28f0;
+        color: #ffffff;
+    }
+    .btn-procedimientos {
+        background-color:  #ffffff;
+        color: #faa625;
+        border-color: #faa625;
+        border-radius: 5px;
+        padding: 2px 5px;
+    }
+    .btn-procedimientos:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }
+</style>
 @stop
 
 @section('content')
@@ -132,11 +202,6 @@
                     AGENDAMIENTO
                 </a>
             </li>
-            {{-- <li class="nav-item">
-                <a class="nav-link" id="tab-5" data-toggle="tab" href="#tab-content-5" role="tab" aria-controls="tab-content-5" aria-selected="true">
-                    APELACIÓN
-                </a>
-            </li> --}}
             <li class="nav-item">
                 <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="true">
                     NO INICIADO
@@ -147,10 +212,6 @@
                     INICIADO
                 </a>
             </li>
-            {{-- <li class="nav-item">
-                <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="true">
-                    VENCIDOS</a>
-            </li> --}}
             <li class="nav-item">
                 <a class="nav-link" id="tab-6" data-toggle="tab" href="#tab-content-6" role="tab" aria-controls="tab-content-6" aria-selected="true">
                     PROGRAMACIONES
@@ -194,32 +255,9 @@
                             @csrf
                             <div class="row">
                                 <h5 class="text-center d-block w-100" style="margin-bottom: 10px;">NUEVO AGENDAMIENTO</h5>
-                                {{-- <div class="col-lg-2">
-                                    <label for="cliente_id">Cliente_Nombre</label>
-                                    <select name="clienteid" id="cliente_id" class="form-control" onchange="mostrarClienteId(this)">
-                                        <option value="">Seleccione un cliente...</option>
-                                        @foreach ($todosclientes as $cliente)
-                                            <option value="{{ $cliente->id }}" data-nombre="{{ $cliente->nombrecompleto }}">
-                                                {{ $cliente->nombrecompleto }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <input type="hidden" name="clientenombre2" id="clientenombre2">
-                                </div>
-                                <div class="col-lg-1">
-                                    <label for="cliente_id_visible">Cliente_ID</label>
-                                    <input type="text" id="cliente_id_visible" class="form-control" readonly>
-                                </div>
-                                <script>
-                                    function mostrarClienteId(select) {
-                                        document.getElementById('cliente_id_visible').value = select.value;
-                                        const nombrecompleto = select.options[select.selectedIndex].dataset.nombre;
-                                        document.getElementById('clientenombre2').value = nombrecompleto;
-                                    }
-                                </script> --}}
                                 <div class="col-lg-2">
                                     <label for="cliente_id">Cliente_Nombre</label>
-                                    <input list="lista_clientes" id="cliente_id" class="form-control" onchange="mostrarClienteId(this)">
+                                    <input list="lista_clientes" id="cliente_id" class="form-control" onchange="mostrarClienteId(this)" required>
                                     <datalist id="lista_clientes">
                                         @foreach ($todosclientes as $cliente)
                                             <option data-id="{{ $cliente->id }}" value="{{ $cliente->nombrecompleto }}"></option>
@@ -230,9 +268,14 @@
 
                                 <div class="col-lg-1">
                                     <label for="cliente_id_visible">Cliente_ID</label>
-                                    <input type="text" name="clienteidvisible" id="cliente_id_visible" class="form-control" readonly>
+                                    <input type="text" name="clienteidvisible" id="cliente_id_visible" class="form-control no-edit" required>
                                 </div>
-
+                                <style>
+                                    .no-edit {
+                                        pointer-events: none;
+                                        background-color: #e9ecef;
+                                    }
+                                </style>
                                 <script>
                                     function mostrarClienteId(input) {
                                         const valor = input.value;
@@ -244,40 +287,43 @@
                                                 idSeleccionado = opt.dataset.id;
                                             }
                                         });
-
-                                        // asignar valores
                                         document.getElementById('cliente_id_visible').value = idSeleccionado;
                                         document.getElementById('clientenombre2').value = valor;
                                     }
                                 </script>
-
                                 <div class="col-lg-2">
                                     <label for="tramite">Trámite</label>
-                                    <select name="tramite" id="tramite" class="form-control">
+                                    <select name="tramite" id="tramite" class="form-control" required>
                                         <option value="">Seleccione...</option>
                                         <option value="INVALIDEZ">INVALIDEZ</option>
                                         <option value="APELACIÓN">APELACIÓN</option>
                                         <option value="SEGUNDA SOLICITUD">SEGUNDA SOLICITUD</option>
+                                        <option value="APELACIÓN SEGUNDA SOLICITUD">APELACIÓN SEGUNDA SOLICITUD</option>
                                         <option value="TERCERA SOLICITUD">TERCERA SOLICITUD</option>
+                                        <option value="APELACIÓN TERCERA SOLICITUD">APELACIÓN TERCERA SOLICITUD</option>
+                                        <option value="RECALIFICACIÓN">RECALIFICACIÓN</option>
+                                        <option value="APELACIÓN DE RECALIFICACIÓN">APELACIÓN DE RECALIFICACIÓN</option>
+                                        <option value="RECALIFICACIÓN SEGUNDA SOLICITUD">RECALIFICACIÓN SEGUNDA SOLICITUD</option>
+                                        <option value="APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD">APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD</option>
                                         <option value="JUBILACIÓN">JUBILACIÓN</option>
                                         <option value="PENSIÓN POR MUERTE">PENSIÓN POR MUERTE</option>
                                         <option value="MASA HEREDITARIA">MASA HEREDITARIA</option>
                                         <option value="RETIRO DE APORTES TOTAL">RETIRO DE APORTES TOTAL</option>
                                         <option value="RETIRO DE APORTES PARCIAL">RETIRO DE APORTES PARCIAL</option>
-                                        <option value="COMPENSACIÓN DE COTIZACIONES (SENASIR)">COMPENSACIÓN DE COTIZACIONES (SENASIR)</option>
+                                        {{-- <option value="COMPENSACIÓN DE COTIZACIONES (SENASIR)">COMPENSACIÓN DE COTIZACIONES (SENASIR)</option> --}}
                                     </select>
                                 </div>
                                 <div class="col-lg-2">
                                     <label for="fecha">Fecha</label>
-                                    <input type="date" name="fechaprogramacion" id="fecha" class="form-control">
+                                    <input type="date" name="fechaprogramacion" id="fecha" class="form-control" required>
                                 </div>
                                 <div class="col-lg-2">
                                     <label for="hora">Hora</label>
-                                    <input type="time" name="horaprogramacion" id="hora" class="form-control">
+                                    <input type="time" name="horaprogramacion" id="hora" class="form-control" required>
                                 </div>
                                 <div class="col-lg-2">
                                     <label for="documento">Documento</label>
-                                    <input type="file" name="documentoagendamiento" id="documento" class="form-control">
+                                    <input type="file" name="documentoagendamiento" id="documento" class="form-control" required>
                                 </div>
                                 <div class="col-lg-1">
                                     <label for="">Acción</label>
@@ -293,7 +339,6 @@
                         <div class="table-responsive">
                             <form action="{{ route('admin.tramites.confirmarasistencia') }}" method="POST">
                                 @csrf
-                                {{-- TABLA PRINCIPAL --}}
                                 <div class="d-flex align-items-center mb-3">
                                     <input 
                                         type="text" 
@@ -363,31 +408,19 @@
                                     });
                                 </script>
 
-                                {{-- BOTÓN PARA ABRIR MODAL DE ASISTIDOS --}}
-                                {{-- @if($agendamientosAsistidos->count() > 0)
-                                    <button type="button" class="btn btn-sm btn-adjuntosrespuestas" data-toggle="modal" data-target="#modalAsistidos">
-                                        VER AGEND. ASISTIDOS
-                                    </button>
-                                @endif
-                                <div class="text-center mt-3">
-                                    <button type="submit" class="btn btn-sm btn-subirarchivos">CONFIRMAR ASISTENCIA</button>
-                                </div> --}}
                                 <div class="d-flex justify-content-between mt-3">
                                     @if($agendamientosAsistidos->count() > 0)
                                         <button type="button" class="btn btn-sm btn-adjuntosrespuestas" data-toggle="modal" data-target="#modalAsistidos">
                                             VER AGEND. ASISTIDOS
                                         </button>
                                     @else
-                                        <div></div> {{-- Espaciador vacío para mantener la alineación --}}
+                                        <div></div>
                                     @endif
-
                                     <button type="submit" class="btn btn-sm btn-subirarchivos">
                                         CONFIRMAR ASIST.
                                     </button>
                                 </div>
 
-
-                                {{-- MODAL CON REGISTROS ASISTIDOS --}}
                                 <div class="modal fade" id="modalAsistidos" tabindex="-1" aria-labelledby="modalAsistidosLabel" aria-hidden="true">
                                     <div class="modal-dialog modal-xl">
                                         <div class="modal-content">
@@ -508,181 +541,6 @@
                 </div>
             </div>
 
-            {{-- APELACIÓN --}}
-            <div class="tab-pane fade" id="tab-content-5" role="tabpanel" aria-labelledby="tab-5">
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                        <thead style="background-color: #f8fdf2" class="table-sm">
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Trámite</th>
-                                <th>Inicio_Trámite</th>
-                                <th>Nivel_Trámite</th>
-                                <th>Sub.Nivel_Trámite</th>
-                                <th>Última_Carta</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($result as $item)
-                                @if ($item['tipocliente'] === 'APELACIÓN' && $item['estadotramite'] === 'PENDIENTE' && $item['apoderadoasignado'] === $usuarioAutenticado)
-                                <tr>
-                                    <td>{{ $item['clienteitanombre'] }}</td>
-                                    <td>{{ $item['tipocliente'] }}</td>
-                                    <td style="color: {{ $item['iniciotramite'] === 'NO INICIADO' ? 'red' : 'inherit' }}">
-                                        {{ $item['iniciotramite'] }}</td>
-                                    <td style="color: {{ $item['nivelprocedimientotramite'] === 'NO INICIADO' ? 'red' : 'inherit' }}">
-                                        {{ $item['nivelprocedimientotramite'] }}</td>
-                                    <td style="color: {{ $item['nivelsubprocedimientotramite'] === 'NO INICIADO' ? 'red' : 'inherit' }}">
-                                        {{ $item['nivelsubprocedimientotramite'] }}</td>
-                                    <td>{{ $item['ultimacartatramite'] }}</td>
-                                    <td width="10px">
-                                        <abbr title="Iniciar Trámite">
-                                            @if ($item['tipocliente'] === 'JUBILACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procjubilacion', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'MASA HEREDITARIA')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procmasahereditaria', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'APELACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelacion', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'COMPENZACIÓN SENASIR')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proccompensacionsenasir', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'INVALIDEZ')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procinvalidez', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'PENSIÓN POR MUERTE')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procpensionmuerte', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'RETIRO DE APORTES TOTAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportestotal', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'RETIRO DE APORTES PARCIAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportesparcial', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procsegundasolicitud', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @endif
-                                        </abbr>
-                                    </td>
-                                </tr>
-                                @endif
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {{-- PROGRAMACIONES --}}
-            <div class="tab-pane fade" id="tab-content-6" role="tabpanel" aria-labelledby="tab-6">
-                <div class="d-flex align-items-center mb-3">
-                    <input 
-                        type="text" 
-                        id="buscadorProgramaciones" 
-                        class="form-control form-control-sm w-25 shadow-sm" 
-                        placeholder="BUSCAR POR ID, NOMBRE DEL CLIENTE O ESTADO..."
-                    >
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered" id="tablaProgramaciones">
-                        <thead style="background-color: #f8fdf2" class="table-sm">
-                            <tr>
-                                <th class="text-center">Ver</th>
-                                <th>Cliente_ID</th>
-                                <th>Cliente_Nombre</th>
-                                <th>Tipo</th>
-                                <th>Trámite</th>
-                                <th>Última Fecha</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($progcajapetrolera as $prog)
-                                <tr>
-                                    <td class="text-center">
-                                        <abbr title="VER PROGRAMACIONES">
-                                            @if ($prog->tramite === 'INVALIDEZ')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procinvalidez', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'APELACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelacion', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procsegundasolicitud', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'TERCERA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proctercerasolicitud', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'JUBILACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procjubilacion', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'PENSIÓN POR MUERTE')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procpensionmuerte', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'RETIRO DE APORTES TOTAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportestotal', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'RETIRO DE APORTES PARCIAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportesparcial', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'MASA HEREDITARIA')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procmasahereditaria', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proccompensacionsenasir', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'RECALIFICACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procrecalificacion', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'APELACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelsegsolicitud', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'APELACIÓN TERCERA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapeltercersolicitud', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'APELACIÓN DE RECALIFICACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelrecalificacion', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procrecalsegsolicitud', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @elseif ($prog->tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelrecalsegsolicitud', ['cliente' => $prog->idcliente]) }}"></a>
-                                            @endif
-                                        </abbr>
-                                    </td>
-                                    <td>{{ $prog->idcliente }}</td>
-                                    <td>{{ $prog->cliente }}</td>
-                                    <td>{{ $prog->tipo }}</td>
-                                    <td>{{ $prog->tramite }}</td>
-                                    <td>
-                                        @if ($prog->ultima_fecha && $prog->ultima_fecha !== '—')
-                                            {{ \Carbon\Carbon::parse($prog->ultima_fecha)->format('d-m-Y - H:i') }}
-                                        @else
-                                            —
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @php
-                                            $colores = [
-                                                'SEGUIMIENTO A CLIENTE' => 'badge-success',
-                                                'PROGRAMACIÓN PENDIENTE' => 'badge-primary',
-                                                'PROGRAMACIÓN RETRASADA' => 'badge-warning',
-                                                'PROGRAMACIÓN EN MORA' => 'badge-danger',
-                                            ];
-                                        @endphp
-
-                                        <span class="badge {{ $colores[$prog->estado] ?? 'badge-secondary' }}">
-                                            {{ $prog->estado }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        const buscador = document.getElementById('buscadorProgramaciones');
-                        const tabla = document.getElementById('tablaProgramaciones');
-                        const filas = tabla.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-
-                        buscador.addEventListener('keyup', function() {
-                            const filtro = this.value.toLowerCase();
-                            Array.from(filas).forEach(function(fila) {
-                                const clienteId = fila.cells[1].textContent.toLowerCase();
-                                const clienteNombre = fila.cells[2].textContent.toLowerCase()
-                                const estado = fila.cells[6].textContent.toLowerCase();
-                                if (clienteId.includes(filtro) || clienteNombre.includes(filtro) || estado.includes(filtro)) {
-                                    fila.style.display = '';
-                                } else {
-                                    fila.style.display = 'none';
-                                }
-                            });
-                        });
-                    });
-                </script>
-            </div>
-
             {{-- NO INICIADO --}}
             <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
                 <div class="d-flex align-items-center mb-3">
@@ -711,42 +569,32 @@
                         <tbody>
                             @foreach ($todostramitesnoiniciado as $tramite)
                                 <tr>
+                                    @php
+                                        $rutasTramites = [
+                                            'INVALIDEZ' => 'admin.tramites.procinvalidez',
+                                            'APELACIÓN' => 'admin.tramites.procapelacion',
+                                            'SEGUNDA SOLICITUD' => 'admin.tramites.procsegundasolicitud',
+                                            'APELACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procapelsegsolicitud',
+                                            'TERCERA SOLICITUD' => 'admin.tramites.proctercerasolicitud',
+                                            'APELACIÓN TERCERA SOLICITUD' => 'admin.tramites.procapeltercersolicitud',
+                                            'RECALIFICACIÓN' => 'admin.tramites.procrecalificacion',
+                                            'APELACIÓN DE RECALIFICACIÓN' => 'admin.tramites.procapelrecalificacion',
+                                            'RECALIFICACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procrecalsegsolicitud',
+                                            'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procapelrecalsegsolicitud',
+                                            'JUBILACIÓN' => 'admin.tramites.procjubilacion',
+                                            'PENSIÓN POR MUERTE' => 'admin.tramites.procpensionmuerte',
+                                            'RETIRO DE APORTES TOTAL' => 'admin.tramites.procretiroaportestotal',
+                                            'RETIRO DE APORTES PARCIAL' => 'admin.tramites.procretiroaportesparcial',
+                                            'MASA HEREDITARIA' => 'admin.tramites.procmasahereditaria',
+                                            'COMPENSACIÓN DE COTIZACIONES (SENASIR)' => 'admin.tramites.proccompensacionsenasir',
+                                        ];
+                                    @endphp
                                     <td class="text-center">
-                                        <abbr title="INICIAR TRÁMITE">
-                                            @if ($tramite->tramite === 'INVALIDEZ')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procinvalidez', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procsegundasolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'TERCERA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proctercerasolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'JUBILACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procjubilacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'PENSIÓN POR MUERTE')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procpensionmuerte', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RETIRO DE APORTES TOTAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportestotal', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RETIRO DE APORTES PARCIAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportesparcial', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'MASA HEREDITARIA')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procmasahereditaria', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proccompensacionsenasir', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RECALIFICACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procrecalificacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN TERCERA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapeltercersolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN DE RECALIFICACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelrecalificacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procrecalsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelrecalsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @endif
-                                        </abbr>
+                                        @if(isset($rutasTramites[$tramite->tramite]))
+                                            <a class="btn btn-sm fas fa-file-archive btn-editar" title="INICIAR TRÁMITE"
+                                            href="{{ route($rutasTramites[$tramite->tramite], ['cliente' => $tramite->clienteitaid]) }}">
+                                            </a>
+                                        @endif
                                     </td>
                                     <td>{{ $tramite->id }}</td>
                                     <td>{{ $tramite->tramite }}</td>
@@ -754,7 +602,17 @@
                                     <td>{{ $tramite->clienteitanombre }}</td>
                                     <td>
                                         @if(is_null($tramite->fechabateria))
-                                            @if(in_array($tramite->tramite, ['INVALIDEZ','APELACIÓN','SEGUNDA SOLICITUD','TERCERA SOLICITUD']))
+                                            @if(in_array($tramite->tramite, [
+                                                'INVALIDEZ',
+                                                'APELACIÓN',
+                                                'SEGUNDA SOLICITUD',
+                                                'APELACIÓN SEGUNDA SOLICITUD',
+                                                'TERCERA SOLICITUD',
+                                                'APELACIÓN TERCERA SOLICITUD',
+                                                'RECALIFICACIÓN',
+                                                'APELACIÓN DE RECALIFICACIÓN',
+                                                'RECALIFICACIÓN SEGUNDA SOLICITUD',
+                                                'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD']))
                                                 PENDIENTE
                                             @else
                                                 NO REQUIERE
@@ -833,62 +691,39 @@
                         <tbody>
                             @foreach ($todostramitesiniciado as $tramite)
                                 <tr>
+                                    @php
+                                        $rutasTramites = [
+                                            'INVALIDEZ' => 'admin.tramites.procinvalidez',
+                                            'APELACIÓN' => 'admin.tramites.procapelacion',
+                                            'SEGUNDA SOLICITUD' => 'admin.tramites.procsegundasolicitud',
+                                            'APELACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procapelsegsolicitud',
+                                            'TERCERA SOLICITUD' => 'admin.tramites.proctercerasolicitud',
+                                            'APELACIÓN TERCERA SOLICITUD' => 'admin.tramites.procapeltercersolicitud',
+                                            'RECALIFICACIÓN' => 'admin.tramites.procrecalificacion',
+                                            'APELACIÓN DE RECALIFICACIÓN' => 'admin.tramites.procapelrecalificacion',
+                                            'RECALIFICACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procrecalsegsolicitud',
+                                            'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procapelrecalsegsolicitud',
+                                            'JUBILACIÓN' => 'admin.tramites.procjubilacion',
+                                            'PENSIÓN POR MUERTE' => 'admin.tramites.procpensionmuerte',
+                                            'RETIRO DE APORTES TOTAL' => 'admin.tramites.procretiroaportestotal',
+                                            'RETIRO DE APORTES PARCIAL' => 'admin.tramites.procretiroaportesparcial',
+                                            'MASA HEREDITARIA' => 'admin.tramites.procmasahereditaria',
+                                            'COMPENSACIÓN DE COTIZACIONES (SENASIR)' => 'admin.tramites.proccompensacionsenasir',
+                                        ];
+                                    @endphp
                                     <td class="text-center">
-                                        <abbr title="VER TRÁMITE">
-                                            @if ($tramite->tramite === 'INVALIDEZ')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procinvalidez', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procsegundasolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'TERCERA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proctercerasolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'JUBILACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procjubilacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'PENSIÓN POR MUERTE')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procpensionmuerte', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RETIRO DE APORTES TOTAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportestotal', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RETIRO DE APORTES PARCIAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportesparcial', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'MASA HEREDITARIA')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procmasahereditaria', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proccompensacionsenasir', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RECALIFICACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procrecalificacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN TERCERA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapeltercersolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN DE RECALIFICACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelrecalificacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procrecalsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelrecalsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @endif
-                                        </abbr>
-                                        <a class="btn btn-sm btn-procedimientos" 
+                                        @if(isset($rutasTramites[$tramite->tramite]))
+                                            <a class="btn btn-sm fas fa-file-archive btn-editar" title="VER TRÁMITE"
+                                            href="{{ route($rutasTramites[$tramite->tramite], ['cliente' => $tramite->clienteitaid]) }}">
+                                            </a>
+                                        @endif
+                                        <a class="btn btn-sm btn-procedimientos" title="VER PROCEDIMIENTOS"
                                             data-tramite-id="{{ $tramite->id }}"
                                             data-tramite-nombre="{{ $tramite->clienteitanombre }}"
                                             data-tramite-tipo="{{ $tramite->tramite }}"
                                             data-procedimientos='@json($tramite->procedimientos)'>
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <style>
-                                            .btn-procedimientos {
-                                                background-color:  #ffffff;
-                                                color: #faa625;
-                                                border-color: #faa625;
-                                                border-radius: 5px;
-                                                padding: 2px 5px;
-                                            }
-                                            .btn-procedimientos:hover {
-                                                background-color: #faa625;
-                                                color: #ffffff;
-                                            }
-                                        </style>
                                     </td>
                                     <td>{{ $tramite->id }}</td>
                                     <td>{{ $tramite->tramite }}</td>
@@ -896,7 +731,17 @@
                                     <td>{{ $tramite->clienteitanombre }}</td>
                                     <td>
                                         @if(is_null($tramite->fechabateria))
-                                            @if(in_array($tramite->tramite, ['INVALIDEZ','APELACIÓN','SEGUNDA SOLICITUD','TERCERA SOLICITUD']))
+                                            @if(in_array($tramite->tramite, [
+                                                'INVALIDEZ',
+                                                'APELACIÓN',
+                                                'SEGUNDA SOLICITUD',
+                                                'APELACIÓN SEGUNDA SOLICITUD',
+                                                'TERCERA SOLICITUD',
+                                                'APELACIÓN TERCERA SOLICITUD',
+                                                'RECALIFICACIÓN',
+                                                'APELACIÓN DE RECALIFICACIÓN',
+                                                'RECALIFICACIÓN SEGUNDA SOLICITUD',
+                                                'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD']))
                                                 PENDIENTE
                                             @else
                                                 NO REQUIERE
@@ -957,7 +802,7 @@
                             </div>
                             <div class="modal-body">
                                 <table class="table table-sm table-bordered" id="tablaModalProcedimientos">
-                                    <thead class="table-light">
+                                    <thead class="table-secondary">
                                         <tr>
                                             <th>ID</th>
                                             <th>Nivel Procedimiento</th>
@@ -1152,63 +997,82 @@
                 </script>
             </div>
 
-            {{-- VENCIDOS --}}
-            <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
+            {{-- PROGRAMACIONES --}}
+            <div class="tab-pane fade" id="tab-content-6" role="tabpanel" aria-labelledby="tab-6">
+                <div class="d-flex align-items-center mb-3">
+                    <input 
+                        type="text" 
+                        id="buscadorProgramaciones" 
+                        class="form-control form-control-sm w-25 shadow-sm" 
+                        placeholder="BUSCAR POR ID, NOMBRE DEL CLIENTE O ESTADO..."
+                    >
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
+                    <table class="table table-striped table-bordered" id="tablaProgramaciones">
                         <thead style="background-color: #f8fdf2" class="table-sm">
                             <tr>
-                                <th>Cliente</th>
+                                <th>Cliente_ID</th>
+                                <th>Cliente_Nombre</th>
+                                <th>Tipo</th>
                                 <th>Trámite</th>
-                                <th>Inicio_Trámite</th>
-                                <th>Nivel_Trámite</th>
-                                <th>Sub.Nivel_Trámite</th>
-                                <th>Última_Carta</th>
-                                <th>Ver_Trámite</th>
+                                <th>Última Fecha</th>
+                                <th>Estado</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($result as $item)
-                                @if ($item['estadotramite'] === 'FINALIZADO' && $item['apoderadoasignado'] === $usuarioAutenticado)
+                            @foreach ($progcajapetrolera as $prog)
                                 <tr>
-                                    <td>{{ $item['clienteitanombre'] }}</td>
-                                    <td>{{ $item['tipocliente'] }}</td>
-                                    <td style="color: {{ $item['iniciotramite'] === 'NO INICIADO' ? 'red' : 'inherit' }}">
-                                        {{ $item['iniciotramite'] }}</td>
-                                    <td style="color: {{ $item['nivelprocedimientotramite'] === 'NO INICIADO' ? 'red' : 'inherit' }}">
-                                        {{ $item['nivelprocedimientotramite'] }}</td>
-                                    <td style="color: {{ $item['nivelsubprocedimientotramite'] === 'NO INICIADO' ? 'red' : 'inherit' }}">
-                                        {{ $item['nivelsubprocedimientotramite'] }}</td>
-                                    <td>{{ $item['ultimacartatramite'] }}</td>
-                                    <td width="10px">
-                                        <abbr title="Ver Trámite">
-                                            @if ($item['tipocliente'] === 'JUBILACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procjubilacion', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'MASA HEREDITARIA')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procmasahereditaria', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'APELACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelacion', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'COMPENZACIÓN SENASIR')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proccompensacionsenasir', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'INVALIDEZ')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procinvalidez', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'PENSIÓN POR MUERTE')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procpensionmuerte', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'RETIRO DE APORTES TOTAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportestotal', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'RETIRO DE APORTES PARCIAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportesparcial', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @elseif ($item['tipocliente'] === 'SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procsegundasolicitud', ['cliente' => $item['clienteitaid']]) }}"></a>
-                                            @endif
-                                        </abbr>
+                                    <td>{{ $prog->idcliente }}</td>
+                                    <td>{{ $prog->cliente }}</td>
+                                    <td>{{ $prog->tipo }}</td>
+                                    <td>{{ $prog->tramite }}</td>
+                                    <td>
+                                        @if ($prog->ultima_fecha && $prog->ultima_fecha !== '—')
+                                            {{ \Carbon\Carbon::parse($prog->ultima_fecha)->format('d-m-Y - H:i') }}
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @php
+                                            $colores = [
+                                                'SEGUIMIENTO A CLIENTE' => 'badge-success',
+                                                'PROGRAMACIÓN PENDIENTE' => 'badge-primary',
+                                                'PROGRAMACIÓN RETRASADA' => 'badge-warning',
+                                                'PROGRAMACIÓN EN MORA' => 'badge-danger',
+                                            ];
+                                        @endphp
+
+                                        <span class="badge {{ $colores[$prog->estado] ?? 'badge-secondary' }}">
+                                            {{ $prog->estado }}
+                                        </span>
                                     </td>
                                 </tr>
-                                @endif
                             @endforeach
                         </tbody>
                     </table>
                 </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const buscador = document.getElementById('buscadorProgramaciones');
+                        const tabla = document.getElementById('tablaProgramaciones');
+                        const filas = tabla.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+                        buscador.addEventListener('keyup', function() {
+                            const filtro = this.value.toLowerCase();
+                            Array.from(filas).forEach(function(fila) {
+                                const clienteId = fila.cells[0].textContent.toLowerCase();
+                                const clienteNombre = fila.cells[1].textContent.toLowerCase()
+                                const estado = fila.cells[5].textContent.toLowerCase();
+                                if (clienteId.includes(filtro) || clienteNombre.includes(filtro) || estado.includes(filtro)) {
+                                    fila.style.display = '';
+                                } else {
+                                    fila.style.display = 'none';
+                                }
+                            });
+                        });
+                    });
+                </script>
             </div>
 
             {{-- FINALIZADOS --}}
@@ -1240,44 +1104,34 @@
                         <tbody>
                             @foreach ($todostramitesfinalizados as $tramite)
                                 <tr>
+                                    @php
+                                        $rutasTramites = [
+                                            'INVALIDEZ' => 'admin.tramites.procinvalidez',
+                                            'APELACIÓN' => 'admin.tramites.procapelacion',
+                                            'SEGUNDA SOLICITUD' => 'admin.tramites.procsegundasolicitud',
+                                            'APELACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procapelsegsolicitud',
+                                            'TERCERA SOLICITUD' => 'admin.tramites.proctercerasolicitud',
+                                            'APELACIÓN TERCERA SOLICITUD' => 'admin.tramites.procapeltercersolicitud',
+                                            'RECALIFICACIÓN' => 'admin.tramites.procrecalificacion',
+                                            'APELACIÓN DE RECALIFICACIÓN' => 'admin.tramites.procapelrecalificacion',
+                                            'RECALIFICACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procrecalsegsolicitud',
+                                            'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procapelrecalsegsolicitud',
+                                            'JUBILACIÓN' => 'admin.tramites.procjubilacion',
+                                            'PENSIÓN POR MUERTE' => 'admin.tramites.procpensionmuerte',
+                                            'RETIRO DE APORTES TOTAL' => 'admin.tramites.procretiroaportestotal',
+                                            'RETIRO DE APORTES PARCIAL' => 'admin.tramites.procretiroaportesparcial',
+                                            'MASA HEREDITARIA' => 'admin.tramites.procmasahereditaria',
+                                            'COMPENSACIÓN DE COTIZACIONES (SENASIR)' => 'admin.tramites.proccompensacionsenasir',
+                                        ];
+                                    @endphp
                                     <td class="text-center">
                                         @if ($tramite->archivofinalizado == null)
-                                            @if ($tramite->tramite === 'INVALIDEZ')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procinvalidez', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelacion', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procsegundasolicitud', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'TERCERA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proctercerasolicitud', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'JUBILACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procjubilacion', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'PENSIÓN POR MUERTE')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procpensionmuerte', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'RETIRO DE APORTES TOTAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportestotal', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'RETIRO DE APORTES PARCIAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportesparcial', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'MASA HEREDITARIA')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procmasahereditaria', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proccompensacionsenasir', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'RECALIFICACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procrecalificacion', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN TERCERA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapeltercersolicitud', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN DE RECALIFICACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelrecalificacion', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procrecalsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelrecalsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}" title="VER TRÁMITE"></a>
+                                            @if(isset($rutasTramites[$tramite->tramite]))
+                                                <a class="btn btn-sm fas fa-file-archive btn-editar" title="VER TRÁMITE"
+                                                href="{{ route($rutasTramites[$tramite->tramite], ['cliente' => $tramite->clienteitaid]) }}">
+                                                </a>
                                             @endif
                                         @else
-                                            {{-- <a href="{{ url("/tramitesclientesita/{ $tramite->clienteitaid }/{ $tramite->tramite }/{$tramite->archivofinalizado}") }}" class="btn btn-sm btn-buscar fas fa-file-archive" target="_blank"></a> --}}
-
                                             @if ($tramite->archivofinalizado)
                                                     <a href="{{ $tramite->archivofinalizado }}" 
                                                     target="_blank" 
@@ -1293,7 +1147,6 @@
                                                     <i class="fas fa-notes-medical"></i>
                                                     </a>
                                                 @endif
-
                                                 @if ($tramite->requisitofinalizado)
                                                     <a href="{{ $tramite->requisitofinalizado }}" 
                                                     target="_blank" 
@@ -1311,7 +1164,17 @@
                                     <td>{{ $tramite->clienteitanombre }}</td>
                                     <td>
                                         @if(is_null($tramite->fechabateria))
-                                            @if(in_array($tramite->tramite, ['INVALIDEZ','APELACIÓN','SEGUNDA SOLICITUD','TERCERA SOLICITUD']))
+                                            @if(in_array($tramite->tramite, [
+                                                'INVALIDEZ',
+                                                'APELACIÓN',
+                                                'SEGUNDA SOLICITUD',
+                                                'APELACIÓN SEGUNDA SOLICITUD',
+                                                'TERCERA SOLICITUD',
+                                                'APELACIÓN TERCERA SOLICITUD',
+                                                'RECALIFICACIÓN',
+                                                'APELACIÓN DE RECALIFICACIÓN',
+                                                'RECALIFICACIÓN SEGUNDA SOLICITUD',
+                                                'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD']))
                                                 PENDIENTE
                                             @else
                                                 NO REQUIERE
@@ -1322,7 +1185,6 @@
                                     </td>
                                     <td>{{ $tramite->apoderadoasignado }}</td>
                                     <td>{{ \Carbon\Carbon::parse($tramite->fechaasignacion)->format('d-m-Y / H:i') }}</td>
-                                    {{-- <td>{{ optional($tramite->procedimientos->first())->created_at?->format('d-m-Y') ?? '---' }}</td> --}}
                                     <td>
                                         @if($tramite->fechainicio)
                                             {{ \Carbon\Carbon::parse($tramite->fechainicio)->format('d-m-Y') }}
@@ -1330,7 +1192,6 @@
                                             {{ optional($tramite->procedimientos->first())->created_at?->format('d-m-Y') ?? '---' }}
                                         @endif
                                     </td>
-                                    {{-- <td>{{ optional($tramite->procedimientos->last())->created_at?->format('d-m-Y') ?? '---' }}</td> --}}
                                     <td>
                                         @if($tramite->fechafinalizacion)
                                             {{ \Carbon\Carbon::parse($tramite->fechafinalizacion)->format('d-m-Y') }}
@@ -1338,7 +1199,6 @@
                                             {{ optional($tramite->procedimientos->last())->created_at?->format('d-m-Y') ?? '---' }}
                                         @endif
                                     </td>
-                                    
                                 </tr>
                             @endforeach
                         </tbody>
@@ -1387,51 +1247,50 @@
                                 <th>Cliente_Nombre</th>
                                 <th>Fecha_Bateria</th>
                                 <th>Apoderado_Asignado</th>
-                                <th>Fecha_Hora_Asig.</th>
+                                {{-- <th>Fecha_Hora_Asig.</th>
                                 <th>Inicio_Trámite</th>
-                                <th>Interrup_Trámite</th>
+                                <th>Interrup_Trámite</th> --}}
                                 <th>Interrup_Motivo</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($todostramitesinterrumpidos as $tramite)
                                 <tr>
+                                    @php
+                                        $rutasTramites = [
+                                            'INVALIDEZ' => 'admin.tramites.procinvalidez',
+                                            'APELACIÓN' => 'admin.tramites.procapelacion',
+                                            'SEGUNDA SOLICITUD' => 'admin.tramites.procsegundasolicitud',
+                                            'APELACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procapelsegsolicitud',
+                                            'TERCERA SOLICITUD' => 'admin.tramites.proctercerasolicitud',
+                                            'APELACIÓN TERCERA SOLICITUD' => 'admin.tramites.procapeltercersolicitud',
+                                            'RECALIFICACIÓN' => 'admin.tramites.procrecalificacion',
+                                            'APELACIÓN DE RECALIFICACIÓN' => 'admin.tramites.procapelrecalificacion',
+                                            'RECALIFICACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procrecalsegsolicitud',
+                                            'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD' => 'admin.tramites.procapelrecalsegsolicitud',
+                                            'JUBILACIÓN' => 'admin.tramites.procjubilacion',
+                                            'PENSIÓN POR MUERTE' => 'admin.tramites.procpensionmuerte',
+                                            'RETIRO DE APORTES TOTAL' => 'admin.tramites.procretiroaportestotal',
+                                            'RETIRO DE APORTES PARCIAL' => 'admin.tramites.procretiroaportesparcial',
+                                            'MASA HEREDITARIA' => 'admin.tramites.procmasahereditaria',
+                                            'COMPENSACIÓN DE COTIZACIONES (SENASIR)' => 'admin.tramites.proccompensacionsenasir',
+                                        ];
+                                    @endphp
                                     <td class="text-center">
-                                        <abbr title="VER TRÁMITE">
-                                            @if ($tramite->tramite === 'INVALIDEZ')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procinvalidez', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procsegundasolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'TERCERA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proctercerasolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'JUBILACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procjubilacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'PENSIÓN POR MUERTE')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procpensionmuerte', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RETIRO DE APORTES TOTAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportestotal', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RETIRO DE APORTES PARCIAL')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procretiroaportesparcial', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'MASA HEREDITARIA')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procmasahereditaria', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'COMPENSACIÓN DE COTIZACIONES (SENASIR)')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.proccompensacionsenasir', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RECALIFICACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procrecalificacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN TERCERA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapeltercersolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN DE RECALIFICACIÓN')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelrecalificacion', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procrecalsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>
-                                            @elseif ($tramite->tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
-                                                <a class="btn btn-sm fas fa-file-archive btn-editar" href="{{ route('admin.tramites.procapelrecalsegsolicitud', ['cliente' => $tramite->clienteitaid]) }}"></a>    
+                                        @php
+                                            $fechaInicio = optional($tramite->procedimientos->first())->created_at;
+                                        @endphp
+
+                                        @if ($fechaInicio)
+                                            @if (isset($rutasTramites[$tramite->tramite]))
+                                                <a class="btn btn-sm fas fa-file-archive btn-editar"
+                                                title="VER TRÁMITE"
+                                                href="{{ route($rutasTramites[$tramite->tramite], ['cliente' => $tramite->clienteitaid]) }}">
+                                                </a>
                                             @endif
-                                        </abbr>
+                                        @else
+                                            <span class="badge badge-warning">NO INICIADO</span>
+                                        @endif
                                     </td>
                                     <td>{{ $tramite->id }}</td>
                                     <td>{{ $tramite->tramite }}</td>
@@ -1439,7 +1298,17 @@
                                     <td>{{ $tramite->clienteitanombre }}</td>
                                     <td>
                                         @if(is_null($tramite->fechabateria))
-                                            @if(in_array($tramite->tramite, ['INVALIDEZ','APELACIÓN','SEGUNDA SOLICITUD','TERCERA SOLICITUD']))
+                                            @if(in_array($tramite->tramite, [
+                                                'INVALIDEZ',
+                                                'APELACIÓN',
+                                                'SEGUNDA SOLICITUD',
+                                                'APELACIÓN SEGUNDA SOLICITUD',
+                                                'TERCERA SOLICITUD',
+                                                'APELACIÓN TERCERA SOLICITUD',
+                                                'RECALIFICACIÓN',
+                                                'APELACIÓN DE RECALIFICACIÓN',
+                                                'RECALIFICACIÓN SEGUNDA SOLICITUD',
+                                                'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD']))
                                                 PENDIENTE
                                             @else
                                                 NO REQUIERE
@@ -1449,11 +1318,11 @@
                                         @endif
                                     </td>
                                     <td>{{ $tramite->apoderadoasignado }}</td>
-                                    <td>{{ \Carbon\Carbon::parse($tramite->fechaasignacion)->format('d-m-Y / H:i') }}</td>
+                                    {{-- <td>{{ \Carbon\Carbon::parse($tramite->fechaasignacion)->format('d-m-Y / H:i') }}</td>
                                     <td>
                                         {{ optional($tramite->procedimientos->first())->created_at?->format('d-m-Y') ?? '---' }}
                                     </td>
-                                    <td>{{ \Carbon\Carbon::parse($tramite->fechafinalizacion)->format('d-m-Y') }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($tramite->fechafinalizacion)->format('d-m-Y') }}</td> --}}
                                     <td>{{ $tramite->motivointerrupcion }}</td>
                                 </tr>
                             @endforeach
@@ -1484,81 +1353,11 @@
         </div>
     </div> 
 </div>
-<style>
-    #tablaTramites2 thead th {
-        position: sticky;
-        top: 0;
-        background-color: #f8fdf2;
-        z-index: 10;
-    }
-    #tablaTramites thead th {
-        position: sticky;
-        top: 0;
-        background-color: #f8fdf2;
-        z-index: 10;
-    }
-    #tablaProgramaciones thead th {
-        position: sticky;
-        top: 0;
-        background-color: #f8fdf2;
-        z-index: 10;
-    }
-    #tablaTramites3 thead th {
-        position: sticky;
-        top: 0;
-        background-color: #f8fdf2;
-        z-index: 10;
-    }
-    #tablaTramites4 thead th {
-        position: sticky;
-        top: 0;
-        background-color: #f8fdf2;
-        z-index: 10;
-    }
-    .table-responsive {
-        max-height: 65vh;
-        overflow-y: auto;
-    }
-    .btn-vertramite {
-        background-color: #ffffff;
-        color: #faa625;
-        border-color: #faa625;
-        border-radius: 5px;
-        padding: 2px 5px;
-    }
-    .btn-vertramite:hover {
-        background-color: #faa625;
-        color: #ffffff;
-    }
-    .btn-verhistoria {
-        background-color: #ffffff;
-        color: #226acf;
-        border-color: #226acf;
-        border-radius: 5px;
-        padding: 2px 5px;
-    }
-    .btn-verhistoria:hover {
-        background-color: #226acf;
-        color: #ffffff;
-    }
-    .btn-verrequisito {
-        background-color: #ffffff;
-        color: #8c28f0;
-        border-color: #8c28f0;
-        border-radius: 5px;
-        padding: 2px 5px;
-    }
-    .btn-verrequisito:hover {
-        background-color: #8c28f0;
-        color: #ffffff;
-    }
-</style>
 
 @stop
 
 @section('js')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script type="text/javascript" src="https://jeremyfagis.github.io/dropify/dist/js/dropify.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://jeremyfagis.github.io/dropify/dist/css/dropify.min.css"> 

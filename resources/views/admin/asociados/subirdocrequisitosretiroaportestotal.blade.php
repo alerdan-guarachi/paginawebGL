@@ -5,7 +5,7 @@
 @if ($hayPendientes)
 <a class="btn custom2-button btn-sm float-right" data-toggle="modal" data-target="#requisitosModal">VER REQUISITOS</a>
 @endif
-<h5>SUBIR REQUISITOS DE RETIRO DE APORTES TOTAL DE:</h5>
+<h5>REQUISITOS DE RETIRO DE APORTES TOTAL DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
 @stop
 
@@ -61,7 +61,7 @@
                     @endforeach
                 </div>
                 
-                {!! Form::submit('SUBIR REQUISITOS', ['class' => 'btn btn-crear btn-sm']) !!}
+                {!! Form::submit('GUARDAR', ['class' => 'btn btn-crear btn-sm']) !!}
                 {!! Form::close() !!}
             </div>
         </div>
@@ -369,7 +369,7 @@
                                                 @if (strtolower($estadoCivil) === 'viud@')
                                                     <div class="form-group opcion APELACIÓN_SEGUNDA_SOLICITUD APELACIÓN_TERCERA_SOLICITUD INVALIDEZ APELACIÓN SEGUNDA_SOLICITUD TERCERA_SOLICITUD JUBILACIÓN PENSIÓN_POR_MUERTE MASA_HEREDITARIA">
                                                         <div class="d-flex align-items-center justify-content-between">
-                                                            <label class="col-8" for="cdefuncion" style="font-weight: 500;">CERTIFICADO DE DIFUNCIÓN</label>
+                                                            <label class="col-8" for="cdefuncion" style="font-weight: 500;">CERTIFICADO DE DEFUNCIÓN</label>
                                                             <input class="col-2" type="checkbox" name="cdefuncion" value="cdefuncion" id="cdefuncion">
                                                             <input class="col-2" type="checkbox" name="cdefuncion" value="cdefuncion2" id="cdefuncion2">
                                                         </div>
@@ -500,7 +500,7 @@
                                                 </div>
                                                 <div class="form-group opcion PENSIÓN_POR_MUERTE">
                                                     <div class="d-flex align-items-center justify-content-between">
-                                                        <label class="col-8" for="cmeddifuncion" style="font-weight: 500;">CERTIFICADO MÉDICO DIFUNCIÓN</label>
+                                                        <label class="col-8" for="cmeddifuncion" style="font-weight: 500;">CERTIFICADO MÉDICO DEFUNCIÓN</label>
                                                         <input class="col-2" type="checkbox" name="cmeddifuncion" value="cmeddifuncion" id="cmeddifuncion">
                                                         <input class="col-2" type="checkbox" name="cmeddifuncion" value="cmeddifuncion2" id="cmeddifuncion2">
                                                     </div>
@@ -798,7 +798,10 @@
         font-weight: 500;
     }
     .dropify-wrapper {
-        height: 100px !important;
+        height: 80px !important;
+    }
+    label {
+        font-size: 14px;
     }
     .dropify-message p {
         font-size: 14px;
@@ -813,6 +816,7 @@
         color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 800;
+        font-size: 23px;
         }
     .btn-crear {
         background-color:  #ffffff;

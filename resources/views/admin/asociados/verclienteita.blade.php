@@ -29,234 +29,281 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
+@endif
+@if(session('error'))
+    <div id="alert-error"  class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+    <script>
+        setTimeout(function() {
+            $('#alert-error').fadeOut('fast');
+        }, 3000);
+    </script>
+@endif
+@if (session('success'))
+    <div class="alert alert-warning">
+        <strong>{{ session('success') }}</strong>
+    </div>
 @endif
 
 {{-- VER DATOS DEL CLIENTE --}}
 <div class="card">
     <div class="card-body">
-        <div class="row">
-            <div class="col-lg-4">
-                <div class="border-bottom text-center pb-4">
-                    <div style="display: flex; flex-direction: column;">
-                        <div class="image-container" style="width: 100%; height: 320px; overflow: auto;">
-                            <img src="{{asset('image/'.$cliente->image)}}" alt="Foto de perfil" class="col-md-12 mb-12" id="vista-previa" style="width: 100%; height: auto; object-fit: cover; object-position: center; " />
+        <div class="table-responsive">
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="border-bottom text-center pb-4">
+                        <div style="display: flex; flex-direction: column;">
+                            <div class="image-container" style="width: 100%; height: 320px; overflow: auto;">
+                                <img src="{{asset('image/'.$cliente->image)}}" alt="Foto de perfil" class="col-md-12 mb-12" id="vista-previa" style="width: 100%; height: auto; object-fit: cover; object-position: center; " />
+                            </div>
+                            @php
+                                use App\Models\User;
+                                $tieneCI = !empty($cliente->ci);
+                                $emailValido = !empty($cliente->email) && str_contains($cliente->email, '@');
+                                $emailExiste = $emailValido
+                                    ? User::where('email', $cliente->email)->exists()
+                                    : false;
+                            @endphp
+                            <h5>ID: {{$cliente->id}}
+                                {{-- @if($tieneCI && $emailValido && !$emailExiste)
+                                    <form action="{{ route('clientes.crearUsuario', $cliente->id) }}" method="POST"
+                                        onsubmit="return confirm('¿CREAR COMO USUARIO DE SISTEMA?')" style="margin-top: -20px;">
+                                        @csrf
+                                        <button type="submit" class="btn float-right btn-acciones btn-sm" title="CREAR COMO USUARIO DE SISTEMA"><i class="fas fa-user-plus"></i></button>
+                                    </form>
+                                @endif --}}
+                                @if($tieneCI && $emailValido && !$emailExiste)
+                                <form action="{{ route('clientes.crearUsuario', $cliente->id) }}"
+                                    method="POST"
+                                    onsubmit="bloquearBotonCrearUsuario(this)"
+                                    style="margin-top: -20px;">
+                                    @csrf
+
+                                    <button type="submit"
+                                            id="btnCrearUsuario"
+                                            class="btn float-right btn-acciones btn-sm"
+                                            title="CREAR COMO USUARIO DE SISTEMA">
+                                        <i class="fas fa-user-plus"></i>
+                                    </button>
+                                </form>
+                                @endif
+                                <script>
+                                function bloquearBotonCrearUsuario(form) {
+                                    const btn = form.querySelector('button[type="submit"]');
+
+                                    btn.disabled = true;
+                                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CREANDO...';
+
+                                    return true; // permite que el form se envíe
+                                }
+                                </script>
+
+                            </h5>
                         </div>
-                        <h5>ID: {{$cliente->id}}</h5>
+                    </div>
+                    <div class="py-1">
+                        <p class="clearfix">
+                            <span class="float-left" style="font-weight: bold; color:#94c93b">
+                                Nombres
+                            </span>
+                            <span class="float-right text-muted">
+                                {{$cliente->nombres}}
+                                </a>
+                            </span>
+                        </p>
+                        <p class="clearfix" style="margin-top: -10px;">
+                            <span class="float-left" style="font-weight: bold; color:#94c93b">
+                                Apellido_Paterno
+                            </span>
+                            <span class="float-right text-muted">
+                                {{$cliente->apepaterno}}
+                                </a>
+                            </span>
+                        </p>
+                        <p class="clearfix" style="margin-top: -10px;">
+                            <span class="float-left" style="font-weight: bold; color:#94c93b">
+                                Apellido_Materno
+                            </span>
+                            <span class="float-right text-muted">
+                                {{$cliente->apematerno}}
+                                </a>
+                            </span>
+                        </p>
+                        <p class="clearfix" style="margin-top: -10px;">
+                            <span class="float-left" style="font-weight: bold; color:#94c93b">
+                                Sucursal
+                            </span>
+                            <span class="float-right text-muted">
+                                {{$cliente->sucursal}}
+                                </a>
+                            </span>
+                        </p>
                     </div>
                 </div>
-                <div class="py-1">
-                    <p class="clearfix">
-                        <span class="float-left h6" style="font-weight: bold; color:#94c93b">
-                            Nombres
-                        </span>
-                        <span class="float-right text-muted">
-                            {{$cliente->nombres}}
-                            </a>
-                        </span>
-                    </p>
-                    <p class="clearfix" style="margin-top: -10px;">
-                        <span class="float-left" style="font-weight: bold; color:#94c93b">
-                            Apellido_Paterno
-                        </span>
-                        <span class="float-right text-muted">
-                            {{$cliente->apepaterno}}
-                            </a>
-                        </span>
-                    </p>
-                    <p class="clearfix" style="margin-top: -10px;">
-                        <span class="float-left" style="font-weight: bold; color:#94c93b">
-                            Apellido_Materno
-                        </span>
-                        <span class="float-right text-muted">
-                            {{$cliente->apematerno}}
-                            </a>
-                        </span>
-                    </p>
-                    <p class="clearfix" style="margin-top: -10px;">
-                        <span class="float-left" style="font-weight: bold; color:#94c93b">
-                            Sucursal
-                        </span>
-                        <span class="float-right text-muted">
-                            {{$cliente->sucursal}}
-                            </a>
-                        </span>
-                    </p>
-                </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="profile-feed">
-                    <div class="d-flex align-items-start profile-feed-item">
-                        <div class="form-group col-md-12">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <table style="width: 100%;">
-                                        <tbody>
-                                            <tr>
-                                                <th>Tipo_Identidad</th>
-                                                <td>{{$cliente->tipoidentificacion}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>CI</th>
-                                                <td>{{$cliente->ci}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Complemento</th>
-                                                <td>{{$cliente->cicomplemento ?? 0}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>C/exp.</th>
-                                                <td>{{$cliente->ciexp ?? 0}}</td>
-                                            </tr>
-                                            <tr> 
-                                                <th>Fecha_Ven/CI</th>
-                                                <td>{{ $cliente->fechavencci ? $cliente->fechavencci : 'INDEFINIDO' }}</td>
-                                            </tr>      
-                                            <style>
-                                                @keyframes heartbeat {
-                                                0%, 100% {
-                                                    transform: scale(1);
-                                                }
-                                                50% {
-                                                    transform: scale(1.3);
-                                                }
-                                                }
-                                                .icon-pulse {
-                                                animation: heartbeat 1s infinite;
-                                                }
-                                            </style>
-                                            @php
-                                                use Carbon\Carbon;
-                                                $fechaNacimiento = $cliente->fechanacimiento;
-                                                $edadCalculada = $fechaNacimiento ? Carbon::parse($fechaNacimiento)->age : null;
-                                            @endphp
-                                            <tr> 
-                                                <th>Fecha_Nacimiento</th>
-                                                <td>{{ $fechaNacimiento ?? 'NINGUNO' }}</td>
-                                            </tr>      
-                                            <tr>
-                                                <th>Edad</th>
-                                                <td>
-                                                    {{ $cliente->edad }}
-                                                    @if ($fechaNacimiento && $cliente->edad != $edadCalculada)
-                                                        <i class="fas fa-exclamation-triangle text-danger icon-pulse" title="SE DEBE ACTUALIZAR SU EDAD DEL CLIENTE"></i>
-                                                    @endif
-                                                </td>
-                                            </tr>
+                <div class="col-lg-4">
+                    <div class="profile-feed">
+                        <div class="d-flex align-items-start profile-feed-item">
+                            <div class="form-group col-md-12">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <table style="width: 100%;">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Tipo_Identidad</th>
+                                                    <td>{{$cliente->tipoidentificacion}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>CI</th>
+                                                    <td>{{$cliente->ci}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Complemento</th>
+                                                    <td>{{$cliente->cicomplemento ?? 0}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>C/exp.</th>
+                                                    <td>{{$cliente->ciexp ?? 0}}</td>
+                                                </tr>
+                                                <tr> 
+                                                    <th>Fecha_Ven/CI</th>
+                                                    <td>{{ $cliente->fechavencci ? $cliente->fechavencci : 'INDEFINIDO' }}</td>
+                                                </tr>      
+                                                
+                                                @php
+                                                    use Carbon\Carbon;
+                                                    $fechaNacimiento = $cliente->fechanacimiento;
+                                                    $edadCalculada = $fechaNacimiento ? Carbon::parse($fechaNacimiento)->age : null;
+                                                @endphp
+                                                <tr> 
+                                                    <th>Fecha_Nacimiento</th>
+                                                    <td>{{ $fechaNacimiento ?? 'NINGUNO' }}</td>
+                                                </tr>      
+                                                <tr>
+                                                    <th>Edad</th>
+                                                    <td>
+                                                        {{ $cliente->edad }}
+                                                        @if ($fechaNacimiento && $cliente->edad != $edadCalculada)
+                                                            <i class="fas fa-exclamation-triangle text-danger icon-pulse" title="SE DEBE ACTUALIZAR SU EDAD DEL CLIENTE"></i>
+                                                        @endif
+                                                    </td>
+                                                </tr>
 
-                                            <tr>
-                                                <th>Lugar_Nacimiento</th>
-                                                <td>{{$cliente->paisnacimiento}} - {{$cliente->lugarnacimiento}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Genero</th>
-                                                <td>{{$cliente->genero}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Estado_Civil</th>
-                                                <td>{{$cliente->estadocivil}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Email</th>
-                                                <td>{{$cliente->email}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Profesión/Ocupación</th>
-                                                <td>{{$cliente->ocupacion}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Grado_Instrucción</th>
-                                                <td>{{$cliente->gradoinstruccion}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Celular</th>
-                                                <td>{{$cliente->celular}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Teléfono</th>
-                                                <td>{{$cliente->telefono}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Domicilio</th>
-                                                <td>{{$cliente->domicilio}}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                                <tr>
+                                                    <th>Lugar_Nacimiento</th>
+                                                    <td>{{$cliente->paisnacimiento}} - {{$cliente->lugarnacimiento}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Genero</th>
+                                                    <td>{{$cliente->genero}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Estado_Civil</th>
+                                                    <td>{{$cliente->estadocivil}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Email</th>
+                                                    <td>{{$cliente->email}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Profesión/Ocupación</th>
+                                                    <td>{{$cliente->ocupacion}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Grado_Instrucción</th>
+                                                    <td>{{$cliente->gradoinstruccion}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Celular</th>
+                                                    <td>{{$cliente->celular}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Teléfono</th>
+                                                    <td>{{$cliente->telefono}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Domicilio</th>
+                                                    <td>{{$cliente->domicilio}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="profile-feed">
-                    <div class="d-flex align-items-start profile-feed-item">
-                        <div class="form-group col-md-12">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <table style="width: 100%;">
-                                        <tbody>
-                                            <tr>
-                                                <th>Derivación</th>
-                                                <td>{{$cliente->derivacion ?? 0 }}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Servicio</th>
-                                                <td>{{ implode(', ', $cliente->servicios->pluck('tramite')->unique()->toArray()) }}</td> <!-- Mostrar servicios separados por comas -->
-                                            </tr>                                
-                                            <tr>
-                                                <th>NUA/CUA</th>
-                                                <td>{{$cliente->nuacua}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Estado_Laboral</th>
-                                                <td>{{$cliente->estadolaboral}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Empresa</th>
-                                                <td>{{$cliente->empresa}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Pais_Residencia</th>
-                                                <td>{{$cliente->paisresidencia}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Dep_Residencia</th>
-                                                <td>{{$cliente->departamentoresidencia}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Ciudad_Residencia</th>
-                                                <td>{{$cliente->ciudadresidencia}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Aseguradora</th>
-                                                <td>{{$cliente->aseguradora}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Referenciador</th>
-                                                <td>{{$cliente->referenciador}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Gestora</th>
-                                                <td>{{$cliente->afp}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>Hijos&lt;25</th>
-                                                <td>{{$cliente->numhijosmenores}}</td>
-                                            </tr>
-                                            @if($cliente->genero === 'FEMENINO')
+                <div class="col-lg-4">
+                    <div class="profile-feed">
+                        <div class="d-flex align-items-start profile-feed-item">
+                            <div class="form-group col-md-12">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <table style="width: 100%;">
+                                            <tbody>
                                                 <tr>
-                                                    <th>Total_Hijos</th>
-                                                    <td>{{ $cliente->numhijostotal }}</td>
+                                                    <th>Derivación</th>
+                                                    <td>{{$cliente->derivacion ?? 0 }}</td>
                                                 </tr>
-                                            @endif
-                                            <tr>
-                                                <th>Alertas</th>
-                                                <td>{{$cliente->alertas ?? 0}}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                                <tr>
+                                                    <th>Servicio</th>
+                                                    <td>{{ implode(', ', $cliente->servicios->pluck('tramite')->unique()->toArray()) }}</td> <!-- Mostrar servicios separados por comas -->
+                                                </tr>                                
+                                                <tr>
+                                                    <th>NUA/CUA</th>
+                                                    <td>{{$cliente->nuacua}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Estado_Laboral</th>
+                                                    <td>{{$cliente->estadolaboral}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Empresa</th>
+                                                    <td>{{$cliente->empresa}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Pais_Residencia</th>
+                                                    <td>{{$cliente->paisresidencia}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Dep_Residencia</th>
+                                                    <td>{{$cliente->departamentoresidencia}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Ciudad_Residencia</th>
+                                                    <td>{{$cliente->ciudadresidencia}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Aseguradora</th>
+                                                    <td>{{$cliente->aseguradora}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Referenciador</th>
+                                                    <td>{{$cliente->referenciador}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Gestora</th>
+                                                    <td>{{$cliente->afp}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Hijos&lt;25</th>
+                                                    <td>{{$cliente->numhijosmenores}}</td>
+                                                </tr>
+                                                @if($cliente->genero === 'FEMENINO')
+                                                    <tr>
+                                                        <th>Total_Hijos</th>
+                                                        <td>{{ $cliente->numhijostotal }}</td>
+                                                    </tr>
+                                                @endif
+                                                <tr>
+                                                    <th>Alertas</th>
+                                                    <td>{{$cliente->alertas ?? 0}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -354,7 +401,6 @@
                     </div>
                     
                     @can('admin.asociados.crearbateriaclienteita')
-
                     <div style="margin-top: 10px; background-color: #e9ffe9;  border-radius: 40px;">
                         <div style="text-align: center; padding: 1.5px;">
                             <strong style="color: #409c3e; font-size:20px;">ETAPA 2</strong>
@@ -508,21 +554,21 @@
                                 </div>
                             @endcan
 
-                            @if ($tieneContactos)
+                            {{-- @if ($tieneContactos) --}}
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                     <a href="{{ route('admin.asociados.listadotramiteclienteita', $cliente) }}" class="btn btn-asignartramite btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO">
                                         <i class="fas fa-atlas"></i>
                                         <strong>SERVICIOS</strong>
                                     </a>
                                 </div>
-                            @else
+                            {{-- @else
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
                                     <a href="#" class="btn btn-asignartramite btn-icono btn-block disabled" data-toggle="tooltip" data-placement="top" title="ASIGNAR SERVICIO" aria-disabled="true">
                                         <i class="fas fa-atlas"></i>
                                         <strong>SERVICIOS</strong>
                                     </a>
                                 </div>
-                            @endif
+                            @endif --}}
 
                             @if ($tieneTramites)
                                 <div class="col-4 mb-3 d-flex justify-content-center align-items-center">
@@ -875,17 +921,17 @@
                         <div class="row text-center">
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    @if($tienerequisitosrecalificacion)
+                                    {{-- @if($tienerequisitosrecalificacion)
                                         <a href="{{ route('admin.asociados.subirdocrequisitosrecalificacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                             <i class="fas fa-tasks"></i>
                                             <strong>REQUISITOS</strong>
                                         </a>
-                                    @else
+                                    @else --}}
                                         <a href="{{ route('admin.asociados.generarchecklistclienteitarecalificacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                             <i class="fas fa-tasks"></i>
                                             <strong>REQUISITOS</strong>
                                         </a>
-                                    @endif
+                                    {{-- @endif --}}
                                 </div>
                             @endcan
                             @can('admin.asociados.creardocumentacionclienteita')
@@ -920,17 +966,17 @@
                         <div class="row text-center">
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
-                                    @if($tienerequisitosapelrecalificacion)
+                                    {{-- @if($tienerequisitosapelrecalificacion)
                                         <a href="{{ route('admin.asociados.subirdocrequisitosapelrecalificacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                             <i class="fas fa-tasks"></i>
                                             <strong>REQUISITOS</strong>
                                         </a>
-                                    @else
+                                    @else --}}
                                         <a href="{{ route('admin.asociados.generarchecklistclienteitaapelrecalificacion', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                             <i class="fas fa-tasks"></i>
                                             <strong>REQUISITOS</strong>
                                         </a>
-                                    @endif
+                                    {{-- @endif --}}
                                 </div>
                             @endcan
                             @can('admin.asociados.creardocumentacionclienteita')
@@ -1060,17 +1106,17 @@
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        @if($tienerequisitosjubilacion)
+                                        {{-- @if($tienerequisitosjubilacion)
                                             <a href="{{ route('admin.asociados.subirdocrequisitosjubilacion', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else
+                                        @else --}}
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitajubilacion', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @endif
+                                        {{-- @endif --}}
                                     </div>
                                 </div>
                             @endcan
@@ -1090,17 +1136,17 @@
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        @if($tienerequisitosretiroaportestotal)
+                                        {{-- @if($tienerequisitosretiroaportestotal)
                                             <a href="{{ route('admin.asociados.subirdocrequisitosretiroaportestotal', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else
+                                        @else --}}
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitaretiroaportestotal', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @endif
+                                        {{-- @endif --}}
                                     </div>
                                 </div>
                             @endcan
@@ -1120,17 +1166,17 @@
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        @if($tienerequisitosretiroaportesparcial)
+                                        {{-- @if($tienerequisitosretiroaportesparcial)
                                             <a href="{{ route('admin.asociados.subirdocrequisitosretiroaportesparcial', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else
+                                        @else --}}
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitaretiroaportesparcial', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @endif
+                                        {{-- @endif --}}
                                     </div>
                                 </div>
                             @endcan
@@ -1150,17 +1196,17 @@
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        @if($tienerequisitospensionmuerte)
+                                        {{-- @if($tienerequisitospensionmuerte)
                                             <a href="{{ route('admin.asociados.subirdocrequisitospensionmuerte', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else
+                                        @else --}}
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitapensionmuerte', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @endif
+                                        {{-- @endif --}}
                                     </div>
                                 </div>
                             @endcan
@@ -1180,17 +1226,17 @@
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        @if($tienerequisitosmasahereditaria)
+                                        {{-- @if($tienerequisitosmasahereditaria)
                                             <a href="{{ route('admin.asociados.subirdocrequisitosmasahereditaria', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else
+                                        @else --}}
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitamasahereditaria', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @endif
+                                        {{-- @endif --}}
                                     </div>
                                 </div>
                             @endcan
@@ -1210,17 +1256,17 @@
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        @if($tienerequisitoscompensacioncotsenasir)
+                                        {{-- @if($tienerequisitoscompensacioncotsenasir)
                                             <a href="{{ route('admin.asociados.subirdocrequisitoscompensacioncotsenasir', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else
+                                        @else --}}
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitacompensacioncotsenasir', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @endif
+                                        {{-- @endif --}}
                                     </div>
                                 </div>
                             @endcan
@@ -1465,196 +1511,155 @@
         
             <div class="modal-body">
                 <div class="row">
+                    
                     <div class="col-lg-4">
-                        <strong style="color: #94c93b">ASIGNAR PROVEEDOR</strong>
-                        <div class="form-group" style="margin-top: 15px"> 
-                            <strong>Fecha Batería:</strong>
-                            <select id="select-fechas" name="fechabateria" class="form-control" 
-                                    data-tramites='@json($tramitesPorFecha)' 
-                                    data-cliente-con-invalidez="{{ $clienteConInvalidez ? 'true' : 'false' }}"
-                                    data-cliente-con-apelacion-segunda="{{ $clienteConApelacionOSegunda ? 'true' : 'false' }}">
-                                <option value=""></option>
-                                @foreach($accionesPorFecha as $fecha => $acciones)
-                                    <option value="{{ $fecha }}">{{ $fecha }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            {!! Form::label('tramite', 'Trámite asignado:') !!}
-                            {!! Form::text('tramite', null, ['class' => 'form-control', 'placeholder' => '' , 'readonly' => 'readonly' ]) !!}
-                            @error('tramite')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{ $message }}
-                                </small>
-                            @enderror
-                        </div>
-                        
-                        <script>
-                           document.addEventListener('DOMContentLoaded', function () {
-                            const selectFechas = document.getElementById('select-fechas');
-                            const tramiteInput = document.querySelector('input[name="tramite"]');
+                        <div class="card">
+                            <div class="card-body">
+                                <strong style="color: #94c93b">ASIGNAR PROVEEDOR</strong>
+                                <div class="form-group" style="margin-top: 15px"> 
+                                    <strong>Fecha Batería:</strong>
+                                    <select id="select-fechas" name="fechabateria" class="form-control" required
+                                            data-tramites='@json($tramitesPorFecha)' 
+                                            data-cliente-con-invalidez="{{ $clienteConInvalidez ? 'true' : 'false' }}"
+                                            data-cliente-con-apelacion-segunda="{{ $clienteConApelacionOSegunda ? 'true' : 'false' }}">
+                                        <option value=""></option>
+                                        @foreach($accionesPorFecha as $fecha => $acciones)
+                                            <option value="{{ $fecha }}">{{ $fecha }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    {!! Form::label('tramite', 'Trámite asignado:') !!}
+                                    {!! Form::text('tramite', null, ['class' => 'form-control', 'placeholder' => '' , 'readonly' => 'readonly', 'required']) !!}
+                                </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        const selectFechas = document.getElementById('select-fechas');
+                                        const tramiteInput = document.querySelector('input[name="tramite"]');
 
-                            if (selectFechas) {
-                                const tramitesPorFecha = JSON.parse(selectFechas.getAttribute('data-tramites'));
-                                selectFechas.addEventListener('change', function () {
-                                    const fechaSeleccionada = this.value;
-                                    if (tramitesPorFecha[fechaSeleccionada]) {
-                                        tramiteInput.value = tramitesPorFecha[fechaSeleccionada];
-                                    } else {
-                                        tramiteInput.value = '';
-                                    }
-                                });
-                            }
-                        });
-                        </script>
-                        <div class="form-group">
-                            {!! Form::label('proveedorasignado', 'Proveedor:') !!}
-                            {!! Form::select('proveedorasignado', $proveedores->pluck('proveedor', 'id'), null, [
-                                'class' => 'form-control', 
-                                'id' => 'proveedorasignado', 
-                                'placeholder' => ''
-                            ]) !!}
-                            @error('proveedorasignado')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{ $message }}
-                                </small>
-                            @enderror
-                        </div>
-                        <div class="form-group" hidden>
-                            {!! Form::label('celularproveedor', 'Celular del proveedor:') !!}
-                            {!! Form::text('celularproveedor', null, ['class' => 'form-control', 'id' => 'celularproveedor', 'readonly' => true]) !!}
-                            @error('celularproveedor')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{ $message }}
-                                </small>
-                            @enderror
-                        </div>
-                        <div class="form-group"> 
-                            {!! Form::label('precio', 'Precio:') !!}
-                            {!! Form::text('precio', null, [
-                                'class' => 'form-control', 
-                                'id' => 'precio', 
-                                'placeholder' => '',
-                                'readonly' => auth()->user()->name !== 'CARLOS ALEJANDRO GUARACHI SANDOVAL' && auth()->user()->name !== 'DENISSE MAUREN LOPEZ FLORES' && auth()->user()->name !== 'JHOSELINE EVA VELASQUEZ ESCOBAR' && auth()->user()->name !== 'VANESSA MAMANI HUANACO' ? 'readonly' : null
-                            ]) !!}
-                            @error('precio')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{ $message }}
-                                </small>
-                            @enderror
-                        </div>
-                        <div class="form-group" hidden>
-                            {!! Form::label('preciocompra', 'Precio Compra:') !!}
-                            {!! Form::text('preciocompra', null, ['class' => 'form-control', 'id' => 'preciocompra', 'placeholder' => '' ]) !!}
-                            @error('preciocompra')
-                                <small class="text-danger fas fa-exclamation-circle">
-                                    {{ $message }}
-                                </small>
-                            @enderror
-                        </div>
-                        <script>
-                           document.addEventListener('DOMContentLoaded', function () {
-                                const selectFechas = document.getElementById('select-fechas');
-                                const tramiteInput = document.querySelector('input[name="tramite"]');
-                                const precioInput = document.getElementById('precio');
-                                const proveedorSelect = document.getElementById('proveedorasignado');
-                                const precioCompraInput = document.getElementById('preciocompra');
-
-                                const clienteConInvalidez = selectFechas.getAttribute('data-cliente-con-invalidez') === 'true';
-                                const clienteConApelacionOSegunda = selectFechas.getAttribute('data-cliente-con-apelacion-segunda') === 'true';
-
-                                selectFechas.addEventListener('change', function () {
-                                    const fechaSeleccionada = this.value;
-                                    const tramitesPorFecha = JSON.parse(this.getAttribute('data-tramites'));
-
-                                    if (tramitesPorFecha[fechaSeleccionada]) {
-                                        const tramiteAutorellenado = tramitesPorFecha[fechaSeleccionada];
-                                        tramiteInput.value = tramiteAutorellenado;
-
-                                        if (tramiteAutorellenado === 'AUDITORIA MEDICA' || tramiteAutorellenado === 'INVALIDEZ') {
-                                            precioInput.value = '2500.00';
-                                        } else if (tramiteAutorellenado === 'APELACION') {
-                                            precioInput.value = '1300.00';
-                                        } else if (tramiteAutorellenado === 'SEGUNDA SOLICITUD') {
-                                            precioInput.value = clienteConInvalidez ? '1300.00' : '2500.00';
-                                        } else {
-                                            precioInput.value = '1300.00';
+                                        if (selectFechas) {
+                                            const tramitesPorFecha = JSON.parse(selectFechas.getAttribute('data-tramites'));
+                                            selectFechas.addEventListener('change', function () {
+                                                const fechaSeleccionada = this.value;
+                                                if (tramitesPorFecha[fechaSeleccionada]) {
+                                                    tramiteInput.value = tramitesPorFecha[fechaSeleccionada];
+                                                } else {
+                                                    tramiteInput.value = '';
+                                                }
+                                            });
                                         }
-                                    } else {
-                                        tramiteInput.value = '';
-                                        precioInput.value = '';
-                                    }
-                                });
-
-                                // Escucha cambios en el select Proveedor
-                                proveedorSelect.addEventListener('change', function () {
-                                    const proveedorSeleccionado = proveedorSelect.options[proveedorSelect.selectedIndex].text;
-
-                                    if (proveedorSeleccionado === 'AGUIRRE VASQUEZ MARIA RENEE') {
-                                        precioCompraInput.value = '250.00';
-                                    } else if (proveedorSeleccionado === 'MARIA ANGELA LOZANO FLORES') {
-                                        precioCompraInput.value = '400.00';
-                                    } else {
-                                        precioCompraInput.value = ''; // Limpia si no coincide
-                                    }
-                                });
-                            });
-
-
-                        </script>
-                        
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                var proveedores = @json($proveedores);
-                                var selectProveedor = document.getElementById('proveedorasignado');
-                                var celularProveedor = document.getElementById('celularproveedor');
-                    
-                                selectProveedor.addEventListener('change', function() {
-                                    var selectedId = parseInt(this.value);
-                                    
-                                    var proveedorSeleccionado = proveedores.find(function(proveedor) {
-                                        return proveedor.id === selectedId;
                                     });
-                                    
-                                    if (proveedorSeleccionado) {
-                                        celularProveedor.value = '591' + proveedorSeleccionado.celular;
-                                    } else {
-                                        celularProveedor.value = '';
-                                    }
-                                });
-                            });
-                        </script>
-                    
-                        <div class="modal-footer" style="margin-top: 30px;">
-                            <button type="submit" class="btn btn-si">Asignar</button>
-                            <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">Cerrar</button>
-                        </div>
-                        {!! Form::close() !!}
-                    </div>
+                                </script>
+                                <div class="form-group">
+                                    {!! Form::label('proveedorasignado', 'Proveedor:') !!}
+                                    {!! Form::select('proveedorasignado', $proveedores->pluck('proveedor', 'id'), null, [
+                                        'class' => 'form-control', 
+                                        'id' => 'proveedorasignado', 
+                                        'placeholder' => '', 'required'
+                                    ]) !!}
+                                </div>
+                                <div class="form-group"> 
+                                    {!! Form::label('precio', 'Precio:') !!}
+                                    {!! Form::text('precio', null, [
+                                        'class' => 'form-control', 
+                                        'id' => 'precio', 
+                                        'placeholder' => '',
+                                        'readonly' => auth()->user()->name !== 'CARLOS ALEJANDRO GUARACHI SANDOVAL' && auth()->user()->name !== 'DENISSE MAUREN LOPEZ FLORES' && auth()->user()->name !== 'JHOSELINE EVA VELASQUEZ ESCOBAR' && auth()->user()->name !== 'VANESSA MAMANI HUANACO' ? 'readonly' : null, 'required'
+                                    ]) !!}
+                                    @error('precio')
+                                        <small class="text-danger fas fa-exclamation-circle">
+                                            {{ $message }}
+                                        </small>
+                                    @enderror
+                                </div>
+                                <div class="form-group" hidden>
+                                    {!! Form::label('preciocompra', 'Precio Compra:') !!}
+                                    {!! Form::text('preciocompra', null, ['class' => 'form-control', 'id' => 'preciocompra', 'placeholder' => '' ]) !!}
+                                </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        const selectFechas = document.getElementById('select-fechas');
+                                        const tramiteInput = document.querySelector('input[name="tramite"]');
+                                        const precioInput = document.getElementById('precio');
+                                        const proveedorSelect = document.getElementById('proveedorasignado');
+                                        const precioCompraInput = document.getElementById('preciocompra');
 
+                                        const clienteConInvalidez = selectFechas.getAttribute('data-cliente-con-invalidez') === 'true';
+                                        const clienteConApelacionOSegunda = selectFechas.getAttribute('data-cliente-con-apelacion-segunda') === 'true';
+
+                                        selectFechas.addEventListener('change', function () {
+                                            const fechaSeleccionada = this.value;
+                                            const tramitesPorFecha = JSON.parse(this.getAttribute('data-tramites'));
+
+                                            if (tramitesPorFecha[fechaSeleccionada]) {
+                                                const tramiteAutorellenado = tramitesPorFecha[fechaSeleccionada];
+                                                tramiteInput.value = tramiteAutorellenado;
+
+                                                if (tramiteAutorellenado === 'AUDITORIA MEDICA' || tramiteAutorellenado === 'INVALIDEZ') {
+                                                    precioInput.value = '2500.00';
+                                                } else if (tramiteAutorellenado === 'APELACION') {
+                                                    precioInput.value = '1300.00';
+                                                } else if (tramiteAutorellenado === 'SEGUNDA SOLICITUD') {
+                                                    precioInput.value = clienteConInvalidez ? '1300.00' : '2500.00';
+                                                } else {
+                                                    precioInput.value = '1300.00';
+                                                }
+                                            } else {
+                                                tramiteInput.value = '';
+                                                precioInput.value = '';
+                                            }
+                                        });
+                                        proveedorSelect.addEventListener('change', function () {
+                                            const proveedorSeleccionado = proveedorSelect.options[proveedorSelect.selectedIndex].text;
+
+                                            if (proveedorSeleccionado === 'AGUIRRE VASQUEZ MARIA RENEE') {
+                                                precioCompraInput.value = '250.00';
+                                            } else if (proveedorSeleccionado === 'MARIA ANGELA LOZANO FLORES') {
+                                                precioCompraInput.value = '400.00';
+                                            } else {
+                                                precioCompraInput.value = '';
+                                            }
+                                        });
+                                    });
+                                </script>
+                                <div class="modal-footer" style="margin-top: 30px;">
+                                    <button type="submit" class="btn btn-si btn-sm">ASIGNAR</button>
+                                    <button type="button" class="btn btn-no btn-sm" data-dismiss="modal" aria-label="Cerrar">CERRAR</button>
+                                </div>
+                                {!! Form::close() !!}
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="col-lg-8">
-                        <strong style="color: #94c93b">PROVEEDORES ASIGNADOS</strong> 
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th style="color: black">Bateria</th>
-                                    <th style="color: black">Servicio</th>
-                                    <th style="color: black">Proveedor</th>
-                                    {{-- <th style="color: black">Celular</th> --}}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($requisitosubclientes as $requisitosubcliente)
-                                    <tr>
-                                        <td style="text-align: left">{{ $requisitosubcliente->fechabateria }}</td>
-                                        <td style="text-align: left">{{ $requisitosubcliente->servicio }}</td>
-                                        <td style="text-align: left">{{ $requisitosubcliente->proveedorasignado }}</td>
-                                        {{-- <td style="text-align: left">{{ $requisitosubcliente->celularproveedor }}</td> --}}
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <strong style="color: #94c93b">PROVEEDORES ASIGNADOS</strong> 
+                                    <table class="table table-striped table-sm table-bordered">
+                                        <thead>
+                                            <tr>
+                                                <th style="color: black">ID</th>
+                                                <th style="color: black">Bateria</th>
+                                                <th style="color: black">Servicio</th>
+                                                <th style="color: black">Proveedor</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($requisitosubclientes as $requisitosubcliente)
+                                                <tr>
+                                                    <td style="text-align: left">{{ $requisitosubcliente->id }}</td>
+                                                    <td style="text-align: left">{{ $requisitosubcliente->fechabateria }}</td>
+                                                    <td style="text-align: left">{{ $requisitosubcliente->servicio }}</td>
+                                                    <td style="text-align: left">{{ $requisitosubcliente->proveedorasignado }}</td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1671,94 +1676,47 @@
                 <h3>{{$cliente->nombrecompleto}}</h3>
             </div>
             {!! Form::model($cliente, ['route' => ['admin.asociados.guardarhistoriamedica', $cliente], 'method' => 'POST', 'files' => true]) !!}
-            {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-            {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
 
-            @if($documentacion)
-            <div class="modal-body text-center">
-                <!-- Vista previa del documento -->
-                <div class="pdf-preview-container mb-3">
-                    <iframe 
-                        src="{{ asset('/historiamedica/' . $cliente->id . '/extracted/' . $historiamedicaclienteita) }}" 
-                        width="100%" 
-                        height="400px" 
-                        frameborder="0" 
-                        style="border: 1px solid #ccc;">
-                    </iframe>
-                </div><br>
-
-                <!-- Botón para ver el documento completo -->
-                <a href="{{ asset('/historiamedica/' . $cliente->id . '/extracted/' . $historiamedicaclienteita) }}" 
-                   class="btn btn-verhistoriamedica" 
-                   target="_blank">
-                    <i class="fas fa-book-medical"></i> Ver Documento Completo
-                </a>
-            </div>
-            @else
-            <div class="modal-body" style="margin-top: 50px;">
-                <div class="mb-3">
-                    {!! Form::label('file', 'Documento:', ['class' => 'form-label']) !!}
-                    <input type="file" name="archivo" id="archivo" class="dropify" accept=".pdf"/>
-                    @error('archivo')
-                        <div class="text-danger">
-                            <i class="fas fa-exclamation-circle"></i> {{$message}}
+                @if($documentacion)
+                    <div class="modal-body text-center">
+                        <div class="pdf-preview-container mb-3">
+                            <iframe 
+                                src="{{ asset('/historiamedica/' . $cliente->id . '/extracted/' . $historiamedicaclienteita) }}" 
+                                width="100%" 
+                                height="400px" 
+                                frameborder="0" 
+                                style="border: 1px solid #ccc;">
+                            </iframe>
+                        </div><br>
+                        <a href="{{ asset('/historiamedica/' . $cliente->id . '/extracted/' . $historiamedicaclienteita) }}" class="btn btn-verhistoriamedica btn-sm" target="_blank">
+                            VER HISTORIA COMPLETA
+                        </a>
+                    </div>
+                @else
+                    <div class="modal-body" style="margin-top: 50px;">
+                        <div class="mb-3">
+                            {!! Form::label('file', 'Documento:', ['class' => 'form-label']) !!}
+                            <input type="file" name="archivo" id="archivo" class="dropify" accept=".pdf"/>
+                            @error('archivo')
+                                <div class="text-danger">
+                                    <i class="fas fa-exclamation-circle"></i> {{$message}}
+                                </div>
+                            @enderror
                         </div>
-                    @enderror
-                </div>
-                <input type="text" class="form-control" id="accion" name="accion" value="HISTORIA MÉDICA" hidden>
-            </div>
-            <div class="modal-footer" style="margin-top: 50px;">
-                <button type="button" class="btn btn-no" data-dismiss="modal" aria-label="Cerrar">Cerrar</button>
-                <button type="submit" class="btn btn-si">Subir Doc.</button>
-            </div>
-            @endif
+                        <input type="text" class="form-control" id="accion" name="accion" value="HISTORIA MÉDICA" hidden>
+                    </div>
+                    <div class="modal-footer" style="margin-top: 50px;">
+                        <button type="submit" class="btn btn-si btn-sm">GUARDAR</button>
+                        <button type="button" class="btn btn-no btn-sm" data-dismiss="modal" aria-label="Cerrar">CERRAR</button>
+                    </div>
+                @endif
             {!! Form::close() !!}
         </div>
     </div>
 </div>
 
-<style>
-    .btn-verhistoriamedica {
-        background-color:  #ffffff;
-        color: #94c93b;
-        border-color: #94c93b;
-        border-radius: 5px;
-        padding: 2px 10px;
-        margin-top: 20px;
-    }
-    .btn-verhistoriamedica:hover {
-        background-color: #94c93b;
-        color: #ffffff;
-    }
-    .pdf-preview {
-      width: 100%;
-      height: 430px;
-      border: none;
-    }
-    .titulo {
-      margin-top: 50px;
-      margin-left: 20px;
-    }
-    .modal-custom-height .modal-dialog {
-      height: 93.5vh;
-    }
-    .modal-custom-height .modal-content {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-    .modal-custom-height .modal-body {
-      overflow-y: auto;
-      flex: 1;
-      padding: 2rem;
-    }
-    .modal-footer {
-      justify-content: center;
-    }
-    .dropify-wrapper {
-      border-radius: 0.25rem;
-    }
-</style>
 @endsection
 @section('js')
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -1821,13 +1779,64 @@
 
 @section('css')
 <style>
+    @keyframes heartbeat {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.3);
+    }
+    }
+    .icon-pulse {
+    animation: heartbeat 1s infinite;
+    }
+</style>
+<style>
+    .btn-verhistoriamedica {
+        background-color:  #ffffff;
+        color: #94c93b;
+        border-color: #94c93b;
+        border-radius: 5px;
+        padding: 2px 10px;
+        margin-top: 20px;
+    }
+    .btn-verhistoriamedica:hover {
+        background-color: #94c93b;
+        color: #ffffff;
+    }
+    .pdf-preview {
+      width: 100%;
+      height: 430px;
+      border: none;
+    }
+    .titulo {
+      margin-top: 50px;
+      margin-left: 20px;
+    }
+    .modal-custom-height .modal-dialog {
+      height: 93.5vh;
+    }
+    .modal-custom-height .modal-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-custom-height .modal-body {
+      overflow-y: auto;
+      flex: 1;
+      padding: 2rem;
+    }
+    .modal-footer {
+      justify-content: center;
+    }
+    .dropify-wrapper {
+      border-radius: 0.25rem;
+    }
     .btn.disabled, .btn.disabled:hover, .btn.disabled:focus, .btn.disabled:active {
         pointer-events: none;
         opacity: 0.6;
         cursor: not-allowed;
     }
-</style>
-<style>
     .btn-vercarta {
         background-color:  #ffffff;
         color: #94c93b;
@@ -1868,38 +1877,6 @@
         background-color: #94c93b;
         color: #ffffff;
     }
-    .custom-dropdown {
-        position: relative;
-        display: inline-block;
-    }
-    .custom-select-wrapper {
-        border: 1px solid black;
-        background-color: #fceacf;
-        padding: 1px;
-        text-align: center;
-        border-radius: 5px;
-        width: 140px; 
-    }
-    .custom-dropdown-content {
-        display: none;
-        position: absolute;
-        background-color: #f9f9f9;
-        width: 200px;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-        z-index: 1;
-    }
-    .custom-dropdown-content a {
-        color: black;
-        padding: 0px 5px;
-        text-decoration: none;
-        display: block;
-    }
-    .custom-dropdown-content a:hover {
-        background-color: #eefed3;
-    }
-    .custom-dropdown:hover .custom-dropdown-content {
-        display: block;
-    }
     th, td {
         border-bottom: 1px solid #94c93b;
     }
@@ -1917,7 +1894,8 @@
     h3 {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 1000;
+        font-weight: 800;
+        font-size: 23px;
         }
     #vista-previa {
         display: block;

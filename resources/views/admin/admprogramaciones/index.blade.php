@@ -89,7 +89,6 @@
                             </td>
                         </tr>
                     @endforeach
-
                     @foreach($programacionclientecomunes as $programacionclientecomun)
                         <?php
                         $clienteComun = $programacionclientecomun->clienteComun;
@@ -176,19 +175,7 @@
                             </td>
                         </tr>
                     @endforeach 
-                    @foreach($programacionclientebancos as $programacionclientebanco)
-                        <?php
-                        $clienteBanco = $programacionclientebanco->clienteBanco;
-                        $celular = $clienteBanco ? $clienteBanco->celular : '';
-
-                        $mensaje = "Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: " .
-                                $programacionclientebanco->proveedornombre . ", para realizarse: " .
-                                $programacionclientebanco->accionnombre . ", para la fecha: " .
-                                $programacionclientebanco->fechaasignada . ", a la hora: " . 
-                                $programacionclientebanco->horadesde . ". Que tenga un excelente dia.";
-
-                        $mensajeCodificado = urlencode($mensaje);
-                        ?>
+                    {{-- @foreach($programacionclientebancos as $programacionclientebanco)
                         <tr>
                             <td>{{ $programacionclientebanco->id }}</td>
                             <td>BANCO</td>
@@ -198,13 +185,6 @@
                             <td>{{ $programacionclientebanco->fechaasignada }}</td>
                             <td>{{ $programacionclientebanco->horadesde }} - {{ $programacionclientebanco->horahasta }}</td>
                             <td>{{ $celular }}</td>
-                            {{-- <td width="10px">
-                                @if(in_array($programacionclientebanco->accionnombre, $estadoRegistradosBanco))
-                                    <i class="fas fa-check-circle fa-2x text-success"></i>
-                                @else
-                                    <i class="fas fa-times-circle fa-2x text-danger"></i>
-                                @endif
-                            </td> --}}
                             <td width="10px">
                                 <abbr title="Recordar">
                                     <a class="btn btn-sm btn-whatsapp @if(in_array($programacionclientebanco->accionnombre, $estadoRegistradosBanco)) disabled @endif" 
@@ -218,7 +198,7 @@
                                 </abbr>
                             </td>
                         </tr>
-                    @endforeach
+                    @endforeach --}}
                     
                 </tbody>
             </table>

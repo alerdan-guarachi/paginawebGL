@@ -13,6 +13,11 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/programacionesmedicas.css') }}">
+<style>
+    h3 {
+        font-size: 23px;
+    }
+</style>
 @stop
 
 @section('content')
@@ -23,7 +28,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000); 
+        }, 3000); 
     </script>
 @endif
 @if (session('error'))
@@ -105,7 +110,7 @@
                                 <div class="col-lg-2" style="margin-left: -8px;">
                                     <label style="font-weight: normal; display: flex; align-items: center;">
                                         <input type="checkbox" id="select-all-{{ $fecha }}" style="margin-right: 5px;"> 
-                                        <span style="font-weight: bold; font-size: 14px;">SELECCIONAR TODO</span>
+                                        <span style="font-weight: bold; font-size: 12px;">SELECCIONAR TODO</span>
                                     </label>
                                 </div>
                                 <div class="row action-container" style="display: flex; flex-wrap: wrap; gap: 20px;">

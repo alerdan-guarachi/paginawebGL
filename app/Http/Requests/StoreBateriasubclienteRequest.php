@@ -45,6 +45,7 @@ class StoreBateriasubclienteRequest extends FormRequest
             'areaid' => '',
             'accionid' => '',
             'clientenombre' => '',
+            'tipocliente' => '',
             'areanombre' => 'required_if:tipoarea,Estudios|nullable',
             'accionnombre' => '',
             'clientecomunid' => '',

@@ -17,6 +17,11 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/cotizacionmedicaclientes.css') }}">
+<style>
+    h3 {
+        font-size: 23px;
+    }
+</style>
 @stop
 
 @section('content')
@@ -27,7 +32,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 <div class="card">
@@ -358,22 +363,17 @@
         var select = document.getElementById('area_select');
         var selectedOption = select.options[select.selectedIndex];
         if (selectedOption.value !== '') {
-            // Oculta el campo select
             select.style.display = 'none';
-            // Oculta el label
             document.getElementById('area_label').style.display = 'none';
-            // Muestra el nombre del área seleccionada como título para acciones correspondientes
             var areaName = selectedOption.text;
             var accionesDiv = document.getElementById('acciones_' + selectedOption.value);
-            accionesDiv.style.display = 'block'; // Muestra las acciones correspondientes al área seleccionada
-            // Añade el nombre del área seleccionada como título para acciones correspondientes si no existe ya
+            accionesDiv.style.display = 'block';
             if (!document.getElementById('acciones_label_' + selectedOption.value)) {
                 var accionesLabel = document.createElement('label');
                 accionesLabel.innerHTML = 'Acciones para: ' + areaName;
                 accionesLabel.id = 'acciones_label_' + selectedOption.value;
                 accionesDiv.prepend(accionesLabel);
             }
-            // Muestra el botón solo si no está visible
             var resetButton = document.getElementById('reset_button');
             if (!resetButton) {
                 var button = document.createElement('button');
@@ -390,19 +390,13 @@
 
     function resetSelectAndCheckboxes() {
         var select = document.getElementById('area_select');
-        select.style.display = 'block'; // Mostrar el select nuevamente
-        select.value = ''; // Restablecer el valor del select
-
-        // Mostrar el label nuevamente
+        select.style.display = 'block';
+        select.value = '';
         document.getElementById('area_label').style.display = 'block';
-
-        // Desmarcar todos los checkboxes de acciones
         var checkboxes = document.querySelectorAll('[id^="accionnombre_"]');
         checkboxes.forEach(function(checkbox) {
             checkbox.checked = false;
         });
-
-        // Ocultar todas las secciones de acciones y etiquetas de "Acciones para"
         var accionesDivs = document.querySelectorAll('[id^="acciones_"]');
         accionesDivs.forEach(function(div) {
             div.style.display = 'none';
@@ -411,7 +405,6 @@
                 label.remove();
             }
         });
-        // Ocultar el botón de restablecimiento
         var resetButton = document.getElementById('reset_button');
         if (resetButton) {
             resetButton.remove();

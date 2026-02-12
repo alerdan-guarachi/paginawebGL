@@ -5,7 +5,6 @@
 <a class="btn custom2-button btn-sm float-right btn-sm" data-toggle="modal" data-target="#ventanaModal">INFORMES DEL CLIENTE</a>
 {{-- <a class="btn btn-sm float-right btn-listainformes" href="{{ route('admin.asociados.listadodocumentacionclienteita', $cliente) }}">LISTA DE INFORMES</a> --}}
 {{-- <a class="btn btn-sm float-right btn-multiple" href="{{ route('admin.asociados.documentacionmultipleclienteita', 6) }}">DOC. MÚLTIPLE</a> --}}
-
 <h5>SUBIR INFORMES DE:</h5>
 <h3>{{$clientecomun->nombrecompleto}}</h3>
 @stop
@@ -18,7 +17,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 <div class="card">
@@ -98,9 +97,6 @@
                                 <span aria-hidden="true">&times;</span>
                             </button>
                             </div>
-                            {{-- <div class="modal-body">
-                            <iframe id="document-preview" style="width: 100%; height: 500px; border: none;"></iframe>
-                            </div> --}}
                             <div class="modal-body">
                                 <object id="document-preview" type="application/pdf" style="width: 100%; height: 500px;">
                                     <p><a id="pdf-download" href="#" target="_blank">Descargar</a></p>
@@ -123,7 +119,6 @@
                         </div>
                         </div>
                     </div>
-  
                     <div class="col-lg-3">
                         <div class="form-group">
                             {!! Form::label('file', 'Imagen 1:') !!}
@@ -257,7 +252,6 @@
                                 const selectedFecha = this.value;
                                 
                                 allActionRows.forEach(function(actionRow) {
-                                    // Muestra solo las filas de la fecha seleccionada
                                     if (actionRow.id === 'acciones-' + selectedFecha) {
                                         actionRow.style.display = "table-row";
                                     } else {
@@ -267,98 +261,6 @@
                             });
                         });
                     </script>
-                    
-                    <style>
-                        /* Reduce el interlineado entre filas */
-                        table tbody tr {
-                            line-height: 0.8; /* Menor interlineado */
-                        }
-                    
-                        table tbody tr td {
-                            padding: 4px 5px; /* Reduce el padding para disminuir el espacio vertical */
-                            vertical-align: middle; /* Asegura la alineación vertical en el medio */
-                        }
-                    
-                        /* Colorear las filas impares */
-                        table tbody tr:nth-child(odd) {
-                            background-color: #f1f1f1; /* Color de fondo para filas impares */
-                        }
-                    
-                        table tbody tr:nth-child(even) {
-                            background-color: #ffffff; /* Color de fondo para filas pares */
-                        }
-                    
-                        /* Asegura que el color rojo se aplique a todos los textos cuando no está registrado */
-                        table tbody tr td[style*="color: red;"] {
-                            font-weight: normal; /* Resalta más el texto en rojo */
-                        }
-                    
-                        .btn-verinforme,
-                        .btn-verimagen {
-                            background-color: #ffffff;
-                            border-radius: 5px;
-                            padding: 2px 4px; /* Reduce el padding para botones */
-                            font-size: 12px; /* Tamaño de fuente más pequeño */
-                            margin: 0; /* Elimina el margen para evitar espacios extra */
-                            border: 1px solid transparent; /* Establecer un borde */
-                            margin-bottom: -8px;
-                            margin-top: -8px;
-                        }
-                    
-                        .btn-verinforme {
-                            color: #faa625;
-                            border-color: #faa625;
-                        }
-                    
-                        .btn-verinforme:hover {
-                            background-color: #faa625;
-                            color: #ffffff;
-                        }
-                    
-                        .btn-verimagen {
-                            color: #25b6fa;
-                            border-color: #25b6fa;
-                        }
-                    
-                        .btn-verimagen:hover {
-                            background-color: #25b6fa;
-                            color: #ffffff;
-                        }
-                        .btn-docfirmado {
-                            background-color: #ffffff;
-                            border-radius: 5px;
-                            padding: 2px 4px;
-                            font-size: 12px;
-                            margin: 0;
-                            border: 1px solid transparent;
-                            margin-bottom: -8px;
-                            margin-top: -8px;
-                            color: #be26dc;
-                            border-color: #be26dc;
-                        }
-
-                        .btn-docfirmado:hover {
-                            background-color: #be26dc;
-                            color: #ffffff;
-                        }
-                        .btn-docword {
-                            background-color: #ffffff;
-                            border-radius: 5px;
-                            padding: 2px 4px;
-                            font-size: 12px;
-                            margin: 0;
-                            border: 1px solid transparent;
-                            margin-bottom: -8px;
-                            margin-top: -8px;
-                            color: #262cdc;
-                            border-color: #262cdc;
-                        }
-
-                        .btn-docword:hover {
-                            background-color: #262cdc;
-                            color: #ffffff;
-                        }
-                    </style>
                 </div>
                 {!! Form::submit('SUBIR INFORME', ['class' => 'btn btn-crear btn-sm']) !!}
                 {!! Form::close() !!}
@@ -375,15 +277,14 @@
 <script>
     $(document).ready(function(){
         $('#fecha_bateria').on('change', function(){
-            $('#accionselec').val('');  // Limpia el valor previo
+            $('#accionselec').val('');
         });
 
         document.getElementById('fecha_bateria').addEventListener('change', function() {
             var fechaSeleccionada = this.value;
             var accionesContainer = document.getElementById('acciones_disponibles');
-            accionesContainer.innerHTML = '';  // Limpia los checkboxes previos
+            accionesContainer.innerHTML = '';
             
-            // Agregar el checkbox de "Seleccionar todo"
             var selectAllCheckbox = document.createElement('input');
             selectAllCheckbox.type = 'checkbox';
             selectAllCheckbox.id = 'select_all';
@@ -398,30 +299,24 @@
 
             if (accionesNoRegistradasPorFecha[fechaSeleccionada]) {
                 accionesNoRegistradasPorFecha[fechaSeleccionada].forEach(function(accion) {
-                    // Crear el checkbox para cada acción
                     var checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.name = 'acciones[]';
                     checkbox.value = accion.accionnombre;
-                    checkbox.classList.add('accion_checkbox'); // Clase para identificar los checkboxes de acciones
+                    checkbox.classList.add('accion_checkbox');
                     checkbox.id = 'accion_' + accion.accionnombre;
 
-                    // Crear la etiqueta del checkbox
                     var label = document.createElement('label');
                     label.htmlFor = 'accion_' + accion.accionnombre;
                     label.textContent = accion.accionnombre;
 
-                    // Añadir checkbox y etiqueta al contenedor
                     accionesContainer.appendChild(checkbox);
                     accionesContainer.appendChild(label);
                     accionesContainer.appendChild(document.createElement('br'));
                 });
             }
 
-            // Mostrar el div de acciones
             document.getElementById('acciones_select').style.display = 'block';
-
-            // Evento para seleccionar/deseleccionar todos los checkboxes
             document.getElementById('select_all').addEventListener('change', function() {
                 var checkboxes = document.querySelectorAll('.accion_checkbox');
                 checkboxes.forEach(function(checkbox) {
@@ -438,7 +333,6 @@
 </script>
 
 <script>
-    // Función para cargar la vista previa del documento seleccionado en el iframe del modal
     function cargarVistaPrevia() {
       var archivo = document.getElementById('archivo').files[0];
       if (archivo) {
@@ -451,11 +345,10 @@
       }
     }
   
-    // Evento cuando se selecciona un archivo
     document.getElementById('archivo').addEventListener('change', function() {
       cargarVistaPrevia();
     });
-  </script>
+</script>
 <script>
     $(document).ready(function() {
         $('.dropify').dropify({
@@ -498,7 +391,7 @@
         }
     });
 
-//CANCELAR FUNCION DE LA TECLA ENTER
+    //CANCELAR FUNCION DE LA TECLA ENTER
     document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
@@ -533,6 +426,7 @@
         color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 1000;
+        font-size: 23px;
         }
     .btn-crear {
         background-color:  #ffffff;
@@ -624,6 +518,83 @@
     }
     .btn-listainformes:hover {
         background-color: #493535;
+        color: #ffffff;
+    }
+</style>
+<style>
+    table tbody tr {
+        line-height: 0.8;
+    }
+    table tbody tr td {
+        padding: 4px 5px;
+        vertical-align: middle;
+    }
+    table tbody tr:nth-child(odd) {
+        background-color: #f1f1f1;
+    }
+    table tbody tr:nth-child(even) {
+        background-color: #ffffff;
+    }
+    table tbody tr td[style*="color: red;"] {
+        font-weight: normal;
+    }
+    .btn-verinforme,
+    .btn-verimagen {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 2px 4px;
+        font-size: 12px;
+        margin: 0;
+        border: 1px solid transparent;
+        margin-bottom: -8px;
+        margin-top: -8px;
+    }
+    .btn-verinforme {
+        color: #faa625;
+        border-color: #faa625;
+    }
+    .btn-verinforme:hover {
+        background-color: #faa625;
+        color: #ffffff;
+    }
+    .btn-verimagen {
+        color: #25b6fa;
+        border-color: #25b6fa;
+    }
+    .btn-verimagen:hover {
+        background-color: #25b6fa;
+        color: #ffffff;
+    }
+    .btn-docfirmado {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 2px 4px;
+        font-size: 12px;
+        margin: 0;
+        border: 1px solid transparent;
+        margin-bottom: -8px;
+        margin-top: -8px;
+        color: #be26dc;
+        border-color: #be26dc;
+    }
+    .btn-docfirmado:hover {
+        background-color: #be26dc;
+        color: #ffffff;
+    }
+    .btn-docword {
+        background-color: #ffffff;
+        border-radius: 5px;
+        padding: 2px 4px;
+        font-size: 12px;
+        margin: 0;
+        border: 1px solid transparent;
+        margin-bottom: -8px;
+        margin-top: -8px;
+        color: #262cdc;
+        border-color: #262cdc;
+    }
+    .btn-docword:hover {
+        background-color: #262cdc;
         color: #ffffff;
     }
 </style>

@@ -530,14 +530,9 @@
                     </div>
 
                     <div class="row">
-                        {{-- <div class="form-group col-lg-4">
-                            <label for="siguienteId">Recibo</label>
-                            <input type="text" id="siguienteId" class="form-control" value="{{ $siguienteId }}" readonly>
-                        </div> --}}
                         <div class="form-group col-lg-4">
                             <label for="siguienteId">Recibo</label>
                             <input type="text" id="siguienteId" class="form-control" readonly>
-
                         </div>
                         <script>
                             function actualizarSiguienteId() {
@@ -560,37 +555,16 @@
                                 <option value="clienteitaid">Cliente ITA</option>
                                 <option value="clienteauditoriaid">Cliente Auditoría</option>
                                 <option value="clientecomunid">Cliente Común</option>
-                                <option value="clientebancoid">Proveedor</option>
-                                <option value="clienteproveedor" hidden>Cliente Banco</option>
+                                <option value="proveedorid">Proveedor</option>
                             </select>
                             <input type="hidden" id="area" class="form-control" name="area" value="MEDICA">
                         </div>
-                        {{-- <script>
-                            function cambiarArea() {
-                                var tipoCliente = document.getElementById('tipoCliente').value;
-                                var areaInput = document.getElementById('area');
-                                
-                                if (tipoCliente === 'clienteitaid' || tipoCliente === 'clienteauditoriaid' || tipoCliente === 'clientecomunid') {
-                                    areaInput.value = 'MEDICA';
-                                } else if (tipoCliente === 'clientebancoid') {
-                                    areaInput.value = 'CUENTA POR COBRAR';
-                                }
-                            }
-                        </script> --}}
                     </div>
-                    
-                    {{-- <label for="clienteid">ID / CI del Cliente</label>
-                    <div class="row mb-3">
-                        <div class="form-group col-lg-12">
-                            <input type="text" id="clienteid" name="clienteid" class="form-control" placeholder="">
-                        </div>
-                    </div> --}}
                     <label for="clienteid">Nombre del Cliente</label>
                     <div class="row mb-3">
                         <div class="form-group col-lg-12">
                             <input list="clientes" id="clienteSearch" class="form-control" placeholder="Buscar cliente..." oninput="actualizarID()">
                             <datalist id="clientes"></datalist>
-                            <!-- Campo oculto para almacenar el id del cliente seleccionado -->
                             <input type="hidden" id="clienteid" name="clienteid">
                         </div>
                     </div>
@@ -609,7 +583,7 @@
                                 
                                 if (tipoCliente === 'clienteitaid' || tipoCliente === 'clienteauditoriaid' || tipoCliente === 'clientecomunid') {
                                     areaInput.value = 'MEDICA';
-                                } else if (tipoCliente === 'clientebancoid') {
+                                } else if (tipoCliente === 'proveedorid') {
                                     areaInput.value = 'CUENTA POR COBRAR';
                                 }
 
@@ -625,7 +599,7 @@
                                 clientes = clientesAuditoria;
                             } else if (tipoCliente === 'clientecomunid') {
                                 clientes = clientesComunes;
-                            } else if (tipoCliente === 'clientebancoid') {
+                            } else if (tipoCliente === 'proveedorid') {
                                 clientes = proveedores;
                             }
 

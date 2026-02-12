@@ -166,8 +166,8 @@ class TramitesController extends Controller
 
     public function index(Cliente $cliente, Request $request, Tramite $tramite)
     {
-        $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
-        $aprobaciones = AprobacionInformeFinal::all();
+        /* $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
+        $aprobaciones = AprobacionInformeFinal::all(); */
         $todosclientes = Cliente::orderBy('nombrecompleto', 'asc')->get();
         $agendamientos = AgendamientoProcedimiento::all();
 
@@ -186,20 +186,6 @@ class TramitesController extends Controller
         $userRoles = $user->roles->pluck('name')->toArray();
         $rolesPermitidos = ['MAESTRO', 'ADMINISTRADOR', 'SUPERVISOR PRESTACIONES'];
 
-        /* $todostramitesnoiniciado = Tramitesubcliente::whereNotIn('tramite', ['AUDITORIA MEDICA', 'AUDITORIA MÉDICA'])
-            ->where('estado', 'PENDIENTE')
-            ->whereNotExists(function($query) {
-                $query->select(DB::raw(1))
-                    ->from('procedimientotramites')
-                    ->whereRaw('procedimientotramites.idtramite = tramitessubclientes.id');
-            });
-        if (empty(array_intersect($userRoles, $rolesPermitidos))) {
-            $todostramitesnoiniciado->where('apoderadoasignado', $user->name);
-        } else {
-            $todostramitesnoiniciado->whereNotNull('apoderadoasignado');
-        }
-        $todostramitesnoiniciado = $todostramitesnoiniciado->get(); */
-
         $todostramitesnoiniciado = Tramitesubcliente::whereNotIn('tramitessubclientes.tramite', ['AUDITORIA MEDICA', 'AUDITORIA MÉDICA'])
             ->where('tramitessubclientes.estado', 'PENDIENTE')
             ->whereNotExists(function($query) {
@@ -213,14 +199,11 @@ class TramitesController extends Controller
             })
             ->select('tramitessubclientes.*', 'ag.asistencia as asistencia');
 
-        // Condición según roles
         if (empty(array_intersect($userRoles, $rolesPermitidos))) {
             $todostramitesnoiniciado->where('tramitessubclientes.apoderadoasignado', $user->name);
         } else {
             $todostramitesnoiniciado->whereNotNull('tramitessubclientes.apoderadoasignado');
         }
-
-        // Finalmente ejecutar la consulta
         $todostramitesnoiniciado = $todostramitesnoiniciado->get();
 
 
@@ -239,6 +222,7 @@ class TramitesController extends Controller
         }])
         ->get();
 
+
         $todostramitesfinalizados = Tramitesubcliente::whereNotIn('tramite', ['AUDITORIA MEDICA', 'AUDITORIA MÉDICA'])->where('estado', 'FINALIZADO');
         if (empty(array_intersect($userRoles, $rolesPermitidos))) {
             $todostramitesfinalizados->where('apoderadoasignado', $user->name);
@@ -247,10 +231,9 @@ class TramitesController extends Controller
         }
         $todostramitesfinalizados = $todostramitesfinalizados->get();
 
+
         $todostramitesinterrumpidos = Tramitesubcliente::whereNotIn('tramite', ['AUDITORIA MEDICA', 'AUDITORIA MÉDICA'])->where('estado', 'INTERRUMPIDO')
-            ->whereIn('id', function($query) {
-                $query->select('idtramite')->from('procedimientotramites');
-            });
+            ;
         if (empty(array_intersect($userRoles, $rolesPermitidos))) {
             $todostramitesinterrumpidos->where('apoderadoasignado', $user->name);
         } else {
@@ -258,9 +241,9 @@ class TramitesController extends Controller
         }
         $todostramitesinterrumpidos = $todostramitesinterrumpidos->get();
 
-        $fechas = Programacionsubcliente::pluck('fechabateria')->unique()->sort()->toArray();
-
-        $query = Programacionsubcliente::with([
+        /* $fechas = Programacionsubcliente::pluck('fechabateria')->unique()->sort()->toArray(); */
+        $usuarioAutenticado = auth()->user()->name;
+        /* $query = Programacionsubcliente::with([
             'estadoprogramacionsubcliente',
             'documentacionsubcliente',
             'proveedorinformesfinales',
@@ -286,7 +269,7 @@ class TramitesController extends Controller
         foreach ($grouped as $key => $items) {
             list($clienteNombre, $fechabateria) = explode('|', $key);
             $clienteitaid = $items->first()->clienteitaid;
-            $usuarioAutenticado = auth()->user()->name;
+            
             $clientes = Tramitesubcliente::where('clienteitanombre', $clienteNombre)
                 ->where('fechabateria', $fechabateria)
             ->get();
@@ -443,75 +426,7 @@ class TramitesController extends Controller
                     ];
                 }
             }
-        }
-
-        // RELLENAR CON SIGUIENTE APDOERADO
-            $apoderadosList = Proveedoresservicios::where('cargo', 'EJECUTIVO DE PRESTACIONES')
-                ->orderBy('razonsocial')
-                ->pluck('razonsocial')
-                ->toArray();
-
-            if (count($apoderadosList) === 0) {
-                $apoderadoSiguiente = null;
-                session(['indice_apoderado' => -1]);
-            } else {
-                $ultimoApoderado = Tramitesubcliente::orderBy('fechaasignacion', 'desc')
-                    ->value('apoderadoasignado'); 
-
-                $indiceActual = $ultimoApoderado !== null
-                    ? array_search(trim($ultimoApoderado), $apoderadosList, true)
-                    : false;
-
-                if ($indiceActual === false) {
-                    $indiceActual = -1;
-                }
-                $indiceSiguiente = ($indiceActual + 1) % count($apoderadosList);
-                $apoderadoSiguiente = $apoderadosList[$indiceSiguiente];
-                session(['indice_apoderado' => $indiceSiguiente]);
-            }
-            $apoderadosSelect = count($apoderadosList) 
-                ? array_combine($apoderadosList, $apoderadosList) 
-                : [];
-        //
-
-        //CONTEO DE REGISTROS DE CADA PESTAÑA
-            $noIniciadoCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
-                if ($item['apoderadoasignado'] === $usuarioAutenticado && $item['nivelprocedimientotramite'] === 'NO INICIADO' && $item['tipocliente'] !== 'APELACIÓN') {
-                    $count++;
-                }
-                return $count;
-            }, 0);
-
-            $pendienteCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
-                if ($item['apoderadoasignado'] === $usuarioAutenticado && $item['estadotramite'] === 'PENDIENTE' && $item['nivelprocedimientotramite'] !== 'NO INICIADO') {
-                    $count++;
-                }
-                return $count;
-            }, 0);
-
-            $finalizadoCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
-                if ($item['apoderadoasignado'] === $usuarioAutenticado && $item['estadotramite'] === 'FINALIZADO') {
-                    $count++;
-                }
-                return $count;
-            }, 0);
-
-            $derivarCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
-                if (!$item['apoderadoasignado']) {
-                    $count++;
-                }
-                return $count;
-            }, 0);
-
-            $apelacionCount = array_reduce($result, function ($count, $item) use ($usuarioAutenticado) {
-                if ($item['tipocliente'] === 'APELACIÓN' && $item['estadotramite'] === 'PENDIENTE' && $item['apoderadoasignado'] === $usuarioAutenticado) {
-                    $count++;
-                }
-                return $count;
-            }, 0);
-        //
-    
-        /* ->where('c.aseguradora', 'CAJA PETROLERA DE SALUD') */
+        } */
 
         $tipos = [  
             'PROGRAMACIONES SITM ENTE GESTOR DE SALUD',
@@ -525,7 +440,10 @@ class TramitesController extends Controller
 
         $progcajapetrolera = DB::table('subprocedimientotramites as spt')
             ->join('clientes as c', 'c.id', '=', 'spt.clienteid')
+            ->join('tramitessubclientes as tsc', 'tsc.id', '=', 'spt.idtramite')
             ->whereIn('spt.tipo', $tipos)
+            ->whereNull('spt.deleted_at')
+            ->whereNotIn('tsc.estado', ['FINALIZADO', 'INTERRUMPIDO'])
             ->when(!array_intersect($rolesPermitidos, $userRoles), function ($query) use ($user) {
                 $query->where('spt.usuarioregistronombre', $user->name);
             })
@@ -562,15 +480,11 @@ class TramitesController extends Controller
             ->map(function ($item) use ($now) {
                 $item->ultima_fecha = null;
                 $item->estado = '';
-
                 if (!empty($item->ultima_dt)) {
                     $dt = Carbon::parse($item->ultima_dt);
                     $item->ultima_fecha = $dt->format('Y-m-d H:i:s');
-
                     $diffHoursPassed = $dt->diffInHours($now);
-
                     $diffHoursRemaining = $now->diffInHours($dt, false);
-
                     if ($diffHoursRemaining >= 0 && $diffHoursRemaining <= 24) {
                         $item->estado = 'SEGUIMIENTO A CLIENTE';
                     } elseif ($diffHoursPassed > 24 && $diffHoursPassed <= 48) {
@@ -586,12 +500,12 @@ class TramitesController extends Controller
                     $item->ultima_fecha = '—';
                     $item->estado = 'PENDIENTE';
                 }
+            return $item;
+        });
 
-                return $item;
-            });
-
-
-        return view('admin.tramites.index', compact('todostramitesinterrumpidos','todostramitesfinalizados','todostramitesiniciado','agendamientosNoAsistidos','agendamientosAsistidos','todostramitesnoiniciado','todostramites','agendamientos','todosclientes','progcajapetrolera','apelacionCount', 'derivarCount', 'finalizadoCount', 'pendienteCount', 'noIniciadoCount', 'usuarioAutenticado','proveedores', 'result', 'cliente', 'fechas', 'aprobaciones','apoderadosSelect', 'apoderadoSiguiente'));
+        return view('admin.tramites.index', compact('todostramitesinterrumpidos','todostramitesfinalizados','todostramitesiniciado',
+        'agendamientosNoAsistidos','agendamientosAsistidos','todostramitesnoiniciado','todostramites','agendamientos','todosclientes','progcajapetrolera',
+        'usuarioAutenticado'/* ,'proveedores','result' */,'cliente'/* ,'fechas','aprobaciones' */));
     }
 
     public function derivacionapoderados(Cliente $cliente, Request $request, Tramite $tramite)
@@ -1141,7 +1055,8 @@ class TramitesController extends Controller
         ->orderBy('razonsocial', 'asc')
         ->pluck('razonsocial');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
@@ -2170,13 +2085,16 @@ class TramitesController extends Controller
                         Tramitesubcliente::create([
                             'usuarioid' => $request->usuarioid,
                             'usuarioregistro' => $request->usuarioregistro,
-                            'clienteid' => $request->clienteid,
-                            'clientenombre' => $request->clientenombre,
+                            'clienteitaid' => $request->clienteid,
+                            'clienteitanombre' => $request->clientenombre,
                             'usuarioasignado' => $usuarioAsignado,
                             'tramite' => 'APELACIÓN',
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => '',
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
                 }
@@ -2222,6 +2140,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2260,6 +2181,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
                     Tramitesubcliente::where([
@@ -2287,6 +2211,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2315,6 +2242,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2342,6 +2272,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2388,6 +2321,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2426,6 +2362,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2463,6 +2402,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2499,6 +2441,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2535,6 +2480,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2572,6 +2520,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2598,6 +2549,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
 
@@ -2624,6 +2578,9 @@ class TramitesController extends Controller
                             'ciudad' => $departamentocliente,
                             'estado' => 'PENDIENTE',
                             'observaciones' => null,
+                            'clienteid' => $request->clienteid,
+                            'clientenombre' => $request->clientenombre,
+                            'tipocliente' => 'ITA',
                         ]);
                     }
                     
@@ -3060,6 +3017,9 @@ class TramitesController extends Controller
                 'ciudad' => $departamentocliente,
                 'estado' => 'PENDIENTE',
                 'observaciones' => null,
+                'clienteid' => $request->clienteid,
+                'clientenombre' => $request->clientenombre,
+                'tipocliente' => 'ITA',
             ]);
         }
 
@@ -3156,6 +3116,9 @@ class TramitesController extends Controller
                     'ciudad' => $departamentocliente,
                     'estado' => 'PENDIENTE',
                     'observaciones' => null,
+                    'clienteid' => $request->clienteid,
+                    'clientenombre' => $request->clientenombre,
+                    'tipocliente' => 'ITA',
                 ]);
             }
             Tramitesubcliente::where([
@@ -3565,7 +3528,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -4350,7 +4314,8 @@ class TramitesController extends Controller
 
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -5109,7 +5074,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -5824,7 +5790,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -6413,7 +6380,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -6966,7 +6934,8 @@ class TramitesController extends Controller
 
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -7522,7 +7491,8 @@ class TramitesController extends Controller
             ->whereIn('nivelprocedimiento', ['INICIO DE TRAMITE', 'CONTINUIDAD DE TRAMITE'])
             ->where('tramite', 'RETIRO DE APORTES TOTAL')
         ->exists();
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $tramiteinicio = Tramite::where('clienteid', $cliente->id)
@@ -8035,7 +8005,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -8552,7 +8523,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -9292,7 +9264,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -10035,7 +10008,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -10777,7 +10751,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -11520,7 +11495,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -12260,7 +12236,8 @@ class TramitesController extends Controller
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
 
-        $contactos = Contactosubcliente::where('clienteitaid', $cliente->id)
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
@@ -13835,7 +13812,7 @@ class TramitesController extends Controller
         }
 
         $especialistas = [];
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 30; $i++) {
             $especialista = $request->input("especialista$i");
             $detalle = $request->input("detalle$i");
             $cantidad = $request->input("cantidad$i");
@@ -14614,7 +14591,7 @@ class TramitesController extends Controller
         }
 
         $especialistas = [];
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 30; $i++) {
             $especialista = $request->input("especialista$i");
             $detalle = $request->input("detalle$i");
             $cantidad = $request->input("cantidad$i");
@@ -15834,10 +15811,10 @@ class TramitesController extends Controller
             $tramite->document3 = $archivoNombre2;
         }
 
-        $tramite->observaciones = $request->observacionesml;
-        $tramite->citenota = $request->citenotaml;
-        $tramite->fechacitenota = $request->fechacitenotaml;
-        $tramite->fechainclusion = $request->fechainclusionml;
+        $tramite->observaciones  = $request->observacionesml ?? $tramite->observaciones;
+        $tramite->citenota       = $request->citenotaml ?? $tramite->citenota;
+        $tramite->fechacitenota  = $request->fechacitenotaml ?? $tramite->fechacitenota;
+        $tramite->fechainclusion = $request->fechainclusionml ?? $tramite->fechainclusion;
         $tramite->save();
 
         return back()->with('info', 'Respuesta guardada correctamente.');
@@ -16075,6 +16052,7 @@ class TramitesController extends Controller
     {
         $request->validate([
             'document2solicitud' => 'nullable|file|mimes:pdf',
+            'document3solicitud' => 'nullable|file|mimes:pdf',
             'observacionessolicitud' => '',
             'citenotasolicitud' => '',
             'fechacitenotasolicitud' => '',
@@ -16096,10 +16074,23 @@ class TramitesController extends Controller
             $tramite->document2 = $archivoNombre;
         }
 
-        $tramite->observaciones = $request->observacionessolicitud;
-        $tramite->citenota = $request->citenotasolicitud;
-        $tramite->fechacitenota = $request->fechacitenotasolicitud;
-        $tramite->fechainclusion = $request->fechainclusionsolicitud;
+        if ($request->hasFile('document3solicitud')) {
+            $archivo = $request->file('document3solicitud');
+            $archivoNombre2 = time() . '_' . $archivo->getClientOriginalName();
+
+            $carpetaCliente = public_path("/tramitesclientesita/{$cliente->id}/{$request->nombretramite}/SOLICITUDES");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+
+            $archivo->move($carpetaCliente, $archivoNombre2);
+            $tramite->document3 = $archivoNombre2;
+        }
+
+        $tramite->observaciones  = $request->observacionessolicitud ?? $tramite->observaciones;
+        $tramite->citenota       = $request->citenotasolicitud ?? $tramite->citenota;
+        $tramite->fechacitenota  = $request->fechacitenotasolicitud ?? $tramite->fechacitenota;
+        $tramite->fechainclusion = $request->fechainclusionsolicitud ?? $tramite->fechainclusion;
         $tramite->save();
 
         return back()->with('info', 'Respuesta guardada correctamente.');
@@ -16175,10 +16166,10 @@ class TramitesController extends Controller
             $tramite->document3 = $archivoNombre2;
         }
 
-        $tramite->observaciones = $request->observacionesadjunto;
-        $tramite->citenota = $request->citenotaadjunto;
-        $tramite->fechacitenota = $request->fechacitenotaadjunto;
-        $tramite->fechainclusion = $request->fechainclusionadjunto;
+        $tramite->observaciones  = $request->observacionesadjunto ?? $tramite->observaciones;
+        $tramite->citenota       = $request->citenotaadjunto ?? $tramite->citenota;
+        $tramite->fechacitenota  = $request->fechacitenotaadjunto ?? $tramite->fechacitenota;
+        $tramite->fechainclusion = $request->fechainclusionadjunto ?? $tramite->fechainclusion;
         $tramite->save();
 
         return back()->with('info', 'Respuesta guardada correctamente.');
@@ -16221,18 +16212,22 @@ class TramitesController extends Controller
             $tramite->document3 = $archivoNombre2;
         }
 
-        $tramite->observaciones = $request->observacionescarta;
-        $tramite->citenota = $request->citenotacarta;
-        $tramite->fechacitenota = $request->fechacitenotacarta;
-        $tramite->fechainclusion = $request->fechainclusioncarta;
+        $tramite->observaciones  = $request->observacionescarta ?? $tramite->observaciones;
+        $tramite->citenota       = $request->citenotacarta ?? $tramite->citenota;
+        $tramite->fechacitenota  = $request->fechacitenotacarta ?? $tramite->fechacitenota;
+        $tramite->fechainclusion = $request->fechainclusioncarta ?? $tramite->fechainclusion;
         $tramite->save();
 
         return back()->with('info', 'Respuesta guardada correctamente.');
     }
+
+    /* NUEVO 290126 */
     public function guardarrespuestacartaformulario(Request $request, Cliente $cliente)
     {
         $request->validate([
             'document4carta' => 'nullable|file|mimes:pdf',
+            'document5carta' => 'nullable|file|mimes:pdf',
+            'document6carta' => 'nullable|file|mimes:pdf',
             'corsolicitudcarta' => '',
             'nroformulariocarta' => '',
             'fechaestadotramitecarta' => '',
@@ -16252,10 +16247,43 @@ class TramitesController extends Controller
             $archivo->move($carpetaCliente, $archivoNombre);
             $tramite->document4 = $archivoNombre;
         }
+        if ($request->hasFile('document5carta')) {
+            $archivo = $request->file('document5carta');
+            $archivoNombre2 = time() . '_' . $archivo->getClientOriginalName();
 
-        $tramite->corsolicitud = $request->corsolicitudcarta;
-        $tramite->nroformulario = $request->nroformulariocarta;
-        $tramite->fechaestadotramite = $request->fechaestadotramitecarta;
+            $carpetaCliente = public_path("/tramitesclientesita/{$cliente->id}/{$request->nombretramite}/{$request->proceso}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+
+            $archivo->move($carpetaCliente, $archivoNombre2);
+            $tramite->document5 = $archivoNombre2;
+        }
+        if ($request->hasFile('document6carta')) {
+            $archivo = $request->file('document6carta');
+            $archivoNombre3 = time() . '_' . $archivo->getClientOriginalName();
+
+            $carpetaCliente = public_path("/tramitesclientesita/{$cliente->id}/{$request->nombretramite}/{$request->proceso}");
+            if (!file_exists($carpetaCliente)) {
+                mkdir($carpetaCliente, 0755, true);
+            }
+
+            $archivo->move($carpetaCliente, $archivoNombre3);
+            $tramite->document6 = $archivoNombre3;
+        }
+
+        if ($request->filled('corsolicitudcarta')) {
+            $tramite->corsolicitud = $request->corsolicitudcarta;
+        }
+
+        if ($request->filled('nroformulariocarta')) {
+            $tramite->nroformulario = $request->nroformulariocarta;
+        }
+
+        if ($request->filled('fechaestadotramitecarta')) {
+            $tramite->fechaestadotramite = $request->fechaestadotramitecarta;
+        }
+
         $tramite->save();
 
         return back()->with('info', 'Respuesta guardada correctamente.');

@@ -9,6 +9,11 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/requisitosgeneral.css') }}">
+<style>
+    h3 {
+    font-size: 23px;
+    }
+</style>
 @stop
 
 @section('content')
@@ -102,7 +107,7 @@
                 @if (strtolower($estadoCivil) === 'viud@')
                     <div class="form-group" style="margin-top: -10px;">
                         <input type="checkbox" name="cdefuncion" value="cdefuncion" id="cdefuncion" checked>
-                        <label for="cdefuncion" style="min-height: 20px;">CERTIFICADO DE DIFUNCIÓN</label>
+                        <label for="cdefuncion" style="min-height: 20px;">CERTIFICADO DE DEFUNCIÓN</label>
                     </div>
                 @endif
                 @if ($numHijosMenores > 0 || $numHijosMenores !== null)

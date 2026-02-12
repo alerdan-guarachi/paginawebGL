@@ -16,7 +16,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 <div class="card">
@@ -344,6 +344,7 @@
         color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 1000;
+        font-size: 23px;
         }
     h6 {
         font-weight: 900;

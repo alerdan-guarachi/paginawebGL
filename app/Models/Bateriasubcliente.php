@@ -15,7 +15,8 @@ class Bateriasubcliente extends Model
         'clienteid' => 'max:45',
         'areaid' => 'max:45',
         'accionid' => 'max:45',
-        'clientenombre' => 'max:45',
+        'clientenombre' => 'max:255',
+        'tipocliente' => 'max:45',
         'areanombre' => 'max:45',
         'accionnombre' => 'max:45',
         'clientecomunid' => 'max:45',
@@ -69,6 +70,7 @@ class Bateriasubcliente extends Model
         'areaid',
         'accionid',
         'clientenombre',
+        'tipocliente',
         'areanombre',
         'accionnombre',
         'clientecomunid',
@@ -249,5 +251,39 @@ class Bateriasubcliente extends Model
     public function tramitesubclientecomun()
     {
         return $this->hasMany(Tramitesubcliente::class, 'clientecomunid', 'clientecomunid');
+    }
+
+
+    public function estadoprogclientes()
+    {
+        return $this->hasMany(Estadoprogramacionsubcliente::class, 'clienteid', 'clienteid');
+    }
+    public function infomedicosclientes()
+    {
+        return $this->hasMany(Documentacionsubcliente::class, 'clienteid', 'clienteid');
+    }
+    public function progclientes()
+    {
+        return $this->hasMany(Programacionsubcliente::class, 'clienteid', 'clienteid');
+    }
+    public function infofinalesclientes()
+    {
+        return $this->hasMany(Informefinal::class, 'clienteid', 'clienteid');
+    }
+    public function pagoservicioclientes()
+    {
+        return $this->hasMany(Detallerecibo::class, 'bateriaid', 'id');
+    }
+    public function pagoservicioinfofinalclientes()
+    {
+        return $this->hasMany(Detallerecibo::class, 'provinfofinalid', 'provinfofinalid');
+    }
+    public function provinfofinalclientes()
+    {
+        return $this->hasMany(ProveedorInformefinal::class, 'clienteid', 'clienteid');
+    }
+    public function tramiteclientes()
+    {
+        return $this->hasMany(Tramitesubcliente::class, 'clienteid', 'clienteid');
     }
 }

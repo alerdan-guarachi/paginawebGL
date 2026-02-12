@@ -2,64 +2,122 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.asociados.verclienteauditoria', $clienteauditoria) }}">REGRESAR</a>
-@can('admin.asociados.crearcontactoclienteauditoria')
-{{-- <a class="btn btn-sm float-right btn-crear" href="{{route('admin.asociados.crearcontactoclienteauditoria', $clienteauditoria)}}">CREAR CONTACTO</a> --}}
-<a class="btn btn-sm float-right btn-crear" data-toggle="modal" data-target="#crearContactoModal">
-    CREAR CONTACTO
-</a>
-<div class="modal fade" id="crearContactoModal" tabindex="-1" role="dialog" aria-labelledby="crearContactoModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="crearContactoModalLabel">CREAR CONTACTO</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardarcontactoclienteauditoria', $clienteauditoria], 'method' => 'POST']) !!}
-            <div class="modal-body">
-                {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                {!! Form::hidden('clienteauditoriaid', $clienteauditoria->id) !!}
-
-                <div class="form-group" hidden>
-                    {!! Form::label('nombrecompleto', 'Nombre completo:') !!}
-                    {!! Form::text('nombrecompleto', null, ['class' => 'form-control', 'readonly']) !!}
-                </div> 
-                
-                <div class="form-group">
-                    {!! Form::label('nombrecontacto', 'Nombre del contacto:') !!}
-                    {!! Form::text('nombrecontacto', null, ['class' => 'form-control', 'maxlength' => '90', 'required']) !!}
-                </div>
-
-                <div class="row">
-                    <div class="form-group col-lg-6">
-                        {!! Form::label('celularcontacto', 'Celular del contacto:') !!}
-                        {!! Form::text('celularcontacto', null, ['class' => 'form-control', 'maxlength' => '30', 'onkeypress' => 'return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 45', 'required']) !!}
+    @can('admin.asociados.crearcontactoclienteauditoria')
+        <a class="btn btn-sm float-right btn-crear" data-toggle="modal" data-target="#crearContactoModal">
+            NUEVO CONTACTO
+        </a>
+        <div class="modal fade" id="crearContactoModal" tabindex="-1" role="dialog" aria-labelledby="crearContactoModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="crearContactoModalLabel"><strong>NUEVO CONTACTO</strong></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
+                    {!! Form::model($clienteauditoria, ['route' => ['admin.asociados.guardarcontactoclienteauditoria', $clienteauditoria], 'method' => 'POST']) !!}
+                    <div class="modal-body">
+                        {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                        {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                        {!! Form::hidden('clienteid', $clienteauditoria->id) !!}
+                        <div class="form-group">
+                            {!! Form::label('nombrecontacto', 'Nombre Completo:') !!}
+                            {!! Form::text('nombrecontacto', null, ['class' => 'form-control', 'maxlength' => '90', 'required']) !!}
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-lg-6">
+                                {!! Form::label('celularcontacto', 'Celular:') !!}
+                                {!! Form::text('celularcontacto', null, ['class' => 'form-control', 'maxlength' => '30', 'onkeypress' => 'return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 45', 'required']) !!}
+                            </div>
 
-                    <div class="form-group col-lg-6">
-                        {!! Form::label('telefonocontacto', 'Teléfono del contacto:') !!}
-                        {!! Form::text('telefonocontacto', null, ['class' => 'form-control', 'maxlength' => '30', 'onkeypress' => 'return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 45']) !!}
+                            <div class="form-group col-lg-6">
+                                {!! Form::label('telefonocontacto', 'Teléfono:') !!}
+                                {!! Form::text('telefonocontacto', null, ['class' => 'form-control', 'maxlength' => '30', 'onkeypress' => 'return (event.charCode >= 48 && event.charCode <= 57) || event.charCode === 45', 'required']) !!}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group col-lg-3">
+                                {!! Form::label(null, 'Género:') !!}
+                                <div style="font-size: 12px; line-height: 1.2;">
+                                    <label class="d-block mb-1">
+                                        <input type="radio" name="genero_tmp" id="genero_m" value="M">
+                                        MASCULINO
+                                    </label>
+                                    <label class="d-block">
+                                        <input type="radio" name="genero_tmp" id="genero_f" value="F">
+                                        FEMENINO
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group col-lg-9">
+                                {!! Form::label('parentesco', 'Parentesco:') !!}
+                                {!! Form::select('parentesco', ['' => ''], null, [
+                                    'class' => 'form-control',
+                                    'id' => 'parentesco',
+                                    'required'
+                                ]) !!}
+                            </div>
+                        </div>
+                        <script>
+                            const parentescos = {
+                                M: {
+                                    'ESPOSO': 'ESPOSO',
+                                    'HIJO': 'HIJO',
+                                    'PADRE': 'PADRE',
+                                    'ABUELO': 'ABUELO',
+                                    'NIETO': 'NIETO',
+                                    'HERMANO': 'HERMANO',
+                                    'TIO': 'TIO',
+                                    'PRIMO': 'PRIMO',
+                                    'SOBRINO': 'SOBRINO',
+                                    'SUEGRO': 'SUEGRO',
+                                    'YERNO': 'YERNO',
+                                    'CUÑADO': 'CUÑADO',
+                                    'UNIÓN LIBRE': 'UNIÓN LIBRE',
+                                    'PADRASTRO': 'PADRASTRO',
+                                    'HIJASTRO': 'HIJASTRO',
+                                },
+                                F: {
+                                    'ESPOSA': 'ESPOSA',
+                                    'HIJA': 'HIJA',
+                                    'MADRE': 'MADRE',
+                                    'ABUELA': 'ABUELA',
+                                    'NIETA': 'NIETA',
+                                    'HERMANA': 'HERMANA',
+                                    'TIA': 'TIA',
+                                    'PRIMA': 'PRIMA',
+                                    'SOBRINA': 'SOBRINA',
+                                    'SUEGRA': 'SUEGRA',
+                                    'NUERA': 'NUERA',
+                                    'CUÑADA': 'CUÑADA',
+                                    'UNIÓN LIBRE': 'UNIÓN LIBRE',
+                                    'MADRASTRA': 'MADRASTRA',
+                                    'HIJASTRA': 'HIJASTRA',
+                                }
+                            };
+
+                            function cargarParentesco(genero) {
+                                const select = document.getElementById('parentesco');
+                                select.innerHTML = '<option value=""></option>';
+
+                                Object.entries(parentescos[genero]).forEach(([value, text]) => {
+                                    select.innerHTML += `<option value="${value}">${text}</option>`;
+                                });
+                            }
+                            document.getElementById('genero_m').addEventListener('change', () => cargarParentesco('M'));
+                            document.getElementById('genero_f').addEventListener('change', () => cargarParentesco('F'));
+                        </script>
                     </div>
-                </div>
-                <div class="form-group">
-                    {!! Form::label('parentesco', 'Parentesco:') !!}
-                    {!! Form::select('parentesco', $parentesco, null, ['class' => 'form-control', 'required']) !!}
+                    <div class="modal-footer">
+                        {!! Form::submit('GUARDAR', ['class' => 'btn btn-sm float-right btn-crear']) !!}
+                    </div>
+                    {!! Form::close() !!}
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-outline-danger" data-dismiss="modal">CANCELAR</button>
-                {!! Form::submit('GUARDAR', ['class' => 'btn btn-sm float-right btn-crear']) !!}
-            </div>
-            {!! Form::close() !!}
         </div>
-    </div>
-</div>
-
-@endcan
-<h5>CONTACTOS DE:</h5> 
-<h3>{{$clienteauditoria->nombrecompleto}}</h3>
+    @endcan
+    <h5>CONTACTOS DE:</h5> 
+    <h3>{{$clienteauditoria->nombrecompleto}}</h3>
 @stop
 
 @section('content')
@@ -70,21 +128,21 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 <div class="card">
     <div class="card-body">
         <div class="table-responsive">
-            <table class="table table-striped">
+            <table class="table table-striped table-sm">
                 <thead>
                     <tr>
-                        <th>ID Cont.</th>
-                        <th>Contacto</th>
+                        <th>ID</th>
+                        <th>Nombre Completo</th>
                         <th>Parentesco</th>
                         <th>Celular</th>
                         <th>Teléfono</th>
-                        <th>Usuario Reg.</th>
+                        <th>Usuario Registro</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -108,17 +166,24 @@
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
+    h1, th {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 900;
+    }
+    h3 {
+        color:#94c93b; 
+        font-family: "Segoe UI";
+        font-weight: 1000;
+        font-size: 23px;
+        }
     h5 {
         color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 500;
         margin-bottom: 0%;
         }
-    h3 {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 1000;
-        }
+    
     .btn-regresar {
         background-color: #ffffff;
         color: #2926e2;
@@ -128,31 +193,6 @@
     }
     .btn-regresar:hover {
         background-color: #2926e2;
-        color: #ffffff;
-    }
-    h1, th {
-        color:#94c93b; 
-        font-family: "Segoe UI";
-        font-weight: 900;
-    }
-    .btn-editar {
-        background-color:  #ffffff;
-        color: #0400ff;
-        border-color: #0400ff;
-        border-radius: 5px;
-    }
-    .btn-editar:hover {
-        background-color: #0400ff;
-        color: #ffffff;
-    }
-    .btn-eliminar {
-        background-color:  #ffffff;
-        color: #ff0000;
-        border-color: #ff0000;
-        border-radius: 5px;
-    }
-    .btn-eliminar:hover {
-        background-color: #ff0000;
         color: #ffffff;
     }
     .btn-crear {
@@ -173,45 +213,4 @@
 
 @section('js')
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    @if (session('eliminar')=='ok')
-    <script>
-        Swal.fire(
-      '¡Eliminado!',
-      'El rol se eliminó con éxito',
-      'success')
-    </script>
-    @endif
-
-    <script>
-        $('.formulario-eliminar').submit(function(e){
-            e.preventDefault();
-    
-            Swal.fire({
-            title: '¿Estás seguro?',
-            text: "Este perfil se eliminará definitivamente",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: '¡Si, eliminar!',
-            cancelButtonText: 'Cancelar'
-            }).then((result) => {
-            if (result.isConfirmed) {
-                this.submit();
-            }
-            }) 
-        });
-        $(document).ready(function() {
-            $('input[name="buscarpor"]').on('keyup', function() {
-                var query = $(this).val();
-                var botonBuscar = $('#btn-buscar');
-                if (query.trim() === '') {
-                    botonBuscar.prop('disabled', true);
-                } else {
-                    botonBuscar.prop('disabled', false);
-                }
-            });
-        });
-    </script>
 @endsection

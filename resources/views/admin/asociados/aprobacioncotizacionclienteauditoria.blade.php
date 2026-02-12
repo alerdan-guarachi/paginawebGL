@@ -22,7 +22,13 @@
         }
     }
 </script>
-    
+
+<h5>COTIZACIÓN DE PROGRAMACIÓN DE:</h5>
+<h3>{{$clienteauditoria->nombrecompleto}}</h3>
+@stop
+
+@section('css')
+<link rel="stylesheet" href="{{ asset('css/cotizacionmedicaclientes.css') }}">
 <style>
     .btn-entendido {
         background-color: #6acf81;
@@ -33,14 +39,15 @@
         background-color: #f36573;
         color: white;
     }
+    #select-area {
+        width: 200px;
+        height: 100px;
+        overflow-y: auto;
+    }
+    h3 {
+        font-size: 23px;
+    }
 </style>
-
-<h5>COTIZACIÓN DE PROGRAMACIÓN DE:</h5>
-<h3>{{$clienteauditoria->nombrecompleto}}</h3>
-@stop
-
-@section('css')
-<link rel="stylesheet" href="{{ asset('css/cotizacionmedicaclientes.css') }}">
 @stop
 
 @section('content')
@@ -51,7 +58,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 
@@ -113,13 +120,7 @@
                 </div>
             </div>
         </nav>
-        <style>
-            #select-area {
-                width: 200px;
-                height: 100px;
-                overflow-y: auto;
-            }
-        </style>
+        
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const selectFecha = document.getElementById('select-fecha');
@@ -200,8 +201,7 @@
                         }
                     });
                 });
-                </script>
-                
+            </script>
         @endif
     </div>
 </div>
@@ -233,15 +233,11 @@
     document.addEventListener('DOMContentLoaded', function() {
         var filas = document.querySelectorAll('#tablaPrecios tbody tr');
         var total = 0;
-    
         filas.forEach(function(fila) {
             var informeCell = fila.querySelector('td:nth-child(5)');
             var precioCell = fila.querySelector('td.precio');
-    
             if (informeCell && precioCell) {
                 var informeValue = informeCell.textContent.trim();
-                
-                // Solo incluir en el total si el informe NO es "SI TIENE INFORME"
                 if (informeValue !== 'SI TIENE INFORME') {
                     var precio = parseFloat(precioCell.textContent.replace(',', '.'));
                     if (!isNaN(precio)) {
@@ -250,11 +246,10 @@
                 }
             }
         });
-    
         var totalFormateado = total.toLocaleString('es-ES', { minimumFractionDigits: 2 });
         var filaTotal = '<tr style="background-color: #fcecd4;"><td colspan="6">TOTAL</td><td>' + totalFormateado + '</td></tr>';
         document.querySelector('#tablaPrecios tbody').insertAdjacentHTML('beforeend', filaTotal);
     });
-    </script>
-    
+</script>
+
 @endsection

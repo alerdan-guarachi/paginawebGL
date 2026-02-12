@@ -1095,25 +1095,25 @@
                     totalInput.value = '0.00';
                 }
                 // 🔁 Permiso para mostrar fechas
-    const campoFechas = document.getElementById('campoFechas');
-    if (campoFechas) {
-        campoFechas.style.display = 'none'; // ocultar siempre primero
-    }
+                const campoFechas = document.getElementById('campoFechas');
+                if (campoFechas) {
+                    campoFechas.style.display = 'none'; // ocultar siempre primero
+                }
 
-    if (data.permisoExistefecha) {
-        if (campoFechas) {
-            campoFechas.style.display = 'block'; // mostrar si tiene permiso
-        }
+                if (data.permisoExistefecha) {
+                    if (campoFechas) {
+                        campoFechas.style.display = 'block'; // mostrar si tiene permiso
+                    }
 
-        // 🔄 Sincronizar created_at y updated_at
-        const createdAtInput = document.getElementById('created_at');
-        const updatedAtInput = document.getElementById('updated_at');
-        if (createdAtInput && updatedAtInput) {
-            createdAtInput.addEventListener('change', function () {
-                updatedAtInput.value = this.value;
-            });
-        }
-    }
+                    // 🔄 Sincronizar created_at y updated_at
+                    const createdAtInput = document.getElementById('created_at');
+                    const updatedAtInput = document.getElementById('updated_at');
+                    if (createdAtInput && updatedAtInput) {
+                        createdAtInput.addEventListener('change', function () {
+                            updatedAtInput.value = this.value;
+                        });
+                    }
+                }
 
                 const tabla = document.getElementById('tablaRegistros');
                 tabla.innerHTML = '';

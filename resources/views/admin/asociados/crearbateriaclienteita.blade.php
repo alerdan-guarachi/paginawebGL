@@ -116,19 +116,6 @@
         </div>
     </div>
 </div>
-<style>
-    .btn-consen1 {
-        background-color: #ffffff;
-        color: #ed2eed;
-        border-color: #ed2eed;
-        border-radius: 5px;
-        padding: 10px 10px;
-    }
-    .btn-consen1:hover {
-        background-color: #ed2eed;
-        color: #ffffff;
-    }
-</style>
 
 <div class="modal fade" id="modalPrestaciones" tabindex="-1" role="dialog" aria-labelledby="modalPrestacionesLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
@@ -198,24 +185,20 @@
                                                             <input type="file" name="porden[{{ $bateria->id }}]" class="form-control">
                                                         </td>
                                                         @php
-    // Convertimos el área actual en array de palabras
-    $palabrasArea = explode(' ', strtoupper($bateria->estudioespecialidad));
-
-    // Filtramos las acciones por coincidencia de al menos una palabra
-    $accionesFiltradas = $bateriaproveedores->filter(function($accion) use ($palabrasArea) {
-        foreach ($palabrasArea as $palabra) {
-            if (stripos($accion->area, $palabra) !== false) {
-                return true;
-            }
-        }
-        return false;
-    });
-@endphp
-
+                                                            $palabrasArea = explode(' ', strtoupper($bateria->estudioespecialidad));
+                                                            $accionesFiltradas = $bateriaproveedores->filter(function($accion) use ($palabrasArea) {
+                                                                foreach ($palabrasArea as $palabra) {
+                                                                    if (stripos($accion->area, $palabra) !== false) {
+                                                                        return true;
+                                                                    }
+                                                                }
+                                                                return false;
+                                                            });
+                                                        @endphp
                                                         <td>
-                                                            {{-- <select name="pacciondisponible[{{ $bateria->id }}]" class="form-control accion-select" data-id="{{ $bateria->id }}">
+                                                            <select name="pacciondisponible[{{ $bateria->id }}]" class="form-control accion-select" data-id="{{ $bateria->id }}">
                                                                 <option value="" selected disabled>Seleccione acción...</option>
-                                                                @foreach($bateriaproveedores->where('area', $bateria->estudioespecialidad) as $accion)
+                                                                @foreach($accionesFiltradas as $accion)
                                                                     <option value="{{ $accion->accion }}"
                                                                         data-id="{{ $accion->id }}"
                                                                         data-proveedor="{{ $accion->proveedor }}"
@@ -229,26 +212,7 @@
                                                                         {{ $accion->accion }} - {{ $accion->proveedor }} - {{ $accion->precio }}
                                                                     </option>
                                                                 @endforeach
-                                                            </select> --}}
-                                                            <select name="pacciondisponible[{{ $bateria->id }}]" class="form-control accion-select" data-id="{{ $bateria->id }}">
-    <option value="" selected disabled>Seleccione acción...</option>
-
-    @foreach($accionesFiltradas as $accion)
-        <option value="{{ $accion->accion }}"
-            data-id="{{ $accion->id }}"
-            data-proveedor="{{ $accion->proveedor }}"
-            data-tipoarea="{{ $accion->tipoarea }}"
-            data-area="{{ $accion->area }}"
-            data-servicio="{{ $accion->servicio }}"
-            data-pagoservicio="{{ $accion->pagoservicio }}"
-            data-precio="{{ $accion->precio }}"
-            data-preciocompra="{{ $accion->preciocompra }}"
-        >
-            {{ $accion->accion }} - {{ $accion->proveedor }} - {{ $accion->precio }}
-        </option>
-    @endforeach
-</select>
-
+                                                            </select>
                                                             <input type="hidden" name="paccion_id[{{ $bateria->id }}]" id="paccion_id_{{ $bateria->id }}">
                                                             <input type="hidden" name="paccion_proveedor[{{ $bateria->id }}]" id="paccion_proveedor_{{ $bateria->id }}">
                                                             <input type="hidden" name="paccion_tipoarea[{{ $bateria->id }}]" id="paccion_tipoarea_{{ $bateria->id }}">
@@ -303,7 +267,7 @@
     <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
+                <h4 class="modal-title" style="font-weight: 700; color: #94c93b;">BATERIA DEL CLIENTE</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -324,7 +288,7 @@
                                 <tr>
                                     <th>ID</th>
                                     <th>Estudio/Espec.</th>
-                                    <th>Proveedor</th>
+                                    <th>Médico</th>
                                     @if(!auth()->user()->hasRole('PROVEEDOR'))
                                         <th>Precio</th>
                                     @endif
@@ -340,15 +304,6 @@
                         </table>
                     </div>
                 </div>
-                {{-- <div class="modal-footer">
-                    <div class="form-group">
-                        <input type="text" name="clienteAuditoriaID" id="cliente-auditoria-id" class="form-control" placeholder="ID">
-                    </div>
-                    <button type="button" id="duplicar-btn" class="btn btn-traspasar">TRASPASAR A AUDITORIA</button>
-                    <button type="button" id="anular-btn" class="btn btn-anular">EDITAR COMO PROV. AJENO</button>
-                    <a id="ver-pdf-btn" href="#" target="_blank" class="btn btn-crear" onclick="generatePDF()">GENERAR PDF</a>
-                    <button type="button" class="btn btn-cerrar" data-dismiss="modal">CERRAR</button>
-                </div> --}}
                 <div class="modal-footer d-flex justify-content-between">
                     <div>
                         <div class="form-group d-inline-block">
@@ -409,7 +364,6 @@
                     });
                 });
             </script>
-
 
             {{-- EDITAR COMO PROVEEDOR AJENO --}}
             <script>
@@ -591,16 +545,6 @@
         </div>
     </div>
 </div>
-<style>
-    .compact-table th, .compact-table td {
-        padding: 4px 8px;
-        line-height: 1.5;
-    }
-
-    .compact-table {
-        font-size: 16px;
-    }
-</style>
 
 <h5>CREAR BATERIA DE:</h5> 
 <h3>{{$cliente->nombrecompleto}}</h3>
@@ -611,58 +555,6 @@
             <span id="cronometro">Calculando...</span>
         </div>
     @endisset
-
-    <style>
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-        @keyframes shake {
-            0% {
-                transform: translateX(0);
-            }
-
-            25% {
-                transform: translateX(-5px);
-            }
-
-            50% {
-                transform: translateX(5px);
-            }
-
-            75% {
-                transform: translateX(-5px);
-            }
-
-            100% {
-                transform: translateX(0);
-            }
-        }
-        #cronometro-container {
-            position: relative;
-            z-index: 1000;
-            animation: fadeIn 1s ease-in-out;
-        }
-        #cronometro {
-            font-size: 1.2em;
-            color: #dc3545;
-            font-weight: bold;
-        }
-        .shake {
-            animation: shake 0.5s;
-            animation-iteration-count: 2;
-        }
-        @media (max-width: 576px) {
-            #cronometro-container {
-                text-align: center;
-            }
-        }
-    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -733,279 +625,230 @@
 <div class="card">
     <div class="card-body">
         @if ($nombreusuario === 'CARLOS ALEJANDRO GUARACHI SANDOVAL' || $nombreusuario === 'DENISSE MAUREN LOPEZ FLORES' || $nombreusuario === 'JHOSELINE EVA VELASQUEZ ESCOBAR' || $nombreusuario === 'AGUIRRE VASQUEZ MARIA RENEE' || $nombreusuario === 'YELKA MORALES VELARDE' || $permisoValido)
-        {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST', 'id' => 'form-crear-bateria', 'files' => true ]) !!}
-        <div class="row">
-                {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                {!! Form::hidden('clienteitaid', $id) !!}
-                <div class="col-lg-4">
-                    <div class="form-group" hidden>
-                        {!! Form::label('nombrecompleto', 'Nombre completo:') !!}
-                        {!! Form::text('nombrecompleto', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
-                        @error('nombrecompleto')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
-                    </div> 
-                    <div class="form-group">
-                        <strong>Fecha de Batería:</strong>
-                        <select id="select-fechas" name="fechabateria" class="form-control">
-                            <option value="nueva_bateria">FECHA DE HOY</option>
-                            @foreach($accionesPorFecha as $fecha => $acciones)
-                                <option value="{{ $fecha }}">{{ $fecha }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group"> 
-                        <strong>Medico Derivador:</strong>
-                        <select id="select-fechas" name="medicoderivante" class="form-control">
-                            @foreach($proveedoresmedicos as $proveedor)
-                                <option value="{{ $proveedor->proveedor }}" {{ $proveedor->id == 3 ? 'selected' : '' }}>
-                                    {{ $proveedor->proveedor }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <strong>Informe:</strong>
-                        <select id="informe" name="informe" class="form-control">
-                            <option value="NO TIENE INFORME">NO TIENE</option>
-                            <option value="SI TIENE INFORME">SI TIENE</option>
-                        </select>
-                    </div>
-                    <div class="form-group hidden" id="fechaInformeGroup">
-                        <strong>Fecha del Informe:</strong>
-                        <input type="date" id="fechainforme" name="fechainforme" class="form-control">
-                    </div>
-                    <style>
-                        .form-group {
-                            margin-bottom: 15px;
-                        }
-                        .hidden {
-                            display: none;
-                        }
-                    </style>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            const informeSelect = document.getElementById('informe');
-                            const fechaInformeGroup = document.getElementById('fechaInformeGroup');
-                
-                            function toggleFechaInforme() {
-                                if (informeSelect.value === 'SI TIENE INFORME') {
-                                    fechaInformeGroup.classList.remove('hidden');
-                                } else {
-                                    fechaInformeGroup.classList.add('hidden');
-                                }
-                            }
-                            toggleFechaInforme();
-                            informeSelect.addEventListener('change', toggleFechaInforme);
-                        });
-                    </script>
-                    @php
-                        $rolusuario = strtolower(auth()->user()->getRoleNames()->first());
-                    @endphp
-                    
-                    @if($rolusuario !== 'proveedor'/*  && $rolusuario !== 'maestro' */)
+            {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST', 'id' => 'form-crear-bateria', 'files' => true ]) !!}
+                <div class="row">
+                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                    {!! Form::hidden('clienteitaid', $id) !!}
+                    <div class="col-lg-4">
+                        <div class="form-group" hidden>
+                            {!! Form::label('nombrecompleto', 'Nombre completo:') !!}
+                            {!! Form::text('nombrecompleto', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
+                        </div> 
                         <div class="form-group">
-                            {!! Form::label('orden', 'Orden:') !!}
-                            {!! Form::file('orden', ['id' => 'orden', 'class' => 'form-control', 'required']) !!}
-                            @error('orden')
-                                <small class="text-danger">
-                                    <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                </small>
-                            @enderror
+                            <strong>Fecha de Batería:</strong>
+                            <select id="select-fechas" name="fechabateria" class="form-control">
+                                <option value="nueva_bateria">FECHA DE HOY</option>
+                                @foreach($accionesPorFecha as $fecha => $acciones)
+                                    <option value="{{ $fecha }}">{{ $fecha }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                    @endif
-                
+                        <div class="form-group"> 
+                            <strong>Medico Derivador:</strong>
+                            <select id="select-fechas" name="medicoderivante" class="form-control">
+                                @foreach($proveedoresmedicos as $proveedor)
+                                    <option value="{{ $proveedor->proveedor }}" {{ $proveedor->id == 3 ? 'selected' : '' }}>
+                                        {{ $proveedor->proveedor }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <strong>Informe:</strong>
+                            <select id="informe" name="informe" class="form-control">
+                                <option value="NO TIENE INFORME">NO TIENE</option>
+                                <option value="SI TIENE INFORME">SI TIENE</option>
+                            </select>
+                        </div>
+                        <div class="form-group hidden" id="fechaInformeGroup">
+                            <strong>Fecha del Informe:</strong>
+                            <input type="date" id="fechainforme" name="fechainforme" class="form-control">
+                        </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const informeSelect = document.getElementById('informe');
+                                const fechaInformeGroup = document.getElementById('fechaInformeGroup');
                     
-                    <div class="form-group">
-                        {!! Form::label('tipoarea', 'Tipo Area:', ['id' => 'area_label2']) !!}
-                        {!! Form::select('tipoarea', ['Estudios' => 'ESTUDIOS', 'Especialidades' => 'ESPECIALIDADES'], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoarea']) !!}
-                        @error('tipoarea')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
-                    </div>
-                    <div class="form-group" id="antecedentes-field" style="display: none;">
-                        {!! Form::label('antecedentes', 'Antecedentes:') !!}
-                        {!! Form::text('antecedentes', null, ['class' => 'form-control', 'id' => 'antecedentes']) !!}
-                        @error('antecedentes')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
-                    </div>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            const tipoareaSelect = document.getElementById('tipoarea');
-                            const antecedentesField = document.getElementById('antecedentes-field');
-                        
-                            tipoareaSelect.addEventListener('change', function() {
+                                function toggleFechaInforme() {
+                                    if (informeSelect.value === 'SI TIENE INFORME') {
+                                        fechaInformeGroup.classList.remove('hidden');
+                                    } else {
+                                        fechaInformeGroup.classList.add('hidden');
+                                    }
+                                }
+                                toggleFechaInforme();
+                                informeSelect.addEventListener('change', toggleFechaInforme);
+                            });
+                        </script>
+                        @php
+                            $rolusuario = strtolower(auth()->user()->getRoleNames()->first());
+                        @endphp
+                        @if($rolusuario !== 'proveedor')
+                            <div class="form-group">
+                                {!! Form::label('orden', 'Orden:', ['style' => 'margin-bottom: -20px']) !!}
+                                {!! Form::file('orden', ['id' => 'orden', 'class' => 'form-control', 'required']) !!}
+                            </div>
+                        @endif
+                        <div class="form-group">
+                            {!! Form::label('tipoarea', 'Tipo Area:', ['id' => 'area_label2', 'style' => 'margin-bottom: -20px']) !!}
+                            {!! Form::select('tipoarea', ['Estudios' => 'ESTUDIOS', 'Especialidades' => 'ESPECIALIDADES'], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoarea']) !!}
+                        </div>
+                        <div class="form-group" id="antecedentes-field" style="display: none;">
+                            {!! Form::label('antecedentes', 'Antecedentes:', ['style' => 'margin-bottom: -20px']) !!}
+                            {!! Form::text('antecedentes', null, ['class' => 'form-control', 'id' => 'antecedentes']) !!}
+                        </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const tipoareaSelect = document.getElementById('tipoarea');
+                                const antecedentesField = document.getElementById('antecedentes-field');
+                            
+                                tipoareaSelect.addEventListener('change', function() {
+                                    if (tipoareaSelect.value === 'Especialidades') {
+                                        antecedentesField.style.display = 'block';
+                                    } else {
+                                        antecedentesField.style.display = 'none';
+                                    }
+                                });
                                 if (tipoareaSelect.value === 'Especialidades') {
                                     antecedentesField.style.display = 'block';
-                                } else {
-                                    antecedentesField.style.display = 'none';
                                 }
                             });
-                            if (tipoareaSelect.value === 'Especialidades') {
-                                antecedentesField.style.display = 'block';
-                            }
-                        });
                         </script>
-                        
-                    <div class="form-group" id="estudios_group" style="display: none;">
-                        {!! Form::label('areanombre', 'Estudio:', ['id' => 'area_label']) !!}
-                        {!! Form::select('areanombre', $areas, null, ['class' => 'form-control', 'id' => 'area_select', 'placeholder' => '']) !!}
-                        @error('areanombre')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
+                        <div class="form-group" id="estudios_group" style="display: none;">
+                            {!! Form::label('areanombre', 'Estudio:', ['id' => 'area_label']) !!}
+                            {!! Form::select('areanombre', $areas, null, ['class' => 'form-control', 'id' => 'area_select', 'placeholder' => '']) !!}
+                        </div>
+                        <div id="reset_button_container" style="margin-bottom: 20px" class=""></div>
                     </div>
-                    <div id="reset_button_container" style="margin-bottom: 20px" class=""></div>
-                </div>
-                <div class="col-lg-8">         
-                    @foreach($areas as $id => $nombreArea)  
-                        <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
-                            <input type="text" id="search_{{ $id }}" placeholder="BUSCAR ESTUDIO" class="form-control" onkeyup="buscarAccion({{ $id }})"> <!-- Input de búsqueda -->
-                            
-                            <div class="card" style="max-height: 500px; overflow-y: auto;">
-                                <div class="card-body">
-                                    @php $count = count($accionesPorArea[$id]); @endphp
-                                    <div class="acciones-container" id="acciones-container-{{ $id }}">
-                                        @foreach($accionesPorArea[$id] as $accion)
-                                            <div class="form-check accion-item">
-                                                {!! Form::checkbox('acciones[]', $accion->id, null, ['class' => 'form-check-input', 'id' => 'accion_'.$accion->id]) !!}
-                                                {!! Form::label('accion_'.$accion->id, $accion->accion . ' - ID: ' . $accion->id . ' - Proveedor: ' . $accion->proveedor, ['class' => 'form-check-label']) !!}
-
-                                                @if(!auth()->user()->hasRole('PROVEEDOR'))
-                                                    <span>- Precio: {{ $accion->precio }}</span>
-                                                @endif
-                                            </div>
-                                        @endforeach
+                    <div class="col-lg-8">         
+                        @foreach($areas as $id => $nombreArea)  
+                            <div class="form-group acciones" id="acciones_{{ $id }}" style="display: none;">
+                                <input type="text" id="search_{{ $id }}" placeholder="BUSCAR ESTUDIO" class="form-control" onkeyup="buscarAccion({{ $id }})"> <!-- Input de búsqueda -->
+                                <div class="card" style="max-height: 500px; overflow-y: auto;">
+                                    <div class="card-body">
+                                        @php $count = count($accionesPorArea[$id]); @endphp
+                                        <div class="acciones-container" id="acciones-container-{{ $id }}">
+                                            @foreach($accionesPorArea[$id] as $accion)
+                                                <div class="form-check accion-item">
+                                                    {!! Form::checkbox('acciones[]', $accion->id, null, ['class' => 'form-check-input', 'id' => 'accion_'.$accion->id]) !!}
+                                                    {!! Form::label('accion_'.$accion->id, $accion->accion . ' - ID: ' . $accion->id . ' - Médico: ' . $accion->proveedor, ['class' => 'form-check-label']) !!}
+                                                    @if(!auth()->user()->hasRole('PROVEEDOR'))
+                                                        <span>- Precio: {{ $accion->precio }}</span>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            @error('accionnombre')
-                                <small class="text-danger fas fa-exclamation-circle">{{$message}}</small>
-                            @enderror
-                        </div>
-                    @endforeach
-                    <script>
-                        function buscarAccion(areaId) {
-                            var query = $('#search_' + areaId).val().toLowerCase();
-                            $('#acciones_' + areaId + ' .accion-item').each(function() { 
-                                var label = $(this).find('label').text().toLowerCase();
-                                
-                                if (label.includes(query)) { 
-                                    $(this).show();
-                                } else {  // Si no incluye, ocultar
-                                    $(this).hide();
-                                }
-                            });
-                        }
-                    </script>
-               
-
-                    {{-- <div class="form-group card card-body" id="especialidades_group" style="display: none;"> 
-                        {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
-                        <div class="row">
-                            @foreach ($areas2 as $area2)
-                                <div class="col-md-12 form-check">
-                                    {!! Form::checkbox('accionnombre[]', $area2->id, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area2->id]) !!}
-                                    {!! Form::label('accionnombre_' . $area2->id, $area2->area . ' - Proveedor: ' . $area2->proveedor . (auth()->user()->hasRole('OPERATIVO') ? '' : ' - Precio: ' . $area2->precio), ['class' => 'form-check-label']) !!}
-                                </div>
-                            @endforeach
-                        </div>
-                    </div> --}}
-                    <div class="form-group card card-body" id="especialidades_group" style="display: none;">  
-                        {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
-                        <input type="text" id="search_especialidades" placeholder="BUSCAR ESPECIALIDAD" class="form-control" onkeyup="buscarEspecialidad()">
-                        
-                        <div class="row">
-                            @foreach ($areas2 as $area2)
-                                <div class="col-md-12 form-check especialidad-item">
-                                    {!! Form::checkbox('accionnombre[]', $area2->id, false, ['class' => 'form-check-input', 'id' => 'accionnombre_' . $area2->id]) !!}
-                                    {!! Form::label('accionnombre_' . $area2->id, $area2->area . ' - Proveedor: ' . $area2->proveedor . (auth()->user()->hasRole('OPERATIVO') ? '' : ' - Precio: ' . $area2->precio), ['class' => 'form-check-label']) !!}
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                <script>
-                    function buscarEspecialidad() {
-                        var query = $('#search_especialidades').val().toLowerCase();
-                        $('.especialidad-item').each(function() {
-                            var label = $(this).find('label').text().toLowerCase();
-                            
-                            if (label.includes(query)) {
-                                $(this).show();
-                            } else {
-                                $(this).hide();
+                        @endforeach
+                        <script>
+                            function buscarAccion(areaId) {
+                                var query = $('#search_' + areaId).val().toLowerCase();
+                                $('#acciones_' + areaId + ' .accion-item').each(function() { 
+                                    var label = $(this).find('label').text().toLowerCase();
+                                    if (label.includes(query)) { 
+                                        $(this).show();
+                                    } else {
+                                        $(this).hide();
+                                    }
+                                });
                             }
-                        });
-                    }
-                </script>                    
-                    
-                </div>
-            </div>
-            <button type="button" class="btn btn-crear" id="btn-crear-bateria">CREAR BATERIA</button> 
-            <script>
-                $(document).ready(function() {
-                    $('#btn-crear-bateria').prop('disabled', true);
-                    $(document).on('change', 'input[type="checkbox"]', function() {
-                        const algunMarcado = $('input[type="checkbox"]:checked').length > 0;
-                        $('#btn-crear-bateria').prop('disabled', !algunMarcado);
-                    });
-                });
-            </script>
-            <style>
-                #btn-crear-bateria:disabled {
-                    opacity: 0.6;
-                    cursor: not-allowed;
-                }
-            </style>
-
-            {!! Form::close() !!}
-        </div>
-        @else
-        {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST', 'id' => 'form-crear-bateria']) !!}
-        <div class="row">
-            <div class="col-lg-6">
-                <div class="form-group">
-                    @if (session('success'))
-                        <div id="alert-success" class="alert alert-success">
-                            <strong>{{ session('success') }}</strong>
+                        </script>
+                        
+                        <div class="form-group card card-body" id="especialidades_group" style="display: none;">  
+                            {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
+                            <input type="text" id="search_especialidades" placeholder="BUSCAR ESPECIALIDAD" class="form-control" onkeyup="buscarEspecialidad()">
+                            <div class="row">
+                                @foreach ($areas2 as $area2)
+                                    <div class="col-md-12 form-check especialidad-item" style="margin-left: 10px;">
+                                        {!! Form::checkbox('accionnombre[]', $area2->id, false, [
+                                            'class' => 'form-check-input',
+                                            'id' => 'accionnombre_' . $area2->id,
+                                            'onclick' => 'toggleRow(this)'
+                                        ]) !!}
+                                        {!! Form::label(
+                                            'accionnombre_' . $area2->id,
+                                            $area2->area . ' - Médico: ' . $area2->proveedor . (auth()->user()->hasRole('OPERATIVO') ? '' : ' - Precio: ' . $area2->precio),
+                                            ['class' => 'form-check-label']
+                                        ) !!}
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                         <script>
-                            setTimeout(function() {
-                                $('#alert-success').fadeOut('fast');
-                            }, 5000);
+                        function toggleRow(checkbox) {
+                            if (checkbox.checked) {
+                                checkbox.closest('.especialidad-item').classList.add('selected');
+                            } else {
+                                checkbox.closest('.especialidad-item').classList.remove('selected');
+                            }
+                        }
                         </script>
-                    @endif
-                    {!! Form::label('codigo', 'Código de Ingreso:') !!}
-                    {!! Form::text('codigo', null, [
-                        'class' => 'form-control',
-                        'placeholder' => 'Ingrese el código',
-                        'required',
-                        'maxlength' => '15',
-                        'size' => '15',
-                        'oninput' => 'this.value = this.value.toUpperCase()',
-                        'style' => 'text-transform: uppercase;',
-                    ]) !!}
-                    @error('codigo')
-                        <small class="text-danger fas fa-exclamation-circle">
-                            {{ $message }}
-                        </small>
-                    @enderror
+
+                        <script>
+                            function buscarEspecialidad() {
+                                var query = $('#search_especialidades').val().toLowerCase();
+                                $('.especialidad-item').each(function() {
+                                    var label = $(this).find('label').text().toLowerCase();
+                                    
+                                    if (label.includes(query)) {
+                                        $(this).show();
+                                    } else {
+                                        $(this).hide();
+                                    }
+                                });
+                            }
+                        </script>                    
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-crear">INGRESAR CÓDIGO</button>
-            </div>
-            </div>
+                <button type="button" class="btn btn-crear" id="btn-crear-bateria">CREAR BATERIA</button> 
+                <script>
+                    $(document).ready(function() {
+                        $('#btn-crear-bateria').prop('disabled', true);
+                        $(document).on('change', 'input[type="checkbox"]', function() {
+                            const algunMarcado = $('input[type="checkbox"]:checked').length > 0;
+                            $('#btn-crear-bateria').prop('disabled', !algunMarcado);
+                        });
+                    });
+                </script>
             {!! Form::close() !!}
-        </div>
+        @else
+            {!! Form::model($cliente, ['route' => ['admin.asociados.guardarbateriaclienteita', $cliente], 'method' => 'POST', 'id' => 'form-crear-bateria']) !!}
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="form-group">
+                            @if (session('success'))
+                                <div id="alert-success" class="alert alert-success">
+                                    <strong>{{ session('success') }}</strong>
+                                </div>
+                                <script>
+                                    setTimeout(function() {
+                                        $('#alert-success').fadeOut('fast');
+                                    }, 3000);
+                                </script>
+                            @endif
+                            {!! Form::label('codigo', 'Código de Ingreso:') !!}
+                            {!! Form::text('codigo', null, [
+                                'class' => 'form-control',
+                                'placeholder' => 'Ingrese el código',
+                                'required',
+                                'maxlength' => '15',
+                                'size' => '15',
+                                'oninput' => 'this.value = this.value.toUpperCase()',
+                                'style' => 'text-transform: uppercase;',
+                            ]) !!}
+                            @error('codigo')
+                                <small class="text-danger fas fa-exclamation-circle">
+                                    {{ $message }}
+                                </small>
+                            @enderror
+                        </div>
+                        <button type="submit" class="btn btn-crear">INGRESAR CÓDIGO</button>
+                    </div>
+                </div>
+            {!! Form::close() !!}
         @endif
     </div>
 </div>
@@ -1040,7 +883,7 @@
         });
     });
 
-//CANCELAR FUNCION DE LA TECLA ENTER
+    //CANCELAR FUNCION DE LA TECLA ENTER
     document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
@@ -1202,35 +1045,7 @@
     });
 
 </script>
-{{-- <script>
-    function generatePDF() {
-        // Obtener la fecha seleccionada
-        var fechaSeleccionada = document.getElementById('select-fechas').value;
-
-        if (!fechaSeleccionada) {
-            alert("Por favor, selecciona una fecha.");
-            return;
-        }
-
-        // Obtener el cliente ID
-        var clienteId = {{ $cliente->id }}; // Asegúrate de que tienes acceso a esta variable
-
-        // URL del controlador para generar el PDF
-        var url = '/admin/asociados/generarpdfcliente/' + clienteId;
-
-        // Redirigir a la URL para descargar el PDF directamente
-        window.location.href = url + '?fecha=' + encodeURIComponent(fechaSeleccionada);
-    }
-
-    // Asociar el evento de clic al botón "Generar PDF"
-    document.getElementById('ver-pdf-btn').addEventListener('click', function(e) {
-        e.preventDefault();
-        generatePDF();
-    });
-</script> --}}
-
 @endsection
-
 @section('css')
 <link rel="styleheet" href="/css/admin_custom.css">
 <style>
@@ -1263,7 +1078,8 @@
     h3 {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 1000;
+        font-weight: 800;
+        font-size: 23px;
         }
         .btn-verorden {
         background-color:  #ffffff;
@@ -1377,6 +1193,86 @@
     .btn-regresar:hover {
         background-color: #2926e2;
         color: #ffffff;
+    }
+    .btn-consen1 {
+        background-color: #ffffff;
+        color: #ed2eed;
+        border-color: #ed2eed;
+        border-radius: 5px;
+        padding: 10px 10px;
+    }
+    .btn-consen1:hover {
+        background-color: #ed2eed;
+        color: #ffffff;
+    }
+    .compact-table th, .compact-table td {
+        padding: 4px 8px;
+        line-height: 1.5;
+    }
+
+    .compact-table {
+        font-size: 16px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .hidden {
+        display: none;
+    }
+    #btn-crear-bateria:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style>
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+    @keyframes shake {
+        0% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        50% {
+            transform: translateX(5px);
+        }
+
+        75% {
+            transform: translateX(-5px);
+        }
+
+        100% {
+            transform: translateX(0);
+        }
+    }
+    #cronometro-container {
+        position: relative;
+        z-index: 1000;
+        animation: fadeIn 1s ease-in-out;
+    }
+    #cronometro {
+        font-size: 1.2em;
+        color: #dc3545;
+        font-weight: bold;
+    }
+    .shake {
+        animation: shake 0.5s;
+        animation-iteration-count: 2;
+    }
+    @media (max-width: 576px) {
+        #cronometro-container {
+            text-align: center;
+        }
     }
 </style>
 @stop

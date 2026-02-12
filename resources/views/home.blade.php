@@ -456,19 +456,7 @@
                         </tr>
                     @endforeach 
                     
-                    @foreach($programacionclientebancos as $programacionclientebanco)
-                        <?php
-                        $clienteBanco = $programacionclientebanco->clienteBanco;
-                        $celular = $clienteBanco ? $clienteBanco->celular : '';
-
-                        $mensaje = "Hola, le hablo de la empresa GOOD LIFE, le recordamos que tiene una cita con: " .
-                                $programacionclientebanco->proveedornombre . ", para realizarse: " .
-                                $programacionclientebanco->accionnombre . ", para la fecha: " .
-                                $programacionclientebanco->fechaasignada . ", a la hora: " . 
-                                $programacionclientebanco->horadesde . ". Que tenga un excelente dia.";
-
-                        $mensajeCodificado = urlencode($mensaje);
-                        ?>
+                    {{-- @foreach($programacionclientebancos as $programacionclientebanco)
                         <tr>
                             <td>{{ $programacionclientebanco->clientenombre}}</td>
                             <td>{{ $programacionclientebanco->accionnombre }}</td>
@@ -489,7 +477,7 @@
                                 </abbr>
                             </td>
                         </tr>
-                    @endforeach
+                    @endforeach --}}
                 </tbody>
             </table>
             @error('accion')

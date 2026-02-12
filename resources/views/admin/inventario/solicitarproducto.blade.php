@@ -624,7 +624,7 @@
                                                         auth()->user()->hasAnyRole(['MAESTRO', 'ADMINISTRADOR', 'CONTABLE']) &&
                                                         $solicitudinventario->estado === 'ACEPTADO'
                                                     )
-                                                        <button type="button" class="btn btn-botonaceptado btn-sm" data-toggle="modal" data-target="#modalSolicitante{{ Str::slug($solicitudinventario->usuariosolicitante) }}">
+                                                        <button type="button" class="btn btn-botonaceptado btn-sm" data-toggle="modal" data-target="#modalSolicitante{{ Str::slug($solicitudinventario->usuariosolicitante) }}" title="GENERAR COMPROBANTE">
                                                             <i class="fas fa-archive"></i>
                                                         </button>
                                                     @endif

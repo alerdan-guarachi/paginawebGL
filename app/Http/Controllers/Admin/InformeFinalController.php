@@ -1202,6 +1202,9 @@ class InformeFinalController extends Controller
                 'documentword' => $archivo3_name,
                 'servicio' => $request->tramite,
                 'proveedorasignado' => $request->proveedornombre,
+                'clienteid' => $id,
+                'clientenombre' => $request->cliente,
+                'tipocliente' => 'ITA'
             ]);
             
             if ($informefinalcliente) {
@@ -1999,6 +2002,9 @@ class InformeFinalController extends Controller
                 'documentword' => $archivo3_name,
                 'servicio' => $request->tramite,
                 'proveedorasignado' => $request->proveedornombre,
+                'clienteid' => $id,
+                'clientenombre' => $clienteauditorianombre,
+                'tipocliente' => 'AUDITORIA'
             ]);
 
             if ($informefinalcliente) {
@@ -2231,11 +2237,11 @@ class InformeFinalController extends Controller
             }
 
             foreach ($items as $item) {
-                $documentacion = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
-                $documentacionfirmado = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
-                $documentacionword = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
-                $image = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
-                $image2 = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
+                $documentacion = $item->documentacionsubcliente->where('accion', $item->accionnombre)->where('fechabateria', $item->fechabateria)->first();
+                $documentacionfirmado = $item->documentacionsubcliente->where('accion', $item->accionnombre)->where('fechabateria', $item->fechabateria)->first();
+                $documentacionword = $item->documentacionsubcliente->where('accion', $item->accionnombre)->where('fechabateria', $item->fechabateria)->first();
+                $image = $item->documentacionsubcliente->where('accion', $item->accionnombre)->where('fechabateria', $item->fechabateria)->first();
+                $image2 = $item->documentacionsubcliente->where('accion', $item->accionnombre)->where('fechabateria', $item->fechabateria)->first();
                 $accionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
 
                 $documentacionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
@@ -2566,11 +2572,11 @@ class InformeFinalController extends Controller
             }
 
             foreach ($items as $item) {
-                $documentacion = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
-                $documentacionfirmado = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
-                $documentacionword = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
-                $image = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
-                $image2 = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->first();
+                $documentacion = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->where('fechabateria', $item->fechabateria)->first();
+                $documentacionfirmado = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->where('fechabateria', $item->fechabateria)->first();
+                $documentacionword = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->where('fechabateria', $item->fechabateria)->first();
+                $image = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->where('fechabateria', $item->fechabateria)->first();
+                $image2 = $item->documentacionsubclienteauditoria->where('accion', $item->accionnombre)->where('fechabateria', $item->fechabateria)->first();
                 $accionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
                 $documentacionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
 
@@ -3895,7 +3901,10 @@ class InformeFinalController extends Controller
                 'documentword' => $archivo3_name,
                 'usuarioid' => $usuarioid,
                 'usuarioregistro' => $usuarioregistro,
-                'idsubproc' => $idsubproc
+                'idsubproc' => $idsubproc,
+                'clienteid' => $idcliente,
+                'clientenombre' => $nombrecliente,
+                'tipocliente' => 'ITA'
             ]
         );
 
@@ -4303,49 +4312,6 @@ class InformeFinalController extends Controller
         $fechabateria = $request->input('fechabateria');
 
         if (!empty($acciones)) {
-            /* foreach ($acciones as $accion) {
-
-                 // 🔵 AUMENTADO — OBTENER NOMBRE REAL DE LA ACCIÓN
-                $accionNombreReal = Programacionsubcliente::where('id', $accion)
-                                    ->value('accionnombre');
-
-                // 🔵 AUMENTADO — OBTENER PROGRAMACIONID REAL SEGÚN CLIENTE + FECHA + ACCIÓN
-                $programacionReal = Programacionsubcliente::where('clienteitaid', $idcliente)
-                                    ->where('fechabateria', $fechabateria)
-                                    ->where('accionnombre', $accionNombreReal)
-                                    ->value('id');
-
-                // 🔵 AUMENTADO — OBTENER IDSUBPROC
-                $idsubproc = Programacionsubcliente::where('id', $programacionReal)
-                                ->value('idsubproc');
-
-
-                $documentacioncliente = Documentacionsubcliente::create([
-                    'documentfirmado' => $outputFileName ?? null,
-                    'document' => $outputFileName2 ?? null,
-                    'accion' => $accion, 
-                    'fechabateria' => $fechabateria,
-                    'clienteitanombre' => $nombrecliente,
-                    'clienteitaid' => $idcliente,
-                    'programacionid' => $programacionReal,         // 🔵 CAMBIADO
-                    'idsubproc' => $idsubproc,
-                    'image' => $image_name ?? null,
-                    'image2' => $image_name2 ?? null,
-                    'documentword' => $archivo3_name ?? null,
-                    'usuarioid' => $usuarioid,
-                    'usuarioregistro' => $usuarioregistro
-                ]);
-                 // 🔵 AUMENTADO — ACTUALIZAR SUBTRAMITE
-                if ($idsubproc) {
-                    SubTramite::where('id', $idsubproc)
-                        ->update([
-                            'informeprogramacion' => $outputFileName2 ?? null,
-                            'solicitante1' => $image_name ?? null,
-                            'solicitante2' => $image_name2 ?? null
-                        ]);
-                }
-
-            } */
             foreach ($acciones as $accion) {
 
                 $accionNombreReal = Programacionsubcliente::where('id', $accion)
@@ -4376,7 +4342,10 @@ class InformeFinalController extends Controller
                     'image2' => $image_name2 ?? null,
                     'documentword' => $archivo3_name ?? null,
                     'usuarioid' => $usuarioid,
-                    'usuarioregistro' => $usuarioregistro
+                    'usuarioregistro' => $usuarioregistro,
+                    'clienteid' => $idcliente,
+                    'clientenombre' => $nombrecliente,
+                    'tipocliente' => 'ITA'
                 ]);
 
                 SubTramite::where('id', $idsubproc)->update([
@@ -4806,7 +4775,10 @@ class InformeFinalController extends Controller
                     'image2' => $image_name2 ?? null,
                     'documentword' => $archivo3_name ?? null,
                     'usuarioid' => $usuarioid,
-                    'usuarioregistro' => $usuarioregistro
+                    'usuarioregistro' => $usuarioregistro,
+                    'clienteid' => $idcliente,
+                    'clientenombre' => $nombrecliente,
+                    'tipocliente' => 'AUDITORIA'
                 ]);
             }
             /* if ($documentacioncliente) {
@@ -4878,6 +4850,9 @@ class InformeFinalController extends Controller
                 'clienteitaid' => $clienteitaid,
                 'clienteitanombre' => $clienteitanombre,
                 'fechabateria' => $fechabateria,
+                'clienteid' => $clienteitaid,
+                'clientenombre' => $clienteitanombre,
+                'tipocliente' => 'ITA'
             ]
         );
 
@@ -5324,7 +5299,10 @@ class InformeFinalController extends Controller
                 'image2' => $image_name2,
                 'documentword' => $archivo3_name,
                 'usuarioid' => $usuarioid,
-                'usuarioregistro' => $usuarioregistro
+                'usuarioregistro' => $usuarioregistro,
+                'clienteid' => $idcliente,
+                'clientenombre' => $nombrecliente,
+                'tipocliente' => 'AUDITORIA'
             ]
         );
 
@@ -5395,6 +5373,9 @@ class InformeFinalController extends Controller
                 'clienteauditoriaid' => $clienteauditoriaid,
                 'clienteauditorianombre' => $clienteauditorianombre,
                 'fechabateria' => $fechabateria,
+                'clienteid' => $clienteauditoriaid,
+                'clientenombre' => $clienteauditorianombre,
+                'tipocliente' => 'AUDITORIA'
             ]
         );
 

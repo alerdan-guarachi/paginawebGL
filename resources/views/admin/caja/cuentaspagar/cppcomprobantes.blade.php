@@ -247,7 +247,7 @@
                                                         <td hidden>{{ $item->id }}</td>
                                                         <td>{{ $item->ordenid }}</td>
                                                         <td>{{ $item->proveedorasignado }}</td>
-                                                        <td>{{ $item->clienteitanombre }}{{ $item->clienteauditorianombre }}{{ $item->clientecomunnombre }}</td>
+                                                        <td>{{ $item->clientenombre }}</td>
                                                         <td>{{ $item->accionnombre }}</td>
                                                         <td>{{ $item->fechapago }}</td>
                                                         <td>
@@ -355,20 +355,17 @@
                                     <div class="row align-items-end g-2" style="margin-top: -10px;">
                                         <div class="col-md-4 col-lg-4">
                                             <label class="form-label" style="margin-bottom: -5px;">Proveedor</label>
-                                            {{-- <input type="text" id="filtroProveedor" class="form-control" placeholder="Buscar por proveedor..." onkeyup="filtrarTabla()"> --}}
-                                            <input type="text" id="filtroProveedor" class="form-control" placeholder="Buscar por proveedor..." onkeyup="filtrarTablas()">
+                                            <input type="text" id="filtroProveedor" class="form-control" placeholder="Buscar por proveedor..." onkeyup="filtrarTabla()">
                                         </div>
 
                                         <div class="col-md-4 col-lg-3">
                                             <label class="form-label" style="margin-bottom: -5px;">Fecha</label>
-                                            {{-- <input type="date" id="filtroFecha" class="form-control" onchange="filtrarTabla()"> --}}
-                                            <input type="date" id="filtroFecha" class="form-control" onchange="filtrarTablas()">
+                                            <input type="date" id="filtroFecha" class="form-control" onchange="filtrarTabla()">
                                         </div>
 
                                         <div class="col-md-4 col-lg-3">
                                             <label class="form-label" style="margin-bottom: -5px;">Tipo de Transacción</label>
-                                            {{-- <select class="form-control" id="filtroTipoTransaccion" onchange="filtrarTabla()"> --}}
-                                                <select class="form-control" id="filtroTipoTransaccion" onchange="filtrarTablas()">
+                                                <select class="form-control" id="filtroTipoTransaccion" onchange="filtrarTabla()">
                                                 <option value="" disabled selected>Buscar por tipo transacción...</option>
                                                 <option value="TRANSFERENCIA BANCARIA">TRANSFERENCIA BANCARIA</option>
                                                 <option value="CHEQUE">CHEQUE</option>
@@ -732,9 +729,7 @@
                                                         $collapseId = 'grupo_med_' . $ordenId;
 
                                                         $detalle = \App\Models\Detallerecibo::where(function ($query) use ($primer) {
-                                                                    $query->where('clientenombre', $primer->clienteitanombre)
-                                                                        ->orWhere('clientenombre', $primer->clienteauditorianombre)
-                                                                        ->orWhere('clientenombre', $primer->clientecomunnombre);
+                                                                    $query->where('clientenombre', $primer->clientenombre);
                                                                 })
                                                                 ->where('fechabateria', $primer->fechabateria)
                                                                 ->where('proveedoratencion', $primer->proveedorasignado)
@@ -792,9 +787,7 @@
                                                                 ->first();
                                                             $archivoExistentefijo = \App\Models\Proveedor::where('proveedor', $item->proveedorasignado)->first();
                                                             $detalle = \App\Models\Detallerecibo::where(function ($query) use ($item) {
-                                                                    $query->where('clientenombre', $item->clienteitanombre)
-                                                                        ->orWhere('clientenombre', $item->clienteauditorianombre)
-                                                                        ->orWhere('clientenombre', $item->clientecomunnombre);
+                                                                    $query->where('clientenombre', $item->clientenombre);
                                                                 })
                                                                 ->where('fechabateria', $item->fechabateria)
                                                                 ->where('proveedoratencion', $item->proveedorasignado)
@@ -807,7 +800,7 @@
                                                         <tr class="collapse" id="{{ $collapseId }}">
                                                             <td><input type="checkbox" class="checkbox-med cuenta-med-{{ $ordenId }}" value="{{ $item->id }}"></td>
                                                             <td>{{ $item->id }}</td>
-                                                            <td>{{ $item->clienteitanombre }}{{ $item->clienteauditorianombre }}{{ $item->clientecomunnombre }}</td>
+                                                            <td>{{ $item->clientenombre }}</td>
                                                             <td>{{ $item->accionnombre }}</td>
                                                             <td>
                                                                 {{ $tipoplanilla }}
@@ -887,7 +880,7 @@
                         }
                     </script>
                 </div>
-                <script>
+                {{-- <script>
                     function filtrarTabla() {
                         const filtroProveedor = document.getElementById('filtroProveedor').value.toLowerCase();
                         const filtroFecha = document.getElementById('filtroFecha').value;
@@ -926,8 +919,69 @@
                         document.getElementById('filtroTipoTransaccion').value = '';
                         filtrarTabla();
                     }
-                </script>
+                </script> --}}
                 <script>
+                    function filtrarTabla() {
+                        const filtroProveedor = document.getElementById('filtroProveedor').value.toLowerCase().trim();
+                        const filtroFecha = document.getElementById('filtroFecha').value;
+                        const filtroTipoTransaccion = document.getElementById('filtroTipoTransaccion').value;
+
+                        const hayFiltros = filtroProveedor || filtroFecha || filtroTipoTransaccion;
+
+                        const filasGrupo = document.querySelectorAll('tr.font-weight-bold.align-middle');
+
+                        filasGrupo.forEach(grupoFila => {
+
+                            // 🔴 Si no hay filtros, ocultar todo
+                            if (!hayFiltros) {
+                                grupoFila.style.display = 'none';
+
+                                const collapseId = grupoFila.querySelector('[data-target]')
+                                    ?.getAttribute('data-target')?.replace('#', '');
+                                if (collapseId) {
+                                    document.querySelectorAll(`tr#${collapseId}`)
+                                        .forEach(fila => fila.style.display = 'none');
+                                }
+                                return;
+                            }
+
+                            const proveedor = grupoFila.cells[4]?.textContent.toLowerCase() || '';
+                            const fechaTexto = grupoFila.cells[5]?.textContent.trim() || '';
+                            const tipotransaccion = grupoFila.cells[6]?.textContent.trim() || '';
+
+                            const partesFecha = fechaTexto.split('/');
+                            const fechaFormateada = partesFecha.length === 3
+                                ? `${partesFecha[2]}-${partesFecha[1]}-${partesFecha[0]}`
+                                : '';
+
+                            const coincideProveedor = !filtroProveedor || proveedor.includes(filtroProveedor);
+                            const coincideFecha = !filtroFecha || filtroFecha === fechaFormateada;
+                            const coincideTipoTransaccion = !filtroTipoTransaccion || tipotransaccion.includes(filtroTipoTransaccion);
+
+                            const mostrar = coincideProveedor && coincideFecha && coincideTipoTransaccion;
+                            grupoFila.style.display = mostrar ? '' : 'none';
+
+                            const collapseId = grupoFila.querySelector('[data-target]')
+                                ?.getAttribute('data-target')?.replace('#', '');
+                            if (collapseId) {
+                                document.querySelectorAll(`tr#${collapseId}`)
+                                    .forEach(fila => fila.style.display = mostrar ? '' : 'none');
+                            }
+                        });
+                    }
+
+                    function limpiarFiltros() {
+                        document.getElementById('filtroProveedor').value = '';
+                        document.getElementById('filtroFecha').value = '';
+                        document.getElementById('filtroTipoTransaccion').value = '';
+                        filtrarTabla(); // vuelve a ocultar todo
+                    }
+
+                    // 🚀 Al cargar la página, ocultar todo
+                    document.addEventListener('DOMContentLoaded', filtrarTabla);
+                </script>
+
+                {{-- <script>
                     function hayFiltrosActivos() {
                         return (
                             document.getElementById('filtroProveedor').value.trim() !== '' ||
@@ -948,7 +1002,6 @@
                     function filtrarTabla(tablaId, proveedor, fecha, tipo) {
                         const filas = document.querySelectorAll(`#${tablaId} tbody tr`);
 
-                        // 🔴 SIN FILTROS → ocultar todo
                         if (!hayFiltrosActivos()) {
                             filas.forEach(fila => fila.style.display = 'none');
                             return;
@@ -990,13 +1043,12 @@
                         ).forEach(fila => fila.style.display = 'none');
                     }
 
-                    // 🔴 AL CARGAR → TODO OCULTO
                     document.addEventListener('DOMContentLoaded', () => {
                         document.querySelectorAll(
                             '#tabla-proveedores-medicos tbody tr, #tabla-cuentas-pagar tbody tr'
                         ).forEach(fila => fila.style.display = 'none');
                     });
-                </script>
+                </script> --}}
             </div>
         </div>
     </div>

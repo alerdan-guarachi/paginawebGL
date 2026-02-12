@@ -61,7 +61,6 @@ class _LoginPageState extends State<LoginPage> {
         fcmToken: fcmToken,
       );
 
-      // ▼▼▼ ¡MODIFICACIÓN CLAVE AQUÍ! ▼▼▼
       // Leemos la estructura plana que devuelve tu API
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('nombreUsuario', data['name']);
@@ -113,16 +112,20 @@ class _LoginPageState extends State<LoginPage> {
               children: [
 
                 Container(
-                  width: 140,
-                  height: 140,
+                  width: 120,
+                  height: 120,
+                  clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  padding: EdgeInsets.all(1),
-                  child: Image.asset(
-                    'assets/logo.png',
-                    fit: BoxFit.contain,
+                  // ▼▼▼ SE AÑADE PADDING PARA REDUCIR EL TAMAÑO DE LA IMAGEN INTERNA ▼▼▼
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Image.asset(
+                      'assets/iconogoodlife.png',
+                      fit: BoxFit.contain,
+                    ),
                   ),
                 ),
 
@@ -146,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                     children: [
 
                       Text(
-                        "Iniciar Sesión",
+                        "INICIAR SESIÓN",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -208,7 +211,7 @@ class _LoginPageState extends State<LoginPage> {
                           child: isLoading
                               ? CircularProgressIndicator(color: Colors.white)
                               : Text(
-                            "INICIAR SESIÓN",
+                            "INGRESAR",
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,

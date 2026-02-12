@@ -31,6 +31,9 @@ class StoreContactosubclienteRequest extends FormRequest
     {
         $rules = [
             'id' => '',
+            'clienteid' => '',
+            'clientenombre' => '',
+            'tipocliente' => '',
             'clienteitaid' => 'max:45',
             'clienteitanombre' => 'max:90',
             'clientecomunid' => 'max:45',
@@ -44,7 +47,7 @@ class StoreContactosubclienteRequest extends FormRequest
             'telefonocontacto' => 'numeric',
             'parentesco' => 'required|max:45',
             'usuarioid' => 'max:45',
-            'usuarioregistro' => 'max:45',
+            'usuarioregistro' => 'max:255',
             
         ]; 
         return $rules;

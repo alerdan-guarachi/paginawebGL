@@ -35,6 +35,9 @@ class Documentacionsubcliente extends Model
         'motivoanulacion' => '',
         'usuarioanulacion' => '',
         'idsubproc' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
+        'tipocliente' => '',
     ]; 
 
     protected $fillable = [
@@ -60,6 +63,9 @@ class Documentacionsubcliente extends Model
         'motivoanulacion',
         'usuarioanulacion',
         'idsubproc',
+        'clienteid',
+        'clientenombre',
+        'tipocliente',
     ];
     public function estadoprogramacionsubcliente()
     {

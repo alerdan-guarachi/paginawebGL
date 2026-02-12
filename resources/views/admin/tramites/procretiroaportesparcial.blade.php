@@ -560,12 +560,15 @@
                     <div class="modal-dialog modal-xl" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                @if($tramiteinicio)
-                                    <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE TRÁMITE</h5>
-                                @endif
-                                @if($tramitecontinuidad)
-                                    <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE PODER</h5>
-                                @endif
+                                <div class="d-flex align-items-center">
+                                    @if($tramiteinicio)
+                                        <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE TRÁMITE</h5>
+                                    @endif
+                                    @if($tramitecontinuidad)
+                                        <h5 class="modal-title titulomodal" id="modalIngresoTramiteLabel">INGRESO DE PODER</h5>
+                                    @endif
+                                    <a class="btn btn-sm btn-subirrequisitos ml-2" href="{{ route('admin.asociados.subirdocrequisitosretiroaportesparcial', $cliente->id) }}">VER REQUISITOS</a>
+                                </div>
                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
                                 </button>
@@ -891,6 +894,9 @@
                                             $rechazodocext = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE DOCUMENTOS EXTRANJEROS')->where('tramite', 'RETIRO DE APORTES PARCIAL')->first();
                                             $validaciondocext = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE DOCUMENTOS EXTRANJEROS')->where('tramite', 'RETIRO DE APORTES PARCIAL')->first();
                                             $correcciondocext = $cliente->tramites()->where('subprocedimiento', 'CORRECCIÓN DE DOCUMENTOS EXTRANJEROS')->where('tramite', 'RETIRO DE APORTES PARCIAL')->first();
+
+                                            $docformretiro = $cliente->tramites()->where('subprocedimiento', 'FORMULARIO DE VALIDACIÓN DE RETIRO')->where('tramite', 'RETIRO DE APORTES PARCIAL')->first();
+                                            $docvalret = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE RETIRO')->where('tramite', 'RETIRO DE APORTES PARCIAL')->first();
                                         @endphp
                                         <div class="table-responsive">
                                             <table class="table table-bordered table-sm align-middle text-center">
@@ -921,7 +927,7 @@
                                                         </td>
                                                         <td class="align-middle text-center">
                                                             @if ($documentoformval)
-                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/RETIRO DE APORTES PARCIAL/FORMULARIO DE VALIDACIÓN DE PODER/{$documentoformval->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
+                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/RETIRO DE APORTES PARCIAL/NOTIFICACIÓN DE PODER/{$documentoformval->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
                                                                 @if ($puedeEditarArchivo)
                                                                     <div class="d-flex align-items-center justify-content-center gap-2" style="margin-top:5px;">
                                                                         <input type="file" name="archivo_reemplazo" class="dropify" accept="application/pdf">
@@ -970,21 +976,73 @@
                                                             @endif
                                                         </td>
                                                     </tr>
+
+
+
+                                                    {{-- FORMULARIO DE VALIDACION DE RETIRO --}}
+                                                    <tr>
+                                                        <td class="align-middle text-center">
+                                                            <p class="mb-0">FORMULARIO DE VALIDACIÓN DE RETIRO</p>
+                                                            @if (!$docformretiro)
+                                                                <input type="hidden" name="tramite[formulariovalidacionretiro]" value="RETIRO DE APORTES PARCIAL">
+                                                                <input type="hidden" name="nivelprocedimiento[formulariovalidacionretiro]" value="NOTIFICACIÓN DE PODER">
+                                                                <input type="hidden" name="subprocedimiento[formulariovalidacionretiro]" value="FORMULARIO DE VALIDACIÓN DE RETIRO">
+                                                            @endif
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            @if ($docformretiro)
+                                                                <p class="mb-0">{{ \Carbon\Carbon::parse($docformretiro->fechasubida)->format('d-m-Y') }}</p>
+                                                            @else
+                                                                <input type="date" class="form-control text-center" name="fechasubida[formulariovalidacionretiro]" value="{{ \Carbon\Carbon::now()->toDateString() }}" {{ $puedeEditarFecha ? '' : 'readonly' }}>
+                                                            @endif
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            @if ($docformretiro)
+                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/RETIRO DE APORTES PARCIAL/NOTIFICACIÓN DE PODER/{$docformretiro->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
+                                                            @else
+                                                                <input type="file" name="archivo[formulariovalidacionretiro]" class="dropify mx-auto d-block" accept="application/pdf">
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                    {{-- VALIDACION DE RETIRO --}}
+                                                    <tr>
+                                                        <td class="align-middle text-center">
+                                                            <p class="mb-0">VALIDACIÓN DE RETIRO</p>
+                                                            @if (!$docvalret)
+                                                                <input type="hidden" name="tramite[validacionret]" value="RETIRO DE APORTES PARCIAL">
+                                                                <input type="hidden" name="nivelprocedimiento[validacionret]" value="NOTIFICACIÓN DE PODER">
+                                                                <input type="hidden" name="subprocedimiento[validacionret]" value="VALIDACIÓN DE RETIRO">
+                                                            @endif
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            @if ($docvalret)
+                                                                <p class="mb-0">{{ \Carbon\Carbon::parse($docvalret->fechasubida)->format('d-m-Y') }}</p>
+                                                            @else
+                                                                <input type="date" class="form-control text-center" name="fechasubida[validacionret]" value="{{ \Carbon\Carbon::now()->toDateString() }}" {{ $puedeEditarFecha ? '' : 'readonly' }}>
+                                                            @endif
+                                                        </td>
+                                                        <td class="align-middle text-center">
+                                                            @if ($docvalret)
+                                                                <a href="{{ url("/tramitesclientesita/{$cliente->id}/RETIRO DE APORTES PARCIAL/NOTIFICACIÓN DE PODER/{$docvalret->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
+                                                            @else
+                                                                <input type="file" name="archivo[validacionret]" class="dropify mx-auto d-block" accept="application/pdf">
+                                                            @endif
+                                                        </td>
+                                                    </tr>
                                                 </tbody>
                                             </table>
 
-                                            <table class="table table-bordered table-sm align-middle text-center">
-                                                <thead class="thead-light">
-                                                    <tr>
-                                                        <th style="width: 40%;">SUB_PROCEDIMIENTO</th>
-                                                        <th style="width: 20%;">FECHA_REGISTRO</th>
-                                                        <th style="width: 20%;">TIPO_DOCUMENTO</th>
-                                                        <th style="width: 20%;">DOCUMENTO</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @if ($cliente->paisnacimiento !== 'BOLIVIA')
-
+                                            @if ($cliente->paisnacimiento !== 'BOLIVIA')
+                                                <table class="table table-bordered table-sm align-middle text-center">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th style="width: 40%;">SUB_PROCEDIMIENTO</th>
+                                                            <th style="width: 20%;">FECHA_REGISTRO</th>
+                                                            <th style="width: 20%;">TIPO_DOCUMENTO</th>
+                                                            <th style="width: 20%;">DOCUMENTO</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
                                                         {{-- FORMULARIO DE RECEPCIÓN --}}
                                                         @php
                                                             $formulariosrecepcion = $cliente->tramites()->where('subprocedimiento', 'FORMULARIO DE RECEPCIÓN DE DOCUMENTOS EXTRANJEROS')->where('tramite', 'RETIRO DE APORTES PARCIAL')->get();
@@ -1349,9 +1407,9 @@
                                                                 });
                                                             </script>
                                                         @endif
-                                                    @endif
-                                                </tbody>
-                                            </table>
+                                                    </tbody>
+                                                </table>
+                                            @endif
                                         </div>
                                     </div>
                                     {{-- @if (!$documento4 && !$validaciondocext) --}}
@@ -1855,7 +1913,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @foreach ($cssolicitud as $documento)
+                                                    @foreach ($csnotarechazo as $documento)
                                                         <tr>
                                                             <td class="align-middle text-center">
                                                                 <p class="mb-0">{{ $documento->id }}</p>

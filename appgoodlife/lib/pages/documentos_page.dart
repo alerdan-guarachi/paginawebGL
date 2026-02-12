@@ -24,29 +24,54 @@ class _DocumentosPageState extends State<DocumentosPage> {
     fetchDocumentos();
   }
 
+  // ▼▼▼ FUNCIÓN MODIFICADA PARA AGRUPAR POR FECHA O HISTORIA CLÍNICA ▼▼▼
   void fetchDocumentos() async {
     try {
       final response = await ApiService.getDocumentosByUserId(widget.usuarioId);
       List<dynamic> data = List.from(response);
 
-      // Agrupar por fechabateria
+      // Agrupar por fecha o "HISTORIA CLINICA"
       Map<String, List<dynamic>> grouped = {};
+      final now = DateTime.now();
+      // Calculamos la fecha de hace 6 meses
+      final sixMonthsAgo = DateTime(now.year, now.month - 6, now.day);
+
       for (var doc in data) {
-        final fecha = doc['fechabateria'] ?? 'Sin fecha';
-        if (!grouped.containsKey(fecha)) grouped[fecha] = [];
-        grouped[fecha]!.add(doc);
+        String groupKey;
+        final createdAtString = doc['created_at'];
+
+        // Si el documento tiene fecha de creación, la evaluamos
+        if (createdAtString != null) {
+          final createdAtDate = DateTime.tryParse(createdAtString);
+          if (createdAtDate != null && createdAtDate.isBefore(sixMonthsAgo)) {
+            groupKey = 'HISTORIA CLINICA';
+          } else {
+            // Si es reciente, se agrupa por fechabateria
+            groupKey = doc['fechabateria'] ?? 'Sin fecha';
+          }
+        } else {
+          // Si no tiene created_at, se usa la lógica antigua
+          groupKey = doc['fechabateria'] ?? 'Sin fecha';
+        }
+
+        if (!grouped.containsKey(groupKey)) {
+          grouped[groupKey] = [];
+        }
+        grouped[groupKey]!.add(doc);
       }
 
       setState(() {
-        documentos = data;
+        documentos = data; // Aún mantenemos la lista original si se necesita
         documentosPorFecha = grouped;
         isLoading = false;
       });
     } catch (e) {
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar documentos: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al cargar documentos: $e')),
+        );
+      }
     }
   }
 
@@ -56,7 +81,7 @@ class _DocumentosPageState extends State<DocumentosPage> {
 
     final clienteId = doc['clienteitaid'];
     final url =
-        "http://192.168.0.20:8000/documentacionclientesita/$clienteId/$value";
+        "http://192.168.88.224:8000/documentacionclientesita/$clienteId/$value";
 
     IconData icon;
     if (label.contains('Imagen')) {
@@ -104,9 +129,11 @@ class _DocumentosPageState extends State<DocumentosPage> {
               onPressed: () async {
                 final uri = Uri.parse(url);
                 if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('No se puede abrir el archivo')),
-                  );
+                  if(mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('No se puede abrir el archivo')),
+                    );
+                  }
                 }
               },
               child: Row(
@@ -129,6 +156,22 @@ class _DocumentosPageState extends State<DocumentosPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ▼▼▼ WIDGET BUILD MODIFICADO PARA ORDENAR LOS GRUPOS ▼▼▼
+
+    // Ordenar las claves: Primero las fechas (más recientes primero), y al final "HISTORIA CLINICA"
+    final sortedEntries = documentosPorFecha.entries.toList()
+      ..sort((a, b) {
+        if (a.key == 'HISTORIA CLINICA') return 1; // Mueve 'HISTORIA CLINICA' al final
+        if (b.key == 'HISTORIA CLINICA') return -1;
+        // Ordena las fechas de más reciente a más antigua
+        try {
+          // Asume que las claves son fechas en formato YYYY-MM-DD
+          return b.key.compareTo(a.key);
+        } catch (e) {
+          return 0; // No hacer nada si no se pueden comparar
+        }
+      });
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Informes Médicos'),
@@ -136,12 +179,15 @@ class _DocumentosPageState extends State<DocumentosPage> {
       ),
       body: isLoading
           ? Center(child: GoodLifeLoader())
-          : documentosPorFecha.isEmpty
+          : sortedEntries.isEmpty
           ? Center(child: Text('No hay documentos'))
           : ListView(
-        children: documentosPorFecha.entries.map((entry) {
+        children: sortedEntries.map((entry) {
           final fecha = entry.key;
           final docs = entry.value;
+
+          // Se ajusta el título dinámicamente
+          final titleText = fecha == 'HISTORIA CLINICA' ? fecha : 'INFORMES: $fecha';
 
           return Card(
             margin: EdgeInsets.all(8),
@@ -149,12 +195,12 @@ class _DocumentosPageState extends State<DocumentosPage> {
                 borderRadius: BorderRadius.circular(10),
                 side: BorderSide(color: Colors.grey.shade300)),
             elevation: 3,
-            color: Colors.white, // fondo blanco neutro
+            color: Colors.white,
             child: ExpansionTile(
               tilePadding: EdgeInsets.symmetric(horizontal: 16),
               collapsedBackgroundColor: Colors.white,
               backgroundColor: Colors.white,
-              title: Text('Fecha Batería: $fecha',
+              title: Text(titleText,
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.black)),
@@ -169,8 +215,28 @@ class _DocumentosPageState extends State<DocumentosPage> {
                           style:
                           TextStyle(fontWeight: FontWeight.bold)),
                       SizedBox(height: 4),
-                      _buildArchivoRow(doc, 'Informe', doc['document']),
-                      _buildArchivoRow(doc, 'Informe firmado', doc['documentfirmado']),
+                      // ▼▼▼ LÍNEA AÑADIDA PARA MOSTRAR CREATED_AT ▼▼▼
+                      if (doc['created_at'] != null)
+                        Builder(builder: (context) {
+                          try {
+                            final date = DateTime.parse(doc['created_at']);
+                            final formattedDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year.toString().substring(2)} - ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 1.0),
+                              child: Text(
+                                'Registrado el: $formattedDate',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontStyle: FontStyle.italic,
+                                    color: Colors.grey.shade700),
+                              ),
+                            );
+                          } catch (e) {
+                            return SizedBox.shrink(); // No mostrar nada si la fecha no es válida
+                          }
+                        }),
+                      // _buildArchivoRow(doc, 'Informe', doc['document']),
+                      _buildArchivoRow(doc, 'Informe', doc['documentfirmado']),
                       _buildArchivoRow(doc, 'Imagen 1', doc['image']),
                       _buildArchivoRow(doc, 'Imagen 2', doc['image2']),
                       Divider(),

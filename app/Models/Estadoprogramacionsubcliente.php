@@ -14,8 +14,9 @@ class Estadoprogramacionsubcliente extends Model
     protected $table = 'estadoprogramacionsubclientes';
     static $rules = [
         'id' => '',
-        'clientebancoid' => '',
-        'clientebanconombre' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
+        'tipocliente' => '',
         'clientecomunid' => '',
         'clientecomunnombre' => '',
         'clienteitaid' => '',
@@ -35,12 +36,14 @@ class Estadoprogramacionsubcliente extends Model
         'usuarioanulacion' => '',
         'nrosesion' => '',
         'idsubproc' => '',
+        'clientebanconombre' => '',
     ]; 
 
     protected $fillable = [
         'id',
-        'clientebancoid',
-        'clientebanconombre',
+        'clienteid',
+        'clientenombre',
+        'tipocliente',
         'clientecomunid',
         'clientecomunnombre',
         'clienteitaid',
@@ -60,6 +63,7 @@ class Estadoprogramacionsubcliente extends Model
         'usuarioanulacion',
         'nrosesion',
         'idsubproc',
+        'clientebanconombre',
     ];
     
 }

@@ -654,6 +654,7 @@
         color:#94c93b; 
         font-family: "Segoe UI";
         font-weight: 1000;
+        font-size: 23px;
         }
     .custom-button {
         background-color:  #ffffff;

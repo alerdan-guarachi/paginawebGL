@@ -243,6 +243,9 @@ class InstructivaPoderController extends Controller
         $tipoPdf = $request->input('tipo_pdf');
         $sucursal = $request->input('sucursal');
         $tipopension = $request->input('tipopension');
+        $generofallecido = $request->input('generofallecido');
+        $nombrefallecido = $request->input('nombrefallecido');
+        $cifallecido = $request->input('cifallecido');
         $fechaactualregistro = $request->input('fechaactual');
         /* $personalIds = explode(',', $request->input('personal_ids'));
         $personal = Proveedoresservicios::whereIn('id', $personalIds)->get(); */
@@ -444,7 +447,8 @@ class InstructivaPoderController extends Controller
 
         $estadoCivil = Str::upper($estadoCivil);
 
-        $pdf = PDF::loadView($config['vista'], compact('tipoPdf', 'cliente', 'personal', 'estadoCivil', 'fechaactual', 'sucursal','tipopension'));
+        $pdf = PDF::loadView($config['vista'], compact('tipoPdf', 'cliente', 'personal', 'estadoCivil', 'fechaactual', 'sucursal','tipopension'
+        ,'generofallecido','nombrefallecido','cifallecido'));
         $rutaCarpeta = public_path('instructivaspoder/' . $cliente->id);
         if (!file_exists($rutaCarpeta)) {
             mkdir($rutaCarpeta, 0777, true);
@@ -505,7 +509,9 @@ class InstructivaPoderController extends Controller
         $tipoPdf = $request->input('tipo_pdf');
         $sucursal = $request->input('sucursal');
         $tipopension = $request->input('tipopension');
-
+        $generofallecido = $request->input('generofallecido');
+        $nombrefallecido = $request->input('nombrefallecido');
+        $cifallecido = $request->input('cifallecido');
         /* $personalIds = explode(',', $request->input('personal_ids'));
         $personal = Proveedoresservicios::whereIn('id', $personalIds)
             ->get()
@@ -720,7 +726,7 @@ class InstructivaPoderController extends Controller
             'cliente',
             'fechaactual',
             'sucursal',
-            'tipopension'
+            'tipopension','generofallecido','nombrefallecido','cifallecido'
         ));
 
         return $pdf->stream('preview-instructiva.pdf');

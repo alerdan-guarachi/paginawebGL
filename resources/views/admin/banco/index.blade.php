@@ -7,7 +7,7 @@
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/opcionesmultiples.css') }}">
 <style>
-        .table td {
+    .table td {
         padding: 5px 10px;
     }
     .btn-veringresos {
@@ -21,8 +21,6 @@
         background-color: #94c93b;
         color: #ffffff;
         }
-</style>
-<style>
     td {
         white-space: nowrap;
         overflow: hidden;
@@ -40,8 +38,6 @@
         text-overflow: ellipsis;
         max-width: 100px;
     }
-</style>
-<style>
     .bg-light-green {
         background-color: #ebfff0 !important;
     }
@@ -377,9 +373,9 @@
                 
                 @else
 
-                <div class="table-responsive">
+                <div class="table-responsive" style="max-height: 70vh;">
                     <table class="table table-striped">
-                        <thead>
+                        <thead style="position: sticky; top: 0; z-index: 1010; background-color: #dcdcdc;">
                             <tr>
                                 <th>ID</th>
                                 <th>Cliente</th>
@@ -509,6 +505,9 @@
                             @endforeach
                         </tbody>
                     </table>
+                </div>
+                <div style="margin-top: 20px;">
+                    {{ $detalles->links() }}
                 </div>
                 @endif                
             </div>

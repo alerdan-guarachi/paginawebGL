@@ -29,6 +29,9 @@ class Estadocotizacionsubcliente extends Model
         'nrofactura' => '',
         'detalle' => '',
         'tramite' => '',
+        'clienteid' => '',
+        'clientenombre' => '',
+        'tipocliente' => '',
     ]; 
 
     protected $fillable = [
@@ -49,6 +52,9 @@ class Estadocotizacionsubcliente extends Model
         'nrofactura',
         'detalle',
         'tramite',
+        'clienteid',
+        'clientenombre',
+        'tipocliente',
     ];
 
 }

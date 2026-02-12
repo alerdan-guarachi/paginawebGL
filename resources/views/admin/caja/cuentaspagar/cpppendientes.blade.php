@@ -378,7 +378,7 @@
                                                     @endphp
                                                     <tr>
                                                         <td><input type="checkbox" class="checkbox-bateria" value="{{ $item->id }}"></td>
-                                                        <td>{{ $item->clienteitanombre }}{{ $item->clienteauditorianombre }}{{ $item->clientecomunnombre }}</td>
+                                                        <td>{{ $item->clientenombre }}</td>
                                                         <td>{{ $item->accionnombre }}</td>
                                                         <td>{{ $item->fechapago }}</td>
                                                         <td>{{ $tipoplanilla }}</td>
@@ -706,7 +706,7 @@
                                                                 value="{{ $item->id }}" 
                                                                 {{ $item->estadoaprobacion !== 'SUBIDO' ? 'disabled' : '' }}>
                                                         </td>
-                                                        <td>{{ $item->clienteitanombre }}{{ $item->clienteauditorianombre }}{{ $item->clientecomunnombre }}</td>
+                                                        <td>{{ $item->clientenombre }}</td>
                                                         <td>{{ $item->accionnombre }}</td>
                                                         <td>{{ $item->fechapago }}</td>
                                                         <td>{{ $tipoplanilla }}</td>

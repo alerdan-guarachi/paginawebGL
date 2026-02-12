@@ -312,7 +312,10 @@
         font-weight: 700;
     }
     .dropify-wrapper {
-        height: 200px !important;
+        height: 80px !important;
+    }
+    label {
+        font-size: 14px;
     }
     .dropify-message p {
         font-size: 14px;
@@ -331,7 +334,8 @@
     h3 {
         color:#94c93b; 
         font-family: "Segoe UI";
-        font-weight: 1000;
+        font-weight: 800;
+        font-size: 23px;
         }
     .btn-crear {
         background-color:  #ffffff;

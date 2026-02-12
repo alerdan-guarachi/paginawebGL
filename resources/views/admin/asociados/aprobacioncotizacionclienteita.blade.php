@@ -29,6 +29,11 @@
 
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/cotizacionmedicaclientes.css') }}">
+<style>
+    h3 {
+        font-size: 23px;
+    }
+</style>
 @stop
 
 @section('content')
@@ -39,7 +44,7 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif
 

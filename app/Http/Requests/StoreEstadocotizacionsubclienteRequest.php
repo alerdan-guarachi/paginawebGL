@@ -47,6 +47,9 @@ class StoreEstadocotizacionsubclienteRequest extends FormRequest
             'nrofactura' => '',
             'detalle' => '',
             'tramite' => '',
+            'clienteid' => '',
+            'clientenombre' => '',
+            'tipocliente' => '',
         ]; 
         return $rules;
     }

@@ -46,6 +46,27 @@
         background-color: #94c93b;
         color: #ffffff;
     }
+    .compact-table th, .compact-table td {
+        padding: 4px 8px;
+        line-height: 1.2;
+    }
+
+    .compact-table {
+        font-size: 16px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .hidden {
+        display: none;
+    }
+    #btn-crear-bateria:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    h3 {
+        font-size: 23px;
+    }
 </style>
 @stop
 @section('content')
@@ -56,13 +77,13 @@
     <script>
         setTimeout(function() {
             $('#alert-info').fadeOut('fast');
-        }, 5000);
+        }, 3000);
     </script>
 @endif 
 <div class="card">
     <div class="card-body">
         {!! Form::model($clientecomun, ['route' => ['admin.asociados.guardarbateriaclientecomun', $clientecomun], 'method' => 'POST', 'id' => 'form-crear-bateria']) !!}
-        <div class="row">
+            <div class="row">
                 {!! Form::hidden('usuarioid', auth()->user()->id) !!}
                 {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
                 {!! Form::hidden('clientecomunid', $id) !!}
@@ -70,17 +91,12 @@
                     <div class="form-group" hidden>
                         {!! Form::label('nombrecompleto', 'Nombre completo:') !!}
                         {!! Form::text('nombrecompleto', null, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
-                        @error('nombrecompleto')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
                     </div> 
                     <div class="modal fade" id="ventanaModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                         <div class="modal-dialog modal-xl" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">BATERIA DEL CLIENTE:</h5>
+                                    <h4 class="modal-title" style="font-weight: 700; color: #94c93b;">BATERIA DEL CLIENTE</h4>
                                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
@@ -119,7 +135,6 @@
                             </div>
                         </div>
                     </div>
-
                     <script>
                         document.addEventListener('DOMContentLoaded', function () {
                             const selectFechas = document.getElementById('select-fechas');
@@ -156,18 +171,6 @@
                             });
                         });
                     </script>
-
-                    <style>
-                        .compact-table th, .compact-table td {
-                            padding: 4px 8px;
-                            line-height: 1.2;
-                        }
-
-                        .compact-table {
-                            font-size: 16px;
-                        }
-                    </style>
-
                     <div class="form-group">
                         <strong>Fecha de Batería:</strong>
                         <select id="select-fechas" name="fechabateria" class="form-control">
@@ -188,14 +191,6 @@
                         <strong>Fecha del Informe:</strong>
                         <input type="date" id="fechainforme" name="fechainforme" class="form-control">
                     </div>
-                    <style>
-                        .form-group {
-                            margin-bottom: 15px;
-                        }
-                        .hidden {
-                            display: none;
-                        }
-                    </style>
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
                             const informeSelect = document.getElementById('informe');
@@ -213,23 +208,12 @@
                         });
                     </script>
                     <div class="form-group">
-                        {!! Form::label('tipoarea', 'Tipo Area:', ['id' => 'area_label2']) !!}
+                        {!! Form::label('tipoarea', 'Tipo Area:', ['id' => 'area_label2', 'style' => 'margin-bottom: -20px']) !!}
                         {!! Form::select('tipoarea', ['Estudios' => 'ESTUDIOS', 'Especialidades' => 'ESPECIALIDADES'], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoarea']) !!}
-                        @error('tipoarea')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
                     </div>
-                    <!-- Campo adicional "ANTECEDENTES" -->
                     <div class="form-group" id="antecedentes-field" style="display: none;">
-                        {!! Form::label('antecedentes', 'Antecedentes:') !!}
+                        {!! Form::label('antecedentes', 'Antecedentes:', ['style' => 'margin-bottom: -20px']) !!}
                         {!! Form::text('antecedentes', null, ['class' => 'form-control', 'id' => 'antecedentes']) !!}
-                        @error('antecedentes')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
                     </div>
                     <script>
                         document.addEventListener('DOMContentLoaded', function() {
@@ -242,23 +226,15 @@
                                 } else {
                                     antecedentesField.style.display = 'none';
                                 }
-                            });
-                        
-                            // Opcional: si ya hay un valor seleccionado al cargar la página
+                            });                        
                             if (tipoareaSelect.value === 'Especialidades') {
                                 antecedentesField.style.display = 'block';
                             }
                         });
-                        </script>
-                        
+                    </script>    
                     <div class="form-group" id="estudios_group" style="display: none;">
                         {!! Form::label('areanombre', 'Estudio:', ['id' => 'area_label']) !!}
                         {!! Form::select('areanombre', $areas, null, ['class' => 'form-control', 'id' => 'area_select', 'placeholder' => '']) !!}
-                        @error('areanombre')
-                            <small class="text-danger fas fa-exclamation-circle">
-                                {{$message}}
-                            </small>
-                        @enderror
                     </div>
                     <div id="reset_button_container" style="margin-bottom: 20px" class=""></div>
                 </div>
@@ -303,7 +279,6 @@
                             });
                         }
                     </script>
-               
                     <div class="form-group card card-body" id="especialidades_group" style="display: none;">  
                         {!! Form::label('especialidades', 'Especialidades:', ['id' => 'especialidades_label']) !!}
                         <input type="text" id="search_especialidades" placeholder="BUSCAR ESPECIALIDAD" class="form-control" onkeyup="buscarEspecialidad()">
@@ -325,22 +300,20 @@
                             @endforeach
                         </div>
                     </div>
-                <script>
-                    
-                    function buscarEspecialidad() {
-                    var query = $('#search_especialidades').val().toLowerCase(); 
-                    $('.especialidad-item').each(function() {  
-                        var label = $(this).find('label').text().toLowerCase();
-                        
-                        if (label.includes(query)) { 
-                            $(this).show();
-                        } else { 
-                            $(this).hide();
+                    <script>
+                        function buscarEspecialidad() {
+                            var query = $('#search_especialidades').val().toLowerCase(); 
+                            $('.especialidad-item').each(function() {  
+                                var label = $(this).find('label').text().toLowerCase();
+                                
+                                if (label.includes(query)) { 
+                                    $(this).show();
+                                } else { 
+                                    $(this).hide();
+                                }
+                            });
                         }
-                    });
-                }
-                </script>                    
-                    
+                    </script>                    
                 </div>
             </div>
             <button type="button" class="btn btn-crear" id="btn-crear-bateria">CREAR BATERIA</button>
@@ -353,14 +326,7 @@
                     });
                 });
             </script>
-            <style>
-                #btn-crear-bateria:disabled {
-                    opacity: 0.6;
-                    cursor: not-allowed;
-                }
-            </style>
-            {!! Form::close() !!}
-        </div>
+        {!! Form::close() !!}
     </div>
 </div>
 @stop
@@ -394,7 +360,7 @@
         });
     });
 
-//CANCELAR FUNCION DE LA TECLA ENTER
+    //CANCELAR FUNCION DE LA TECLA ENTER
     document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
@@ -556,5 +522,4 @@
     });
 
 </script>
-
 @endsection
