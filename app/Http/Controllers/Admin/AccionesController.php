@@ -108,7 +108,7 @@ class AccionesController extends Controller
         // Obtener el nombre del tipo de área basado en el areasid seleccionado
         $tipoArea = Area::find($bateriaProveedorData['areasid']);
         if ($tipoArea) {
-            $bateriaProveedorData['tipoarea'] = $tipoArea->nombrearea;  // Guardar el nombre del área en vez del ID
+            $bateriaProveedorData['tipoarea'] = $tipoArea->tipoarea;  // Guardar el nombre del área en vez del ID
         }
 
         // Asignar el ID del usuario autenticado al campo 'usuarioid'

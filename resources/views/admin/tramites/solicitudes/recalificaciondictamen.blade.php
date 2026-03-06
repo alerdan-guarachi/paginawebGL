@@ -23,23 +23,18 @@
         <div class="tipo3"><strong>de Largo Plazo</strong></div>
         <div class="tipo9">Presente. -</div>
         <div class="tipo5"><strong>REF.- SOLICITUD DE RECALIFICACIÓN DE DICTAMEN</strong></div>
-        <div class="tipo5"><strong>( TRÁMITE DE @if (
-                        strtoupper($nombretramite) === 'INVALIDEZ' ||
-                        strtoupper($nombretramite) === 'APELACIÓN' ||
-                        strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                    )
-                        PENSIÓN POR INVALIDEZ
-                    @else
-                        {{ $nombretramite }}
-                    @endif )</strong></div>
-
+        <div class="tipo5">
+            @php
+                $tramite = strtoupper($nombretramite);
+            @endphp
+            @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                <strong>TRÁMITE DE PENSIÓN POR INVALIDEZ (RECALIFICACIÓN)</strong>
+            @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                <strong>TRÁMITE DE PENSIÓN POR INVALIDEZ</strong>
+            @else
+                <strong>TRÁMITE DE {{ $nombretramite }}</strong>
+            @endif
+        </div>
         <div class="tipo2">Distinguidos Señores:</div>
         <div class="tipo6">
         Yo, @if ($sexo === 'masculino')el Sr.@elseif ($sexo === 'femenino')la Sra.@endif <strong>{{ $nombre }}</strong>, 

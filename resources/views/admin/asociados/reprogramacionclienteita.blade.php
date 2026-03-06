@@ -63,6 +63,7 @@
                                             <th>Responsable</th>
                                             <th>Proveedor</th>
                                             <th>Estudio/Especialidad</th>
+                                            <th>Autor_Reprog.</th>
                                             <th>Motivo</th>
                                             <th>Fecha_Batería</th>
                                             <th>Fecha_Hora_Reprog.</th>
@@ -74,6 +75,7 @@
                                                 <td>{{ $reprogramacion->usuarioactualizacion }}</td>
                                                 <td>{{ $reprogramacion->proveedornombre }}</td>
                                                 <td>{{ $reprogramacion->accionnombre }}</td>
+                                                <td>{{ $reprogramacion->usuarioeliminacion ?? 0}}</td>
                                                 <td>{{ $reprogramacion->motivoreprogramacion }}</td>
                                                 <td>{{ $reprogramacion->fechabateria }}</td>
                                                 <td>{{ $reprogramacion->deleted_at }}</td>
@@ -144,21 +146,31 @@
                                         <label>Proveedor</label>
                                         <input type="text" class="form-control" id="proveedorTexto" readonly>
                                     </div>
-                                    <div class="form-group">
-                                        <label>Motivo</label>
-                                        <input type="text" name="motivoreprogramacion" class="form-control" required>
+                                    <div class="row">
+                                        <div class="form-group col-lg-8">
+                                            <label>Motivo Reprog.</label>
+                                            <input type="text" name="motivoreprogramacion" class="form-control" required>
+                                        </div>
+                                        <div class="form-group col-lg-4">
+                                            <label>Autor Reprog.</label>
+                                            <select name="usuarioeliminacion" class="form-control" required>
+                                                <option value="">Seleccione una opción...</option>
+                                                <option value="CLIENTE">CLIENTE</option>
+                                                <option value="MEDICO">MÉDICO</option>
+                                            </select>
+                                        </div>
                                     </div>
                                     <div class="form-group">
-                                        <label>Fecha</label>
+                                        <label>Fecha Nueva</label>
                                         <input type="date" name="fechaasignada" class="form-control" required>
                                     </div>
                                     <div class="row">
                                         <div class="form-group col-lg-6">
-                                            <label>Hora Desde</label>
+                                            <label>Hora Nueva Desde</label>
                                             <input type="time" name="horadesde" class="form-control" required>
                                         </div>
                                         <div class="form-group col-lg-6">
-                                            <label>Hora Hasta</label>
+                                            <label>Hora Nueva Hasta</label>
                                             <input type="time" name="horahasta" class="form-control" required>
                                         </div>
                                     </div>

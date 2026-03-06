@@ -25,53 +25,36 @@
 
         <div class="tipo6">
         Por medio de la presente, tengo a bien a dirigirme a ustedes con la finalidad de solicitar que se me pueda otorgar una 
-        copia <strong>LEGALIZADA</strong> de la <strong>HISTORIA CLINICA</strong> de mi persona <strong>{{$cliente->nombrecompleto}}</strong>
-        con Matricula Nro. <strong>{{ $matricula }}</strong> con C.I. <strong>{{$cliente->ci}} {{$cliente->ciexp}}</strong>. 
+        copia <strong>LEGALIZADA</strong> de la <strong>HISTORIA CLINICA</strong>
+        @if(!is_null($fechainclusion))
+            más los <strong>Informes y Estudios</strong> médicos que me realice de manera particular, 
+            mismos que se presentó en fecha <strong>{{ $fechainclusion }}</strong>
+            para que se pueda incluir a mi Historia Clínica
+        @endif
+        de mi persona <strong>{{$cliente->nombrecompleto}}</strong>
+        con Matricula Nro. <strong>{{ $matricula }}</strong> con C.I. <strong>{{$cliente->ci}} {{ $cliente->ciexp }}</strong>. 
         Y se me pueda entregar por la sección que corresponda, mismos que son necesarios para mi trámite de
-        <strong>
-            @if (
-                strtoupper($nombretramite) === 'INVALIDEZ' ||
-                strtoupper($nombretramite) === 'APELACIÓN' ||
-                strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-            )
-                PENSIÓN POR INVALIDEZ
-            @else
-                {{ $nombretramite }}
-            @endif
-        </strong>
-
+        @php
+            $tramite = strtoupper($nombretramite);
+        @endphp
+        @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+            <strong>PENSIÓN POR INVALIDEZ (RECALIFICACIÓN).</strong>
+        @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+            <strong>PENSIÓN POR INVALIDEZ.</strong>
+        @else
+            <strong>{{ $nombretramite }}.</strong>
+        @endif
         </div>
         <div class="tipo6">
         Adjunto:
         </div>
-        {{-- <table>
-            <tbody>
-                @if(count($adjuntos) > 0)
-                    @foreach ($adjuntos as $adjunto)
-                        <tr>
-                            <td class="bullet"></td>
-                            <td>{{ $adjunto['requerimiento'] }}</td>
-                            <td>{{ $adjunto['tipo'] }}</td>
-                        </tr>
-                    @endforeach
-                @else
-                    <tr>
-                        <td colspan="3">No hay datos disponibles</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table> --}}
 
         <ul class="lista-documentos">
             <li>Carnet de Identidad (Fotocopia).</li>
             <li>Carnet de Asegurado (Fotocopia).</li>
+            @if(!is_null($fechainclusion))
+            <li>Carta de Recepción (Fotocopia).</li>
+            @endif
         </ul>
 
         <div class="tipo6">

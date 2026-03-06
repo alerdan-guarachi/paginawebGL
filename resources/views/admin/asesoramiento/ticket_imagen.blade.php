@@ -98,7 +98,7 @@
     <div class="logo">
         <img src="{{ asset('img/logo.png') }}" alt="Logo">
     </div>
-    <h2 style="margin-bottom: -7px;">TICKET DE ASESORÍA</h2>
+    <h2 style="margin-bottom: -7px;">ASESORÍA</h2>
     <h2>N° {{ $ticket->id }}</h2>
     <div class="ticket-datetime">
         Generado el {{ Carbon::parse($ticket->created_at)->translatedFormat('d-m-Y') }} a las {{ Carbon::parse($ticket->created_at)->format('H:i') }}

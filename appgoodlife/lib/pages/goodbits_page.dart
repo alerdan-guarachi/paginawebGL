@@ -13,7 +13,8 @@ class GoodBitsPage extends StatefulWidget {
 
 class _GoodBitsPageState extends State<GoodBitsPage> {
   bool isLoading = true;
-  double saldo = 0.0;
+  double goodPoints = 0.0;
+  double saldoEnBs = 0.0;
 
   final Color verde = Color(0xFF94C93B);
   final Color naranja = Color(0xFFF7941D);
@@ -29,7 +30,8 @@ class _GoodBitsPageState extends State<GoodBitsPage> {
       final data = await ApiService.getClienteByUserId(widget.usuarioId);
 
       setState(() {
-        saldo = double.tryParse(data['billeteramovil'].toString()) ?? 0.0;
+        goodPoints = double.tryParse(data['billeteramovil'].toString()) ?? 0.0;
+        saldoEnBs = goodPoints / 10.0; // <-- CÁLCULO AÑADIDO
         isLoading = false;
       });
     } catch (e) {
@@ -148,15 +150,13 @@ class _GoodBitsPageState extends State<GoodBitsPage> {
                         height: 78,
                         child: ClipOval(
                           child: Image.asset(
-                            'assets/goodpoints.png',
+                            'assets/goodpoints.png', // <-- IMAGEN CORREGIDA
                             fit: BoxFit.cover,
                           ),
                         ),
                       ),
                     ),
                   ),
-
-
 
                   SizedBox(height: 10),
 
@@ -171,29 +171,42 @@ class _GoodBitsPageState extends State<GoodBitsPage> {
 
                   SizedBox(height: 1),
 
-                  Column(
+                  // ▼▼▼ UI DE SALDO MODIFICADA ▼▼▼
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text(
-                        "${saldo.toStringAsFixed(2)}",
+                        "Bs. ",
                         style: TextStyle(
-                          fontSize: 33,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        saldoEnBs.toStringAsFixed(2),
+                        style: TextStyle(
+                          fontSize: 42,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
                       ),
-
-                      SizedBox(height: 1),
-
-                      Text(
-                        "GoodPoints",
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.black54,
-                        ),
-                      ),
                     ],
                   ),
+
+                  SizedBox(height: 4),
+
+                  Text(
+                    "Total: ${goodPoints.toStringAsFixed(0)} GoodPoints",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  // ▲▲▲ FIN DE LA MODIFICACIÓN ▲▲▲
                 ],
               ),
             ),

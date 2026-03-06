@@ -72,9 +72,9 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
     final url = Uri.parse(urlString);
 
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('No se pudo abrir el documento: $urlString')),
-        );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo abrir el documento: $urlString')),
+      );
     }
   }
 
@@ -88,87 +88,87 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
       body: cargando
           ? Center(child: GoodLifeLoader())
           : procedimientos.isEmpty
-              ? Center(child: Text("No hay procesos"))
-              : ListView.builder(
-                  itemCount: procedimientos.length,
-                  itemBuilder: (context, i) {
-                    final p = procedimientos[i];
-                    final tipo = p["tipo"] ?? "Sin tipo";
-                    final fecha = p["fechasubida"] ?? "Sin fecha";
-                    final tipoCarta = p["tipocarta"] ?? "";
-                    final documento = p["document"];
+          ? Center(child: Text("No hay procesos"))
+          : ListView.builder(
+        itemCount: procedimientos.length,
+        itemBuilder: (context, i) {
+          final p = procedimientos[i];
+          final tipo = p["tipo"] ?? "Sin tipo";
+          final fecha = p["fechasubida"] ?? "Sin fecha";
+          final tipoCarta = p["tipocarta"] ?? "";
+          final documento = p["document"];
 
-                    return Card(
-                      elevation: 3,
-                      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Text(
-                            //   tipo,
-                            //   style: TextStyle(
-                            //       fontWeight: FontWeight.w600, fontSize: 14),
-                            // ),
-                            // SizedBox(height: 6),
-                            Text(
-                              _nivelSub(p),
-                              style: TextStyle(fontSize: 12),
-                            ),
-                            // if (tipo != "PROCEDIMIENTO" &&
-                            //     ["SOLICITUD", "ADJUNTO / RESPUESTA", "CARTA / RECLAMO", "MISIVA LIBRE"]
-                            //         .contains(tipo.toUpperCase()))
-                            //   Padding(
-                            //     padding: const EdgeInsets.only(top: 4),
-                            //     child: Text(
-                            //       "Tipo: $tipoCarta",
-                            //       style: TextStyle(fontSize: 12),
-                            //     ),
-                            //   ),
-                            Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Text(
-                                "Fecha: $fecha",
-                                style: TextStyle(fontSize: 12),
+          return Card(
+            elevation: 3,
+            margin: EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Text(
+                  //   tipo,
+                  //   style: TextStyle(
+                  //       fontWeight: FontWeight.w600, fontSize: 14),
+                  // ),
+                  // SizedBox(height: 6),
+                  Text(
+                    _nivelSub(p),
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  // if (tipo != "PROCEDIMIENTO" &&
+                  //     ["SOLICITUD", "ADJUNTO / RESPUESTA", "CARTA / RECLAMO", "MISIVA LIBRE"]
+                  //         .contains(tipo.toUpperCase()))
+                  //   Padding(
+                  //     padding: const EdgeInsets.only(top: 4),
+                  //     child: Text(
+                  //       "Tipo: $tipoCarta",
+                  //       style: TextStyle(fontSize: 12),
+                  //     ),
+                  //   ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      "Fecha: $fecha",
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  if (documento != null && documento.toString().isNotEmpty)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: SizedBox(
+                        height: 28,
+                        child: ElevatedButton.icon(
+                          style: ButtonStyle(
+                            backgroundColor:
+                            MaterialStateProperty.all<Color>(verde),
+                            foregroundColor:
+                            MaterialStateProperty.all<Color>(Colors.white),
+                            shape: MaterialStateProperty.all<
+                                RoundedRectangleBorder>(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
-                            if (documento != null && documento.toString().isNotEmpty)
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: SizedBox(
-                                  height: 28,
-                                  child: ElevatedButton.icon(
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          MaterialStateProperty.all<Color>(verde),
-                                      foregroundColor:
-                                          MaterialStateProperty.all<Color>(Colors.white),
-                                      shape: MaterialStateProperty.all<
-                                          RoundedRectangleBorder>(
-                                        RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
-                                        ),
-                                      ),
-                                    ),
-                                    onPressed: () => _abrirDocumento(p),
-                                    icon: Icon(Icons.open_in_new, size: 14, color: Colors.white),
-                                    label: Text(
-                                      "Abrir",
-                                      style: TextStyle(fontSize: 12, color: Colors.white),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
+                          ),
+                          onPressed: () => _abrirDocumento(p),
+                          icon: Icon(Icons.open_in_new, size: 14, color: Colors.white),
+                          label: Text(
+                            "Abrir",
+                            style: TextStyle(fontSize: 12, color: Colors.white),
+                          ),
                         ),
                       ),
-                    );
-                  },
-                ),
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

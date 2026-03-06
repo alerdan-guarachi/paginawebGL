@@ -75,7 +75,7 @@
                                     <i class="fas fa-times-circle fa-2x text-danger"></i>
                                 @endif
                             </td> --}}
-                            <td width="10px">
+                            {{-- <td width="10px">
                                 <abbr title="Recordar">
                                     <a class="btn btn-sm btn-whatsapp @if(in_array($programacionclienteauditoria->accionnombre, $estadoRegistradosAuditoria)) disabled @endif" 
                                     @if(in_array($programacionclienteauditoria->accionnombre, $estadoRegistradosAuditoria)) 
@@ -86,7 +86,7 @@
                                         <i class="fas fa-sms"></i>
                                     </a>
                                 </abbr>
-                            </td>
+                            </td> --}}
                         </tr>
                     @endforeach
                     @foreach($programacionclientecomunes as $programacionclientecomun)
@@ -118,7 +118,7 @@
                                     <i class="fas fa-times-circle fa-2x text-danger"></i>
                                 @endif
                             </td> --}}
-                            <td width="10px">
+                            {{-- <td width="10px">
                                 <abbr title="Recordar">
                                     <a class="btn btn-sm btn-whatsapp @if(in_array($programacionclientecomun->accionnombre, $estadoRegistradosComun)) disabled @endif" 
                                     @if(in_array($programacionclientecomun->accionnombre, $estadoRegistradosComun)) 
@@ -129,7 +129,7 @@
                                         <i class="fas fa-sms"></i>
                                     </a>
                                 </abbr>
-                            </td>
+                            </td> --}}
                         </tr>
                     @endforeach
                     @foreach($programacionclienteitas as $programacionclienteita)
@@ -161,7 +161,7 @@
                                     <i class="fas fa-times-circle fa-2x text-danger"></i>
                                 @endif
                             </td> --}}
-                            <td width="10px">
+                            {{-- <td width="10px">
                                 <abbr title="Recordar">
                                     <a class="btn btn-sm btn-whatsapp @if(in_array($programacionclienteita->accionnombre, $estadoRegistradosIta)) disabled @endif" 
                                     @if(in_array($programacionclienteita->accionnombre, $estadoRegistradosIta)) 
@@ -172,7 +172,7 @@
                                         <i class="fas fa-sms"></i>
                                     </a>
                                 </abbr>
-                            </td>
+                            </td> --}}
                         </tr>
                     @endforeach 
                     {{-- @foreach($programacionclientebancos as $programacionclientebanco)

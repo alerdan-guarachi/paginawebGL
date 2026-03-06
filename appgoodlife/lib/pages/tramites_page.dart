@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'detalle_tramite_page.dart'; // Asegúrate de importar tu nueva vista
+import 'detalle_tramite_page.dart';
 import '../widgets/good_life_loader.dart';
 
 class TramitesPage extends StatefulWidget {
@@ -20,6 +20,7 @@ class _TramitesPageState extends State<TramitesPage> {
   final Color verde = Color(0xFF94C93B);
 
   Future<void> cargarTramites() async {
+    // ▼▼▼ IP CORREGIDA ▼▼▼
     final url = Uri.parse("http://192.168.88.224:8000/api/tramites/${widget.usuarioId}");
     final resp = await http.get(url);
 
@@ -58,7 +59,6 @@ class _TramitesPageState extends State<TramitesPage> {
             orElse: () => null,
           );
 
-          // ▼▼▼ LÓGICA DE ESTADO MEJORADA ▼▼▼
           final String estado = (tramite['estado'] ?? 'SIN ESTADO').toUpperCase();
           String estadoTexto;
           Color estadoColor;
@@ -72,7 +72,7 @@ class _TramitesPageState extends State<TramitesPage> {
               break;
             case 'FINALIZADO':
               estadoTexto = 'FINALIZADO';
-              estadoColor = Color(0xFF94C93B);
+              estadoColor = Colors.green.shade700;
               isClickable = false;
               break;
             case 'INTERRUMPIDO':
@@ -119,7 +119,6 @@ class _TramitesPageState extends State<TramitesPage> {
                         "Documento: ${detalle["documento"]}",
                     style: TextStyle(fontSize: 12),
                   ),
-                  // ▼▼▼ ICONO Y ACCIÓN CONDICIONAL ▼▼▼
                   trailing: isClickable
                       ? Icon(Icons.arrow_forward_ios, size: 18)
                       : Icon(Icons.lock_outline, size: 18, color: Colors.grey),
@@ -135,7 +134,7 @@ class _TramitesPageState extends State<TramitesPage> {
                             ),
                           );
                         }
-                      : null, // Desactiva el onTap si no es clickeable
+                      : null,
                 ),
                 Positioned(
                   bottom: 0,

@@ -1,43 +1,97 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl = 'http://192.168.88.224:8000';
 
   static Future<Map<String, dynamic>> login(String email, String password, {String? fcmToken}) async {
     final url = Uri.parse('$baseUrl/api/login');
-
     final Map<String, String> body = {
       'email': email,
       'password': password,
     };
-
     if (fcmToken != null) {
       body['fcm_token'] = fcmToken;
     }
-
-    final response = await http.post(
-        url,
-        headers: {'Accept': 'application/json'},
-        body: body
-    );
-
+    final response = await http.post(url, headers: {'Accept': 'application/json'}, body: body);
     if (response.statusCode == 200) return json.decode(response.body);
-
     print('Error en login: ${response.body}');
     throw Exception('Credenciales inválidas');
   }
 
-  // ... (otros métodos)
-
-  // ▼▼▼ NUEVA FUNCIÓN AÑADIDA ▼▼▼
-  static Future<List<dynamic>> getBaterias(String userId) async {
+  // ▼▼▼ FUNCIÓN MODIFICADA PARA DEVOLVER EL MAPA COMPLETO ▼▼▼
+  static Future<Map<String, dynamic>> getBaterias(String userId) async {
     final url = Uri.parse('$baseUrl/api/baterias/$userId');
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      return json.decode(response.body); // Devuelve {'baterias': [...], 'is_blocked': bool}
+    } else {
+      throw Exception('Error al obtener las programaciones');
+    }
+  }
+
+  static Future<Map<String, dynamic>> getProveedorDetalle(String accionId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) throw Exception('Usuario no autenticado');
+
+    final url = Uri.parse('$baseUrl/api/proveedor-detalle/$accionId');
+    final response = await http.get(url, headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    });
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Error al obtener los detalles del proveedor: ${response.body}');
+    }
+  }
+
+  static Future<void> programarCita({
+    required String bateriaId,
+    required String fecha,
+    required String horaDesde,
+    required String horaHasta,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) throw Exception('Usuario no autenticado');
+
+    final url = Uri.parse('$baseUrl/api/programar-cita');
+    final response = await http.post(
+      url,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'bateria_id': bateriaId,
+        'fecha': fecha,
+        'horadesde': horaDesde,
+        'horahasta': horaHasta,
+      }),
+    );
+
+    if (response.statusCode == 409) {
+      final body = jsonDecode(response.body);
+      throw Exception(body['message'] ?? 'Este horario ya no está disponible.');
+    }
+
+    if (response.statusCode != 201) {
+      throw Exception('Fallo al crear la programación: ${response.body}');
+    }
+  }
+
+  static Future<List<dynamic>> getAusencias() async {
+    final url = Uri.parse('$baseUrl/api/ausencias');
     final response = await http.get(url);
     if (response.statusCode == 200) {
       return json.decode(response.body);
     } else {
-      throw Exception('Error al obtener las programaciones');
+      throw Exception('Error al obtener las ausencias');
     }
   }
 
@@ -47,7 +101,6 @@ class ApiService {
     if (response.statusCode == 200) return json.decode(response.body);
     throw Exception('Error al registrarse');
   }
-
 
   static Future<List<dynamic>> getAreas(String tipoArea, String sucursal) async {
     final url = Uri.parse('$baseUrl/api/areas?tipo=$tipoArea&sucursal=$sucursal');
@@ -67,7 +120,6 @@ class ApiService {
     final url = accion != null && accion.isNotEmpty
         ? Uri.parse('$baseUrl/api/proveedores?area=$area&accion=$accion&sucursal=$sucursal')
         : Uri.parse('$baseUrl/api/proveedores?area=$area&sucursal=$sucursal');
-
     final response = await http.get(url);
     if (response.statusCode == 200) return json.decode(response.body);
     throw Exception('Error al obtener proveedores');
@@ -95,12 +147,41 @@ class ApiService {
     }
   }
 
+  // ▼▼▼ NUEVA FUNCIÓN PARA CONFIRMAR ASISTENCIA ▼▼▼
+  static Future<void> confirmarAsistencia({
+    required String areaNombre,
+    required String decision,
+    required String usuarioId,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) throw Exception('Usuario no autenticado');
+
+    final url = Uri.parse('$baseUrl/api/confirmar-asistencia');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token', // <-- TOKEN AÑADIDO
+      },
+      body: jsonEncode({
+        'areanombre': areaNombre,
+        'decision': decision,
+        'usuario_id': usuarioId,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      print('Error en confirmarAsistencia: ${response.body}'); // Para depurar
+      throw Exception('Error al guardar confirmación');
+    }
+  }
+
   static Future<Map<String, dynamic>> getNotificaciones(String userId) async {
     final response = await http.get(Uri.parse('$baseUrl/api/notificaciones/$userId'));
-
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-
       return {
         'no_leidas': List<Map<String, dynamic>>.from(data['no_leidas']),
         'leidas': List<Map<String, dynamic>>.from(data['leidas']),
@@ -109,7 +190,6 @@ class ApiService {
       throw Exception('Error al cargar notificaciones: ${response.statusCode}');
     }
   }
-
 
   static Future<void> marcarLeida(String id) async {
     await http.post(Uri.parse('$baseUrl/api/notificaciones/$id/leer'));

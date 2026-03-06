@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Notifications\SubirPoderesNotification;
+use App\Models\Derechohabientes;
 
 class InstructivaPoderController extends Controller
 {
@@ -447,8 +448,12 @@ class InstructivaPoderController extends Controller
 
         $estadoCivil = Str::upper($estadoCivil);
 
+        $derechohabientes = Derechohabientes::where('clienteid', $cliente->id)
+        ->where('tramite', $tipoPdf)
+        ->get();
+
         $pdf = PDF::loadView($config['vista'], compact('tipoPdf', 'cliente', 'personal', 'estadoCivil', 'fechaactual', 'sucursal','tipopension'
-        ,'generofallecido','nombrefallecido','cifallecido'));
+        ,'generofallecido','nombrefallecido','cifallecido','derechohabientes'));
         $rutaCarpeta = public_path('instructivaspoder/' . $cliente->id);
         if (!file_exists($rutaCarpeta)) {
             mkdir($rutaCarpeta, 0777, true);
@@ -718,6 +723,10 @@ class InstructivaPoderController extends Controller
 
         $estadoCivil = Str::upper($estadoCivil);
 
+        $derechohabientes = Derechohabientes::where('clienteid', $cliente->id)
+        ->where('tramite', $tipoPdf)
+        ->get();
+
         $pdf = PDF::loadView($config['vista'], compact(
             'tipoPdf',
             'personalIds',
@@ -726,7 +735,7 @@ class InstructivaPoderController extends Controller
             'cliente',
             'fechaactual',
             'sucursal',
-            'tipopension','generofallecido','nombrefallecido','cifallecido'
+            'tipopension','generofallecido','nombrefallecido','cifallecido','derechohabientes'
         ));
 
         return $pdf->stream('preview-instructiva.pdf');

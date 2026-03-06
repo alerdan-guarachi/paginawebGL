@@ -2,7 +2,7 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.tramites.index') }}">REGRESAR</a>
-@if($inicioocontinuidad)
+{{-- @if($inicioocontinuidad)
     <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalcomunicaciones">COMUNICACIÓN</a>
     <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalsolicitudes">HISTORIAL DE MISIVAS</a>
     <a class="btn btn-sm float-right btn-cartareclamo" href="{{ route('admin.tramites.cartasproctercerasolicitud', $cliente->id) }}">NUEVA MISIVA</a>
@@ -10,7 +10,65 @@
     <a class="btn btn-sm float-right btn-cancelacion" data-toggle="modal" data-target="#modalCancelacion">CANCELACIÓN</a>
     <a class="btn btn-sm float-right btn-cancelacion" data-toggle="modal" data-target="#modalNotifErroneas">NOTIF. ERRÓNEAS</a>
 @endif
-<a class="btn btn-sm float-right btn-seguimiento" data-toggle="modal" data-target="#modalCodigo">CÓD. PERMISO</a>
+<a class="btn btn-sm float-right btn-seguimiento" data-toggle="modal" data-target="#modalCodigo">CÓD. PERMISO</a> --}}
+
+@if($inicioocontinuidad)
+    <div class="dropdown float-right ml-2">
+        <button class="btn btn-sm btn-cartareclamo dropdown-toggle shadow-sm"
+                type="button"
+                id="dropdownAcciones"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+            <i class="fas fa-cogs mr-1"></i> ACCIONES
+        </button>
+        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+            aria-labelledby="dropdownAcciones"
+            style="min-width: 300px;">
+
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalDatos">
+                <i class="fas fa-user mr-2 text-orange"></i> DATOS DEL CLIENTE
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalcomunicaciones">
+                <i class="fas fa-envelope mr-2 text-orange"></i> COMUNICACIONES
+            </a>
+            <a class="dropdown-item" href="{{ route('admin.tramites.cartasproctercerasolicitud', $cliente->id) }}">
+                <i class="fas fa-plus-circle mr-2 text-orange"></i> NUEVA MISIVA
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalsolicitudes">
+                <i class="fas fa-history mr-2 text-orange"></i> HISTORIAL DE MISIVAS
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalNotifErroneas">
+                <i class="fas fa-exclamation-triangle mr-2 text-orange"></i> NOTIFICACIONES ERRÓNEAS
+            </a>
+            {{-- NUEVO 130226 --}}
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalNotifObservadas">
+                <i class="fas fa-eye mr-2 text-orange"></i> NOTIFICACIONES OBSERVADAS
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalCancelacion">
+                <i class="fas fa-times-circle mr-2 text-orange"></i> CANCELACIÓN DE TRÁMITE
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalCodigo">
+                <i class="fas fa-key mr-2 text-orange"></i> CÓDIGOS DE PERMISO
+            </a>
+        </div>
+    </div>
+    <style>
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 18px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            cursor: pointer !important;
+        }
+        .dropdown-item:hover {
+            background-color: rgba(255, 140, 0, 0.08);
+            transform: translateX(5px);
+        }
+    </style>
+@endif
 
 <div class="modal fade" id="modalCodigo" tabindex="-1" role="dialog" aria-labelledby="modalCodigoLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -2077,7 +2135,7 @@
                                             ->get();
                                             $sitmentregacarpeta = $cliente->tramites()
                                                 ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')
-                                                ->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ ENTREGA DE CARPETA')
+                                                ->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO')
                                                 ->where('tramite', 'TERCERA SOLICITUD')
                                             ->get();
                                             $documento22 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN MT')->where('tramite', 'TERCERA SOLICITUD')->first();
@@ -2672,90 +2730,144 @@
                                             @endphp
                                             @if($registrosGuardadosProgramacion && $registrosGuardadosProgramacion->count() > 0)
 
-                                                {{-- ENTREGA DE CARPETA --}}
+                                                {{-- ENTREGA DE CARPETA A MEDICINA DEL TRABAJO --}}
                                                 @if (isset($aseguradora) && $aseguradora === 'CAJA PETROLERA DE SALUD')
-                                                <table class="table table-bordered table-sm align-middle text-center" style="margin-bottom: -5px;">
-                                                    <thead class="thead-light">
-                                                        <tr>
-                                                            <th style="width: 10%;">ID</th>
-                                                            <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
-                                                            <th style="width: 30%;">DIAS_RESTANTES</th>
-                                                            <th style="width: 30%;">FECHA_REGISTRO</th>
-                                                            <th style="width: 30%;">RESPALDO</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @forelse ($sitmentregacarpeta as $documento)
+                                                    <table class="table table-bordered table-sm align-middle text-center">
+                                                        <thead class="thead-light">
                                                             <tr>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">{{ $documento->id }}</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">ENTREGA DE CARPETA</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    @if($diasRestantes !== null)
-                                                                        @if($diasRestantes > 0)
-                                                                            <p class="mb-0">{{ $diasRestantes }} DIAS</p>
-                                                                        @else
-                                                                            <p class="mb-0 text-danger">PLAZO VENCIDO</p>
-                                                                        @endif
-                                                                    @else
-                                                                        <p class="mb-0">PENDIENTE</p>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO/{$documento->document}") }}" 
-                                                                    class="btn btn-sm btn-verdocumento" 
-                                                                    target="_blank">VER DOCUMENTO</a>
-                                                                </td>
+                                                                <th style="width: 10%;">ID</th>
+                                                                <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
+                                                                {{-- <th style="width: 30%;">DIAS_RESTANTES</th> --}}
+                                                                <th style="width: 30%;">FECHA_ENTREGA</th>
+                                                                <th style="width: 30%;">RESPALDO</th>
                                                             </tr>
-                                                        @empty
+                                                        </thead>
+                                                        <tbody>
+                                                            @forelse ($sitmentregacarpeta as $documento)
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ $documento->id }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">ENTREGA DE CARPETA A MEDICINA DEL TRABAJO</p>
+                                                                    </td>
+                                                                    {{-- <td class="align-middle text-center">
+                                                                        @if($diasRestantes !== null)
+                                                                            @if($diasRestantes > 0)
+                                                                                <p class="mb-0">{{ $diasRestantes }} DIAS</p>
+                                                                            @else
+                                                                                <p class="mb-0 text-danger">PLAZO VENCIDO</p>
+                                                                            @endif
+                                                                        @else
+                                                                            <p class="mb-0">PENDIENTE</p>
+                                                                        @endif
+                                                                    </td> --}}
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO/{$documento->document}") }}" 
+                                                                        class="btn btn-sm btn-verdocumento" 
+                                                                        target="_blank">VER DOCUMENTO</a>
+                                                                    </td>
+                                                                </tr>
+                                                            @empty
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="text" class="form-control" disabled>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">ENTREGA DE CARPETA A MEDICINA DEL TRABAJO</p>
+                                                                        <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
+                                                                        <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO">
+                                                                        <input type="hidden" name="subprocedimiento[]" value="ENTE GESTOR DE SALUD _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO">
+                                                                    </td>
+                                                                    {{-- <td class="align-middle text-center">
+                                                                        @if($diasRestantes !== null)
+                                                                            @if($diasRestantes > 0)
+                                                                                <p class="mb-0">{{ $diasRestantes }} DIAS</p>
+                                                                            @else
+                                                                                <p class="mb-0 text-danger">PLAZO VENCIDO</p>
+                                                                            @endif
+                                                                        @else
+                                                                            <p class="mb-0">PENDIENTE</p>
+                                                                        @endif
+                                                                    </td> --}}
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="date" 
+                                                                            class="form-control text-center" 
+                                                                            name="fechasubida[]" 
+                                                                            value="{{ \Carbon\Carbon::now()->toDateString() }}">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="file" 
+                                                                            name="archivo[]" 
+                                                                            class="dropify mx-auto d-block" 
+                                                                            accept=".pdf,.jpg,.jpeg,.png">
+                                                                    </td>
+                                                                </tr>
+                                                            @endforelse
+                                                        </tbody>
+                                                    </table>
+
+                                                    @php
+                                                        $recojocarpeta1 = $cliente->tramites()
+                                                        ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')
+                                                        ->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO')
+                                                        ->where('tramite', 'TERCERA SOLICITUD')->get();
+                                                    @endphp
+                                                    <table class="table table-bordered table-sm align-middle text-center">
+                                                        <thead class="thead-light">
                                                             <tr>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="text" class="form-control" disabled>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">ENTREGA DE CARPETA</p>
-                                                                    <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
-                                                                    <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO">
-                                                                    <input type="hidden" name="subprocedimiento[]" value="ENTE GESTOR DE SALUD _ ENTREGA DE CARPETA">
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    @if($diasRestantes !== null)
-                                                                        @if($diasRestantes > 0)
-                                                                            <p class="mb-0">{{ $diasRestantes }} DIAS</p>
-                                                                        @else
-                                                                            <p class="mb-0 text-danger">PLAZO VENCIDO</p>
-                                                                        @endif
-                                                                    @else
-                                                                        <p class="mb-0">PENDIENTE</p>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="date" 
-                                                                        class="form-control text-center" 
-                                                                        name="fechasubida[]" 
-                                                                        value="{{ \Carbon\Carbon::now()->toDateString() }}" 
-                                                                        {{ $puedeEditarFecha ? '' : 'readonly' }}>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="file" 
-                                                                        name="archivo[]" 
-                                                                        class="dropify mx-auto d-block" 
-                                                                        accept="application/pdf">
-                                                                </td>
+                                                                <th style="width: 10%;">ID</th>
+                                                                <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
+                                                                <th style="width: 30%;">FECHA_RECOJO</th>
+                                                                <th style="width: 30%;">RESPALDO</th>
                                                             </tr>
-                                                        @endforelse
-                                                    </tbody>
-                                                </table>
+                                                        </thead>
+                                                        <tbody>
+                                                            @forelse ($recojocarpeta1 as $documento)
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ $documento->id }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">RECOJO DE CARPETA DE MEDICINA DEL TRABAJO</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO/{$documento->document}") }}" 
+                                                                        class="btn btn-sm btn-verdocumento" 
+                                                                        target="_blank">VER RESPALDO</a>
+                                                                    </td>
+                                                                </tr>
+                                                            @empty
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="text" class="form-control" disabled>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">RECOJO DE CARPETA DE MEDICINA DEL TRABAJO</p>
+                                                                        <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
+                                                                        <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO">
+                                                                        <input type="hidden" name="subprocedimiento[]" value="ENTE GESTOR DE SALUD _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="date" class="form-control text-center" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="file" name="archivo[]" class="dropify mx-auto d-block" accept=".pdf,.jpg,.jpeg,.png">
+                                                                    </td>
+                                                                </tr>
+                                                            @endforelse
+                                                        </tbody>
+                                                    </table>
                                                 @endif
 
                                                 {{-- ADJUNTO DE DOCUMENTACIÓN MEDICA --}}
-                                                @if($mostrarFormulario)
+                                                {{-- @if($mostrarFormulario)
                                                     <table class="table table-bordered table-sm align-middle text-center">
                                                         <thead class="thead-light">
                                                             <tr>
@@ -2860,7 +2972,65 @@
                                                             this.style.display = 'none';
                                                         });
                                                     </script>
-                                                @endif
+                                                @endif --}}
+                                            @endif
+
+                                            {{-- NUEVO 130226 --}}
+                                            @php
+                                                $nuevoadj1 = $cliente->tramites()
+                                                    ->where('tipo', 'ADJUNTO / RESPUESTA')
+                                                    ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')
+                                                    ->where('subprocedimiento', 'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO')
+                                                    ->where('tramite', 'TERCERA SOLICITUD')
+                                                ->get();
+                                            @endphp
+                                            @if($nuevoadj1->isNotEmpty())
+                                                <table class="table table-bordered table-sm align-middle text-center">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th style="width: 10%;">ID</th>
+                                                            <th style="width: 20%;">SUB_PROCEDIMIENTO</th>
+                                                            <th style="width: 10%;">FECHA_REGISTRO</th>
+                                                            <th style="width: 20%;">CARTA</th>
+                                                            <th style="width: 20%;">FORMULARIO</th>
+                                                            <th style="width: 10%;">FECHA_RESP.</th>
+                                                            <th style="width: 10%;">RESPUESTA</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($nuevoadj1 as $documento)
+                                                            <tr class="text-center">
+                                                                <td class="align-middle text-center">{{ $documento->id }}</td>
+                                                                <td class="align-middle text-center">ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO</td>
+                                                                <td class="align-middle text-center">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</td>
+                                                                <td>
+                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER CARTA</a>
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document2)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document2}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER FORMULARIO</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->fechainclusion)
+                                                                        {{ $documento->fechainclusion }}
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document3)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document3}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER RESPUESTA</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
                                             @endif
 
                                             {{-- NUEVO 271025 --}}
@@ -3030,7 +3200,7 @@
                                             ->get();
                                             $sitmentregacarpetatmc = $cliente->tramites()
                                                 ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')
-                                                ->where('subprocedimiento', 'NOTIFICACIÓN TMC _ ENTREGA DE CARPETA')
+                                                ->where('subprocedimiento', 'NOTIFICACIÓN TMC _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO')
                                                 ->where('tramite', 'TERCERA SOLICITUD')
                                             ->get();
                                             $documento22tmc = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ SOLICITUD DE EVALUACIÓN MT')->where('tramite', 'TERCERA SOLICITUD')->first();
@@ -3624,90 +3794,144 @@
                                             @endphp
                                             @if($registrosGuardadosProgSITMtmc && $registrosGuardadosProgSITMtmc->count() > 0)
 
-                                                {{-- ENTREGA DE CARPETA --}}
+                                                {{-- ENTREGA DE CARPETA A MEDICINA DEL TRABAJO --}}
                                                 @if (isset($aseguradora) && $aseguradora === 'CAJA PETROLERA DE SALUD')
-                                                <table class="table table-bordered table-sm align-middle text-center" style="margin-bottom: -5px;">
-                                                    <thead class="thead-light">
-                                                        <tr>
-                                                            <th style="width: 10%;">ID</th>
-                                                            <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
-                                                            <th style="width: 30%;">DIAS_RESTANTES</th>
-                                                            <th style="width: 30%;">FECHA_REGISTRO</th>
-                                                            <th style="width: 30%;">RESPALDO</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @forelse ($sitmentregacarpetatmc as $documento)
+                                                    <table class="table table-bordered table-sm align-middle text-center">
+                                                        <thead class="thead-light">
                                                             <tr>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">{{ $documento->id }}</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">ENTREGA DE CARPETA</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    @if($diasRestantes2 !== null)
-                                                                        @if($diasRestantes2 > 0)
-                                                                            <p class="mb-0">{{ $diasRestantes2 }} DIAS</p>
-                                                                        @else
-                                                                            <p class="mb-0 text-danger">PLAZO VENCIDO</p>
-                                                                        @endif
-                                                                    @else
-                                                                        <p class="mb-0">PENDIENTE</p>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO/{$documento->document}") }}" 
-                                                                    class="btn btn-sm btn-verdocumento" 
-                                                                    target="_blank">VER DOCUMENTO</a>
-                                                                </td>
+                                                                <th style="width: 10%;">ID</th>
+                                                                <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
+                                                                {{-- <th style="width: 30%;">DIAS_RESTANTES</th> --}}
+                                                                <th style="width: 30%;">FECHA_ENTREGA</th>
+                                                                <th style="width: 30%;">RESPALDO</th>
                                                             </tr>
-                                                        @empty
+                                                        </thead>
+                                                        <tbody>
+                                                            @forelse ($sitmentregacarpetatmc as $documento)
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ $documento->id }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">ENTREGA DE CARPETA A MEDICINA DEL TRABAJO</p>
+                                                                    </td>
+                                                                    {{-- <td class="align-middle text-center">
+                                                                        @if($diasRestantes2 !== null)
+                                                                            @if($diasRestantes2 > 0)
+                                                                                <p class="mb-0">{{ $diasRestantes2 }} DIAS</p>
+                                                                            @else
+                                                                                <p class="mb-0 text-danger">PLAZO VENCIDO</p>
+                                                                            @endif
+                                                                        @else
+                                                                            <p class="mb-0">PENDIENTE</p>
+                                                                        @endif
+                                                                    </td> --}}
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO/{$documento->document}") }}" 
+                                                                        class="btn btn-sm btn-verdocumento" 
+                                                                        target="_blank">VER DOCUMENTO</a>
+                                                                    </td>
+                                                                </tr>
+                                                            @empty
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="text" class="form-control" disabled>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">ENTREGA DE CARPETA A MEDICINA DEL TRABAJO</p>
+                                                                        <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
+                                                                        <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO">
+                                                                        <input type="hidden" name="subprocedimiento[]" value="NOTIFICACIÓN TMC _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO">
+                                                                    </td>
+                                                                    {{-- <td class="align-middle text-center">
+                                                                        @if($diasRestantes2 !== null)
+                                                                            @if($diasRestantes2 > 0)
+                                                                                <p class="mb-0">{{ $diasRestantes2 }} DIAS</p>
+                                                                            @else
+                                                                                <p class="mb-0 text-danger">PLAZO VENCIDO</p>
+                                                                            @endif
+                                                                        @else
+                                                                            <p class="mb-0">PENDIENTE</p>
+                                                                        @endif
+                                                                    </td> --}}
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="date" 
+                                                                            class="form-control text-center" 
+                                                                            name="fechasubida[]" 
+                                                                            value="{{ \Carbon\Carbon::now()->toDateString() }}">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="file" 
+                                                                            name="archivo[]" 
+                                                                            class="dropify mx-auto d-block" 
+                                                                            accept=".pdf,.jpg,.jpeg,.png">
+                                                                    </td>
+                                                                </tr>
+                                                            @endforelse
+                                                        </tbody>
+                                                    </table>
+
+                                                    @php
+                                                        $recojocarpeta2 = $cliente->tramites()
+                                                        ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')
+                                                        ->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO')
+                                                        ->where('tramite', 'TERCERA SOLICITUD')->get();
+                                                    @endphp
+                                                    <table class="table table-bordered table-sm align-middle text-center">
+                                                        <thead class="thead-light">
                                                             <tr>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="text" class="form-control" disabled>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">ENTREGA DE CARPETA</p>
-                                                                    <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
-                                                                    <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO">
-                                                                    <input type="hidden" name="subprocedimiento[]" value="NOTIFICACIÓN TMC _ ENTREGA DE CARPETA">
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    @if($diasRestantes2 !== null)
-                                                                        @if($diasRestantes2 > 0)
-                                                                            <p class="mb-0">{{ $diasRestantes2 }} DIAS</p>
-                                                                        @else
-                                                                            <p class="mb-0 text-danger">PLAZO VENCIDO</p>
-                                                                        @endif
-                                                                    @else
-                                                                        <p class="mb-0">PENDIENTE</p>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="date" 
-                                                                        class="form-control text-center" 
-                                                                        name="fechasubida[]" 
-                                                                        value="{{ \Carbon\Carbon::now()->toDateString() }}" 
-                                                                        {{ $puedeEditarFecha ? '' : 'readonly' }}>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="file" 
-                                                                        name="archivo[]" 
-                                                                        class="dropify mx-auto d-block" 
-                                                                        accept="application/pdf">
-                                                                </td>
+                                                                <th style="width: 10%;">ID</th>
+                                                                <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
+                                                                <th style="width: 30%;">FECHA_RECOJO</th>
+                                                                <th style="width: 30%;">RESPALDO</th>
                                                             </tr>
-                                                        @endforelse
-                                                    </tbody>
-                                                </table>
+                                                        </thead>
+                                                        <tbody>
+                                                            @forelse ($recojocarpeta2 as $documento)
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ $documento->id }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">RECOJO DE CARPETA DE MEDICINA DEL TRABAJO</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO/{$documento->document}") }}" 
+                                                                        class="btn btn-sm btn-verdocumento" 
+                                                                        target="_blank">VER RESPALDO</a>
+                                                                    </td>
+                                                                </tr>
+                                                            @empty
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="text" class="form-control" disabled>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">RECOJO DE CARPETA DE MEDICINA DEL TRABAJO</p>
+                                                                        <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
+                                                                        <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO">
+                                                                        <input type="hidden" name="subprocedimiento[]" value="NOTIFICACIÓN TMC _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="date" class="form-control text-center" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="file" name="archivo[]" class="dropify mx-auto d-block" accept=".pdf,.jpg,.jpeg,.png">
+                                                                    </td>
+                                                                </tr>
+                                                            @endforelse
+                                                        </tbody>
+                                                    </table>
                                                 @endif
 
                                                 {{-- ADJUNTO DE DOCUMENTACIÓN MEDICA --}}
-                                                @if($mostrarFormulario)
+                                                {{-- @if($mostrarFormulario)
                                                     <table class="table table-bordered table-sm align-middle text-center">
                                                         <thead class="thead-light">
                                                             <tr>
@@ -3812,8 +4036,66 @@
                                                             this.style.display = 'none';
                                                         });
                                                     </script>
-                                                @endif
+                                                @endif --}}
 
+                                            @endif
+
+                                            {{-- NUEVO 130226 --}}
+                                            @php
+                                                $nuevoadj2 = $cliente->tramites()
+                                                    ->where('tipo', 'ADJUNTO / RESPUESTA')
+                                                    ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')
+                                                    ->where('subprocedimiento', 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC')
+                                                    ->where('tramite', 'TERCERA SOLICITUD')
+                                                ->get();
+                                            @endphp
+                                            @if($nuevoadj2->isNotEmpty())
+                                                <table class="table table-bordered table-sm align-middle text-center">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th style="width: 10%;">ID</th>
+                                                            <th style="width: 20%;">SUB_PROCEDIMIENTO</th>
+                                                            <th style="width: 10%;">FECHA_REGISTRO</th>
+                                                            <th style="width: 20%;">CARTA</th>
+                                                            <th style="width: 20%;">FORMULARIO</th>
+                                                            <th style="width: 10%;">FECHA_RESP.</th>
+                                                            <th style="width: 10%;">RESPUESTA</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($nuevoadj2 as $documento)
+                                                            <tr class="text-center">
+                                                                <td class="align-middle text-center">{{ $documento->id }}</td>
+                                                                <td class="align-middle text-center">ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC</td>
+                                                                <td class="align-middle text-center">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</td>
+                                                                <td>
+                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER CARTA</a>
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document2)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document2}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER FORMULARIO</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->fechainclusion)
+                                                                        {{ $documento->fechainclusion }}
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document3)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document3}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER RESPUESTA</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
                                             @endif
 
                                             {{-- NUEVO 271025 --}}
@@ -4223,6 +4505,64 @@
                                                     }
                                                 }
                                             </script>
+
+                                            {{-- NUEVO 130226 --}}
+                                            @php
+                                                $nuevoadj3 = $cliente->tramites()
+                                                    ->where('tipo', 'ADJUNTO / RESPUESTA')
+                                                    ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')
+                                                    ->where('subprocedimiento', 'ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR')
+                                                    ->where('tramite', 'TERCERA SOLICITUD')
+                                                ->get();
+                                            @endphp
+                                            @if($nuevoadj3->isNotEmpty())
+                                                <table class="table table-bordered table-sm align-middle text-center">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th style="width: 10%;">ID</th>
+                                                            <th style="width: 20%;">SUB_PROCEDIMIENTO</th>
+                                                            <th style="width: 10%;">FECHA_REGISTRO</th>
+                                                            <th style="width: 20%;">CARTA</th>
+                                                            <th style="width: 20%;">FORMULARIO</th>
+                                                            <th style="width: 10%;">FECHA_RESP.</th>
+                                                            <th style="width: 10%;">RESPUESTA</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($nuevoadj3 as $documento)
+                                                            <tr class="text-center">
+                                                                <td class="align-middle text-center">{{ $documento->id }}</td>
+                                                                <td class="align-middle text-center">ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR</td>
+                                                                <td class="align-middle text-center">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</td>
+                                                                <td>
+                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER CARTA</a>
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document2)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document2}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER FORMULARIO</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->fechainclusion)
+                                                                        {{ $documento->fechainclusion }}
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document3)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document3}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER RESPUESTA</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            @endif
 
                                             {{-- NUEVO 271025 --}}
                                             @php
@@ -5818,7 +6158,7 @@
                                             ->get();
                                             $sitmentregacarpetacom = $cliente->tramites()
                                                 ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')
-                                                ->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ ENTREGA DE CARPETA')
+                                                ->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO')
                                                 ->where('tramite', 'TERCERA SOLICITUD')
                                             ->get();
                                             $documento22com = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ SOLICITUD DE EVALUACIÓN MT')->where('tramite', 'TERCERA SOLICITUD')->first();
@@ -6413,90 +6753,144 @@
                                             @endphp
                                             @if($registrosGuardadosProgramacioncom && $registrosGuardadosProgramacioncom->count() > 0)
 
-                                                {{-- ENTREGA DE CARPETA --}}
+                                                {{-- ENTREGA DE CARPETA A MEDICINA DEL TRABAJO --}}
                                                 @if (isset($aseguradora) && $aseguradora === 'CAJA PETROLERA DE SALUD')
-                                                <table class="table table-bordered table-sm align-middle text-center" style="margin-bottom: -5px;">
-                                                    <thead class="thead-light">
-                                                        <tr>
-                                                            <th style="width: 10%;">ID</th>
-                                                            <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
-                                                            <th style="width: 30%;">DIAS_RESTANTES</th>
-                                                            <th style="width: 30%;">FECHA_REGISTRO</th>
-                                                            <th style="width: 30%;">RESPALDO</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @forelse ($sitmentregacarpetacom as $documento)
+                                                    <table class="table table-bordered table-sm align-middle text-center">
+                                                        <thead class="thead-light">
                                                             <tr>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">{{ $documento->id }}</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">ENTREGA DE CARPETA</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    @if($diasRestantescom !== null)
-                                                                        @if($diasRestantescom > 0)
-                                                                            <p class="mb-0">{{ $diasRestantescom }} DIAS</p>
-                                                                        @else
-                                                                            <p class="mb-0 text-danger">PLAZO VENCIDO</p>
-                                                                        @endif
-                                                                    @else
-                                                                        <p class="mb-0">PENDIENTE</p>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN COMPLEMENTARIA/{$documento->document}") }}" 
-                                                                    class="btn btn-sm btn-verdocumento" 
-                                                                    target="_blank">VER DOCUMENTO</a>
-                                                                </td>
+                                                                <th style="width: 10%;">ID</th>
+                                                                <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
+                                                                {{-- <th style="width: 30%;">DIAS_RESTANTES</th> --}}
+                                                                <th style="width: 30%;">FECHA_ENTREGA</th>
+                                                                <th style="width: 30%;">RESPALDO</th>
                                                             </tr>
-                                                        @empty
+                                                        </thead>
+                                                        <tbody>
+                                                            @forelse ($sitmentregacarpetacom as $documento)
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ $documento->id }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">ENTREGA DE CARPETA A MEDICINA DEL TRABAJO</p>
+                                                                    </td>
+                                                                    {{-- <td class="align-middle text-center">
+                                                                        @if($diasRestantescom !== null)
+                                                                            @if($diasRestantescom > 0)
+                                                                                <p class="mb-0">{{ $diasRestantescom }} DIAS</p>
+                                                                            @else
+                                                                                <p class="mb-0 text-danger">PLAZO VENCIDO</p>
+                                                                            @endif
+                                                                        @else
+                                                                            <p class="mb-0">PENDIENTE</p>
+                                                                        @endif
+                                                                    </td> --}}
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN COMPLEMENTARIA/{$documento->document}") }}" 
+                                                                        class="btn btn-sm btn-verdocumento" 
+                                                                        target="_blank">VER DOCUMENTO</a>
+                                                                    </td>
+                                                                </tr>
+                                                            @empty
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="text" class="form-control" disabled>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">ENTREGA DE CARPETA A MEDICINA DEL TRABAJO</p>
+                                                                        <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
+                                                                        <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA">
+                                                                        <input type="hidden" name="subprocedimiento[]" value="ENTE GESTOR DE SALUD _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO">
+                                                                    </td>
+                                                                    {{-- <td class="align-middle text-center">
+                                                                        @if($diasRestantescom !== null)
+                                                                            @if($diasRestantescom > 0)
+                                                                                <p class="mb-0">{{ $diasRestantescom }} DIAS</p>
+                                                                            @else
+                                                                                <p class="mb-0 text-danger">PLAZO VENCIDO</p>
+                                                                            @endif
+                                                                        @else
+                                                                            <p class="mb-0">PENDIENTE</p>
+                                                                        @endif
+                                                                    </td> --}}
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="date" 
+                                                                            class="form-control text-center" 
+                                                                            name="fechasubida[]" 
+                                                                            value="{{ \Carbon\Carbon::now()->toDateString() }}">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="file" 
+                                                                            name="archivo[]" 
+                                                                            class="dropify mx-auto d-block" 
+                                                                            accept=".pdf,.jpg,.jpeg,.png">
+                                                                    </td>
+                                                                </tr>
+                                                            @endforelse
+                                                        </tbody>
+                                                    </table>
+
+                                                    @php
+                                                        $recojocarpeta3 = $cliente->tramites()
+                                                        ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')
+                                                        ->where('subprocedimiento', 'ENTE GESTOR DE SALUD _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO')
+                                                        ->where('tramite', 'TERCERA SOLICITUD')->get();
+                                                    @endphp
+                                                    <table class="table table-bordered table-sm align-middle text-center">
+                                                        <thead class="thead-light">
                                                             <tr>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="text" class="form-control" disabled>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">ENTREGA DE CARPETA</p>
-                                                                    <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
-                                                                    <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA">
-                                                                    <input type="hidden" name="subprocedimiento[]" value="ENTE GESTOR DE SALUD _ ENTREGA DE CARPETA">
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    @if($diasRestantescom !== null)
-                                                                        @if($diasRestantescom > 0)
-                                                                            <p class="mb-0">{{ $diasRestantescom }} DIAS</p>
-                                                                        @else
-                                                                            <p class="mb-0 text-danger">PLAZO VENCIDO</p>
-                                                                        @endif
-                                                                    @else
-                                                                        <p class="mb-0">PENDIENTE</p>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="date" 
-                                                                        class="form-control text-center" 
-                                                                        name="fechasubida[]" 
-                                                                        value="{{ \Carbon\Carbon::now()->toDateString() }}" 
-                                                                        {{ $puedeEditarFecha ? '' : 'readonly' }}>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="file" 
-                                                                        name="archivo[]" 
-                                                                        class="dropify mx-auto d-block" 
-                                                                        accept="application/pdf">
-                                                                </td>
+                                                                <th style="width: 10%;">ID</th>
+                                                                <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
+                                                                <th style="width: 30%;">FECHA_RECOJO</th>
+                                                                <th style="width: 30%;">RESPALDO</th>
                                                             </tr>
-                                                        @endforelse
-                                                    </tbody>
-                                                </table>
+                                                        </thead>
+                                                        <tbody>
+                                                            @forelse ($recojocarpeta3 as $documento)
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ $documento->id }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">RECOJO DE CARPETA DE MEDICINA DEL TRABAJO</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN COMPLEMENTARIA/{$documento->document}") }}" 
+                                                                        class="btn btn-sm btn-verdocumento" 
+                                                                        target="_blank">VER RESPALDO</a>
+                                                                    </td>
+                                                                </tr>
+                                                            @empty
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="text" class="form-control" disabled>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">RECOJO DE CARPETA DE MEDICINA DEL TRABAJO</p>
+                                                                        <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
+                                                                        <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA">
+                                                                        <input type="hidden" name="subprocedimiento[]" value="ENTE GESTOR DE SALUD _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="date" class="form-control text-center" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="file" name="archivo[]" class="dropify mx-auto d-block" accept=".pdf,.jpg,.jpeg,.png">
+                                                                    </td>
+                                                                </tr>
+                                                            @endforelse
+                                                        </tbody>
+                                                    </table>
                                                 @endif
 
                                                 {{-- ADJUNTO DE DOCUMENTACIÓN MEDICA --}}
-                                                @if($mostrarFormulariocom)
+                                                {{-- @if($mostrarFormulariocom)
                                                     <table class="table table-bordered table-sm align-middle text-center">
                                                         <thead class="thead-light">
                                                             <tr>
@@ -6601,7 +6995,65 @@
                                                             this.style.display = 'none';
                                                         });
                                                     </script>
-                                                @endif
+                                                @endif --}}
+                                            @endif
+
+                                            {{-- NUEVO 130226 --}}
+                                            @php
+                                                $nuevoadj4 = $cliente->tramites()
+                                                    ->where('tipo', 'ADJUNTO / RESPUESTA')
+                                                    ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')
+                                                    ->where('subprocedimiento', 'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO')
+                                                    ->where('tramite', 'TERCERA SOLICITUD')
+                                                ->get();
+                                            @endphp
+                                            @if($nuevoadj4->isNotEmpty())
+                                                <table class="table table-bordered table-sm align-middle text-center">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th style="width: 10%;">ID</th>
+                                                            <th style="width: 20%;">SUB_PROCEDIMIENTO</th>
+                                                            <th style="width: 10%;">FECHA_REGISTRO</th>
+                                                            <th style="width: 20%;">CARTA</th>
+                                                            <th style="width: 20%;">FORMULARIO</th>
+                                                            <th style="width: 10%;">FECHA_RESP.</th>
+                                                            <th style="width: 10%;">RESPUESTA</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($nuevoadj4 as $documento)
+                                                            <tr class="text-center">
+                                                                <td class="align-middle text-center">{{ $documento->id }}</td>
+                                                                <td class="align-middle text-center">ADJUNTO Y RESPUESTA AL COMPLEMENTARIO</td>
+                                                                <td class="align-middle text-center">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</td>
+                                                                <td>
+                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER CARTA</a>
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document2)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document2}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER FORMULARIO</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->fechainclusion)
+                                                                        {{ $documento->fechainclusion }}
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document3)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document3}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER RESPUESTA</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
                                             @endif
 
                                             {{-- NUEVO 271025 --}}
@@ -6770,7 +7222,7 @@
                                             ->get();
                                             $sitmentregacarpetacom2 = $cliente->tramites()
                                                 ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')
-                                                ->where('subprocedimiento', 'NOTIFICACIÓN TMC _ ENTREGA DE CARPETA')
+                                                ->where('subprocedimiento', 'NOTIFICACIÓN TMC _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO')
                                                 ->where('tramite', 'TERCERA SOLICITUD')
                                             ->get();
                                             $documento22com2 = $cliente->tramites()->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')->where('subprocedimiento', 'NOTIFICACIÓN TMC _ SOLICITUD DE EVALUACIÓN MT')->where('tramite', 'TERCERA SOLICITUD')->first();
@@ -7365,90 +7817,144 @@
                                             @endphp
                                             @if($registrosGuardadosProgramacioncom2 && $registrosGuardadosProgramacioncom2->count() > 0)
 
-                                                {{-- ENTREGA DE CARPETA --}}
+                                                {{-- ENTREGA DE CARPETA A MEDICINA DEL TRABAJO --}}
                                                 @if (isset($aseguradora) && $aseguradora === 'CAJA PETROLERA DE SALUD')
-                                                <table class="table table-bordered table-sm align-middle text-center" style="margin-bottom: -5px;">
-                                                    <thead class="thead-light">
-                                                        <tr>
-                                                            <th style="width: 10%;">ID</th>
-                                                            <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
-                                                            <th style="width: 30%;">DIAS_RESTANTES</th>
-                                                            <th style="width: 30%;">FECHA_REGISTRO</th>
-                                                            <th style="width: 30%;">RESPALDO</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @forelse ($sitmentregacarpetacom2 as $documento)
+                                                    <table class="table table-bordered table-sm align-middle text-center">
+                                                        <thead class="thead-light">
                                                             <tr>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">{{ $documento->id }}</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">ENTREGA DE CARPETA</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    @if($diasRestantescom2 !== null)
-                                                                        @if($diasRestantescom2 > 0)
-                                                                            <p class="mb-0">{{ $diasRestantescom2 }} DIAS</p>
-                                                                        @else
-                                                                            <p class="mb-0 text-danger">PLAZO VENCIDO</p>
-                                                                        @endif
-                                                                    @else
-                                                                        <p class="mb-0">PENDIENTE</p>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN COMPLEMENTARIA/{$documento->document}") }}" 
-                                                                    class="btn btn-sm btn-verdocumento" 
-                                                                    target="_blank">VER DOCUMENTO</a>
-                                                                </td>
+                                                                <th style="width: 10%;">ID</th>
+                                                                <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
+                                                                {{-- <th style="width: 30%;">DIAS_RESTANTES</th> --}}
+                                                                <th style="width: 30%;">FECHA_ENTREGA</th>
+                                                                <th style="width: 30%;">RESPALDO</th>
                                                             </tr>
-                                                        @empty
+                                                        </thead>
+                                                        <tbody>
+                                                            @forelse ($sitmentregacarpetacom2 as $documento)
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ $documento->id }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">ENTREGA DE CARPETA A MEDICINA DEL TRABAJO</p>
+                                                                    </td>
+                                                                    {{-- <td class="align-middle text-center">
+                                                                        @if($diasRestantescom2 !== null)
+                                                                            @if($diasRestantescom2 > 0)
+                                                                                <p class="mb-0">{{ $diasRestantescom2 }} DIAS</p>
+                                                                            @else
+                                                                                <p class="mb-0 text-danger">PLAZO VENCIDO</p>
+                                                                            @endif
+                                                                        @else
+                                                                            <p class="mb-0">PENDIENTE</p>
+                                                                        @endif
+                                                                    </td> --}}
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN COMPLEMENTARIA/{$documento->document}") }}" 
+                                                                        class="btn btn-sm btn-verdocumento" 
+                                                                        target="_blank">VER DOCUMENTO</a>
+                                                                    </td>
+                                                                </tr>
+                                                            @empty
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="text" class="form-control" disabled>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">ENTREGA DE CARPETA A MEDICINA DEL TRABAJO</p>
+                                                                        <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
+                                                                        <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA">
+                                                                        <input type="hidden" name="subprocedimiento[]" value="NOTIFICACIÓN TMC _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO">
+                                                                    </td>
+                                                                    {{-- <td class="align-middle text-center">
+                                                                        @if($diasRestantescom2 !== null)
+                                                                            @if($diasRestantescom2 > 0)
+                                                                                <p class="mb-0">{{ $diasRestantescom2 }} DIAS</p>
+                                                                            @else
+                                                                                <p class="mb-0 text-danger">PLAZO VENCIDO</p>
+                                                                            @endif
+                                                                        @else
+                                                                            <p class="mb-0">PENDIENTE</p>
+                                                                        @endif
+                                                                    </td> --}}
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="date" 
+                                                                            class="form-control text-center" 
+                                                                            name="fechasubida[]" 
+                                                                            value="{{ \Carbon\Carbon::now()->toDateString() }}">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="file" 
+                                                                            name="archivo[]" 
+                                                                            class="dropify mx-auto d-block" 
+                                                                            accept=".pdf,.jpg,.jpeg,.png">
+                                                                    </td>
+                                                                </tr>
+                                                            @endforelse
+                                                        </tbody>
+                                                    </table>
+
+                                                    @php
+                                                        $recojocarpeta4 = $cliente->tramites()
+                                                        ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')
+                                                        ->where('subprocedimiento', 'NOTIFICACIÓN TMC _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO')
+                                                        ->where('tramite', 'TERCERA SOLICITUD')->get();
+                                                    @endphp
+                                                    <table class="table table-bordered table-sm align-middle text-center">
+                                                        <thead class="thead-light">
                                                             <tr>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="text" class="form-control" disabled>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <p class="mb-0">ENTREGA DE CARPETA</p>
-                                                                    <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
-                                                                    <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA">
-                                                                    <input type="hidden" name="subprocedimiento[]" value="NOTIFICACIÓN TMC _ ENTREGA DE CARPETA">
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    @if($diasRestantescom2 !== null)
-                                                                        @if($diasRestantescom2 > 0)
-                                                                            <p class="mb-0">{{ $diasRestantescom2 }} DIAS</p>
-                                                                        @else
-                                                                            <p class="mb-0 text-danger">PLAZO VENCIDO</p>
-                                                                        @endif
-                                                                    @else
-                                                                        <p class="mb-0">PENDIENTE</p>
-                                                                    @endif
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="date" 
-                                                                        class="form-control text-center" 
-                                                                        name="fechasubida[]" 
-                                                                        value="{{ \Carbon\Carbon::now()->toDateString() }}" 
-                                                                        {{ $puedeEditarFecha ? '' : 'readonly' }}>
-                                                                </td>
-                                                                <td class="align-middle text-center">
-                                                                    <input type="file" 
-                                                                        name="archivo[]" 
-                                                                        class="dropify mx-auto d-block" 
-                                                                        accept="application/pdf">
-                                                                </td>
+                                                                <th style="width: 10%;">ID</th>
+                                                                <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
+                                                                <th style="width: 30%;">FECHA_RECOJO</th>
+                                                                <th style="width: 30%;">RESPALDO</th>
                                                             </tr>
-                                                        @endforelse
-                                                    </tbody>
-                                                </table>
+                                                        </thead>
+                                                        <tbody>
+                                                            @forelse ($recojocarpeta4 as $documento)
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ $documento->id }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">RECOJO DE CARPETA DE MEDICINA DEL TRABAJO</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/SOLICITUD DE INFORMACIÓN COMPLEMENTARIA/{$documento->document}") }}" 
+                                                                        class="btn btn-sm btn-verdocumento" 
+                                                                        target="_blank">VER RESPALDO</a>
+                                                                    </td>
+                                                                </tr>
+                                                            @empty
+                                                                <tr>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="text" class="form-control" disabled>
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <p class="mb-0">RECOJO DE CARPETA DE MEDICINA DEL TRABAJO</p>
+                                                                        <input type="hidden" name="tramite[]" value="TERCERA SOLICITUD">
+                                                                        <input type="hidden" name="nivelprocedimiento[]" value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA">
+                                                                        <input type="hidden" name="subprocedimiento[]" value="NOTIFICACIÓN TMC _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="date" class="form-control text-center" name="fechasubida[]" value="{{ \Carbon\Carbon::now()->toDateString() }}">
+                                                                    </td>
+                                                                    <td class="align-middle text-center">
+                                                                        <input type="file" name="archivo[]" class="dropify mx-auto d-block" accept=".pdf,.jpg,.jpeg,.png">
+                                                                    </td>
+                                                                </tr>
+                                                            @endforelse
+                                                        </tbody>
+                                                    </table>
                                                 @endif
 
                                                 {{-- ADJUNTO DE DOCUMENTACIÓN MEDICA --}}
-                                                @if($mostrarFormulariocom2)
+                                                {{-- @if($mostrarFormulariocom2)
                                                     <table class="table table-bordered table-sm align-middle text-center">
                                                         <thead class="thead-light">
                                                             <tr>
@@ -7553,7 +8059,65 @@
                                                             this.style.display = 'none';
                                                         });
                                                     </script>
-                                                @endif
+                                                @endif --}}
+                                            @endif
+
+                                            {{-- NUEVO 130226 --}}
+                                            @php
+                                                $nuevoadj5 = $cliente->tramites()
+                                                    ->where('tipo', 'ADJUNTO / RESPUESTA')
+                                                    ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')
+                                                    ->where('subprocedimiento', 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC')
+                                                    ->where('tramite', 'TERCERA SOLICITUD')
+                                                ->get();
+                                            @endphp
+                                            @if($nuevoadj5->isNotEmpty())
+                                                <table class="table table-bordered table-sm align-middle text-center">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th style="width: 10%;">ID</th>
+                                                            <th style="width: 20%;">SUB_PROCEDIMIENTO</th>
+                                                            <th style="width: 10%;">FECHA_REGISTRO</th>
+                                                            <th style="width: 20%;">CARTA</th>
+                                                            <th style="width: 20%;">FORMULARIO</th>
+                                                            <th style="width: 10%;">FECHA_RESP.</th>
+                                                            <th style="width: 10%;">RESPUESTA</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($nuevoadj5 as $documento)
+                                                            <tr class="text-center">
+                                                                <td class="align-middle text-center">{{ $documento->id }}</td>
+                                                                <td class="align-middle text-center">ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC</td>
+                                                                <td class="align-middle text-center">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</td>
+                                                                <td>
+                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER CARTA</a>
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document2)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document2}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER FORMULARIO</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->fechainclusion)
+                                                                        {{ $documento->fechainclusion }}
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document3)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document3}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER RESPUESTA</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
                                             @endif
 
                                             {{-- NUEVO 271025 --}}
@@ -7962,6 +8526,64 @@
                                                     }
                                                 }
                                             </script>
+
+                                            {{-- NUEVO 130226 --}}
+                                            @php
+                                                $nuevoadj6 = $cliente->tramites()
+                                                    ->where('tipo', 'ADJUNTO / RESPUESTA')
+                                                    ->where('nivelprocedimiento', 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA')
+                                                    ->where('subprocedimiento', 'ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR')
+                                                    ->where('tramite', 'TERCERA SOLICITUD')
+                                                ->get();
+                                            @endphp
+                                            @if($nuevoadj6->isNotEmpty())
+                                                <table class="table table-bordered table-sm align-middle text-center">
+                                                    <thead class="thead-light">
+                                                        <tr>
+                                                            <th style="width: 10%;">ID</th>
+                                                            <th style="width: 20%;">SUB_PROCEDIMIENTO</th>
+                                                            <th style="width: 10%;">FECHA_REGISTRO</th>
+                                                            <th style="width: 20%;">CARTA</th>
+                                                            <th style="width: 20%;">FORMULARIO</th>
+                                                            <th style="width: 10%;">FECHA_RESP.</th>
+                                                            <th style="width: 10%;">RESPUESTA</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach ($nuevoadj6 as $documento)
+                                                            <tr class="text-center">
+                                                                <td class="align-middle text-center">{{ $documento->id }}</td>
+                                                                <td class="align-middle text-center">ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR</td>
+                                                                <td class="align-middle text-center">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</td>
+                                                                <td>
+                                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER CARTA</a>
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document2)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document2}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER FORMULARIO</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->fechainclusion)
+                                                                        {{ $documento->fechainclusion }}
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                                <td>
+                                                                    @if($documento->document3)
+                                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/TERCERA SOLICITUD/ADJUNTOS Y RESPUESTAS/{$documento->document3}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER RESPUESTA</a>
+                                                                    @else
+                                                                        VACIO
+                                                                    @endif
+                                                                </td>
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            @endif
 
                                             {{-- NUEVO 271025 --}}
                                             @php
@@ -8792,16 +9414,16 @@
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs" id="tabs-solicitudes">
                         <li class="nav-item">
-                            <a class="nav-link active" id="solicitudes-tab-1" data-toggle="tab" href="#solicitudes-content-1" role="tab" aria-controls="solicitudes-content-1" aria-selected="true">HISTORIAL DE SOLICITUDES</a>
+                            <a class="nav-link active" id="solicitudes-tab-1" data-toggle="tab" href="#solicitudes-content-1" role="tab" aria-controls="solicitudes-content-1" aria-selected="true">HIST. DE SOLICITUDES</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="solicitudes-tab-2" data-toggle="tab" href="#solicitudes-content-2" role="tab" aria-controls="solicitudes-content-2" aria-selected="false">HISTORIAL DE ADJUNTOS / RESPUESTAS</a>
+                            <a class="nav-link" id="solicitudes-tab-2" data-toggle="tab" href="#solicitudes-content-2" role="tab" aria-controls="solicitudes-content-2" aria-selected="false">HIST. DE ADJUNTOS / RESPUESTAS</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="solicitudes-tab-3" data-toggle="tab" href="#solicitudes-content-3" role="tab" aria-controls="solicitudes-content-3" aria-selected="false">HISTORIAL DE CARTAS / RECLAMOS</a>
+                            <a class="nav-link" id="solicitudes-tab-3" data-toggle="tab" href="#solicitudes-content-3" role="tab" aria-controls="solicitudes-content-3" aria-selected="false">HIST. DE CARTAS / RECLAMOS</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="solicitudes-tab-4" data-toggle="tab" href="#solicitudes-content-4" role="tab" aria-controls="solicitudes-content-4" aria-selected="false">HISTORIAL DE MISIVAS LIBRES</a>
+                            <a class="nav-link" id="solicitudes-tab-4" data-toggle="tab" href="#solicitudes-content-4" role="tab" aria-controls="solicitudes-content-4" aria-selected="false">HIST. DE MISIVAS LIBRES</a>
                         </li>
                     </ul>
                 </div>
@@ -8862,7 +9484,7 @@
                                                         @if ($solicitud->observaciones)
                                                             <div>{{ $solicitud->observaciones }}</div>
                                                         @else
-                                                            <input type="text" name="observacionessolicitud" class="form-control form-control-sm" placeholder="Observación" required>
+                                                            <input type="text" name="observacionessolicitud" class="form-control form-control-sm" placeholder="Observación">
                                                         @endif
                                                     </td>
                                                     <td>
@@ -8896,7 +9518,7 @@
                                                                 <div class="col">
                                                                     <input type="file" name="document3solicitud" 
                                                                         class="form-control form-control-sm archivo-input1" 
-                                                                        accept="application/pdf" required>
+                                                                        accept="application/pdf">
                                                                 </div>
                                                                 <div class="col-auto">
                                                                     <button type="submit" class="btn btn-guardarnuevo guardar-btn1">

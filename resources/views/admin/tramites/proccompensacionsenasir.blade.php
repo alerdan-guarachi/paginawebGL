@@ -6963,13 +6963,13 @@
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs" id="tabs-solicitudes">
                         <li class="nav-item">
-                            <a class="nav-link active" id="solicitudes-tab-1" data-toggle="tab" href="#solicitudes-content-1" role="tab" aria-controls="solicitudes-content-1" aria-selected="true">HISTORIAL DE SOLICITUDES</a>
+                            <a class="nav-link active" id="solicitudes-tab-1" data-toggle="tab" href="#solicitudes-content-1" role="tab" aria-controls="solicitudes-content-1" aria-selected="true">HIST. DE SOLICITUDES</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="solicitudes-tab-2" data-toggle="tab" href="#solicitudes-content-2" role="tab" aria-controls="solicitudes-content-2" aria-selected="false">HISTORIAL DE ADJUNTOS / RESPUESTAS</a>
+                            <a class="nav-link" id="solicitudes-tab-2" data-toggle="tab" href="#solicitudes-content-2" role="tab" aria-controls="solicitudes-content-2" aria-selected="false">HIST. DE ADJUNTOS / RESPUESTAS</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="solicitudes-tab-3" data-toggle="tab" href="#solicitudes-content-3" role="tab" aria-controls="solicitudes-content-3" aria-selected="false">HISTORIAL DE CARTAS / RECLAMOS</a>
+                            <a class="nav-link" id="solicitudes-tab-3" data-toggle="tab" href="#solicitudes-content-3" role="tab" aria-controls="solicitudes-content-3" aria-selected="false">HIST. DE CARTAS / RECLAMOS</a>
                         </li>
                     </ul>
                 </div>
@@ -7014,7 +7014,7 @@
                                                         @if ($solicitud->document2)
                                                             <div>{{ $solicitud->observaciones }}</div>
                                                         @else
-                                                            <input type="text" name="observacionessolicitud" class="form-control form-control-sm" placeholder="Observación" required>
+                                                            <input type="text" name="observacionessolicitud" class="form-control form-control-sm" placeholder="Observación">
                                                         @endif
                                                     </td>
                                                     <td>
@@ -7048,7 +7048,7 @@
                                                                 <div class="col">
                                                                     <input type="file" name="document2solicitud" 
                                                                         class="form-control form-control-sm archivo-input" 
-                                                                        accept="application/pdf" required>
+                                                                        accept="application/pdf">
                                                                 </div>
                                                                 <div class="col-auto">
                                                                     <button type="submit" class="btn btn-guardarnuevo guardar-btn" disabled>

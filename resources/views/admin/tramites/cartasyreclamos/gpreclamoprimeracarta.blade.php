@@ -33,24 +33,16 @@
         <div class="tipo9" style="margin-top: -10px;">Presente. -</div>
         <div class="tipo5"><strong>REF.- CARTA DE RECLAMO DE TRÁMITE DE</strong></div>
         <div class="tipo5">
-            <strong>
-                @if (
-                    strtoupper($nombretramite) === 'INVALIDEZ' ||
-                    strtoupper($nombretramite) === 'APELACIÓN' ||
-                    strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                    strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                    strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                    strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                    strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                    strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                    strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                    strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                )
-                    PENSIÓN POR INVALIDEZ
-                @else
-                    {{ $nombretramite }}
-                @endif
-            </strong>
+            @php
+                $tramite = strtoupper($nombretramite);
+            @endphp
+            @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                <strong>PENSIÓN POR INVALIDEZ (RECALIFICACIÓN)</strong>
+            @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                <strong>PENSIÓN POR INVALIDEZ</strong>
+            @else
+                <strong>{{ $nombretramite }}</strong>
+            @endif
         </div>
         <div class="tipo2" style="margin-bottom: -5px;">Distinguidos Señores:</div>
         <div class="tipo6">
@@ -61,41 +53,30 @@
         @if ($nombretramite !== 'APELACIÓN')
             <div class="tipo6">
                 Me permito dirigirme a su Institución con el fin de solicitar información actualizada sobre el estado del trámite de
-                <strong>
-                    @if (
-                        strtoupper($nombretramite) === 'INVALIDEZ' ||
-                        strtoupper($nombretramite) === 'APELACIÓN' ||
-                        strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                    )
-                        PENSIÓN POR INVALIDEZ.
-                    @else
-                        {{ $nombretramite }}
-                    @endif
-                </strong> 
+                @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                    <strong>PENSIÓN POR INVALIDEZ (RECALIFICACIÓN)</strong>
+                @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                    <strong>PENSIÓN POR INVALIDEZ</strong>
+                @else
+                    <strong>{{ $nombretramite }}</strong>
+                @endif
                 @if ($subProcedimiento === 'INGRESO DE TRÁMITE' && $nombretramite !== 'APELACIÓN')
                         En fecha <strong>{!! $fechaingresotramite ?? '<span class="textoedita">FECHA INGRESO TRÁMITE</span>' !!}</strong> 
                         se realizó el Ingresó del Trámite, con fecha de retorno para consultar el avance del Trámite en fecha 
                         <strong>{!! $fecharetornoingresotramite ?? '<span class="textoedita">FECHA RETORNO INGRESO TRÁMITE</span>' !!}</strong>.
                 @elseif ($subProcedimiento === 'VALIDACIÓN DE TRÁMITE' && $nombretramite !== 'APELACIÓN')
                         En fecha <strong>{!! $fechaingresotramite ?? '<span class="textoedita">FECHA INGRESO TRÁMITE</span>' !!}</strong> 
-                        se realizo el Ingresó del Trámite, con fecha de retorno para consultar por la Validación del Poder en fecha
+                        se realizó el Ingresó del Trámite, con fecha de retorno para consultar por la Validación del Poder en fecha
                         <strong>{!! $fecharetornovalidacion ?? '<span class="textoedita">FECHA RETORNO VALIDACIÓN</span>' !!}</strong>.
                 @elseif ($subProcedimiento === 'FIRMA EAP' && $nombretramite !== 'APELACIÓN')
                         En fecha <strong>{!! $fechaingresotramite ?? '<span class="textoedita">FECHA INGRESO TRÁMITE</span>' !!}</strong> 
-                        se realizo el Ingresó del Trámite, y en fecha <strong>{!! $fechafirmaeap ?? '<span class="textoedita">FECHA FIRMA EAP</span>' !!}</strong> 
+                        se realizó el Ingresó del Trámite, y en fecha <strong>{!! $fechafirmaeap ?? '<span class="textoedita">FECHA FIRMA EAP</span>' !!}</strong> 
                         se firmó el Certificado de la Verificación del Estado de Ahorro Previsional (Extracto), en el cual se indicó que la fecha 
                         para consultar sobre el avance del trámite será el <strong>{!! $fecharetornofirmaeap ?? '<span class="textoedita">FECHA RETORNO FIRMA EAP</span>' !!}</strong>
                 @elseif (($subProcedimiento === 'ADJUNTO DE DOCUMENTOS' || $subProcedimiento === 'ADJUNTO DE DOCUMENTACIÓN MÉDICA') && $nombretramite !== 'APELACIÓN')
                         En fecha <strong>{!! $fechaadjunto ?? '<span class="textoedita">FECHA ADJUNTO</span>' !!}</strong> 
-                        se presento adjunto de documento / documentación medica (<strong>{!! $tipoadjunto ?? '<span class="textoedita">TIPO ADJUNTO</span>' !!}</strong>) 
-                        para complementar con el tramite iniciado en fecha <strong>{!! $fechaingresotramite ?? '<span class="textoedita">FECHA INGRESO TRÁMITE</span>' !!}</strong>
+                        se presentó adjunto de documento / documentación médica (<strong>{!! $tipoadjunto ?? '<span class="textoedita">TIPO ADJUNTO</span>' !!}</strong>) 
+                        para complementar con el trámite iniciado en fecha <strong>{!! $fechaingresotramite ?? '<span class="textoedita">FECHA INGRESO TRÁMITE</span>' !!}</strong>
                 @elseif ($subProcedimiento === 'SOLICITUD DE MODIFICACIÓN DE CITE' && $nombretramite !== 'APELACIÓN')
                         En fecha <strong>{!! $fechamodificacioncite ?? '<span class="textoedita">FECHA MODIFICACIÓN DE CITE</span>' !!}</strong> 
                         se solicito la modificación de la solicitud de Información <strong>{!! $solmodificar3 ?? '<span class="textoedita">SOLICITUD MODIFICAR</span>' !!}</strong> 
@@ -106,31 +87,31 @@
                         <strong>{!! $afiliadoa3 ?? '<span class="textoedita">AFILIADO A: CAJA/EMPRESA</span>' !!}</strong>. {{ $textocomplementario3 }}
                 @elseif (($subProcedimiento === 'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO' || $subProcedimiento === 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC' || $subProcedimiento === 'ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR' || $subProcedimiento === 'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO') && ($nombretramite !== 'APELACIÓN' && $nombretramite !== 'PENSIÓN POR MUERTE'))
                         En fecha <strong>{!! $fechaadjuntodocumento ?? '<span class="textoedita">FECHA ADJUNTO DOCUMENTACIÓN</span>' !!}</strong> 
-                        se presentó y adjuntó documentación medica solicitada, en respuesta a la solicitud de Información 
+                        se presentó y adjuntó documentación médica solicitada, en respuesta a la solicitud de Información 
                         <strong>{!! $solmodificar3 ?? '<span class="textoedita">SOLICITUD MODIFICAR</span>' !!}</strong> 
                         bajo <strong>NOTA CITE {!! $nronota3 ?? '<span class="textoedita">NOTA CITE</span>' !!}</strong> con fecha 
                         <strong>{!! $fechanota3 ?? '<span class="textoedita">FECHA NOTA CITE</span>' !!}</strong>.
                 @elseif ($subProcedimiento === 'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO' && $nombretramite === 'PENSIÓN POR MUERTE')
                         En fecha <strong>{!! $fechaadjuntodocumento ?? '<span class="textoedita">FECHA ADJUNTO DOCUMENTACIÓN</span>' !!}</strong> 
-                        se presentó y adjuntó documentación medica solicitada, en respuesta a la solicitud de Información 
+                        se presentó y adjuntó documentación médica solicitada, en respuesta a la solicitud de Información 
                         <strong>{!! $solmodificar3 ?? '<span class="textoedita">SOLICITUD MODIFICAR</span>' !!}</strong> 
                         bajo <strong>NOTA CITE {!! $nronota3 ?? '<span class="textoedita">NOTA CITE</span>' !!}</strong> con fecha 
                         <strong>{!! $fechanota3 ?? '<span class="textoedita">FECHA NOTA CITE</span>' !!}</strong>.
                 @elseif ($subProcedimiento === 'RESPUESTA A TRÁMITE' && $nombretramite === 'RETIRO DE APORTES TOTAL')
                         En fecha <strong>{!! $fechaadjuntodocumento ?? '<span class="textoedita">FECHA ADJUNTO DOCUMENTACIÓN</span>' !!}</strong> 
-                        se presentó y adjuntó documentación medica solicitada, en respuesta a la solicitud de Información 
+                        se presentó y adjuntó documentación médica solicitada, en respuesta a la solicitud de Información 
                         <strong>{!! $solmodificar3 ?? '<span class="textoedita">SOLICITUD MODIFICAR</span>' !!}</strong> 
                         bajo <strong>NOTA CITE {!! $nronota3 ?? '<span class="textoedita">NOTA CITE</span>' !!}</strong> con fecha 
                         <strong>{!! $fechanota3 ?? '<span class="textoedita">FECHA NOTA CITE</span>' !!}</strong>.
                 @elseif ($subProcedimiento === 'RESPUESTA A TRÁMITE' && $nombretramite === 'RETIRO DE APORTES PARCIAL')
                         En fecha <strong>{!! $fechaadjuntodocumento ?? '<span class="textoedita">FECHA ADJUNTO DOCUMENTACIÓN</span>' !!}</strong> 
-                        se presentó y adjuntó documentación medica solicitada, en respuesta a la solicitud de Información 
+                        se presentó y adjuntó documentación médica solicitada, en respuesta a la solicitud de Información 
                         <strong>{!! $solmodificar3 ?? '<span class="textoedita">SOLICITUD MODIFICAR</span>' !!}</strong> 
                         bajo <strong>NOTA CITE {!! $nronota3 ?? '<span class="textoedita">NOTA CITE</span>' !!}</strong> con fecha 
                         <strong>{!! $fechanota3 ?? '<span class="textoedita">FECHA NOTA CITE</span>' !!}</strong>.
                 @elseif ($subProcedimiento === 'COMPRA DE SERVICIOS' && $nombretramite !== 'APELACIÓN')
                         En fecha <strong>{!! $fechaconclusionprog3 ?? '<span class="textoedita">FECHA CONCLUSIÓN VALORACIONES</span>' !!}</strong> 
-                        el afiliado completó todas las valoraciones medicas solicitadas por el Tribunal Medico Calificador (TMC), 
+                        el afiliado completó todas las valoraciones médicas solicitadas por el Tribunal Medico Calificador (TMC), 
                         lo que permitió dar curso y respuesta al requerimiento emitido en la
                         <strong>NOTA CITE {!! $nronota3 ?? '<span class="textoedita">NOTA CITE</span>' !!}</strong> con fecha 
                         <strong>{!! $fechanota3 ?? '<span class="textoedita">FECHA NOTA CITE</span>' !!}</strong>, relacionado 
@@ -148,24 +129,13 @@
         @if ($nombretramite === 'APELACIÓN')
             <div class="tipo6">
                 Me permito dirigirme a su Institución con el fin de solicitar información actualizada sobre el estado del trámite de
-                <strong>
-                    @if (
-                        strtoupper($nombretramite) === 'INVALIDEZ' ||
-                        strtoupper($nombretramite) === 'APELACIÓN' ||
-                        strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                    )
-                        PENSIÓN POR INVALIDEZ.
-                    @else
-                        {{ $nombretramite }}
-                    @endif
-                </strong>
+                @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                    <strong>PENSIÓN POR INVALIDEZ (RECALIFICACIÓN)</strong>
+                @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                    <strong>PENSIÓN POR INVALIDEZ</strong>
+                @else
+                    <strong>{{ $nombretramite }}</strong>
+                @endif
                 En fecha <strong>{!! $fechasolrevdictamen ?? '<span class="textoedita">FECHA SOL. REV. DICTAMEN</span>' !!}</strong>
                 @if ($subProcedimiento === 'VALIDACIÓN DE TRÁMITE' || $subProcedimiento === 'SOLICITUD DE REVISIÓN DE DICTAMEN' || $subProcedimiento === 'AUTO DE ADMISIÓN' || $subProcedimiento === 'AUTO DE RECHAZO')
                     se Solicitó la 
@@ -180,22 +150,15 @@
             </div>
         @endif
         <div class="tipo6">
-            Con relación al avance del trámite de @if (
-                        strtoupper($nombretramite) === 'INVALIDEZ' ||
-                        strtoupper($nombretramite) === 'APELACIÓN' ||
-                        strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                    )
-                        PENSIÓN POR INVALIDEZ.
-                    @else
-                        {{ $nombretramite }}
-                    @endif se informa que dentro de la Gestora Publica se realizo lo siguiente:
+            Con relación al avance del trámite de
+            @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                <strong>PENSIÓN POR INVALIDEZ (RECALIFICACIÓN)</strong>
+            @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                <strong>PENSIÓN POR INVALIDEZ</strong>
+            @else
+                <strong>{{ $nombretramite }}</strong>
+            @endif
+            se informa que dentro de la Gestora Publica se realizó lo siguiente:
         </div>
         <div class="tipo6" style="margin-top: -15px;">
             <ul style="list-style-type: disc; padding-left: 20px;">

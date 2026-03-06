@@ -23,22 +23,18 @@
         <div class="tipo3"><strong>de Largo Plazo</strong></div>
         <div class="tipo9">Presente. -</div>
         <div class="tipo5"><strong>REF.:  SOLICITUD DE ACTUALIZACIÓN DE DATOS</strong></div>
-        <div class="tipo5"><strong>( TRÁMITE DE @if (
-                        strtoupper($nombretramite) === 'INVALIDEZ' ||
-                        strtoupper($nombretramite) === 'APELACIÓN' ||
-                        strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                    )
-                        PENSIÓN POR INVALIDEZ
-                    @else
-                        {{ $nombretramite }}
-                    @endif )</strong></div>
+        <div class="tipo5">
+            @php
+                $tramite = strtoupper($nombretramite);
+            @endphp
+            @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                <strong>TRÁMITE DE PENSIÓN POR INVALIDEZ (RECALIFICACIÓN)</strong>
+            @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                <strong>TRÁMITE DE PENSIÓN POR INVALIDEZ</strong>
+            @else
+                <strong>TRÁMITE DE {{ $nombretramite }}</strong>
+            @endif
+        </div>
         <div class="tipo2">Distinguidos Señores:</div>
         @if ($emisor === 'APODERADO')
             <div class="tipo6">
@@ -54,22 +50,15 @@
         @endif
         <div class="tipo6">
         Mediante la presente me dirijo a ustedes para solicitar <strong>ACTUALIZACIÓN</strong> de datos personales de acuerdo con Cedula de Identidad, 
-        <strong>CAMBIAR {!! $cambioactualizacion ?? '<span class="textoedita">MODIFICACIÓN</span>' !!}</strong>, como figura en la Cedula de Identidad, por motivo de Tramite de<strong>@if (
-                        strtoupper($nombretramite) === 'INVALIDEZ' ||
-                        strtoupper($nombretramite) === 'APELACIÓN' ||
-                        strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                    )
-                        PENSIÓN POR INVALIDEZ
-                    @else
-                        {{ $nombretramite }}
-                    @endif</strong>.
+        <strong>CAMBIAR {!! $cambioactualizacion ?? '<span class="textoedita">MODIFICACIÓN</span>' !!}</strong>, como figura en la Cedula de Identidad, 
+        por motivo de Tramite de
+            @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                <strong>PENSIÓN POR INVALIDEZ (RECALIFICACIÓN).</strong>
+            @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                <strong>PENSIÓN POR INVALIDEZ.</strong>
+            @else
+                <strong>{{ $nombretramite }}.</strong>
+            @endif
         </div>
         <div class="tipo6">
         Requiero esta Actualización para no tener inconvenientes en un futuro cuando solicite trámites correspondientes, según la cantidad de aportes y/o saldos que se registre en la cuenta personal previsional.

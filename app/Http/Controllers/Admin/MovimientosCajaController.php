@@ -247,6 +247,7 @@ class MovimientosCajaController extends Controller
 
             $ultimoRegistro = DB::table('cajacentral')
                 ->where('usuarioregistroid', $idUsuario)
+                ->whereNull('deleted_at')
                 ->orderBy('created_at', 'desc')
                 ->first();
 
@@ -313,7 +314,9 @@ class MovimientosCajaController extends Controller
             ->whereDate('created_at', $hoy) // Compara solo la fecha
             ->first();
 
-        $aperturascajas = Aperturacaja::orderBy('created_at', 'desc')->get();
+        $aperturascajas = Aperturacaja::orderBy('created_at', 'desc')
+        ->take(10)
+        ->get();
         
         $entrada = $request->input('clienteid');
         $tieneCredito = Credito::where('clienteid', $entrada)->get();
@@ -322,6 +325,7 @@ class MovimientosCajaController extends Controller
         $clientesIta = Cliente::select('id', 'nombrecompleto')->orderBy('nombrecompleto')->get();
         $clientesAuditoria = ClienteAuditoria::select('id', 'nombrecompleto')->orderBy('nombrecompleto')->get();
         $clientesComunes = ClienteComun::select('id', 'nombrecompleto')->orderBy('nombrecompleto')->get();
+        $medicos = Proveedor::select('id', 'proveedor')->orderBy('proveedor')->get();
         
         return view('admin.caja.ingreso.index', [
             'mostrarVista' => $mostrarVista,
@@ -341,7 +345,8 @@ class MovimientosCajaController extends Controller
             'clientesIta' => $clientesIta,
             'clientesAuditoria' => $clientesAuditoria,
             'clientesComunes' => $clientesComunes,
-            'motivoBloqueo' => $motivoBloqueo
+            'motivoBloqueo' => $motivoBloqueo,
+            'medicos' => $medicos
         ]);
     }
 
@@ -570,7 +575,7 @@ class MovimientosCajaController extends Controller
         if ($fechaFinal) {
             $fechaFinal = \Carbon\Carbon::parse($fechaFinal)->format('Y-m-d');
         }
-        if (!in_array($tipoCliente, ['clienteitaid', 'clienteauditoriaid', 'clientecomunid', 'proveedorid'])) {
+        if (!in_array($tipoCliente, ['clienteitaid', 'clienteauditoriaid', 'clientecomunid', 'proveedorid', 'medicoid'])) {
             return response()->json(['error' => 'Tipo de cliente no válido'], 400);
         }
         $clienteId = null;
@@ -587,6 +592,9 @@ class MovimientosCajaController extends Controller
             case 'proveedorid':
                 $cliente = Proveedoresservicios::where('ci', $entrada)->orWhere('id', $entrada)->first(['id', 'razonsocial', 'ci']);
                 break;
+            case 'medicoid':
+                $cliente = Proveedor::where('nit', $entrada)->orWhere('id', $entrada)->first(['id', 'proveedor', 'nit']);
+                break;
             default:
                 $cliente = null;
         }
@@ -596,95 +604,97 @@ class MovimientosCajaController extends Controller
         $clienteId = $cliente->id;
         $hoy = now()->toDateString();
 
-        
-        $registrosProgramacion = ProgramacionSubCliente::where($tipoCliente, $clienteId)
-            ->whereNull('deleted_at')
-            ->where('pagoservicio', 'INTERNO')
-            ->when($buscarHoy, function ($query) use ($hoy) {
-                return $query->where('fechaasignada', $hoy); 
-            })
-            ->when($buscarPorFechas, function ($query) use ($fechaInicio, $fechaFinal) {
-                if ($fechaInicio && $fechaFinal) {
-                    return $query->whereBetween('fechaasignada', [$fechaInicio, $fechaFinal]);
-                }
-                return $query;
-            })
-            ->where(function ($query) {
-                $query->where('preciocompra', '>', 0)
-                      ->orWhere(function ($subQuery) {
-                          $subQuery->whereNotNull('preciocompra')
-                                   ->where('preciocompra', '!=', '0.00')
-                                   ->where('preciocompra', '!=', '0,00')
-                                   ->where('preciocompra', '!=', '0');
-                      });
-            })
-            ->get()
-                ->reject(function ($registro) {
-                    $existeEnBateria = BateriaSubCliente::where('fechabateria', $registro->fechabateria)
-                        ->where('accionnombre', $registro->accionnombre)
-                        ->where('proveedorasignado', $registro->proveedornombre)
-                        ->whereRaw("
-                            CASE 
-                                WHEN ? IS NOT NULL THEN clienteitaid = ? 
-                                WHEN ? IS NOT NULL THEN clienteauditoriaid = ? 
-                                WHEN ? IS NOT NULL THEN clientecomunid = ? 
-                            END
-                        ", [
-                            $registro->clienteitaid, $registro->clienteitaid,
-                            $registro->clienteauditoriaid, $registro->clienteauditoriaid,
-                            $registro->clientecomunid, $registro->clientecomunid
-                        ])
-                        ->where('pagoatencion', 'PAGO PROCESADO')
-                        ->exists();
-            
-                    if ($existeEnBateria) {
-                        return true;
-                    }
-                    $detallerecibo = Detallerecibo::where('programacionid', $registro->id)
-                        ->where('tipomovimiento', 'INGRESO')
-                        ->latest('created_at')
-                        ->first();
-            
-                    if ($detallerecibo && $detallerecibo->estado == 'PAGO PROCESADO' && $detallerecibo->tipomovimiento == 'INGRESO') {
-                        return true;
-                    }
-                    return false;
+        $registrosProgramacion = collect();
+        if ($tipoCliente !== 'medicoid') {
+            $registrosProgramacion = ProgramacionSubCliente::where($tipoCliente, $clienteId)
+                ->whereNull('deleted_at')
+                ->where('pagoservicio', 'INTERNO')
+                ->when($buscarHoy, function ($query) use ($hoy) {
+                    return $query->where('fechaasignada', $hoy); 
                 })
-                ->map(function ($registro) {
-                    $detallerecibo = Detallerecibo::where('programacionid', $registro->id)
-                        ->latest('created_at')
-                        ->first();
-            
-                    if ($detallerecibo && $detallerecibo->estado == 'SALDO PENDIENTE' && $detallerecibo->tipomovimiento == 'INGRESO') {
-                        $registro->precio = $detallerecibo->saldo;
+                ->when($buscarPorFechas, function ($query) use ($fechaInicio, $fechaFinal) {
+                    if ($fechaInicio && $fechaFinal) {
+                        return $query->whereBetween('fechaasignada', [$fechaInicio, $fechaFinal]);
                     }
+                    return $query;
+                })
+                ->where(function ($query) {
+                    $query->where('preciocompra', '>', 0)
+                        ->orWhere(function ($subQuery) {
+                            $subQuery->whereNotNull('preciocompra')
+                                    ->where('preciocompra', '!=', '0.00')
+                                    ->where('preciocompra', '!=', '0,00')
+                                    ->where('preciocompra', '!=', '0');
+                        });
+                })
+                ->get()
+                    ->reject(function ($registro) {
+                        $existeEnBateria = BateriaSubCliente::where('fechabateria', $registro->fechabateria)
+                            ->where('accionnombre', $registro->accionnombre)
+                            ->where('proveedorasignado', $registro->proveedornombre)
+                            ->whereRaw("
+                                CASE 
+                                    WHEN ? IS NOT NULL THEN clienteitaid = ? 
+                                    WHEN ? IS NOT NULL THEN clienteauditoriaid = ? 
+                                    WHEN ? IS NOT NULL THEN clientecomunid = ? 
+                                END
+                            ", [
+                                $registro->clienteitaid, $registro->clienteitaid,
+                                $registro->clienteauditoriaid, $registro->clienteauditoriaid,
+                                $registro->clientecomunid, $registro->clientecomunid
+                            ])
+                            ->where('pagoatencion', 'PAGO PROCESADO')
+                            ->exists();
+                
+                        if ($existeEnBateria) {
+                            return true;
+                        }
+                        $detallerecibo = Detallerecibo::where('programacionid', $registro->id)
+                            ->where('tipomovimiento', 'INGRESO')
+                            ->latest('created_at')
+                            ->first();
+                
+                        if ($detallerecibo && $detallerecibo->estado == 'PAGO PROCESADO' && $detallerecibo->tipomovimiento == 'INGRESO') {
+                            return true;
+                        }
+                        return false;
+                    })
+                    ->map(function ($registro) {
+                        $detallerecibo = Detallerecibo::where('programacionid', $registro->id)
+                            ->latest('created_at')
+                            ->first();
+                
+                        if ($detallerecibo && $detallerecibo->estado == 'SALDO PENDIENTE' && $detallerecibo->tipomovimiento == 'INGRESO') {
+                            $registro->precio = $detallerecibo->saldo;
+                        }
 
-                switch (true) {
-                    case isset($registro->clienteitaid):
-                        $registro->tramite = TramitesubCliente::where('clienteitaid', $registro->clienteitaid)
-                            ->where('fechabateria', $registro->fechabateria)
-                            ->value('tramite');
-                        break;
+                    switch (true) {
+                        case isset($registro->clienteitaid):
+                            $registro->tramite = TramitesubCliente::where('clienteitaid', $registro->clienteitaid)
+                                ->where('fechabateria', $registro->fechabateria)
+                                ->value('tramite');
+                            break;
 
-                    case isset($registro->clientecomunid):
-                        $registro->tramite = TramitesubCliente::where('clientecomunid', $registro->clientecomunid)
-                            ->where('fechabateria', $registro->fechabateria)
-                            ->value('tramite');
-                        break;
+                        case isset($registro->clientecomunid):
+                            $registro->tramite = TramitesubCliente::where('clientecomunid', $registro->clientecomunid)
+                                ->where('fechabateria', $registro->fechabateria)
+                                ->value('tramite');
+                            break;
 
-                    case isset($registro->clienteauditoriaid):
-                        $registro->tramite = TramitesubCliente::where('clienteauditoriaid', $registro->clienteauditoriaid)
-                            ->where('fechabateria', $registro->fechabateria)
-                            ->value('tramite');
-                        break;
-                }
-                return $registro;
-            })
-            ->filter()
-        ->values();
-        
+                        case isset($registro->clienteauditoriaid):
+                            $registro->tramite = TramitesubCliente::where('clienteauditoriaid', $registro->clienteauditoriaid)
+                                ->where('fechabateria', $registro->fechabateria)
+                                ->value('tramite');
+                            break;
+                    }
+                    return $registro;
+                })
+                ->filter()
+            ->values();
+        }
+
         $registrosInformesFinales = collect();
-        if ($tipoCliente !== 'proveedorid') {
+        if ($tipoCliente !== 'proveedorid' && $tipoCliente !== 'medicoid') {
             $registrosInformesFinales = ProveedorInformefinal::where($tipoCliente, $clienteId)
                 ->where('pagoservicio', '!=', 'PAGO PROCESADO')
                 ->whereNull('deleted_at')
@@ -736,26 +746,26 @@ class MovimientosCajaController extends Controller
         $registrosCuentasporCobrar = CuentasCobrar::where(function ($query) use ($clienteId, $cliente) {
             $query->where('proveedorid', $clienteId)
                   ->orWhere('proveedornombre', $cliente->razonsocial);
-        })
-        ->whereNull('deleted_at')
-        ->get()
-        ->map(function ($registro) {
-            $detallerecibo = Detallerecibo::where('cuentacobrarid', $registro->id) 
-                ->latest('created_at')
-                ->first();
-    
-            if ($detallerecibo) {
-                if ($detallerecibo->estado == 'PAGO PROCESADO' && $detallerecibo->tipomovimiento == 'INGRESO') {
-                    return null;
+            })
+            ->whereNull('deleted_at')
+            ->get()
+            ->map(function ($registro) {
+                $detallerecibo = Detallerecibo::where('cuentacobrarid', $registro->id) 
+                    ->latest('created_at')
+                    ->first();
+        
+                if ($detallerecibo) {
+                    if ($detallerecibo->estado == 'PAGO PROCESADO' && $detallerecibo->tipomovimiento == 'INGRESO') {
+                        return null;
+                    }
+        
+                    if ($detallerecibo->estado == 'SALDO PENDIENTE' && $detallerecibo->tipomovimiento == 'INGRESO') {
+                        $registro->precio = $detallerecibo->saldo;
+                    }
                 }
-    
-                if ($detallerecibo->estado == 'SALDO PENDIENTE' && $detallerecibo->tipomovimiento == 'INGRESO') {
-                    $registro->precio = $detallerecibo->saldo;
-                }
-            }
-            return $registro;
-        })
-        ->filter()
+                return $registro;
+            })
+            ->filter()
         ->values();
 
         $registros = $registrosProgramacion->merge($registrosInformesFinales)->merge($registrosCuentasporCobrar);
@@ -1762,6 +1772,7 @@ class MovimientosCajaController extends Controller
             $ultimoRegistro = DB::table('cajacentral')
                 ->where('usuarioregistroid', $idUsuario)
                 ->orderBy('created_at', 'desc')
+                ->whereNull('deleted_at')
                 ->first();
 
             $registroCierreCaja = true;
@@ -3654,13 +3665,14 @@ class MovimientosCajaController extends Controller
         $sucursal = auth()->user()->sucursal;
         $cuentas = CuentasBancos::where('estado', 'ACTIVO')->get();
         $proveedores = ProveedoresServicios::select('id', 'razonsocial', 'tipotransaccion', 'ciudad', 'ciudad2', 'categoria', 'bancoorigen')->orderBy('razonsocial')->get();
+        $proveedormedico = Proveedor::select('id', 'proveedor', 'mododepago', 'ciudad', 'ciudad2', 'bancoorigen')->where('id', 61)->orderBy('proveedor')->get();
         $clientesIta = Cliente::select('id', 'nombrecompleto', 'sucursal')->orderBy('nombrecompleto')->get();
         $clientesAuditoria = ClienteAuditoria::select('id', 'nombrecompleto', 'sucursal')->orderBy('nombrecompleto')->get();
         $clientesComunes = ClienteComun::select('id', 'nombrecompleto', 'sucursal')->orderBy('nombrecompleto')->get();
 
         $detallescxc = CCyCPdetalles::where('tipocuenta', 'CUENTA POR COBRAR')->select('id', 'detalle', 'precio')->get();
 
-        return view('admin.caja.cuentascobrar.nuevacuentacobrar', compact('cuentas','clientesIta', 'clientesAuditoria', 'clientesComunes','proveedores', 'sucursal', 'detallescxc'));
+        return view('admin.caja.cuentascobrar.nuevacuentacobrar', compact('cuentas','clientesIta', 'clientesAuditoria', 'clientesComunes','proveedores', 'sucursal', 'detallescxc','proveedormedico'));
     }
     public function guardarcuentacobrar(Request $request)
     {
@@ -4208,6 +4220,7 @@ class MovimientosCajaController extends Controller
             $ultimoRegistro = DB::table('cajacentral')
                 ->where('usuarioregistroid', $idUsuario)
                 ->orderBy('created_at', 'desc')
+                ->whereNull('deleted_at')
                 ->first();
 
             $registroCierreCaja = true;
@@ -5081,6 +5094,7 @@ class MovimientosCajaController extends Controller
         $ultimoRegistro = DB::table('cajacentral')
             ->where('usuarioregistroid', $idUsuario)
             ->orderBy('created_at', 'desc')
+            ->whereNull('deleted_at')
             ->first();
 
         $registroCierreCaja = true;
@@ -9627,6 +9641,7 @@ class MovimientosCajaController extends Controller
             $ultimoRegistro = DB::table('cajacentral')
                 ->where('usuarioregistroid', $idUsuario)
                 ->orderBy('created_at', 'desc')
+                ->whereNull('deleted_at')
                 ->first();
 
             $registroCierreCaja = true;
@@ -10662,6 +10677,7 @@ class MovimientosCajaController extends Controller
             $ultimoRegistro = DB::table('cajacentral')
                 ->where('usuarioregistroid', $idUsuario)
                 ->orderBy('created_at', 'desc')
+                ->whereNull('deleted_at')
                 ->first();
 
             $codigoAprobacion = PermisoCodigo::where('usuarioSolicitante', $usuarioAutenticado)

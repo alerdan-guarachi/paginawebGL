@@ -179,7 +179,7 @@
                 var checkboxes = document.querySelectorAll('input[type="checkbox"]');
                 var documentosSeleccionados = [];
                 checkboxes.forEach(function(checkbox) {
-                    if (checkbox.) {
+                    if (checkbox.checked) {
                         documentosSeleccionados.push(checkbox.value);
                     }
                 });
@@ -191,7 +191,7 @@
                 var checkboxes = document.querySelectorAll('input[type="checkbox"]');
                 var documentosSeleccionados2 = [];
                 checkboxes.forEach(function(checkbox) {
-                    if (checkbox.) {
+                    if (checkbox.checked) {
                         documentosSeleccionados2.push(checkbox.value);
                     }
                 });
@@ -204,7 +204,7 @@
                 var checkboxes = document.querySelectorAll('input[type="checkbox"]');
                 var documentosSeleccionados = [];
                 checkboxes.forEach(function(checkbox) {
-                    if (checkbox.) {
+                    if (checkbox.checked) {
                         documentosSeleccionados.push(checkbox.value);
                     }
                 });
@@ -212,7 +212,7 @@
 
                 var documentosSeleccionados2 = [];
                 checkboxes.forEach(function(checkbox) {
-                    if (checkbox.) {
+                    if (checkbox.checked) {
                         documentosSeleccionados2.push(checkbox.value);
                     }
                 });

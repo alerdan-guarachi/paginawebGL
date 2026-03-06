@@ -9,7 +9,6 @@
 @section('css')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <link rel="stylesheet" href="{{ asset('css/tramitesgestora.css') }}">
-{{-- <link rel="stylesheet" href="{{ asset('css/tramitesgestora.css') }}?v={{ filemtime(public_path('css/tramitesgestora.css')) }}"> --}}
 <style>
     .table {
         width: 100%;
@@ -36,7 +35,7 @@
         margin-bottom: 5px !important;
     }
     .form-control {
-        height: 35px;
+        height: 30px;
         padding: 2px 8px;
     }
 </style>
@@ -128,7 +127,6 @@
                                                             'NO DESCUENTO 3%' => 'NO DESCUENTO 3%',
                                                             'RECALIFICACIÓN DE DICTAMEN' => 'RECALIFICACIÓN DE DICTAMEN',
                                                             'REACTIVACIÓN DE TRÁMITE' => 'REACTIVACIÓN DE TRÁMITE',
-                                                            /* NUEVO 11112025 */
                                                             'REVISIÓN DE DICTAMEN DE INVALIDEZ' => 'REVISIÓN DE DICTAMEN DE INVALIDEZ',
                                                             'UNIFICACIÓN DE CUA' => 'UNIFICACIÓN DE CUA',
                                                         ], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoPdfSelect2', 'required' => 'required']) !!}
@@ -210,17 +208,9 @@
                                                         {!! Form::label('campoafiliadoa', 'Afiliado a:') !!}
                                                         {!! Form::text('campoafiliadoa', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                                     </div>
-                                                    <div class="form-group col-lg-4" id="nrocua1Container" style="display: none;">
-                                                        {!! Form::label('nrocua1', 'Nro. CUA 1:') !!}
-                                                        {!! Form::text('nrocua1', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                                    </div>
                                                     <div class="form-group col-lg-4" id="nombreafp1Container" style="display: none;">
                                                         {!! Form::label('nombreafp1', 'AFP 1:') !!}
                                                         {!! Form::text('nombreafp1', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                                    </div>
-                                                    <div class="form-group col-lg-4" id="nroci1Container" style="display: none;">
-                                                        {!! Form::label('nroci1', 'C.I. 1:') !!}
-                                                        {!! Form::text('nroci1', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                                     </div>
                                                     <div class="form-group col-lg-4" id="nrocua2Container" style="display: none;">
                                                         {!! Form::label('nrocua2', 'Nro. CUA 2:') !!}
@@ -258,6 +248,10 @@
                                                         {!! Form::label('fechacontrato', 'Fecha Documento:') !!}
                                                         {!! Form::date('fechacontrato', null, ['class' => 'form-control', 'placeholder' => '', 'value' => '{{ \Carbon\Carbon::now()->toDateString() }}']) !!}
                                                     </div>
+                                                    <div class="form-group col-lg-4" id="fechainclusionContainer" style="display: none;">
+                                                        {!! Form::label('fechainclusion', 'Fecha Inclusión:') !!}
+                                                        {!! Form::date('fechainclusion', null, ['class' => 'form-control', 'placeholder' => '', 'value' => '{{ \Carbon\Carbon::now()->toDateString() }}']) !!}
+                                                    </div>
                                                     <div class="form-group col-lg-4" id="firmadoenContainer" style="display: none;">
                                                         {!! Form::label('firmadoen', 'Entregado en:') !!}
                                                         {!! Form::text('firmadoen', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -290,69 +284,18 @@
                                                         {!! Form::label('nropasaporte', 'Nro. Pasaporte:') !!}
                                                         {!! Form::text('nropasaporte', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'nropasaporte']) !!}
                                                     </div>
-                                                    <div class="form-group col-lg-4" id="nrocuaunificadoContainer" style="display: none;">
-                                                        {!! Form::label('nrocuaunificado', 'Nro. CUA Unificado:') !!}
-                                                        {!! Form::text('nrocuaunificado', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                                    </div>
-                                                    <div class="form-group col-lg-4" id="nrociunificadoContainer" style="display: none;">
-                                                        {!! Form::label('nrociunificado', 'C.I. Unificado:') !!}
-                                                        {!! Form::text('nrociunificado', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                                    </div>
-                                                    {{-- NUEVO 11112025 --}}
                                                     <div class="form-group col-lg-12" id="txtcomple1Container" style="display: none;">
                                                         {!! Form::label('txtcomple1', 'Texto Complementario 1:') !!}
                                                         {!! Form::text('txtcomple1', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                                     </div>
                                                 </div>
                                             </div>
-                                            
-                                            {{-- <div class="col-lg-12" id="tablaEspecialidades" style="display: none;">
-                                                <div class="table-responsive">
-                                                    <table class="table" id="especialidadesTable">
-                                                        <thead class="table-secondary">
-                                                            <tr style="text-align: center">
-                                                                <th class="col-lg-5">ESPECIALIDAD</th>
-                                                                <th class="col-lg-5">DETALLE</th>
-                                                                <th class="col-lg-2">CANTIDAD</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td class="col-lg-5"><input type="text" name="especialista1" class="form-control" /></td>
-                                                                <td class="col-lg-5"><input type="text" name="detalle1" class="form-control" /></td>
-                                                                <td class="col-lg-2"><input type="text" name="cantidad1" class="form-control" /></td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                    <button type="button" class="btn btn-sm btn-verdocumento" id="agregarFila">AGREGAR MÁS</button>
-                                                </div>
-                                            </div>
-                                            <script>
-                                                $(document).ready(function() {
-                                                    let filaCount = 1;
-                                                    $('#agregarFila').on('click', function() {
-                                                        filaCount++;
-                                                        if(filaCount > 5) return;
 
-                                                        const nuevaFila = `
-                                                            <tr>
-                                                                <td class="col-lg-5"><input type="text" name="especialista${filaCount}" class="form-control" /></td>
-                                                                <td class="col-lg-5"><input type="text" name="detalle${filaCount}" class="form-control" /></td>
-                                                                <td class="col-lg-2"><input type="text" name="cantidad${filaCount}" class="form-control" /></td>
-                                                            </tr>
-                                                        `;
-                                                        $('#especialidadesTable tbody').append(nuevaFila);
-                                                    });
-                                                });
-                                            </script> --}}
-
-                                            {{-- NUEVO 11112025 --}}
                                             <div class="col-lg-12" id="tituloop1Container" style="display: none;">
                                                 {!! Form::label('tituloop1', 'Titulo Opciones 1:') !!}
                                                 {!! Form::text('tituloop1', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                             </div>
 
-                                            {{-- NUEVO 11112025 --}}
                                             <div class="col-lg-12" id="tablaopciones1Container" style="display: none;">
                                                 <div class="table-responsive">
                                                     <table class="table" id="opciones1Table">
@@ -387,13 +330,11 @@
                                                 });
                                             </script>
 
-                                            {{-- NUEVO 11112025 --}}
                                             <div class="col-lg-12" id="tituloop2Container" style="display: none;">
                                                 {!! Form::label('tituloop2', 'Titulo Opciones 2:') !!}
                                                 {!! Form::text('tituloop2', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                             </div>
 
-                                            {{-- NUEVO 11112025 --}}
                                             <div class="col-lg-12" id="tablaopciones2Container" style="display: none;">
                                                 <div class="table-responsive">
                                                     <table class="table" id="opciones2Table">
@@ -428,7 +369,6 @@
                                                 });
                                             </script>
 
-                                            {{-- NUEVO 11112025 --}}
                                             <div class="col-lg-12" id="txtcomple2Container" style="display: none;">
                                                 {!! Form::label('txtcomple2', 'Texto Complementario 2:') !!}
                                                 {!! Form::text('txtcomple2', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -656,7 +596,6 @@
                                                 </script>
                                             </div>
 
-                                            {{-- NUEVO 11112025 --}}
                                             <div class="col-lg-12" id="txtcomple3Container" style="display: none;">
                                                 {!! Form::label('txtcomple3', 'Texto Complementario 3:') !!}
                                                 {!! Form::text('txtcomple3', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -1155,6 +1094,7 @@
                                                     $('#medicotratanteContainer').hide();
                                                     $('#tablaabonoContainer').hide();
                                                     $('#fechacontratoContainer').hide();
+                                                    $('#fechainclusionContainer').hide();
                                                     $('#firmadoenContainer').hide();
                                                     $('#nrodictamenContainer').hide();
                                                     $('#fechatramiteContainer').hide();
@@ -1167,14 +1107,10 @@
                                                     $('#nropasaporteContainer').hide();
                                                     $('#tablaceapasaporteContainer').hide();
                                                     $('#tablaceapasaporteContainer2').hide();
-                                                    $('#nrocua1Container').hide();
                                                     $('#nombreafp1Container').hide();
-                                                    $('#nroci1Container').hide();
                                                     $('#nrocua2Container').hide();
                                                     $('#nombreafp2Container').hide();
                                                     $('#nroci2Container').hide();
-                                                    $('#nrocuaunificadoContainer').hide();
-                                                    $('#nrociunificadoContainer').hide();
                                                     $('#texto1Container').hide();
                                                     $('#tablaunificacioncuaContainer').hide();
                                                     $('#tablacambiounificacioncuaContainer').hide();
@@ -1207,6 +1143,7 @@
                                                         $('#afpgestoraContainer').show();
                                                         $('#nombremedicoContainer').show();
                                                         $('#cargomedicoContainer').show();
+                                                        $('#fechainclusionContainer').show();
                                                     } else if (selectedValue === 'INCLUSIÓN DE INFORMES MÉDICOS') {            
                                                         $('#tablaEspecialidades').show();
                                                         $('#matriculaContainer').show();
@@ -1273,19 +1210,15 @@
                                                         $('#tablaceapasaporteContainer2').show();
                                                         $('#nombremedicoContainer').show();
                                                     } else if (selectedValue === 'UNIFICACIÓN DE CUA') { 
-                                                        /* $('#nrocua1Container').show(); */
                                                         $('#nombreafp1Container').show();
-                                                        /* $('#nroci1Container').show(); */
                                                         $('#nrocua2Container').show();
                                                         $('#nombreafp2Container').show();
                                                         $('#nroci2Container').show();
-                                                        /* $('#nrocuaunificadoContainer').show(); */
-                                                        /* $('#nrociunificadoContainer').show(); */
                                                         $('#texto1Container').show();
                                                         $('#tablaunificacioncuaContainer').show();
                                                         $('#tablacambiounificacioncuaContainer').show();
                                                         $('#nombremedicoContainer').show();
-                                                    } /* NUEVO 11112025 */ else if (selectedValue === 'REVISIÓN DE DICTAMEN DE INVALIDEZ') { 
+                                                    } else if (selectedValue === 'REVISIÓN DE DICTAMEN DE INVALIDEZ') { 
                                                         $('#nrodictamenContainer').show();
                                                         $('#fechacontratoContainer').show();
                                                         $('#tablaEspecialidades').show();
@@ -1333,38 +1266,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        {{-- <script>
-                            $(document).ready(function() {
-                                let debounceTimer;
-
-                                function updatePDFPreview() {
-                                    let formData = $('#formSolicitud').serialize();
-                                    let clienteId = "{{ $cliente->id }}";
-
-                                    // Validar campos obligatorios antes de generar PDF
-                                    let nivelProcedimiento = $('[name="nivelprocedimiento"]').val();
-                                    let tipoPdf = $('[name="tipo_pdf"]').val();
-                                    if (!nivelProcedimiento || !tipoPdf) {
-                                        $('#pdfPreview').attr('src', '');
-                                        return;
-                                    }
-
-                                    $('#pdfPreview').attr('src', '{{ url("/preview-pdf") }}/' + clienteId + '?' + formData);
-                                }
-
-                                // Debounce: espera 500ms después de escribir
-                                $('#formSolicitud input, #formSolicitud textarea').on('input', function() {
-                                    clearTimeout(debounceTimer);
-                                    debounceTimer = setTimeout(updatePDFPreview, 500);
-                                });
-
-                                // Para selects, actualiza inmediato
-                                $('#formSolicitud select').on('change', function() {
-                                    updatePDFPreview();
-                                });
-                            });
-                        </script> --}}
+                        
                         <script>
                             $(document).ready(function() {
                                 function updatePDFPreview() {
@@ -1437,7 +1339,6 @@
                                                         {!! Form::label('fechaemitido2', 'Fecha Carta:') !!}
                                                         <input type="date" class="form-control" id="fechaactual2" name="fechaactual2" value="{{ \Carbon\Carbon::now()->toDateString() }}" min="{{ \Carbon\Carbon::now()->toDateString() }}">
                                                     </div>
-                                                    {{-- NUEVO 111125 --}}
                                                     <div class="form-group col-lg-4">
                                                         {!! Form::label('apoderado2', 'Emisor Apoderado:') !!}
                                                         {!! Form::select('apoderado2', 
@@ -1518,10 +1419,22 @@
                                                             @foreach ($programaciones as $fecha => $grupos)
                                                                 <div class="card shadow-sm border mb-2">
                                                                     
-                                                                    <div class="card-header py-2 px-3 bg-secondary text-white">
-                                                                        <button class="btn btn-link text-white text-left w-100 p-0" type="button"
+                                                                    <div class="card-header py-2 px-2 bg-secondary text-white">
+                                                                        <button class="btn btn-link text-white text-left w-100 p-0" type="button" style="font-size: 11px;"
                                                                             data-toggle="collapse" data-target="#fecha_{{ \Str::slug($fecha) }}">
-                                                                            <strong>FECHA BATERIA:</strong> {{ $fecha }}
+                                                                            @php
+                                                                                $esFecha = false;
+                                                                                try {
+                                                                                    \Carbon\Carbon::parse($fecha);
+                                                                                    $esFecha = true;
+                                                                                } catch (\Exception $e) {
+                                                                                    $esFecha = false;
+                                                                                }
+                                                                            @endphp
+                                                                            <strong style="font-size: 11px;">
+                                                                                {{ $esFecha ? 'FECHA BATERIA:' : '' }}
+                                                                            </strong>
+                                                                            {{ $fecha }}
                                                                         </button>
                                                                     </div>
 
@@ -1621,6 +1534,22 @@
                                                                     </div>
                                                                     <div class="col-auto">
                                                                         <button id="btnAgregarSeleccionados2" type="button" class="btn btn-sm btn-adjuntosrespuestas">
+                                                                            <i class="fas fa-plus"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                <hr>
+                                                                {!! Form::label('', 'Agregar CD o Placa:') !!}
+                                                                <div class="form-group row justify-content-end align-items-center">
+                                                                    <div class="col-sm-8">
+                                                                        <select id="tipoAdjunto2" class="form-control form-control-sm">
+                                                                            <option value="">Seleccione una opción...</option>
+                                                                            <option value="CD">CD</option>
+                                                                            <option value="PLACA">PLACA</option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="col-auto">
+                                                                        <button id="btnAgregarAdjunto2" type="button" class="btn btn-sm btn-adjuntosrespuestas">
                                                                             <i class="fas fa-plus"></i>
                                                                         </button>
                                                                     </div>
@@ -1806,6 +1735,64 @@
                                                     const checkboxes = document.querySelectorAll(`#area_${area} .documento-checkbox2`);
                                                     checkboxes.forEach(c => c.checked = this.checked);
                                                 });
+                                            });
+
+                                            document.getElementById('btnAgregarAdjunto2').addEventListener('click', function () {
+                                                const tipoAdjunto = document.getElementById('tipoAdjunto2').value.trim();
+                                                if (!tipoAdjunto) return;
+
+                                                let filasActuales = tabla.querySelectorAll('tr').length;
+                                                let i = filasActuales + 1;
+
+                                                const fila = document.createElement('tr');
+                                                fila.innerHTML = `
+                                                    <td>
+                                                        <input type="text" name="especialista2${i}" class="form-control" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="detalle2${i}" 
+                                                            class="form-control detalle-protegido" 
+                                                            value="${tipoAdjunto}" 
+                                                            data-prefijo="${tipoAdjunto}" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="cantidad2${i}" class="form-control" value="1" />
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm quitar-fila">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                `;
+
+                                                tabla.appendChild(fila);
+
+                                                // 🔒 PROTEGER EL PREFIJO (CD o PLACAS)
+                                                const inputDetalle = fila.querySelector('.detalle-protegido');
+
+                                                inputDetalle.addEventListener('input', function () {
+                                                    const prefijo = this.dataset.prefijo;
+
+                                                    if (!this.value.startsWith(prefijo)) {
+                                                        this.value = prefijo;
+                                                    }
+                                                });
+
+                                                inputDetalle.addEventListener('keydown', function (e) {
+                                                    const prefijo = this.dataset.prefijo;
+
+                                                    if (this.selectionStart <= prefijo.length &&
+                                                        (e.key === "Backspace" || e.key === "Delete")) {
+                                                        e.preventDefault();
+                                                    }
+                                                });
+
+                                                // Botón eliminar fila
+                                                fila.querySelector('.quitar-fila').addEventListener('click', function () {
+                                                    fila.remove();
+                                                });
+
+                                                document.getElementById('tipoAdjunto2').value = '';
                                             });
                                         });
                                     </script>
@@ -2011,7 +1998,6 @@
                                                     });
                                                 });
                                             </script>
-                                            {{-- NUEVO 111125 --}}
                                             <div class="form-group col-lg-4">
                                                 {!! Form::label('apoderado3', 'Emisor Apoderado:') !!}
                                                 {!! Form::select('apoderado3', 
@@ -2037,10 +2023,7 @@
                                                     <option value="2cm 3.5cm 2cm 3.5cm">ALTO</option>
                                                 </select>
                                             </div>
-                                            <div class="form-group col-lg-2">
-                                                {!! Form::label('fechaadjmedica', 'Fecha Adj. Doc.:') !!}
-                                                {!! Form::date('fechaadjmedica', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                            </div>
+                                            
                                             {{-- PRIMERA CARTA SIT ADJUNTO DE DOCUMENTOS Y DOCUMENTACIÓN MÉDICA --}}
                                             <div class="form-group col-lg-4" id="fechaadjuntoContainer" style="display: none;">
                                                 {!! Form::label('fechaadjunto3', 'Fecha Adjunto:') !!}
@@ -2055,6 +2038,10 @@
                                                     'CERTIFICADO DE TRABAJO' => 'CERTIFICADO DE TRABAJO',
                                                     'DENUNCIA DE ACCIDENTE' => 'DENUNCIA DE ACCIDENTE',
                                                 ], null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                            </div>
+                                            <div class="form-group col-lg-4"{{--  id="fechaadjdoc" style="display: none;" --}}>
+                                                {!! Form::label('fechaadjmedica', 'Fecha Adj. Documentación:') !!}
+                                                {!! Form::date('fechaadjmedica', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                             </div>
                                             <div class="form-group col-lg-6" id="nombremedico3Container" style="display: none;">
                                                 {!! Form::label('nombremedico3', 'Destinatario:') !!}
@@ -2591,7 +2578,6 @@
                                                                         $('#fechacite1reclamoaps').val(response.fechacitenota_primerareclamoaps);
                                                                         $('#fecharesp1reclamoaps').val(response.fecharespuesta_primerareclamoaps);
 
-                                                                        /* NUEVO 091225 */
                                                                         $('#fecha2reclamogp').val(response.fechasubida_segundareclamogp);
                                                                         $('#cite2reclamogp').val(response.citenota_segundareclamogp);
                                                                         $('#fechacite2reclamogp').val(response.fechacitenota_segundareclamogp);
@@ -2667,7 +2653,6 @@
                                                                         $('#fechacite2reclamoaps').val(response.fechacitenota_segundareclamoaps);
                                                                         $('#fecharesp2reclamoaps').val(response.fecharespuesta_segundareclamoaps);
 
-                                                                        /* NUEVO 091225 */
                                                                         $('#fecha3reclamogp').val(response.fechasubida_tercerareclamogp);
                                                                         $('#cite3reclamogp').val(response.citenota_tercerareclamogp);
                                                                         $('#fechacite3reclamogp').val(response.fechacitenota_tercerareclamogp);
@@ -2958,27 +2943,6 @@
                         </div>
 
                         <script>
-                            /* $(document).ready(function() {
-                                function updatePDFPreview3() {
-                                    let formData3 = $('#formCarta').serialize();
-                                    let clienteId3 = "{{ $cliente->id }}";
-                                    let nivelProcedimiento3 = $('[name="nivelprocedimiento3"]').val();
-                                    let subnivelProcedimiento3 = $('[name="subnivelprocedimiento3"]').val();
-                                    let tipoPdf3 = $('[name="tipo_pdf3"]').val();
-                                    if (!nivelProcedimiento3 || !subnivelProcedimiento3 || !tipoPdf3) {
-                                        $('#pdfPreview3').attr('src', '');
-                                        return;
-                                    }
-                                    $('#pdfPreview3').attr('src', '{{ url("/preview-carta") }}/' + clienteId3 + '?' + formData3);
-                                }
-                                $('[name="nivelprocedimiento3"], [name="subnivelprocedimiento3"], [name="tipo_pdf3"]').on('change', function() {
-                                    updatePDFPreview3();
-                                });
-                                $('#btnActualizarVistaCarta').on('click', function(e) {
-                                    e.preventDefault();
-                                    updatePDFPreview3();
-                                });
-                            }); */
                             $(document).ready(function() {
                                 function updatePDFPreview3() {
                                     let formData3 = $('#formCarta').serialize();

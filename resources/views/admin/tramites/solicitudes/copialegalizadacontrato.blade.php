@@ -23,22 +23,18 @@
         <div class="tipo3"><strong>de Largo Plazo</strong></div>
         <div class="tipo9">Presente. -</div>
         <div class="tipo5"><strong>REF.- SOLICITUD DE COPIA LEGALIZADA DEL CONTRATO</strong></div>
-        <div class="tipo5"><strong>(@if (
-                        strtoupper($nombretramite) === 'INVALIDEZ' ||
-                        strtoupper($nombretramite) === 'APELACIÓN' ||
-                        strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                    )
-                        PENSIÓN POR INVALIDEZ
-                    @else
-                        {{ $nombretramite }}
-                    @endif )</strong></div>
+        <div class="tipo5">
+            @php
+                $tramite = strtoupper($nombretramite);
+            @endphp
+            @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                <strong>PENSIÓN POR INVALIDEZ (RECALIFICACIÓN)</strong>
+            @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                <strong>PENSIÓN POR INVALIDEZ</strong>
+            @else
+                <strong>{{ $nombretramite }}</strong>
+            @endif
+        </div>
         <div class="tipo2">Distinguidos Señores:</div>
         <div class="tipo6">
             @if ($emisor === 'APODERADO')
@@ -50,23 +46,15 @@
                 con C.I. <strong>{{$cliente->ci}} {{$cliente->ciexp}}</strong>, con CUA N.º <strong>{{$cliente->nuacua}}</strong>, 
             @endif
             Me dirijo a su Institución con la finalidad de solicitar <strong>1 COPIA LEGALIZADA</strong> del 
-            <strong>CONTRATO de @if (
-                        strtoupper($nombretramite) === 'INVALIDEZ' ||
-                        strtoupper($nombretramite) === 'APELACIÓN' ||
-                        strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                    )
-                        PENSIÓN POR INVALIDEZ
-                    @else
-                        {{ $nombretramite }}
-                    @endif</strong>firmado en fecha <strong>{!! $fechacontrato ?? '<span class="textoedita">FECHA CONTRATO</span>' !!}</strong> 
-                                                en {!! $firmadoen ?? '<span class="textoedita">ENTREGADO EN</span>' !!}.
+            @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                <strong>CONTRATO DE PENSIÓN POR INVALIDEZ (RECALIFICACIÓN)</strong>
+            @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                <strong>CONTRATO DE PENSIÓN POR INVALIDEZ</strong>
+            @else
+                <strong>CONTRATO DE {{ $nombretramite }}</strong>
+            @endif
+            firmado en fecha <strong>{!! $fechacontrato ?? '<span class="textoedita">FECHA CONTRATO</span>' !!}</strong> 
+            en {!! $firmadoen ?? '<span class="textoedita">ENTREGADO EN</span>' !!}.
         </div>
 
         <div class="tipo6">

@@ -70,20 +70,43 @@ class HomeController extends Controller
         $clientesAuditoriasCount = DB::table('clienteauditorias')->count();
 
 
+        $fechaActual = now()->toDateString();
+        // FECHAS ACTUALES DE CLIENTES AUDITORIA
+        $progauditoria = Programacionsubcliente::whereNotNull('clienteauditorianombre')
+            ->where('clienteauditorianombre', '!=', '')
+            ->whereDate('fechaasignada', '=', $fechaActual)
+            ->orderBy('horadesde', 'asc')
+            ->get();
+
+        // FECHAS ACTUALES DE CLIENTES COMUNES
+        $progcomun = Programacionsubcliente::whereNotNull('clientecomunnombre')
+            ->where('clientecomunnombre', '!=', '')
+            ->whereDate('fechaasignada', '=', $fechaActual)
+            ->orderBy('horadesde', 'asc')
+            ->get();
+
+        // FECHAS ACTUALES DE CLIENTES ITA
+        $progita = Programacionsubcliente::whereNotNull('clienteitanombre')
+            ->where('clienteitanombre', '!=', '')
+            ->whereDate('fechaasignada', '=', $fechaActual)
+            ->orderBy('horadesde', 'asc')
+            ->get();
+
+
         //FECHAS PROXIMAS DE CLIENTES AUDITORIA 
         $programacionclienteauditorias = Programacionsubcliente::whereNotNull('clienteauditorianombre')
                                                     ->where('clienteauditorianombre', '!=', '')->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
                                                     ->get();
-        $nombreClienteAuditoria = $clienteauditoria->nombrecompleto;
-        $accionesClienteAuditoria = BateriaSubCliente::where('clienteauditorianombre', $nombreClienteAuditoria)->pluck('accionnombre')->toArray();
-        $idAuditoria = $clienteauditoria->nombrecompleto ? ClienteAuditoria::where('nombrecompleto', $clienteauditoria->nombrecompleto)->value('id') : null;
-        $accionesPorAreaAuditoria = Programacionsubcliente::where('clienteauditorianombre', $nombreClienteAuditoria)
-        ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
-        ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);    
-        $estadoRegistradosAuditoria = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteAuditoria)
-            ->where('clienteauditorianombre', $nombreClienteAuditoria)
-            ->pluck('accionnombre')->toArray();
-        $accionesDisponiblesAuditoria = $accionesPorAreaAuditoria;
+            $nombreClienteAuditoria = $clienteauditoria->nombrecompleto;
+            $accionesClienteAuditoria = BateriaSubCliente::where('clienteauditorianombre', $nombreClienteAuditoria)->pluck('accionnombre')->toArray();
+            $idAuditoria = $clienteauditoria->nombrecompleto ? ClienteAuditoria::where('nombrecompleto', $clienteauditoria->nombrecompleto)->value('id') : null;
+            $accionesPorAreaAuditoria = Programacionsubcliente::where('clienteauditorianombre', $nombreClienteAuditoria)
+            ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
+            ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);    
+            $estadoRegistradosAuditoria = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteAuditoria)
+                ->where('clienteauditorianombre', $nombreClienteAuditoria)
+                ->pluck('accionnombre')->toArray();
+            $accionesDisponiblesAuditoria = $accionesPorAreaAuditoria;
         $accionesPorAreasAuditoria = Programacionsubcliente::where('clienteauditorianombre', $nombreClienteAuditoria)->pluck('accionnombre', 'accionnombre');
 
 
@@ -91,16 +114,16 @@ class HomeController extends Controller
         $programacionclientecomunes = Programacionsubcliente::whereNotNull('clientecomunnombre')
                                                     ->where('clientecomunnombre', '!=', '')->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
                                                     ->get();
-        $nombreClienteComun = $clientecomun->nombrecompleto;
-        $accionesClienteComun = BateriaSubCliente::where('clientecomunnombre', $nombreClienteComun)->pluck('accionnombre')->toArray();
-        $idComun = $clientecomun->nombrecompleto ? ClienteComun::where('nombrecompleto', $clientecomun->nombrecompleto)->value('id') : null;
-        $accionesPorAreaComun = Programacionsubcliente::where('clientecomunnombre', $nombreClienteComun)
-            ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
-            ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);
-        $estadoRegistradosComun = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteComun)
-            ->where('clientecomunnombre', $nombreClienteComun)
-            ->pluck('accionnombre')->toArray();
-        $accionesDisponiblesComun = $accionesPorAreaComun;
+            $nombreClienteComun = $clientecomun->nombrecompleto;
+            $accionesClienteComun = BateriaSubCliente::where('clientecomunnombre', $nombreClienteComun)->pluck('accionnombre')->toArray();
+            $idComun = $clientecomun->nombrecompleto ? ClienteComun::where('nombrecompleto', $clientecomun->nombrecompleto)->value('id') : null;
+            $accionesPorAreaComun = Programacionsubcliente::where('clientecomunnombre', $nombreClienteComun)
+                ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
+                ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);
+            $estadoRegistradosComun = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteComun)
+                ->where('clientecomunnombre', $nombreClienteComun)
+                ->pluck('accionnombre')->toArray();
+            $accionesDisponiblesComun = $accionesPorAreaComun;
         $accionesPorAreasComun = Programacionsubcliente::where('clientecomunnombre', $nombreClienteComun)->pluck('accionnombre', 'accionnombre');
 
 
@@ -108,16 +131,16 @@ class HomeController extends Controller
         $programacionclienteitas = Programacionsubcliente::whereNotNull('clienteitanombre')
                                                     ->where('clienteitanombre', '!=', '')->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
                                                     ->get();
-        $nombreClienteIta = $cliente->nombrecompleto;
-        $accionesClienteIta = BateriaSubCliente::where('clienteitanombre', $nombreClienteIta)->pluck('accionnombre')->toArray();
-        $idIta = $cliente->nombrecompleto ? Cliente::where('nombrecompleto', $cliente->nombrecompleto)->value('id') : null;
-        $accionesPorAreaIta = Programacionsubcliente::where('clienteitanombre', $nombreClienteIta)
-            ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
-            ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);
-        $estadoRegistradosIta = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteIta)
-            ->where('clienteitanombre', $nombreClienteIta)
-            ->pluck('accionnombre')->toArray();
-        $accionesDisponiblesIta = $accionesPorAreaIta;
+            $nombreClienteIta = $cliente->nombrecompleto;
+            $accionesClienteIta = BateriaSubCliente::where('clienteitanombre', $nombreClienteIta)->pluck('accionnombre')->toArray();
+            $idIta = $cliente->nombrecompleto ? Cliente::where('nombrecompleto', $cliente->nombrecompleto)->value('id') : null;
+            $accionesPorAreaIta = Programacionsubcliente::where('clienteitanombre', $nombreClienteIta)
+                ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
+                ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);
+            $estadoRegistradosIta = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteIta)
+                ->where('clienteitanombre', $nombreClienteIta)
+                ->pluck('accionnombre')->toArray();
+            $accionesDisponiblesIta = $accionesPorAreaIta;
         $accionesPorAreasIta = Programacionsubcliente::where('clienteitanombre', $nombreClienteIta)->pluck('accionnombre', 'accionnombre');
 
 
@@ -125,31 +148,28 @@ class HomeController extends Controller
         $programacionclientebancos = Programacionsubcliente::whereNotNull('clientenombre')
                                                     ->where('clientenombre', '!=', '')->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
                                                     ->get();
-        $nombreClienteBanco = $clientebanco->nombrecompleto;
-        $accionesClienteBanco = BateriaSubCliente::where('clientenombre', $nombreClienteBanco)->pluck('accionnombre')->toArray();
-        $idBanco = $clientebanco->nombrecompleto ? ClienteBanco::where('nombrecompleto', $clientebanco->nombrecompleto)->value('id') : null;
-        $accionesPorAreaBanco = Programacionsubcliente::where('clientenombre', $nombreClienteBanco)
-            ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
-            ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);
-        $estadoRegistradosBanco = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteBanco)
-            ->where('clientebanconombre', $nombreClienteBanco)
-            ->pluck('accionnombre')->toArray();
-        $accionesDisponiblesBanco = $accionesPorAreaBanco;
+            $nombreClienteBanco = $clientebanco->nombrecompleto;
+            $accionesClienteBanco = BateriaSubCliente::where('clientenombre', $nombreClienteBanco)->pluck('accionnombre')->toArray();
+            $idBanco = $clientebanco->nombrecompleto ? ClienteBanco::where('nombrecompleto', $clientebanco->nombrecompleto)->value('id') : null;
+            $accionesPorAreaBanco = Programacionsubcliente::where('clientenombre', $nombreClienteBanco)
+                ->whereDate('fechaasignada', '=', now()->addDay()->toDateString())
+                ->get(['accionnombre', 'proveedornombre', 'fechaasignada', 'horaasignada']);
+            $estadoRegistradosBanco = Estadoprogramacionsubcliente::whereIn('accionnombre', $accionesClienteBanco)
+                ->where('clientebanconombre', $nombreClienteBanco)
+                ->pluck('accionnombre')->toArray();
+            $accionesDisponiblesBanco = $accionesPorAreaBanco;
         $accionesPorAreasBanco = Programacionsubcliente::where('clientenombre', $nombreClienteBanco)->pluck('accionnombre', 'accionnombre');
 
         $usuarioAutenticado = Auth::user()->name;
 
         $hoy = Carbon::now()->startOfDay();
 
-        // Obtén los mensajes que sean para 'todos' o para el usuario autenticado
         $mensajes = Mensaje::where('created_at', '>=', $hoy)
         ->orderBy('created_at', 'asc')
         ->get()
-        ->groupBy('titulo'); // Agrupa los mensajes por título
+        ->groupBy('titulo');
 
-        // Selecciona solo el primer mensaje de cada grupo
         $mensajesPrincipales = $mensajes->map(function ($group) {
-        // Obtener el primer mensaje y el último mensaje del grupo
         $primerMensaje = $group->first();
         $ultimoMensaje = $group->last();
 
@@ -166,7 +186,8 @@ class HomeController extends Controller
         'accionesPorAreasAuditoria', 'accionesPorAreaAuditoria', 'accionesDisponiblesAuditoria', 'clienteauditoria', 'idAuditoria', 'accionesClienteAuditoria', 'estadoRegistradosAuditoria',
         'accionesPorAreasComun', 'accionesPorAreaComun', 'accionesDisponiblesComun', 'clientecomun', 'idComun', 'accionesClienteComun', 'estadoRegistradosComun',
         'accionesPorAreasIta', 'accionesPorAreaIta', 'accionesDisponiblesIta', 'cliente', 'idIta', 'accionesClienteIta', 'estadoRegistradosIta',
-        'accionesPorAreasBanco', 'accionesPorAreaBanco', 'accionesDisponiblesBanco', 'clientebanco', 'idBanco', 'accionesClienteBanco', 'estadoRegistradosBanco'));
+        'accionesPorAreasBanco', 'accionesPorAreaBanco', 'accionesDisponiblesBanco', 'clientebanco', 'idBanco', 'accionesClienteBanco', 'estadoRegistradosBanco',
+        'progauditoria','progcomun','progita'));
     }
 
     public function store(Request $request)

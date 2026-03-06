@@ -36,22 +36,18 @@
         Por medio de la presente, tengo a bien dirigirme a su Autoridad con la finalidad de solicitar que se me pueda otorgar 
         <strong>INFORME MEDICO</strong> de la especialidad de </strong>{!! $especialidadinforme ?? '<span class="textoedita">ESPECIALIDAD</span>' !!}</strong>, de mi persona 
         <strong>{{$cliente->nombrecompleto}}</strong> con Matricula Nro. <strong>{{ $matricula }}</strong>. Y se me pueda entregar por la sección 
-        que corresponda. Para mi tramite de <strong>@if (
-                        strtoupper($nombretramite) === 'INVALIDEZ' ||
-                        strtoupper($nombretramite) === 'APELACIÓN' ||
-                        strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                    )
-                        PENSIÓN POR INVALIDEZ
-                    @else
-                        {{ $nombretramite }}
-                    @endif</strong>. <br>
+        que corresponda. Para mi
+        @php
+            $tramite = strtoupper($nombretramite);
+        @endphp
+        @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+            <strong>TRÁMITE DE PENSIÓN POR INVALIDEZ (RECALIFICACIÓN).</strong>
+        @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+            <strong>TRÁMITE DE PENSIÓN POR INVALIDEZ.</strong>
+        @else
+            <strong>TRÁMITE DE {{ $nombretramite }}.</strong>
+        @endif
+        <br>
         - Medico Tratante:  <strong>{!! $medicotratante ?? '<span class="textoedita">MÉDICO TRATANTE</span>' !!}</strong>
         </div>
         <div class="tipo6">

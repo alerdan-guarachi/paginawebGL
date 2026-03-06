@@ -20,7 +20,7 @@ class _AusenciasPageState extends State<AusenciasPage> {
     _ausenciasFuture = ApiService.getAusencias();
   }
 
-  // Función para agrupar las ausencias
+  // ▼▼▼ FUNCIÓN MODIFICADA ▼▼▼
   Map<String, dynamic> _groupAusencias(List<dynamic> ausencias) {
     final Map<String, dynamic> grouped = {};
 
@@ -30,8 +30,8 @@ class _AusenciasPageState extends State<AusenciasPage> {
         grouped[key] = {
           'proveedornombre': ausencia['proveedornombre'],
           'motivo': ausencia['motivo'],
-          'fechas': [],
-          'horainicio': ausencia['horainicio'], // Asumimos que el horario es el mismo para el bloque
+          'fechas': <DateTime>[], // Se especifica el tipo de la lista
+          'horainicio': ausencia['horainicio'],
           'horafin': ausencia['horafin'],
         };
       }
@@ -72,12 +72,18 @@ class _AusenciasPageState extends State<AusenciasPage> {
               itemBuilder: (context, index) {
                 final ausencia = ausenciasList[index];
                 final List<DateTime> fechas = ausencia['fechas'];
-                final String fechaInicio = DateFormat('d MMM', 'es_ES').format(fechas.first);
-                final String fechaFin = DateFormat('d MMM yyyy', 'es_ES').format(fechas.last);
-                final String rangoFechas = fechas.length == 1 ? fechaFin : 'Del $fechaInicio al $fechaFin';
+                // ▼▼▼ LÍNEAS MODIFICADAS ▼▼▼
+                final String fechaInicio = DateFormat('dd/MM/yy', 'es_ES').format(fechas.first);
+                final String fechaFin = DateFormat('dd/MM/yy', 'es_ES').format(fechas.last);
+                final String rangoFechas = fechas.length == 1 ? fechaFin : 'Desde el $fechaInicio al $fechaFin';
 
-                final horaInicio = (ausencia['horainicio'] as String?)?.substring(0, 5);
-                final horaFin = (ausencia['horafin'] as String?)?.substring(0, 5);
+                String? horaInicio, horaFin;
+                if(ausencia['horainicio'] != null && (ausencia['horainicio'] as String).length >= 5) {
+                  horaInicio = (ausencia['horainicio'] as String).substring(0, 5);
+                }
+                if(ausencia['horafin'] != null && (ausencia['horafin'] as String).length >= 5) {
+                  horaFin = (ausencia['horafin'] as String).substring(0, 5);
+                }
 
                 return Card(
                   elevation: 2,
@@ -94,12 +100,12 @@ class _AusenciasPageState extends State<AusenciasPage> {
                           ausencia['proveedornombre'] ?? 'Médico no especificado',
                           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                         ),
-                        SizedBox(height: 4),
+                        SizedBox(height: 2),
                         Text(
                           ausencia['motivo'] ?? 'Motivo no especificado',
                           style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey.shade700),
                         ),
-                        Divider(height: 20),
+                        Divider(height: 10),
                         Row(
                           children: [
                             Icon(Icons.calendar_today, size: 16, color: Colors.blue.shade700),

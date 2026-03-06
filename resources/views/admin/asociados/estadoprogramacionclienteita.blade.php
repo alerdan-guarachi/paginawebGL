@@ -71,19 +71,19 @@
                             if (!empty($accion->direccion)) {
                                 $direcciones .= "\n\nDirección: " . $accion->direccion;
                                 if (!empty($accion->linkubicacion)) {
-                                    $direcciones .= " (Ver Ubicación: " . $accion->linkubicacion . ")";
+                                    $direcciones .= "\nVer Ubicación:\n" . $accion->linkubicacion;
                                 }
                             }
                             if (!empty($accion->direccion2)) {
                                 $direcciones .= "\n\nDirección: " . $accion->direccion2;
                                 if (!empty($accion->linkubicacion2)) {
-                                    $direcciones .= " (Ver Ubicación 2: " . $accion->linkubicacion2 . ")";
+                                    $direcciones .= "\nVer Ubicación 2:\n" . $accion->linkubicacion2;
                                 }
                             }
                             if (!empty($accion->direccion3)) {
                                 $direcciones .= "\n\nDirección: " . $accion->direccion3;
                                 if (!empty($accion->linkubicacion3)) {
-                                    $direcciones .= " (Ver Ubicación 3: " . $accion->linkubicacion3 . ")";
+                                    $direcciones .= "\nVer Ubicación 3:\n" . $accion->linkubicacion3;
                                 }
                             }
                             $mensaje .= $direcciones;

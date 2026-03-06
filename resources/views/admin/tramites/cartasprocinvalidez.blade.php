@@ -9,7 +9,6 @@
 @section('css')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropify/0.2.2/css/dropify.min.css">
 <link rel="stylesheet" href="{{ asset('css/tramitesgestora.css') }}">
-{{-- <link rel="stylesheet" href="{{ asset('css/tramitesgestora.css') }}?v={{ filemtime(public_path('css/tramitesgestora.css')) }}"> --}}
 <style>
     .table {
         width: 100%;
@@ -36,7 +35,7 @@
         margin-bottom: 5px !important;
     }
     .form-control {
-        height: 35px;
+        height: 30px;
         padding: 2px 8px;
     }
 </style>
@@ -66,8 +65,6 @@
             <li class="nav-item">
                 <a class="nav-link" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="false">CARTAS / RECLAMOS</a>
             </li>
-
-            {{-- NUEVO 241125 --}}
             <li class="nav-item">
                 <a class="nav-link" id="tab-4" data-toggle="tab" href="#tab-content-4" role="tab" aria-controls="tab-content-4" aria-selected="false">MISIVAS LIBRES</a>
             </li>
@@ -76,6 +73,8 @@
 
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
+
+            {{-- SOLICITUDES --}}
             <div class="tab-pane fade show active" id="tab-content-1" role="tabpanel" aria-labelledby="tab-1">
                 <div class="card-body">
                     <div class="row">
@@ -211,17 +210,9 @@
                                                         {!! Form::label('campoafiliadoa', 'Afiliado a:') !!}
                                                         {!! Form::text('campoafiliadoa', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                                     </div>
-                                                    <div class="form-group col-lg-4" id="nrocua1Container" style="display: none;">
-                                                        {!! Form::label('nrocua1', 'Nro. CUA 1:') !!}
-                                                        {!! Form::text('nrocua1', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                                    </div>
                                                     <div class="form-group col-lg-4" id="nombreafp1Container" style="display: none;">
                                                         {!! Form::label('nombreafp1', 'AFP 1:') !!}
                                                         {!! Form::text('nombreafp1', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                                    </div>
-                                                    <div class="form-group col-lg-4" id="nroci1Container" style="display: none;">
-                                                        {!! Form::label('nroci1', 'C.I. 1:') !!}
-                                                        {!! Form::text('nroci1', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                                     </div>
                                                     <div class="form-group col-lg-4" id="nrocua2Container" style="display: none;">
                                                         {!! Form::label('nrocua2', 'Nro. CUA 2:') !!}
@@ -259,6 +250,10 @@
                                                         {!! Form::label('fechacontrato', 'Fecha Documento:') !!}
                                                         {!! Form::date('fechacontrato', null, ['class' => 'form-control', 'placeholder' => '', 'value' => '{{ \Carbon\Carbon::now()->toDateString() }}']) !!}
                                                     </div>
+                                                    <div class="form-group col-lg-4" id="fechainclusionContainer" style="display: none;">
+                                                        {!! Form::label('fechainclusion', 'Fecha Inclusión:') !!}
+                                                        {!! Form::date('fechainclusion', null, ['class' => 'form-control', 'placeholder' => '', 'value' => '{{ \Carbon\Carbon::now()->toDateString() }}']) !!}
+                                                    </div>
                                                     <div class="form-group col-lg-4" id="firmadoenContainer" style="display: none;">
                                                         {!! Form::label('firmadoen', 'Entregado en:') !!}
                                                         {!! Form::text('firmadoen', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -291,56 +286,8 @@
                                                         {!! Form::label('nropasaporte', 'Nro. Pasaporte:') !!}
                                                         {!! Form::text('nropasaporte', null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'nropasaporte']) !!}
                                                     </div>
-                                                    <div class="form-group col-lg-4" id="nrocuaunificadoContainer" style="display: none;">
-                                                        {!! Form::label('nrocuaunificado', 'Nro. CUA Unificado:') !!}
-                                                        {!! Form::text('nrocuaunificado', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                                    </div>
-                                                    <div class="form-group col-lg-4" id="nrociunificadoContainer" style="display: none;">
-                                                        {!! Form::label('nrociunificado', 'C.I. Unificado:') !!}
-                                                        {!! Form::text('nrociunificado', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                                    </div>
                                                 </div>
                                             </div>
-                                            
-                                            {{-- <div class="col-lg-12" id="tablaEspecialidades" style="display: none;">
-                                                <div class="table-responsive">
-                                                    <table class="table" id="especialidadesTable">
-                                                        <thead class="table-secondary">
-                                                            <tr style="text-align: center">
-                                                                <th class="col-lg-5">ESPECIALIDAD</th>
-                                                                <th class="col-lg-5">DETALLE</th>
-                                                                <th class="col-lg-2">CANTIDAD</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            <tr>
-                                                                <td class="col-lg-5"><input type="text" name="especialista1" class="form-control" /></td>
-                                                                <td class="col-lg-5"><input type="text" name="detalle1" class="form-control" /></td>
-                                                                <td class="col-lg-2"><input type="text" name="cantidad1" class="form-control" /></td>
-                                                            </tr>
-                                                        </tbody>
-                                                    </table>
-                                                    <button type="button" class="btn btn-sm btn-verdocumento" id="agregarFila">AGREGAR MÁS</button>
-                                                </div>
-                                            </div>
-                                            <script>
-                                                $(document).ready(function() {
-                                                    let filaCount = 1;
-                                                    $('#agregarFila').on('click', function() {
-                                                        filaCount++;
-                                                        if(filaCount > 5) return;
-
-                                                        const nuevaFila = `
-                                                            <tr>
-                                                                <td class="col-lg-5"><input type="text" name="especialista${filaCount}" class="form-control" /></td>
-                                                                <td class="col-lg-5"><input type="text" name="detalle${filaCount}" class="form-control" /></td>
-                                                                <td class="col-lg-2"><input type="text" name="cantidad${filaCount}" class="form-control" /></td>
-                                                            </tr>
-                                                        `;
-                                                        $('#especialidadesTable tbody').append(nuevaFila);
-                                                    });
-                                                });
-                                            </script> --}}
 
                                             <div class="row" id="tablaEspecialidades" style="display: none;">
                                                 <div class="col-lg-5">
@@ -392,10 +339,6 @@
                                                                                                                     data-tipoarea="{{ $doc->tipoarea }}">
                                                                                                             </td>
                                                                                                             <td class="text-center align-middle">
-                                                                                                                {{-- <a href="{{ url("documentacionclientesita/{$cliente->id}/{$doc->document}") }}"
-                                                                                                                    target="_blank" class="btn btn-sm btn-verdoc" title="Ver documento">
-                                                                                                                    <i class="fas fa-eye"></i>
-                                                                                                                </a> --}}
                                                                                                                 @php
                                                                                                                     $tipoarea = strtoupper(trim($doc->tipoarea ?? ''));
 
@@ -567,7 +510,6 @@
                                                     });
                                                 </script>
                                             </div>
-
 
                                             <div class="col-lg-12" id="tablaadjuntosContainer222" style="display: none;">
                                                 <table class="table" style="margin-top: -5px;" >
@@ -1061,6 +1003,7 @@
                                                     $('#medicotratanteContainer').hide();
                                                     $('#tablaabonoContainer').hide();
                                                     $('#fechacontratoContainer').hide();
+                                                    $('#fechainclusionContainer').hide();
                                                     $('#firmadoenContainer').hide();
                                                     $('#nrodictamenContainer').hide();
                                                     $('#fechatramiteContainer').hide();
@@ -1073,14 +1016,10 @@
                                                     $('#nropasaporteContainer').hide();
                                                     $('#tablaceapasaporteContainer').hide();
                                                     $('#tablaceapasaporteContainer2').hide();
-                                                    $('#nrocua1Container').hide();
                                                     $('#nombreafp1Container').hide();
-                                                    $('#nroci1Container').hide();
                                                     $('#nrocua2Container').hide();
                                                     $('#nombreafp2Container').hide();
                                                     $('#nroci2Container').hide();
-                                                    $('#nrocuaunificadoContainer').hide();
-                                                    $('#nrociunificadoContainer').hide();
                                                     $('#texto1Container').hide();
                                                     $('#tablaunificacioncuaContainer').hide();
                                                     $('#tablacambiounificacioncuaContainer').hide();
@@ -1088,7 +1027,7 @@
                                                     $('#campodirigidoaContainer').hide();
                                                     $('#campoestadolabContainer').hide();
                                                     $('#campoafiliadoaContainer').hide();
-
+                                                    
                                                     var selectedValue = $(this).val();
                                         
                                                     if (selectedValue === 'ACTUALIZACIÓN DE DATOS') {
@@ -1105,6 +1044,7 @@
                                                         $('#afpgestoraContainer').show();
                                                         $('#nombremedicoContainer').show();
                                                         $('#cargomedicoContainer').show();
+                                                        $('#fechainclusionContainer').show();
                                                     } else if (selectedValue === 'INCLUSIÓN DE INFORMES MÉDICOS') {            
                                                         $('#tablaEspecialidades').show();
                                                         $('#matriculaContainer').show();
@@ -1171,14 +1111,10 @@
                                                         $('#tablaceapasaporteContainer2').show();
                                                         $('#nombremedicoContainer').show();
                                                     } else if (selectedValue === 'UNIFICACIÓN DE CUA') { 
-                                                        /* $('#nrocua1Container').show(); */
                                                         $('#nombreafp1Container').show();
-                                                        /* $('#nroci1Container').show(); */
                                                         $('#nrocua2Container').show();
                                                         $('#nombreafp2Container').show();
                                                         $('#nroci2Container').show();
-                                                        /* $('#nrocuaunificadoContainer').show(); */
-                                                        /* $('#nrociunificadoContainer').show(); */
                                                         $('#texto1Container').show();
                                                         $('#tablaunificacioncuaContainer').show();
                                                         $('#tablacambiounificacioncuaContainer').show();
@@ -1220,38 +1156,7 @@
                                 </div>
                             </div>
                         </div>
-
-                        {{-- <script>
-                            $(document).ready(function() {
-                                let debounceTimer;
-
-                                function updatePDFPreview() {
-                                    let formData = $('#formSolicitud').serialize();
-                                    let clienteId = "{{ $cliente->id }}";
-
-                                    // Validar campos obligatorios antes de generar PDF
-                                    let nivelProcedimiento = $('[name="nivelprocedimiento"]').val();
-                                    let tipoPdf = $('[name="tipo_pdf"]').val();
-                                    if (!nivelProcedimiento || !tipoPdf) {
-                                        $('#pdfPreview').attr('src', '');
-                                        return;
-                                    }
-
-                                    $('#pdfPreview').attr('src', '{{ url("/preview-pdf") }}/' + clienteId + '?' + formData);
-                                }
-
-                                // Debounce: espera 500ms después de escribir
-                                $('#formSolicitud input, #formSolicitud textarea').on('input', function() {
-                                    clearTimeout(debounceTimer);
-                                    debounceTimer = setTimeout(updatePDFPreview, 500);
-                                });
-
-                                // Para selects, actualiza inmediato
-                                $('#formSolicitud select').on('change', function() {
-                                    updatePDFPreview();
-                                });
-                            });
-                        </script> --}}
+                        
                         <script>
                             $(document).ready(function() {
                                 function updatePDFPreview() {
@@ -1278,6 +1183,7 @@
                 </div>
             </div>
 
+            {{-- ADJUNTOS Y RESPUESTAS --}}
             <div class="tab-pane fade" id="tab-content-2" role="tabpanel" aria-labelledby="tab-2">
                 <div class="card-body">
                     <div class="row">
@@ -1323,7 +1229,6 @@
                                                         {!! Form::label('fechaemitido2', 'Fecha Carta:') !!}
                                                         <input type="date" class="form-control" id="fechaactual2" name="fechaactual2" value="{{ \Carbon\Carbon::now()->toDateString() }}" min="{{ \Carbon\Carbon::now()->toDateString() }}">
                                                     </div>
-                                                    {{-- NUEVO 111125 --}}
                                                     <div class="form-group col-lg-4">
                                                         {!! Form::label('apoderado2', 'Emisor Apoderado:') !!}
                                                         {!! Form::select('apoderado2', 
@@ -1388,10 +1293,23 @@
                                                             @foreach ($programaciones as $fecha => $grupos)
                                                                 <div class="card shadow-sm border mb-2">
                                                                     
-                                                                    <div class="card-header py-2 px-3 bg-secondary text-white">
-                                                                        <button class="btn btn-link text-white text-left w-100 p-0" type="button"
+                                                                    {{-- NUEVO 250226 --}}
+                                                                    <div class="card-header py-2 px-2 bg-secondary text-white">
+                                                                        <button class="btn btn-link text-white text-left w-100 p-0" type="button" style="font-size: 11px;"
                                                                             data-toggle="collapse" data-target="#fecha_{{ \Str::slug($fecha) }}">
-                                                                            <strong>FECHA BATERIA:</strong> {{ $fecha }}
+                                                                            @php
+                                                                                $esFecha = false;
+                                                                                try {
+                                                                                    \Carbon\Carbon::parse($fecha);
+                                                                                    $esFecha = true;
+                                                                                } catch (\Exception $e) {
+                                                                                    $esFecha = false;
+                                                                                }
+                                                                            @endphp
+                                                                            <strong style="font-size: 11px;">
+                                                                                {{ $esFecha ? 'FECHA BATERIA:' : '' }}
+                                                                            </strong>
+                                                                            {{ $fecha }}
                                                                         </button>
                                                                     </div>
 
@@ -1433,10 +1351,6 @@
                                                                                                                         data-hojas="{{ $doc->nro_hojas ?? 0 }}">
                                                                                                                 </td>
                                                                                                                 <td class="text-center align-middle">
-                                                                                                                    {{-- <a href="{{ url("documentacionclientesita/{$cliente->id}/{$doc->document}") }}"
-                                                                                                                        target="_blank" class="btn btn-sm btn-verdoc" title="Ver documento">
-                                                                                                                        <i class="fas fa-eye"></i>
-                                                                                                                    </a> --}}
                                                                                                                     @php
                                                                                                                         $tipoarea = strtoupper(trim($doc->tipoarea ?? ''));
 
@@ -1484,6 +1398,7 @@
                                                                 </div>
                                                             @endforeach
                                                             <div class="text-right mt-3">
+                                                                {!! Form::label('', 'Agregar Archivo:') !!}
                                                                 <div class="form-group row justify-content-end align-items-center">
                                                                     <div class="col-sm-8">
                                                                         <select id="tipoDocumento2" name="tipoDocumento2" class="form-control form-control-sm">
@@ -1495,6 +1410,23 @@
                                                                     </div>
                                                                     <div class="col-auto">
                                                                         <button id="btnAgregarSeleccionados2" type="button" class="btn btn-sm btn-adjuntosrespuestas">
+                                                                            <i class="fas fa-plus"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                                {{-- NUEVO 250226 --}}
+                                                                <hr>
+                                                                {!! Form::label('', 'Agregar CD o Placa:') !!}
+                                                                <div class="form-group row justify-content-end align-items-center">
+                                                                    <div class="col-sm-8">
+                                                                        <select id="tipoAdjunto2" class="form-control form-control-sm">
+                                                                            <option value="">Seleccione una opción...</option>
+                                                                            <option value="CD">CD</option>
+                                                                            <option value="PLACA">PLACA</option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div class="col-auto">
+                                                                        <button id="btnAgregarAdjunto2" type="button" class="btn btn-sm btn-adjuntosrespuestas">
                                                                             <i class="fas fa-plus"></i>
                                                                         </button>
                                                                     </div>
@@ -1667,6 +1599,65 @@
                                                     checkboxes.forEach(c => c.checked = this.checked);
                                                 });
                                             });
+
+                                            /* NUEVO 250226 */
+                                            document.getElementById('btnAgregarAdjunto2').addEventListener('click', function () {
+                                                const tipoAdjunto = document.getElementById('tipoAdjunto2').value.trim();
+                                                if (!tipoAdjunto) return;
+
+                                                let filasActuales = tabla.querySelectorAll('tr').length;
+                                                let i = filasActuales + 1;
+
+                                                const fila = document.createElement('tr');
+                                                fila.innerHTML = `
+                                                    <td>
+                                                        <input type="text" name="especialista2${i}" class="form-control" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="detalle2${i}" 
+                                                            class="form-control detalle-protegido" 
+                                                            value="${tipoAdjunto}" 
+                                                            data-prefijo="${tipoAdjunto}" />
+                                                    </td>
+                                                    <td>
+                                                        <input type="text" name="cantidad2${i}" class="form-control" value="1" />
+                                                    </td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm quitar-fila">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </td>
+                                                `;
+
+                                                tabla.appendChild(fila);
+
+                                                // 🔒 PROTEGER EL PREFIJO (CD o PLACAS)
+                                                const inputDetalle = fila.querySelector('.detalle-protegido');
+
+                                                inputDetalle.addEventListener('input', function () {
+                                                    const prefijo = this.dataset.prefijo;
+
+                                                    if (!this.value.startsWith(prefijo)) {
+                                                        this.value = prefijo;
+                                                    }
+                                                });
+
+                                                inputDetalle.addEventListener('keydown', function (e) {
+                                                    const prefijo = this.dataset.prefijo;
+
+                                                    if (this.selectionStart <= prefijo.length &&
+                                                        (e.key === "Backspace" || e.key === "Delete")) {
+                                                        e.preventDefault();
+                                                    }
+                                                });
+
+                                                // Botón eliminar fila
+                                                fila.querySelector('.quitar-fila').addEventListener('click', function () {
+                                                    fila.remove();
+                                                });
+
+                                                document.getElementById('tipoAdjunto2').value = '';
+                                            });
                                         });
                                     </script>
                                     <script>
@@ -1728,6 +1719,7 @@
                 </div>
             </div> 
         
+            {{-- CARTAS T RECLAMOS --}}
             <div class="tab-pane fade" id="tab-content-3" role="tabpanel" aria-labelledby="tab-3">
                 <div class="card-body">
                     <div class="row">
@@ -1879,7 +1871,6 @@
                                                 });
                                             </script>
 
-                                            {{-- NUEVO 111125 --}}
                                             <div class="form-group col-lg-4">
                                                 {!! Form::label('apoderado3', 'Emisor Apoderado:') !!}
                                                 {!! Form::select('apoderado3', 
@@ -1905,11 +1896,9 @@
                                                     <option value="2cm 3.5cm 2cm 3.5cm">ALTO</option>
                                                 </select>
                                             </div>
-                                            <div class="form-group col-lg-2">
-                                                {!! Form::label('fechaadjmedica', 'Fecha Adj. Doc.:') !!}
-                                                {!! Form::date('fechaadjmedica', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                            </div>
+                                            
                                             {{-- PRIMERA CARTA SIT ADJUNTO DE DOCUMENTOS Y DOCUMENTACIÓN MÉDICA --}}
+                                            {{-- NUEVO 240226 --}}
                                             <div class="form-group col-lg-4" id="fechaadjuntoContainer" style="display: none;">
                                                 {!! Form::label('fechaadjunto3', 'Fecha Adjunto:') !!}
                                                 {!! Form::date('fechaadjunto3', null, ['class' => 'form-control', 'placeholder' => '']) !!}
@@ -1923,6 +1912,11 @@
                                                     'CERTIFICADO DE TRABAJO' => 'CERTIFICADO DE TRABAJO',
                                                     'DENUNCIA DE ACCIDENTE' => 'DENUNCIA DE ACCIDENTE',
                                                 ], null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                            </div>
+                                            {{-- NUEVO 240226 --}}
+                                            <div class="form-group col-lg-4" id="fechaadjdoc" style="display: none;">
+                                                {!! Form::label('fechaadjmedica', 'Fecha Adj. Documentación:') !!}
+                                                {!! Form::date('fechaadjmedica', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                             </div>
                                             <div class="form-group col-lg-6" id="nombremedico3Container" style="display: none;">
                                                 {!! Form::label('nombremedico3', 'Destinatario:') !!}
@@ -2369,7 +2363,6 @@
                                                                         $('#fechacite3sit').val(response.fechacitenota_tercera);
                                                                         $('#fecharesp3sit').val(response.fecharespuesta_tercera);
 
-                                                                        /* NUEVO 121225 */
                                                                         $('#fecha1reclamogp').val(response.fechasubida_primerareclamogp);
                                                                         $('#cite1reclamogp').val(response.citenota_primerareclamogp);
                                                                         $('#fechacite1reclamogp').val(response.fechacitenota_primerareclamogp);
@@ -2436,7 +2429,6 @@
                                                                         $('#fechacite1reclamoaps').val(response.fechacitenota_primerareclamoaps);
                                                                         $('#fecharesp1reclamoaps').val(response.fecharespuesta_primerareclamoaps);
 
-                                                                        /* NUEVO 091225 */
                                                                         $('#fecha2reclamogp').val(response.fechasubida_segundareclamogp);
                                                                         $('#cite2reclamogp').val(response.citenota_segundareclamogp);
                                                                         $('#fechacite2reclamogp').val(response.fechacitenota_segundareclamogp);
@@ -2512,7 +2504,6 @@
                                                                         $('#fechacite2reclamoaps').val(response.fechacitenota_segundareclamoaps);
                                                                         $('#fecharesp2reclamoaps').val(response.fecharespuesta_segundareclamoaps);
 
-                                                                        /* NUEVO 091225 */
                                                                         $('#fecha3reclamogp').val(response.fechasubida_tercerareclamogp);
                                                                         $('#cite3reclamogp').val(response.citenota_tercerareclamogp);
                                                                         $('#fechacite3reclamogp').val(response.fechacitenota_tercerareclamogp);
@@ -2605,6 +2596,7 @@
 
                                                 $('#nivelprocedimiento3, #subnivelprocedimiento3, #tipo_pdf3').on('change', buscarProcedimiento);
 
+                                                /* NUEVO 240226 */
                                                 function toggleAdjuntoFields() {
                                                     $('#tipoadjuntoContainer').hide();
                                                     $('#fechaadjuntoContainer').hide();
@@ -2627,18 +2619,18 @@
                                                     $('#3reclamoapsContainer').hide();
                                                     $('#nombremedico3Container').hide();
                                                     $('#cargomedico3Container').hide();
+                                                    $('#fechaadjdoc').hide();
 
                                                     var subnivel = $('#subnivelprocedimiento3').val();
                                                     var tipoPdf = $('#tipo_pdf3').val();
 
-                                                    if (
-                                                        tipoPdf === 'PRIMERA CARTA SIT' &&
-                                                        (subnivel === 'ADJUNTO DE DOCUMENTOS' || subnivel === 'ADJUNTO DE DOCUMENTACIÓN MÉDICA')
+                                                   if (
+                                                        subnivel === 'ADJUNTO DE DOCUMENTOS' ||
+                                                        subnivel === 'ADJUNTO DE DOCUMENTACIÓN MÉDICA'
                                                     ) {
                                                         $('#tipoadjuntoContainer').show();
                                                         $('#fechaadjuntoContainer').show();
                                                     } else if (
-                                                        tipoPdf === 'PRIMERA CARTA SIT' &&
                                                         subnivel === 'SOLICITUD DE MODIFICACIÓN DE CITE'
                                                     ) {
                                                         $('#solmodificar3Container').show();
@@ -2649,63 +2641,46 @@
                                                         $('#afiliadoa3Container').show();
                                                         $('#textocomplementario3Container').show();
                                                     } else if (
-                                                        tipoPdf === 'PRIMERA CARTA SIT' &&
-                                                        (subnivel === 'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO' 
+                                                        subnivel === 'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO' 
                                                         || subnivel === 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC'
                                                         || subnivel === 'ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR'
-                                                        || subnivel === 'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO')
+                                                        || subnivel === 'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO'
                                                     ) {
                                                         $('#solmodificar3Container').show();
                                                         $('#nronota3Container').show();
                                                         $('#fechanota3Container').show();
+                                                        $('#fechaadjdoc').show();
                                                     } else if (
-                                                        tipoPdf === 'PRIMERA CARTA SIT' &&
                                                         subnivel === 'COMPRA DE SERVICIOS'
                                                     ) {
                                                         $('#nronota3Container').show();
                                                         $('#fechanota3Container').show();
                                                         $('#fechaconclusionprog3Container').show();
                                                     } else if (
-                                                        tipoPdf === 'PRIMERA CARTA SIT' &&
                                                         subnivel === 'SOLICITUD DE COMPRA DE SERVICIOS'
                                                     ) {
+                                                        $('#solmodificar3Container').show();
                                                         $('#nronota3Container').show();
                                                         $('#fechanota3Container').show();
                                                         $('#textocomplementario3Container').show();
                                                     } else if (
                                                         tipoPdf === 'SEGUNDA CARTA SIT'
                                                     ) {
-                                                        $('#solmodificar3Container').show();
-                                                        $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show();
                                                         $('#1sitContainer').show();
                                                     } else if (
                                                         tipoPdf === 'TERCERA CARTA SIT'
                                                     ) {
-                                                        $('#solmodificar3Container').show();
-                                                        $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show();
                                                         $('#1sitContainer').show();
                                                         $('#2sitContainer').show();
                                                     } else if (
                                                         tipoPdf === 'PRIMERA CARTA DE RECLAMO GP'
                                                     ) {
-                                                        $('#solmodificar3Container').show();
-                                                        $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show();
                                                         $('#1sitContainer').show();
                                                         $('#2sitContainer').show();
                                                         $('#3sitContainer').show();
                                                     } else if (
                                                         tipoPdf === 'PRIMERA CARTA DE RECLAMO APS'
                                                     ) {
-                                                        $('#solmodificar3Container').show();
-                                                        $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show();
                                                         $('#1sitContainer').show();
                                                         $('#2sitContainer').show();
                                                         $('#3sitContainer').show();
@@ -2714,10 +2689,6 @@
                                                     } else if (
                                                         tipoPdf === 'SEGUNDA CARTA DE RECLAMO GP'
                                                     ) {
-                                                        $('#solmodificar3Container').show();
-                                                        $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show();
                                                         $('#1sitContainer').show();
                                                         $('#2sitContainer').show();
                                                         $('#3sitContainer').show();
@@ -2725,10 +2696,6 @@
                                                     } else if (
                                                         tipoPdf === 'SEGUNDA CARTA DE RECLAMO APS'
                                                     ) {
-                                                        $('#solmodificar3Container').show();
-                                                        $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show();
                                                         $('#1sitContainer').show();
                                                         $('#2sitContainer').show();
                                                         $('#3sitContainer').show();
@@ -2739,10 +2706,6 @@
                                                     } else if (
                                                         tipoPdf === 'TERCERA CARTA DE RECLAMO GP'
                                                     ) {
-                                                        $('#solmodificar3Container').show();
-                                                        $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show();
                                                         $('#1sitContainer').show();
                                                         $('#2sitContainer').show();
                                                         $('#3sitContainer').show();
@@ -2751,10 +2714,6 @@
                                                     } else if (
                                                         tipoPdf === 'TERCERA CARTA DE RECLAMO APS'
                                                     ) {
-                                                        $('#solmodificar3Container').show();
-                                                        $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show();
                                                         $('#1sitContainer').show();
                                                         $('#2sitContainer').show();
                                                         $('#3sitContainer').show();
@@ -2767,10 +2726,6 @@
                                                     } else if (
                                                         tipoPdf === 'REITERACIÓN A CARTAS DE RECLAMO GP'
                                                     ) {
-                                                        $('#solmodificar3Container').show();
-                                                        $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show();
                                                         $('#1sitContainer').show();
                                                         $('#2sitContainer').show();
                                                         $('#3sitContainer').show();
@@ -2780,10 +2735,6 @@
                                                     } else if (
                                                         tipoPdf === 'REITERACIÓN A CARTAS DE RECLAMO APS'
                                                     ) {
-                                                        $('#solmodificar3Container').show();
-                                                        $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show();
                                                         $('#1sitContainer').show();
                                                         $('#2sitContainer').show();
                                                         $('#3sitContainer').show();
@@ -2839,27 +2790,6 @@
                         </div>
 
                         <script>
-                            /* $(document).ready(function() {
-                                function updatePDFPreview3() {
-                                    let formData3 = $('#formCarta').serialize();
-                                    let clienteId3 = "{{ $cliente->id }}";
-                                    let nivelProcedimiento3 = $('[name="nivelprocedimiento3"]').val();
-                                    let subnivelProcedimiento3 = $('[name="subnivelprocedimiento3"]').val();
-                                    let tipoPdf3 = $('[name="tipo_pdf3"]').val();
-                                    if (!nivelProcedimiento3 || !subnivelProcedimiento3 || !tipoPdf3) {
-                                        $('#pdfPreview3').attr('src', '');
-                                        return;
-                                    }
-                                    $('#pdfPreview3').attr('src', '{{ url("/preview-carta") }}/' + clienteId3 + '?' + formData3);
-                                }
-                                $('[name="nivelprocedimiento3"], [name="subnivelprocedimiento3"], [name="tipo_pdf3"]').on('change', function() {
-                                    updatePDFPreview3();
-                                });
-                                $('#btnActualizarVistaCarta').on('click', function(e) {
-                                    e.preventDefault();
-                                    updatePDFPreview3();
-                                });
-                            }); */
                             $(document).ready(function() {
                                 function updatePDFPreview3() {
                                     let formData3 = $('#formCarta').serialize();
@@ -2891,7 +2821,7 @@
                 </div>
             </div>
 
-            {{-- NUEVO 241125 --}}
+            {{-- MISIVAS LIBRES --}}
             <div class="tab-pane fade" id="tab-content-4" role="tabpanel" aria-labelledby="tab-4">
                 <div class="card-body">
                     <div class="row">
@@ -3106,817 +3036,6 @@
         </div>
     </div>
 </div>
-
-{{-- CARTAS Y RECLAMOS --}}
-{{-- <div class="modal fade" id="modalcartayreclamo" tabindex="-1" role="dialog" aria-labelledby="modalcartayreclamoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title titulomodal" id="modalcartayreclamoLabel">CARTA / RECLAMO</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                
-                <form action="{{ route('admin.tramites.generarcartareclamo', $cliente) }}" method="GET" enctype="multipart/form-data">
-                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                    {!! Form::hidden('clienteid', $cliente->id) !!}
-                    {!! Form::hidden('clientenombre', $cliente->nombrecompleto) !!}
-                    {!! Form::hidden('apoderado', auth()->user()->name) !!}
-                    <input type="text" class="form-control" id="tramite" name="tramite" value="INVALIDEZ" hidden>
-                    <input type="date" class="form-control" id="fechasubida" name="fechasubida" value="{{ \Carbon\Carbon::now()->toDateString() }}" hidden>
-                    @csrf
-                    <div class="row">
-                        @php
-                            $documento1 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('nivelprocedimiento', 'INGRESO DE TRÁMITE')->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')->first();
-                            $documento5 = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('nivelprocedimiento', 'FIRMA EAP')->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')->first();
-                            $fechaingresoyeap = $documento1 && $documento5;
-
-                            $primeracartasit = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('nivelprocedimiento', 'CARTAS / RECLAMOS')->where('subprocedimiento', 'PRIMERA CARTA SIT')->first();
-                            $segundacartasit = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('nivelprocedimiento', 'CARTAS / RECLAMOS')->where('subprocedimiento', 'SEGUNDA CARTA SIT')->first();
-                            $terceracartasit = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('nivelprocedimiento', 'CARTAS / RECLAMOS')->where('subprocedimiento', 'TERCERA CARTA SIT')->first();
-                            $primeracartareclamo = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('nivelprocedimiento', 'CARTAS / RECLAMOS')->where('subprocedimiento', 'PRIMERA CARTA DE RECLAMO')->first();
-                            $segundacartareclamo = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('nivelprocedimiento', 'CARTAS / RECLAMOS')->where('subprocedimiento', 'SEGUNDA CARTA DE RECLAMO')->first();
-                            $terceracartareclamo = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('nivelprocedimiento', 'CARTAS / RECLAMOS')->where('subprocedimiento', 'TERCERA CARTA DE RECLAMO')->first();
-                            $cartareclamoaps = $cliente->tramites()->where('tramite', 'INVALIDEZ')->where('nivelprocedimiento', 'CARTAS / RECLAMOS')->where('subprocedimiento', 'CARTA DE RECLAMO APS')->first();
-                        @endphp
-
-                        <div class="col-lg-4">
-                                <div class="form-group col-lg-12">
-                                    {!! Form::label('tipo_pdf', 'Carta / Reclamo:') !!}
-                                    {!! Form::select('tipo_pdf', $modelocartasreclamos, null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                    @error('tipo_pdf')
-                                        <small class="text-danger fas fa-exclamation-circle">
-                                            {{ $message }}
-                                        </small>
-                                    @enderror
-                                </div>
-
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    const selectElement = document.getElementById('tipoPdfSelectcartas');
-                                    const options = selectElement.querySelectorAll('option');
-                                    
-                                    // Define the statuses
-                                    const statuses = {
-                                        'PRIMERA CARTA SIT': @json($primeracartasit),
-                                        'SEGUNDA CARTA SIT': @json($segundacartasit),
-                                        'TERCERA CARTA SIT': @json($terceracartasit),
-                                        'PRIMERA CARTA DE RECLAMO': @json($primeracartareclamo),
-                                        'SEGUNDA CARTA DE RECLAMO': @json($segundacartareclamo),
-                                        'TERCERA CARTA DE RECLAMO': @json($terceracartareclamo),
-                                        'CARTA DE RECLAMO APS': @json($cartareclamoaps),
-                                    };
-
-                                    options.forEach(option => {
-                                        const value = option.value;
-                                        if (statuses[value]) {
-                                            // Option is registered
-                                            option.disabled = true;
-                                            option.classList.add('registered');
-                                        } else {
-                                            // Option is not registered
-                                            option.classList.add('not-registered');
-                                        }
-                                    });
-                                });
-                            </script>
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    const primeracartasit = tipoPdfSelectcartas.querySelector('option[value="PRIMERA CARTA SIT"]');
-                                    const segundacartasit = tipoPdfSelectcartas.querySelector('option[value="SEGUNDA CARTA SIT"]');
-                                    const terceracartasit = tipoPdfSelectcartas.querySelector('option[value="TERCERA CARTA SIT"]');
-                                    const primeracartareclamo = tipoPdfSelectcartas.querySelector('option[value="PRIMERA CARTA DE RECLAMO"]');
-                                    const segundacartareclamo = tipoPdfSelectcartas.querySelector('option[value="SEGUNDA CARTA DE RECLAMO"]');
-                                    const terceracartareclamo = tipoPdfSelectcartas.querySelector('option[value="TERCERA CARTA DE RECLAMO"]');
-                                    const cartareclamoaps = tipoPdfSelectcartas.querySelector('option[value="CARTA DE RECLAMO APS"]');
-
-                                    @if (!$fechaingresoyeap)
-                                        primeracartasit.disabled = true;
-                                    @endif
-                                    @if (!$fechaingresoyeap)
-                                        segundacartasit.disabled = true;
-                                    @endif
-                                    @if (!$fechaingresoyeap)
-                                        terceracartasit.disabled = true;
-                                    @endif
-                                    @if (!$fechaingresoyeap)
-                                        primeracartareclamo.disabled = true;
-                                    @endif
-                                    @if (!$fechaingresoyeap)
-                                        segundacartareclamo.disabled = true;
-                                    @endif
-                                    @if (!$fechaingresoyeap)
-                                        terceracartareclamo.disabled = true;
-                                    @endif
-                                    @if (!$fechaingresoyeap)
-                                        cartareclamoaps.disabled = true;
-                                    @endif
-                                });
-                            </script>
-
-                            <div class="form-group  col-lg-12">
-                                {!! Form::label('notaseguimiento', 'Nivel de procedimiento:') !!}
-                                {!! Form::select('notaseguimiento', [
-                                    'INGRESO DE TRÁMITE' => 'INGRESO DE TRÁMITE',
-                                    'NOTIFICACIÓN DEL PODER' => 'NOTIFICACIÓN DEL PODER',
-                                    'FIRMA EAP' => 'FIRMA EAP',
-                                    'SITM ENTE GESTOR DE SALUD' => 'SITM ENTE GESTOR DE SALUD',
-                                    'SITM NOTIFICACIÓN TMC' => 'SITM NOTIFICACIÓN TMC',
-                                    'SITM NOTIFICACIÓN TMR' => 'SITM NOTIFICACIÓN TMR',
-                                    'SITM EMPLEADOR' => 'SITM EMPLEADOR',
-                                    'COMPRA DE SERVICIOS' => 'COMPRA DE SERVICIOS',
-                                    'SIC ENTE GESTOR DE SALUD' => 'SIC ENTE GESTOR DE SALUDO',
-                                    'SIC NOTIFICACIÓN TMC' => 'SIC NOTIFICACIÓN TMCO',
-                                    'SIC NOTIFICACIÓN TMR' => 'SIC NOTIFICACIÓN TMR',
-                                    'SIC EMPLEADOR' => 'SIC EMPLEADOR',
-                                    'DICTAMEN' => 'DICTAMEN',
-                                
-                                ], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoPdfSelect', 'required' => 'required']) !!}
-                                @error('tipo_pdf')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
-                            </div>
-                            <div class="form-group  col-lg-12">
-                                {!! Form::label('apoderado', 'Apoderado:') !!}
-                                {!! Form::select('apoderado', $personal->pluck('nombrecompleto', 'id'), null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'personalSelect', 'required' => 'required']) !!}
-                                @error('apoderado')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
-                            </div>
-                            <div class="form-group col-lg-12" id="folioContainer" style="display: none;">
-                                {!! Form::label('folio', 'Cantidad Hojas Folio:') !!}
-                                {!! Form::text('folio', null, ['class' => 'form-control', 'placeholder' => 'Cantidad de hojas', 'id' => 'folioInput']) !!}
-                                @error('folio')
-                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                @enderror
-                            </div>
-
-                            <script>
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    const tipoPdfSelect = document.getElementById('tipoPdfSelectcartas');
-                                    const folioContainer = document.getElementById('folioContainer');
-                                    
-                                    tipoPdfSelect.addEventListener('change', function () {
-                                        if (tipoPdfSelect.value === 'CARTA DE RECLAMO APS') {
-                                            folioContainer.style.display = 'block';
-                                        } else {
-                                            folioContainer.style.display = 'none';
-                                        }
-                                    });
-                        
-                                    tipoPdfSelect.dispatchEvent(new Event('change'));
-                                });
-                            </script>
-                            <input type="text" class="form-control" id="tipocartareclamo" name="tipocartareclamo" value="PENSIÓN DE INVALIDEZ" hidden>
-                            <input type="date" class="form-control" id="fechaactual" name="fechaactual" value="{{ \Carbon\Carbon::now()->toDateString() }}" hidden>
-                            <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">GENERAR CARTA / RECLAMO</button>
-                        </div>
-                        <div class="col-lg-8" style="margin-top: -40px">
-                            <div class="modal-body">
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Sub procedimiento</th>
-                                                <th>Documento</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach ($cartasreclamos as $cartasreclamo)
-                                                <tr>
-                                                    <td>{{ $cartasreclamo->subprocedimiento }}</td>
-                                                    <td>
-                                                        <abbr title="Ver documento">
-                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/{$cartasreclamo->document}") }}" class="btn btn-verdocumento fas fa-eye" target="_blank" ></a>
-                                                        </abbr>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div> --}}
-
-{{-- ADJUNTOS Y RESPUESTAS --}}
-{{-- <div class="modal fade" id="modaladjuntosrespuestas" tabindex="-1" role="dialog" aria-labelledby="modaladjuntosrespuestasLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xxl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title titulomodal" id="modaladjuntosrespuestasLabel">ADJUNTOS Y RESPUESTAS</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form action="{{ route('admin.tramites.generaradjuntoyrespuesta', $cliente) }}" method="GET" enctype="multipart/form-data">
-                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                    {!! Form::hidden('clienteid', $cliente->id) !!}
-                    {!! Form::hidden('clientenombre', $cliente->nombrecompleto) !!}
-                    {!! Form::hidden('idtramite', $idTramite) !!}
-                    <input type="text" class="form-control" id="tramite" name="tramite" value="INVALIDEZ" hidden>
-                    <input type="date" class="form-control" id="fechasubida" name="fechasubida" value="{{ \Carbon\Carbon::now()->toDateString() }}" hidden>
-                    @csrf
-                    <div class="row">
-                        <div class="col-lg-5">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="form-group col-lg-6">
-                                            {!! Form::label('tipo_pdf', 'Tipo de Adjunto y Respuesta:') !!}
-                                            {!! Form::select('tipo_pdf', [
-                                                'ADJUNTO DOCUMENTACIÓN MÉDICA' => 'ADJUNTO DOCUMENTACIÓN MÉDICA',
-                                                'ADJUNTO INFORME DEL EMPLEADOR' => 'ADJUNTO INFORME DEL EMPLEADOR',
-                                                'ADJUNTO Y RESPUESTA AL ACTA TMC' => 'ADJUNTO Y RESPUESTA AL ACTA TMC',
-                                                'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO' => 'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO',
-                                                'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO' => 'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO',
-                                                
-                                            ], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoPdfSelect', 'required' => 'required']) !!}
-                                            @error('tipo_pdf')
-                                                <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                            @enderror
-                                        </div>
-                                        <div class="form-group col-lg-6">
-                                            {!! Form::label('apoderado', 'Apoderado:') !!}
-                                            <select name="apoderado" id="personalSelect" class="form-control" required>
-                                                @foreach ($apoderadosList as $apoderado)
-                                                    <option value="{{ $apoderado }}"
-                                                        @if (isset($apoderadoAsignado) && $apoderadoAsignado == $apoderado) selected @endif>
-                                                        {{ $apoderado }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            @error('apoderado')
-                                                <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                            @enderror
-                                        </div>
-                                        <div class="form-group col-lg-8">
-                                            {!! Form::label('notatecnicomedico', 'Nro. CITE:') !!}
-                                            {!! Form::text('notatecnicomedico', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                        </div>
-                                        <div class="form-group col-lg-4">
-                                            {!! Form::label('fechanotatecnicomedico', 'Fecha:') !!}
-                                            {!! Form::date('fechanotatecnicomedico', null, ['class' => 'form-control', 'placeholder' => '', 'value' => '{{ \Carbon\Carbon::now()->toDateString() }}']) !!}
-                                        </div>
-
-                                        <div class="col-lg-12">
-                                            {!! Form::label('', 'Lista de Baterias:') !!}
-                                            <div id="contenedor_areas" class="mt-3">
-                                                @foreach ($programaciones as $fecha => $grupos)
-                                                    <div class="card shadow-sm border mb-2">
-                                                        
-                                                        <div class="card-header py-2 px-3 bg-secondary text-white">
-                                                            <button class="btn btn-link text-white text-left w-100 p-0" type="button"
-                                                                data-toggle="collapse" data-target="#fecha_{{ \Str::slug($fecha) }}">
-                                                                <strong>FECHA BATERIA:</strong> {{ $fecha }}
-                                                            </button>
-                                                        </div>
-
-                                                        <div id="fecha_{{ \Str::slug($fecha) }}" class="collapse">
-                                                            <div class="card-body py-2 px-3">
-                                                                @foreach ($grupos->groupBy('areanombre') as $area => $acciones)
-                                                                    <div class="card border mb-2">
-                                                                        <div class="card-header py-2 px-3 bg-light">
-                                                                            <button class="btn btn-sm btn-outline-secondary w-100 text-left p-1"
-                                                                                type="button"
-                                                                                data-toggle="collapse"
-                                                                                data-target="#area_{{ \Str::slug($fecha . '_' . $area) }}">
-                                                                                <strong>ÁREA:</strong> {{ $area }}
-                                                                            </button>
-                                                                        </div>
-
-                                                                        <div id="area_{{ \Str::slug($fecha . '_' . $area) }}" class="collapse" style="margin-top: -30px;">
-                                                                            <div class="card-body pt-2 pb-1 px-3">
-                                                                                <div class="table-responsive">
-                                                                                    <table class="table table-sm table-bordered mb-3" style="white-space: nowrap;">
-                                                                                        <thead class="thead-light text-center">
-                                                                                            <tr>
-                                                                                                <th class="text-center"><input type="checkbox" class="seleccionar-todo-area" data-area="{{ \Str::slug($fecha . '_' . $area) }}" /></th>
-                                                                                                <th>Ver</th>
-                                                                                                <th>ID</th>
-                                                                                                <th>Acción</th>
-                                                                                                <th>Proveedor</th>
-                                                                                                <th>Hojas</th>
-                                                                                            </tr>
-                                                                                        </thead>
-                                                                                        <tbody>
-                                                                                            @foreach ($acciones as $doc)
-                                                                                                <tr>
-                                                                                                    <td class="text-center align-middle">
-                                                                                                        <input type="checkbox" class="documento-checkbox"
-                                                                                                            data-proveedor="{{ $doc->proveedor_real }}"
-                                                                                                            data-area="{{ $doc->areanombre }}"
-                                                                                                            data-accion="{{ $doc->accionnombre }}"
-                                                                                                            data-hojas="{{ $doc->nro_hojas ?? 0 }}">
-                                                                                                    </td>
-                                                                                                    <td class="text-center align-middle">
-                                                                                                        <a href="{{ url("documentacionclientesita/{$cliente->id}/{$doc->document}") }}"
-                                                                                                            target="_blank" class="btn btn-sm btn-verdoc" title="Ver documento">
-                                                                                                            <i class="fas fa-eye"></i>
-                                                                                                        </a>
-                                                                                                    </td>
-                                                                                                    <td class="align-middle">{{ $doc->doc_id }}</td>
-                                                                                                    <td class="align-middle">{{ $doc->accionnombre }}</td>
-                                                                                                    <td class="align-middle">{{ $doc->proveedor_real ?? 'Sin proveedor' }}</td>
-                                                                                                    <td class="text-center align-middle">
-                                                                                                        <span class="badge" style="background-color: #faa625; color: #ffffff; font-size: 0.8rem; padding: 0.2em 0.3em; line-height: 1;">
-                                                                                                            {{ $doc->nro_hojas ?? '?' }}
-                                                                                                        </span>
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                            @endforeach
-                                                                                        </tbody>
-                                                                                    </table>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                @endforeach
-                                                                <div class="text-right mt-3">
-                                                                    <div class="form-group row justify-content-end">
-                                                                        <div class="col-sm-4">
-                                                                            <select id="tipoDocumento" name="tipoDocumento" class="form-control form-control-sm">
-                                                                                <option value="">Seleccione una opción...</option>
-                                                                                <option value="INFORME MÉDICO DE">INFORME MÉDICO DE</option>
-                                                                                <option value="CERTIFICADO MÉDICO DE">CERTIFICADO MÉDICO DE</option>
-                                                                                <option value="ESTUDIO DE">ESTUDIO DE</option>
-                                                                            </select>
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <button id="btnAgregarSeleccionados" type="button" class="btn btn-sm btn-adjuntosrespuestas">
-                                                                        AGREGAR SELECCIONADOS
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-7">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered" style="margin-top: -5px;">
-                                                <thead class="table-secondary">
-                                                    <tr>
-                                                        <th class="col-lg-5">ESPECIALISTA</th>
-                                                        <th class="col-lg-5">DETALLE</th>
-                                                        <th class="col-lg-2">CANTIDAD</th>
-                                                        <th class="col-lg-2">QUITAR</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="tabla-especialistas">
-
-                                                </tbody>
-                                            </table>
-                                            <input type="text" class="form-control" id="tipocartareclamo" name="tipocartareclamo" value="PENSIÓN DE INVALIDEZ" hidden>
-                                            <input type="date" class="form-control" id="fechaactual" name="fechaactual" value="{{ \Carbon\Carbon::now()->toDateString() }}" hidden>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">GENERAR ADJUNTO Y RESPUESTA</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabla = document.getElementById('tabla-especialistas');
-        
-        function llenarTablaConSeleccionados() {
-            const seleccionados = document.querySelectorAll('.documento-checkbox:checked');
-            const tipoDocumento = document.getElementById('tipoDocumento').value.trim();
-            console.log('Checkbox seleccionados:', seleccionados.length);
-
-            const agrupados = {};
-
-            seleccionados.forEach(input => {
-                const proveedor = input.dataset.proveedor;
-                const area = input.dataset.area;
-                const hojas = parseInt(input.dataset.hojas || 0);
-
-                if (!agrupados[proveedor]) {
-                    agrupados[proveedor] = {
-                        area: area,
-                        totalHojas: 0
-                    };
-                }
-
-                agrupados[proveedor].totalHojas += hojas;
-            });
-
-            let filasActuales = tabla.querySelectorAll('tr').length;
-            let i = filasActuales + 1;
-
-            for (const proveedor in agrupados) {
-                if (i > 10) break;
-
-                const area = agrupados[proveedor].area || '';
-                const detalle = tipoDocumento && area ? `${tipoDocumento} ${area}` : area || tipoDocumento || '';
-
-                const hojas = agrupados[proveedor].totalHojas;
-
-                const fila = `<tr>
-                    <td><input type="text" name="especialista${i}" class="form-control" value="${proveedor}" readonly /></td>
-                    <td><input type="text" name="detalle${i}" class="form-control" value="${detalle}" readonly /></td>
-                    <td><input type="text" name="cantidad${i}" class="form-control" value="${hojas}" readonly /></td>
-                    <td><button type="button" class="btn btn-outline-danger btn-sm quitar-fila"><i class="fas fa-trash"></i></button></td>
-                </tr>`;
-
-                tabla.insertAdjacentHTML('beforeend', fila);
-                i++;
-                // Agrega el evento al nuevo botón
-                const ultimaFila = tabla.querySelector('tr:last-child');
-                const btnQuitar = ultimaFila.querySelector('.quitar-fila');
-
-                btnQuitar.addEventListener('click', function () {
-                    ultimaFila.remove();
-                });
-            }
-        }
-
-        document.getElementById('btnAgregarSeleccionados').addEventListener('click', function() {
-            llenarTablaConSeleccionados();
-
-            const seleccionados = document.querySelectorAll('.documento-checkbox:checked');
-            seleccionados.forEach(checkbox => checkbox.checked = false);
-
-            const checkboxesSeleccionarTodo = document.querySelectorAll('.seleccionar-todo-area');
-            checkboxesSeleccionarTodo.forEach(chk => chk.checked = false);
-        });
-
-        document.querySelectorAll('.seleccionar-area').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const area = btn.dataset.area;
-                const checkboxes = document.querySelectorAll(`#area_${area} .documento-checkbox`);
-                checkboxes.forEach(c => c.checked = true);
-            });
-        });
-
-        document.querySelectorAll('.seleccionar-todo-area').forEach(checkbox => {
-            checkbox.addEventListener('change', function () {
-                const area = this.dataset.area;
-                const checkboxes = document.querySelectorAll(`#area_${area} .documento-checkbox`);
-                checkboxes.forEach(c => c.checked = this.checked);
-            });
-        });
-    });
-</script>
-
-<script>
-    document.getElementById('fechabateria_select').addEventListener('change', function () {
-        let todas = document.querySelectorAll('.grupo_fecha');
-        todas.forEach(div => div.style.display = 'none');
-        let seleccionada = this.value;
-        if (seleccionada) {
-            let slug = seleccionada.replaceAll(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-            let grupo = document.querySelector('.grupo_fecha_' + slug);
-            if (grupo) grupo.style.display = 'block';
-        }
-    });
-</script> --}}
-
-{{-- SOLICITUDES --}}
-{{-- <div class="modal fade" id="modalsolicitudes" tabindex="-1" role="dialog" aria-labelledby="modalsolicitudesLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title titulomodal" id="modalsolicitudesLabel">SOLICITUDES</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="card-header">
-                    <ul class="nav nav-tabs card-header-tabs" id="tabs-solicitudes">
-                        <li class="nav-item">
-                            <a class="nav-link active" id="solicitudes-tab-1" data-toggle="tab" href="#solicitudes-content-1" role="tab" aria-controls="solicitudes-content-1" aria-selected="true">NUEVA SOLICITUD</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="solicitudes-tab-2" data-toggle="tab" href="#solicitudes-content-2" role="tab" aria-controls="solicitudes-content-2" aria-selected="false"> HISTORIAL DE SOLICITUDES</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <div class="card-body">
-                    <div class="tab-content" id="tabs-solicitudes-contenido">
-                        <div class="tab-pane fade show active" id="solicitudes-content-1" role="tabpanel" aria-labelledby="solicitudes-tab-1">
-                            <form action="{{ route('admin.tramites.generarsolicitud', $cliente) }}" method="GET" enctype="multipart/form-data">
-                                {!! Form::hidden('usuarioid', auth()->user()->id) !!}
-                                {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
-                                {!! Form::hidden('clienteid', $cliente->id) !!}
-                                {!! Form::hidden('clientenombre', $cliente->nombrecompleto) !!}
-                                {!! Form::hidden('apoderado', $apoderadoAsignado) !!}
-                                {!! Form::hidden('idtramite', $idTramite) !!}
-                                <input type="text" class="form-control" id="tramite" name="tramite" value="INVALIDEZ" hidden>
-                                <input type="date" class="form-control" id="fechasubida" name="fechasubida" value="{{ \Carbon\Carbon::now()->toDateString() }}" hidden>
-                                @csrf
-                                <div class="row">
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="form-group col-lg-3">
-                                                {!! Form::label('nivelprocedimiento', 'Nivel Procedimiento:') !!}
-                                                {!! Form::select('nivelprocedimiento', [
-                                                    'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO' => 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO',
-                                                    'COMPRA DE SERVICIOS' => 'COMPRA DE SERVICIOS',
-                                                    'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA' => 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA',
-                                                ], null, ['class' => 'form-control', 'placeholder' => '', 'required' => 'required']) !!}
-                                            </div>
-                                            <div class="form-group col-lg-3">
-                                                {!! Form::label('tipo_pdf', 'Tipo de Solicitud:') !!}
-                                                {!! Form::select('tipo_pdf', [
-                                                    'EVALUACIÓN POR MEDICINA DEL TRABAJO' => 'EVALUACIÓN POR MEDICINA DEL TRABAJO',
-                                                    'INCLUSIÓN DE INFORMES MÉDICOS' => 'INCLUSIÓN DE INFORMES MÉDICOS',
-                                                    'HISTORIA CLÍNICA LEGALIZADA' => 'HISTORIA CLÍNICA LEGALIZADA',
-                                                    'ACTUALIZACIÓN DE DATOS' => 'ACTUALIZACIÓN DE DATOS',
-                                                    'COMPRA DE SERVICIOS' => 'COMPRA DE SERVICIOS',
-                                                    'INFORME AL EMPLEADOR' => 'INFORME AL EMPLEADOR',
-                                                ], null, ['class' => 'form-control', 'placeholder' => '', 'id' => 'tipoPdfSelect2', 'required' => 'required']) !!}
-                                                @error('tipo_pdf')
-                                                    <small class="text-danger fas fa-exclamation-circle">{{ $message }}</small>
-                                                @enderror
-                                            </div>
-                                            <div class="form-group col-lg-3">
-                                                {!! Form::label('apoderado', 'Apoderado:') !!}
-                                                {!! Form::text('apoderado', $apoderadoAsignado, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
-                                            </div>
-                                            <div class="form-group col-lg-3">
-                                                {!! Form::label('aseguradora', 'Aseguradora:') !!}
-                                                {!! Form::text('aseguradora', $aseguradora, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
-                                            </div>
-                                        </div>
-                                        <div class="form-group col-lg-12" id="cambioactualizacionContainer" style="display: none;">
-                                            {!! Form::label('cambioactualizacion', 'Modificación:', ['class' => 'font-weight-bold']) !!}
-                                            <div class="form-row mt-2">
-                                                <div class="col-md-12">
-                                                    <p class="mb-0">
-                                                        Mediante la presente me dirijo a ustedes para solicitar ACTUALIZACIÓN de datos personales de acuerdo con Cédula de Identidad,
-                                                        <span class="font-weight-bold">CAMBIAR</span> 
-                                                        {!! Form::text('cambioactualizacion', null, ['class' => 'form-control d-inline-block', 'placeholder' => 'Ej: el estado Civil de SOLTERO a DIVORCIADO', 'id' => 'cambioactualizacionInput']) !!}
-                                                        <span>como figura en la Cédula de Identidad, por motivo de Trámite de PENSIÓN DE INVALIDEZ.</span>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <script>
-                                            $(document).ready(function() {
-                                                const input = $('#cambioactualizacionInput');
-                                                const placeholderText = input.attr('placeholder');
-                                                input.css('width', `${placeholderText.length * 0.95}ch`);
-                                                input.on('input', function() {
-                                                    const inputLength = $(this).val().length;
-                                                    const newWidth = Math.max(inputLength * 0.95, placeholderText.length * 0.95);
-                                                    $(this).css('width', `${newWidth}ch`);
-                                                });
-                                            });
-                                        </script>
-                                    </div>
-
-                                    <script>
-                                        $(document).ready(function() {
-                                            $('#tipoPdfSelect2').on('change', function() {
-                                                $('#cambioactualizacionContainer').hide();
-                                                $('#apoderadoContainer').hide();
-                                                $('#notatecnicomedicoContainer').hide();
-                                                $('#fechanotatecnicomedicoContainer').hide();
-                                                $('#tablaadjuntosContainer').hide();
-                                                $('#tablaEspecialidades').hide();
-                                                $('#tablaadjuntosContainer222').hide();
-                                                $('#matriculaContainer').hide();
-                                                $('#fechainformeestudioContainer').hide();
-                                                $('#afpgestoraContainer').hide();
-                                                $('#nombremedicoContainer').hide();
-                                                $('#cargomedicoContainer').hide();
-
-                                                var selectedValue = $(this).val();
-                                    
-                                                if (selectedValue === 'ACTUALIZACIÓN DE DATOS') {
-                                                    $('#cambioactualizacionContainer').show();
-                                                } else if (selectedValue === 'COMPRA DE SERVICIOS') {
-                                                    $('#notatecnicomedicoContainer').show();
-                                                    $('#fechanotatecnicomedicoContainer').show();
-                                                    $('#tablaadjuntosContainer').show();
-                                                } else if (selectedValue === 'HISTORIA CLÍNICA LEGALIZADA') {            
-                                                    $('#matriculaContainer').show();
-                                                    $('#afpgestoraContainer').show();
-                                                    $('#nombremedicoContainer').show();
-                                                    $('#cargomedicoContainer').show();
-                                                } else if (selectedValue === 'INCLUSIÓN DE INFORMES MÉDICOS') {            
-                                                    $('#tablaEspecialidades').show();
-                                                } else if (selectedValue === 'INFORME AL EMPLEADOR') {            
-                                                    $('#tablaadjuntosContainer222').show();
-                                                    $('#tablaadjuntosContainer').show();
-                                                } else if (selectedValue === 'EVALUACIÓN POR MEDICINA DEL TRABAJO') {            
-                                                    $('#matriculaContainer').show();
-                                                    $('#afpgestoraContainer').show();
-                                                    $('#nombremedicoContainer').show();
-                                                    $('#cargomedicoContainer').show();
-                                                }
-                                            });
-                                        });
-                                    </script>
-                                    
-                                    <div class="col-lg-12">
-                                        <div class="row">
-                                            <div class="form-group col-lg-3" id="afpgestoraContainer" style="display: none;">
-                                                {!! Form::label('afpgestora', 'Gestora/Afp:') !!}
-                                                {!! Form::text('afpgestora', $afpgestora, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
-                                            </div> 
-                                            <div class="form-group col-lg-3" id="nombremedicoContainer" style="display: none;">
-                                                {!! Form::label('nombremedico', 'Nombre Médico:') !!}
-                                                {!! Form::text('nombremedico', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                            </div>
-                                            <div class="form-group col-lg-3" id="cargomedicoContainer" style="display: none;">
-                                                {!! Form::label('cargomedico', 'Cargo Médico:') !!}
-                                                {!! Form::text('cargomedico', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                            </div>
-                                            <div class="form-group col-lg-3" id="notatecnicomedicoContainer" style="display: none;">
-                                                {!! Form::label('notatecnicomedico', 'Nota:') !!}
-                                                {!! Form::text('notatecnicomedico', null, ['class' => 'form-control', 'placeholder' => '']) !!}
-                                            </div>
-                                            <div class="form-group col-lg-3" id="fechanotatecnicomedicoContainer" style="display: none;">
-                                                {!! Form::label('fechanotatecnicomedico', 'Fecha de Nota:') !!}
-                                                {!! Form::date('fechanotatecnicomedico', null, ['class' => 'form-control', 'placeholder' => '', 'value' => '{{ \Carbon\Carbon::now()->toDateString() }}']) !!}
-                                            </div> 
-                                            <div class="form-group col-lg-3" id="matriculaContainer" style="display: none;">
-                                                {!! Form::label('matricula', 'Matricula:') !!}
-                                                {!! Form::text('matricula', $matriculacliente, ['class' => 'form-control', 'placeholder' => '', 'readonly' => 'readonly']) !!}
-                                            </div>
-                                            <div class="form-group col-lg-3" id="fechainformeestudioContainer" style="display: none;">
-                                                {!! Form::label('fechainformeestudio', 'Fecha de Informes y Estudios:') !!}
-                                                {!! Form::date('fechainformeestudio', null, ['class' => 'form-control', 'placeholder' => '', 'value' => '{{ \Carbon\Carbon::now()->toDateString() }}']) !!}
-                                            </div> 
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-12" id="tablaEspecialidades" style="display: none;">
-                                        <table class="table" style="margin-top: -5px;" >
-                                            <thead>
-                                                <tr>
-                                                    <th class="col-lg-5" style="text-align: center">Requerimiento</th>
-                                                    <th class="col-lg-5" style="text-align: center">Tipo</th>
-                                                    <th class="col-lg-2" style="text-align: center">Cantidad</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    <tr>
-                                                        <td class="col-lg-5"><input type="text" name="especialista{{ $i }}" class="form-control" /></td>
-                                                        <td class="col-lg-5"><input type="text" name="detalle{{ $i }}" class="form-control" /></td>
-                                                        <td class="col-lg-2"><input type="text" name="cantidad{{ $i }}" class="form-control" /></td>
-                                                    </tr>
-                                                @endfor
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="col-lg-12" id="tablaadjuntosContainer222" style="display: none;">
-                                        <table class="table" style="margin-top: -5px;" >
-                                            <thead>
-                                                <tr>
-                                                    <th class="col-lg-5" style="text-align: center">Información</th>
-                                                    <th class="col-lg-5" style="text-align: center">Tipo</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    <tr>
-                                                        <td class="col-lg-5"><input type="text" name="requerimiento2{{ $i }}" class="form-control" /></td>
-                                                        <td class="col-lg-5"><input type="text" name="tipo2{{ $i }}" class="form-control" /></td>
-                                                    </tr>
-                                                @endfor
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="col-lg-12" id="tablaadjuntosContainer" style="display: none;">
-                                        <table class="table" style="margin-top: -5px;" >
-                                            <thead>
-                                                <tr>
-                                                    <th class="col-lg-5" style="text-align: center">Requerimiento</th>
-                                                    <th class="col-lg-5" style="text-align: center">Tipo</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    <tr>
-                                                        <td class="col-lg-5"><input type="text" name="requerimiento{{ $i }}" class="form-control" /></td>
-                                                        <td class="col-lg-5"><input type="text" name="tipo{{ $i }}" class="form-control" /></td>
-                                                    </tr>
-                                                @endfor
-                                            </tbody>
-                                        </table>
-                                        
-                                        <style>
-                                            .table {
-                                                width: 100%;
-                                                border-collapse: collapse;
-                                                margin: 20px 0;
-                                                text-align: left;
-                                            }
-                                            .table th, .table td {
-                                                padding: 5px;
-                                            }
-                                        </style>
-                                        
-                                        <input type="text" class="form-control" id="tipocartareclamo" name="tipocartareclamo" value="PENSIÓN DE INVALIDEZ" hidden>
-                                        <input type="date" class="form-control" id="fechaactual" name="fechaactual" value="{{ \Carbon\Carbon::now()->toDateString() }}" hidden>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-subirarchivos d-block mx-auto mb-3" target="_blank" style="width: fit-content;">GENERAR SOLICITUD</button>
-                            </form>
-                        </div>
-
-                        <div class="tab-pane fade" id="solicitudes-content-2" role="tabpanel" aria-labelledby="solicitudes-tab-2">
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-sm">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Nivel Procedimiento</th>
-                                            <th>Nro.</th>
-                                            <th>Subprocedimiento</th>
-                                            <th class="text-center">Solicitud</th>
-                                            <th>Observación</th>
-                                            <th class="text-center">Respuesta</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse ($listasolicitudes as $solicitud)
-                                            <tr>
-                                                <td>{{ $solicitud->id }}</td>
-                                                <td>{{ $solicitud->nivelprocedimiento }}</td>
-                                                <td>{{ $solicitud->nro }}</td>
-                                                <td>{{ $solicitud->subprocedimiento }}</td>
-                                                <td class="text-center">
-                                                    <a href="{{ url("/tramitesclientesita/{$cliente->id}/INVALIDEZ/SOLICITUDES/{$solicitud->document}") }}"
-                                                    class="btn btn-sm btn-verdocumento fas fa-eye"
-                                                    title="VER SOLICITUD" target="_blank"></a>
-                                                </td>
-                                                <td>
-                                                    <form action="{{ route('admin.tramites.guardarrespuesta', $cliente) }}" method="POST" enctype="multipart/form-data">
-                                                        @csrf
-                                                        <input type="hidden" name="tramite_id" value="{{ $solicitud->id }}">
-                                                        <input type="hidden" name="nombretramite" value="INVALIDEZ">
-
-                                                        @if ($solicitud->document2)
-                                                            <div>{{ $solicitud->observaciones }}</div>
-                                                        @else
-                                                            <input type="text" name="observaciones" class="form-control form-control-sm" placeholder="Observación" required>
-                                                        @endif
-                                                </td>
-                                                <td class="text-center">
-                                                        @if ($solicitud->document2)
-                                                            <a href="{{ url("/tramitesclientesita/{$cliente->id}/INVALIDEZ/SOLICITUDES/{$solicitud->document2}") }}"
-                                                            class="btn btn-sm btn-verdocumento"
-                                                            title="VER RESPUESTA" target="_blank"><i class="fas fa-eye"></i></a>
-                                                        @else
-                                                            <div class="row gx-2">
-                                                                <div class="col">
-                                                                    <input type="file" name="document2" class="form-control form-control-sm" accept="application/pdf" required>
-                                                                </div>
-                                                                <div class="col-auto">
-                                                                    <button type="submit" class="btn btn-guardarnuevo"><i class="fas fa-print"></i></button>
-                                                                </div>
-                                                            </div>
-                                                        @endif
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="7">NO HAY REGISTROS DE TIPO "SOLICITUD"</td>
-                                            </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> --}}
 
 @stop
 @section('js')

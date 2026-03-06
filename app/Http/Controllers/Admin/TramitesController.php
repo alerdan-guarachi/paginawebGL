@@ -1624,7 +1624,6 @@ class TramitesController extends Controller
         $apoderadosExtra = ['FABRICIO ORLANDO PRADO PARRADO', 'DENISSE MAUREN LOPEZ FLORES'];
         $apoderados = array_values(array_unique(array_merge($apoderados, $apoderadosExtra)));
 
-
         $idTramite = Tramitesubcliente::where('clienteitaid', $cliente->id)
             ->where('tramite', 'INVALIDEZ')
         ->value('id');
@@ -1635,11 +1634,9 @@ class TramitesController extends Controller
         $matriculacliente = Cliente::where('id', $cliente->id)
         ->value('matricula');
 
-
         /* CARTAS Y RECLAMOS */
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
-
 
         /* NUEVO 231125 */
         $fechaBateriaApelacion = Tramitesubcliente::where('clienteitaid', $cliente->id)
@@ -1683,39 +1680,6 @@ class TramitesController extends Controller
             ->where('fechabateria', $fechaBateriaApelacion) 
         ->get();
 
-        /* $documentos = $programacionesRaw->merge($informes);
-
-        foreach ($documentos as $doc) {
-            if ($doc->accionnombre === 'INFORME FINAL') {
-                $path = public_path("informesfinalesclientesita/{$cliente->id}/{$doc->document}");
-            } else {
-                $path = public_path("documentacionclientesita/{$cliente->id}/{$doc->document}");
-            }
-            if (file_exists($path)) {
-                try {
-                    $content = file_get_contents($path);
-                    preg_match_all("/\/Type\s*\/Page\b/", $content, $matches);
-                    $doc->nro_hojas = count($matches[0]);
-                } catch (\Exception $e) {
-                    $doc->nro_hojas = 'Error';
-                }
-            } else {
-                $doc->nro_hojas = 'No encontrado';
-            }
-        }
-
-        $programaciones = $documentos->groupBy('fechabateria')->map(function ($grupoPorFecha) {
-            return $grupoPorFecha->sortBy(function ($item) {
-                $tipoarea = $item->tipoarea ?? 'Z';
-                $ordenTipoarea =
-                    $tipoarea === 'ESPECIALIDAD' ? 0 :
-                    ($tipoarea === 'INFORME FINAL' ? 1 : 2);
-
-                return [$ordenTipoarea, $item->areanombre];
-            });
-        }); */
-
-        /* NUEVO 051225 */
         $subprogramaciones = DB::table('subprocedimientotramites')
             ->select(
                 'tipo',
@@ -1764,6 +1728,25 @@ class TramitesController extends Controller
             } else {
                 $doc->nro_hojas = 'No encontrado';
             }
+            /* if (file_exists($path)) {
+                try {
+                    $sizeMB = filesize($path) / (1024 * 1024);
+                    if ($sizeMB > 20) {
+                        $doc->nro_hojas = 'Archivo Grande';
+                    } else {
+                        $content = file_get_contents($path);
+                        preg_match_all("/\/Type\s*\/Page\b/", $content, $matches);
+                        $doc->nro_hojas = count($matches[0]);
+                        if ($doc->nro_hojas == 0) {
+                            $doc->nro_hojas = 'Archivo Grande';
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    $doc->nro_hojas = 'Archivo Grande';
+                }
+            } else {
+                $doc->nro_hojas = 'No encontrado';
+            } */
         }
 
         $programaciones = $documentos->groupBy(function ($item) {
@@ -1891,6 +1874,32 @@ class TramitesController extends Controller
                 }
             }
         }
+
+        if($request->has('actualizar_id')) {
+
+            $id = $request->actualizar_id;
+
+            $tramite = Tramite::find($id);
+
+            if($request->fechainclusion[$id] ?? false) {
+                $tramite->fechainclusion = $request->fechainclusion[$id];
+            }
+
+            if($request->hasFile("document2.$id")) {
+
+                $archivo = $request->file("document2.$id");
+                $nombre = Str::random(10).'_'.$archivo->getClientOriginalName();
+
+                $archivo->move(public_path("tramitesclientesita/$cliente->id/INVALIDEZ/NOTIFICACIÓN OBSERVADA"), $nombre);
+
+                $tramite->document2 = $nombre;
+            }
+
+            $tramite->save();
+
+            return back()->with('info', 'Archivo reemplazado correctamente.');
+        }
+
 
         // MODIFICACION DE ARCHIVOS
         if ($request->input('accion') === 'reemplazarArchivo') {
@@ -3298,7 +3307,10 @@ class TramitesController extends Controller
             $fechasiniestro1 = $request->fechasiniestro['fechasiniestro1'] ?? null;
             $fechasiniestro2 = $request->fechasiniestro['fechasiniestro2'] ?? null;
 
-            if ($fechasiniestro1 !== null && $fechasiniestro1 !== '' && $fechasiniestro2 !== null && $fechasiniestro2 !== '') {
+            if (
+                ($fechasiniestro1 !== null && $fechasiniestro1 !== '') ||
+                ($fechasiniestro2 !== null && $fechasiniestro2 !== '')
+            ) {
                 DB::table('criteriosdictamen')->insert([
                     'usuarioregistroid' => $request->usuarioid,
                     'usuarioregistronombre' => $request->usuarioregistro,
@@ -13774,6 +13786,15 @@ class TramitesController extends Controller
         $entidadcalificante = $request->input('entidadcalificante');
         $porcentajedictamen = $request->input('porcentajedictamen');
         $fechanotificacion = Carbon::parse($request->input('fechanotificacion'))->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
+
+        $inputFecha = $request->input('fechainclusion');
+        $fechainclusion = null;
+        if (!empty($inputFecha)) {
+            $fechainclusion = Carbon::parse($inputFecha)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+
         $nropasaporte = $request->input('nropasaporte');
         $nrocua1 = $request->input('nrocua1');
         $nombreafp1 = $request->input('nombreafp1');
@@ -14134,7 +14155,7 @@ class TramitesController extends Controller
             'nrocua1','nombreafp1','nroci1','nrocua2','nombreafp2','nroci2','nrocuaunificado','nrociunificado',
             'unificacioncuas','cambiounificacioncuas','prestaciones','fechainiciotramite','fechafirmaeap2','fechaformulario',
             'fecharesolucion','nroresolucion','txtcomple1','txtcomple2','txtcomple3','tituloop1','tituloop2',
-            'opcionesuno','opcionesdos','afiliadoTexto'));
+            'opcionesuno','opcionesdos','afiliadoTexto','fechainclusion'));
 
         $timestamp = now()->format('Ymd_His');
         $pdfName = "{$tipoPdf}_{$cliente->nombrecompleto}_{$timestamp}.pdf";
@@ -14551,6 +14572,14 @@ class TramitesController extends Controller
         $entidadcalificante = $request->input('entidadcalificante');
         $porcentajedictamen = $request->input('porcentajedictamen');
         $fechanotificacion = Carbon::parse($request->input('fechanotificacion'))->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
+        $inputFecha = $request->input('fechainclusion');
+        $fechainclusion = null;
+        if (!empty($inputFecha)) {
+            $fechainclusion = Carbon::parse($inputFecha)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+
         $nropasaporte = $request->input('nropasaporte');
 
         $nrocua1 = $request->input('nrocua1');
@@ -14913,7 +14942,7 @@ class TramitesController extends Controller
             'nrocua1','nombreafp1','nroci1','nrocua2','nombreafp2','nroci2','nrocuaunificado','nrociunificado',
             'unificacioncuas','cambiounificacioncuas','prestaciones','fechainiciotramite','fechafirmaeap2','fechaformulario',
             'fecharesolucion','nroresolucion','txtcomple1','txtcomple2','txtcomple3','tituloop1','tituloop2',
-            'opcionesuno','opcionesdos','afiliadoTexto'));
+            'opcionesuno','opcionesdos','afiliadoTexto','fechainclusion'));
 
         return $pdf->stream('preview.pdf');
     }

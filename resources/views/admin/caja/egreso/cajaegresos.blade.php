@@ -5,12 +5,49 @@
 @section('content_header')
 @php
     $rolUsuario = auth()->user()->getRoleNames()->first();
-@endphp
-@php
     $tieneRolContable = auth()->user()->getRoleNames()->contains('CONTABLE');
 @endphp
 
-{{-- @if (!$mostrarVista && $rolUsuario === 'CONTABLE') --}}
+<div class="dropdown float-right ml-2">
+    <button class="btn btn-sm btn-outline-secondary dropdown-toggle shadow-sm"
+            type="button"
+            id="dropdownAcciones"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false">
+        <i class="fas fa-cogs mr-1"></i> ACCIONES
+    </button>
+    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+        aria-labelledby="dropdownAcciones"
+        style="min-width: 300px;">
+        
+        <a class="dropdown-item" href="{{ route('admin.caja.egreso.cajaegresoscomprobantes') }}">
+            <i class="fas fa-hand-holding-usd mr-2 text-secondary"></i> EGRESOS COMPROBANTES
+        </a>
+        <a class="dropdown-item" data-toggle="modal" data-target="#modalCodigo">
+            <i class="fas fa-key mr-2 text-secondary"></i> CÓDIGOS DE PERMISO
+        </a>
+    </div>
+</div>
+<style>
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 18px;
+        font-size: 15px;
+        transition: all 0.2s ease;
+        cursor: pointer !important;
+    }
+    .dropdown-item:hover {
+        background-color: rgba(0, 0, 0, 0.08);
+        transform: translateX(5px);
+    }
+    label {
+        margin-bottom: 0;
+    }
+</style>
+
 @if (!$mostrarVista && $tieneRolContable)
     <div class="alert alert-danger text-center py-4" style="border-radius: 10px; background-color: #f8d7da; color: #842029; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
         <h4 class="font-weight-bold mb-3" style="text-transform: uppercase; letter-spacing: 1px;">Caja Bloqueada</h4>
@@ -29,156 +66,65 @@
 @else
     <div class="d-flex align-items-center justify-content-between mb-0">
         <div class="flex-grow-1">
-            <h2 class="font-weight-bold">CAJA DE EGRESOS</h2>
+            <h3 class="font-weight-bold">CAJA DE EGRESOS</h3>
         </div>
-        {{-- <a class="btn btn-outline-secondary" data-toggle="modal" data-target="#consolidadosModal">
-            CONSOLIDADOS
-        </a> --}}
-
-        {{-- CAMBIO DE FECHA --}}
-            <a class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#modalCodigo" style="margin-right: 10px;">
-                CODIGO CAMBIO FECHA
-            </a>
-            <div class="modal fade" id="modalCodigo" tabindex="-1" role="dialog" aria-labelledby="modalCodigoLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                    <form id="formCodigo">
-                        <div class="modal-header">
-                        <h3 class="modal-title" id="modalCodigoLabel" style="font-weight: 900;">Ingresar Código</h3>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        </div>
-                        <div class="modal-body">
-                        <input type="text" id="codigoInput" name="codigo" class="form-control" placeholder="Ingrese el código" required>
-                        <div id="codigoMensaje" class="mt-2 text-danger" style="display: none;"></div>
-                        </div>
-                        <div class="modal-footer">
-                        <button type="submit" class="btn btn-sm btn-outline-secondary">VALIDAR</button>
-                        </div>
-                    </form>
+        <div class="modal fade" id="modalCodigo" tabindex="-1" role="dialog" aria-labelledby="modalCodigoLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <form id="formCodigo">
+                    <div class="modal-header">
+                    <h3 class="modal-title" id="modalCodigoLabel" style="font-weight: 900;">Ingresar Código</h3>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                     </div>
+                    <div class="modal-body">
+                    <input type="text" id="codigoInput" name="codigo" class="form-control" placeholder="Ingrese el código" required>
+                    <div id="codigoMensaje" class="mt-2 text-danger" style="display: none;"></div>
+                    </div>
+                    <div class="text-center">
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">VALIDAR</button>
+                    </div>
+                </form>
                 </div>
             </div>
-            <script>
-                document.getElementById('formCodigo').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const codigo = document.getElementById('codigoInput').value.trim();
-                    const mensaje = document.getElementById('codigoMensaje');
-                    mensaje.style.display = 'none';
+        </div>
+        <script>
+            document.getElementById('formCodigo').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const codigo = document.getElementById('codigoInput').value.trim();
+                const mensaje = document.getElementById('codigoMensaje');
+                mensaje.style.display = 'none';
 
-                    fetch('{{ route("permisoscodigo.cajaegresos") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        },
-                        body: JSON.stringify({ codigo: codigo })
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            $('#modalCodigo').modal('hide');
-                            alert('Código validado correctamente');
-                            location.reload();
-                        } else {
-                            mensaje.textContent = data.message;
-                            mensaje.style.display = 'block';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        mensaje.textContent = 'Ocurrió un error al procesar la solicitud.';
+                fetch('{{ route("permisoscodigo.cajaegresos") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({ codigo: codigo })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        $('#modalCodigo').modal('hide');
+                        alert('Código validado correctamente');
+                        location.reload();
+                    } else {
+                        mensaje.textContent = data.message;
                         mensaje.style.display = 'block';
-                    });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mensaje.textContent = 'Ocurrió un error al procesar la solicitud.';
+                    mensaje.style.display = 'block';
                 });
-            </script>
-        {{-- FIN --}}
-
-        <a class="btn btn-outline-primary btn-sm" href="{{ route('admin.caja.egreso.cajaegresoscomprobantes') }}">
-            EGRESOS COMPROBANTES
-        </a>
+            });
+        </script>
     </div>
 @endif
-    <!-- Modal -->
-    <div class="modal fade" id="consolidadosModal" tabindex="-1" aria-labelledby="consolidadosModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content border-0 shadow-sm">
-                <div class="modal-header text-center">
-                    <h5 class="modal-title w-100 fw-bold" id="consolidadosModalLabel">CONSOLIDADOS DE CAJA</h5>
-                </div>
-                <div class="modal-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle">
-                            <thead>
-                                <tr class="border-bottom">
-                                    <th class="text-start">Usuario</th>
-                                    <th class="text-center">Efectivo</th>
-                                    <th class="text-center">Depósito</th>
-                                    <th class="text-center">Transf.</th>
-                                    <th class="text-center">Cheque</th>
-                                    <th class="text-center">ATC</th>
-                                    <th class="text-center">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php $granTotal = 0; @endphp
-                                @foreach($consolidados as $consolidado)
-                                    @php
-                                        $total = $consolidado->consolidadoefectivo + $consolidado->consolidadodeposito + 
-                                                $consolidado->consolidadotransferencia + $consolidado->consolidadocheque + 
-                                                $consolidado->consolidadoatc;
-                                        $granTotal += $total;
-                                    @endphp
-                                    <tr>
-                                        <td class="text-start">{{ $consolidado->usuarioconsolidadonombre }}</td>
-                                        <td class="text-center">{{ number_format($consolidado->consolidadoefectivo, 2) }}</td>
-                                        <td class="text-center">{{ number_format($consolidado->consolidadodeposito, 2) }}</td>
-                                        <td class="text-center">{{ number_format($consolidado->consolidadotransferencia, 2) }}</td>
-                                        <td class="text-center">{{ number_format($consolidado->consolidadocheque, 2) }}</td>
-                                        <td class="text-center">{{ number_format($consolidado->consolidadoatc, 2) }}</td>
-                                        <td class="fw-bold text-center">{{ number_format($total, 2) }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot>
-                                <tr class="border-top">
-                                    <th colspan="6" class="text-end">Gran Total:</th> 
-                                    <th class="fw-bold text-center">{{ number_format($granTotal, 2) }}</th>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <style>
-        .modal-title {
-            font-size: 1.6rem;
-            text-transform: uppercase;
-            margin-bottom: 0;
-            letter-spacing: 0.5px;
-        }
 
-        .table th, .table td {
-            vertical-align: middle;
-        }
-
-        .modal-footer {
-            justify-content: right;
-        }
-
-        .fw-bold {
-            font-weight: bold !important;
-        }
-        .table td {
-            padding: 5px 10px;;
-        }
-    </style>
 @stop
 
 @section('content')
@@ -345,7 +291,6 @@
     });
 </script>
 
-{{-- @if (!$mostrarVista && $rolUsuario === 'CONTABLE') --}}
 @if (!$mostrarVista && $tieneRolContable)
 @else
 <form action="{{ route('guardar.cajacentral.egreso') }}" method="POST" id="guardarFormulario">
@@ -360,14 +305,9 @@
                         <input type="text" class="form-control" name="ciudadregistro" value="{{ $sucursal }}" readonly>
                     </div>
                     <div class="row">
-                        {{-- <div class="form-group col-lg-4">
-                            <label for="siguienteId">Recibo</label>
-                            <input type="text" id="siguienteId" class="form-control" value="{{ $siguienteId }}" readonly>
-                        </div> --}}
                         <div class="form-group col-lg-4">
                             <label for="siguienteId">Recibo</label>
-                            <input type="text" id="siguienteId" class="form-control" readonly>
-
+                            <input type="text" id="siguienteId" class="form-control form-control-sm" readonly>
                         </div>
                         <script>
                             function actualizarSiguienteId() {
@@ -385,7 +325,7 @@
 
                         <div class="form-group col-lg-8">
                             <label>Tipo de Proveedor</label>
-                            <select id="tipocliente" class="form-control" name="tipocliente" onchange="cambiarArea()">
+                            <select id="tipocliente" class="form-control form-control-sm" name="tipocliente" onchange="cambiarArea()">
                                 <option value="" selected disabled></option>
                                 <option value="medico">MEDICO</option>
                                 <option value="proveedor">PROVEEDOR</option>
@@ -394,45 +334,26 @@
                         </div>
                         
                         <script>
-                        function cambiarArea() {
-                            var tipoCliente = document.getElementById('tipocliente').value;
-                            var areaInput = document.getElementById('area');
-                            
-                            if (tipoCliente === 'medico') {
-                                areaInput.value = 'MEDICA';
-                            } else if (tipoCliente === 'proveedor') {
-                                areaInput.value = 'CUENTA POR PAGAR';
+                            function cambiarArea() {
+                                var tipoCliente = document.getElementById('tipocliente').value;
+                                var areaInput = document.getElementById('area');
+                                
+                                if (tipoCliente === 'medico') {
+                                    areaInput.value = 'MEDICA';
+                                } else if (tipoCliente === 'proveedor') {
+                                    areaInput.value = 'CUENTA POR PAGAR';
+                                }
                             }
-                        }
                         </script>
-                        
                     </div>
 
                     <label for="proveedorid">Nombre de Proveedor</label>
                     <div class="row">
-                        {{-- <div class="form-group col-lg-12"> 
-                            <select id="proveedorid" name="proveedorid" class="form-control">
-                                <option value=""  selected disabled></option>
-                                @foreach($proveedores as $proveedor)
-                                    <option value="{{ $proveedor->proveedor }}">{{ $proveedor->proveedor }}</option>
-                                @endforeach
-                            </select>
-                        </div>
                         <div class="form-group col-lg-12"> 
-                            <select id="proveedorid" name="proveedorid" class="form-control">
-                                <option value=""  selected disabled></option>
-                                @foreach($proveedoresservicios as $proveedor)
-                                    <option value="{{ $proveedor->razonsocial }}">{{ $proveedor->razonsocial }}</option>
-                                @endforeach
-                            </select>
-                        </div> --}}
-
-                        <div class="form-group col-lg-12"> 
-                            <select id="proveedorid" name="proveedorid" class="form-control">
+                            <select id="proveedorid" name="proveedorid" class="form-control form-control-sm">
                                 <option value="" selected disabled></option>
                             </select>
                         </div>
-
                         <script>
                             // Asume que los datos de proveedores están disponibles como variables JS
                             var proveedores = @json($proveedores);
@@ -463,22 +384,21 @@
                             });
                         </script>
                         
-                        
                         <div class="form-group col-lg-12">
                             <label>N. Factura 1</label>
-                            <input type="text" id="nrofactura" name="nrofactura" class="form-control">
+                            <input type="text" id="nrofactura" name="nrofactura" class="form-control form-control-sm">
                         </div>
                         <div class="form-group col-lg-6">
                             <label>N. Factura 2</label>
-                            <input type="text" id="nrofactura2" name="nrofactura2" class="form-control">
+                            <input type="text" id="nrofactura2" name="nrofactura2" class="form-control form-control-sm">
                         </div>
                         <div class="form-group col-lg-6">
                             <label>N. Factura 3</label>
-                            <input type="text" id="nrofactura3" name="nrofactura3" class="form-control">
+                            <input type="text" id="nrofactura3" name="nrofactura3" class="form-control form-control-sm">
                         </div>
                         
-                        <div class="form-group col-lg-6 d-flex justify-content-between">
-                            <a id="buscarProveedor" class="btn btn-secondary" disabled>BUSCAR</a>
+                        <div class="form-group col-lg-6 d-flex justify-content-between" style="margin-top: -10px;">
+                            <a id="buscarProveedor" class="btn-sm btn btn-secondary" disabled>Buscar</a>
                         </div>
                     </div>
                     
@@ -486,7 +406,7 @@
                         <div id="campoFechas" style="display: none;">
                             <div class="form-group">
                                 <label>Registro</label>
-                                <input type="datetime-local" name="created_at" id="created_at" class="form-control">
+                                <input type="datetime-local" name="created_at" id="created_at" class="form-control form-control-sm">
                                 <input type="datetime-local" name="updated_at" id="updated_at" class="form-control" hidden>
                             </div>
                         </div>
@@ -495,7 +415,7 @@
                     <div class="form-group">
                         <label>Tipo de Transacción</label>
                         <div>
-                            <select class="form-control" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
+                            <select class="form-control form-control-sm" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
                                 <option disabled selected></option>
                                 <option value="CHEQUE">CHEQUE</option>
                                 <option value="DEPOSITO_BANCARIO" hidden>DEPÓSITO BANCARIO</option>
@@ -507,7 +427,7 @@
                                 <input type="checkbox" class="form-check-input" id="dobleTransaccion" onchange="validarTipoTransaccion()">
                                 <label class="form-check-label" for="dobleTransaccion">Doble Tipo de Transac.</label>
                             </div>
-                            <select class="form-control mt-2 d-none" id="tipoTransaccion2" name="tipotransaccion2" onchange="validarTipoTransaccion()">
+                            <select class="form-control form-control-sm mt-2 d-none" id="tipoTransaccion2" name="tipotransaccion2" onchange="validarTipoTransaccion()">
                                 <option disabled selected></option>
                                 <option value="ATC">ATC</option>
                                 <option value="CHEQUE">CHEQUE</option>
@@ -518,33 +438,27 @@
                         </div>
                     </div>
 
-                    {{-- FACTURA --}}
-                    {{-- <div class="form-group">
-                        <label>Nro. Factura</label>
-                        <input type="text" id="nrofactura" name="nrofactura" class="form-control">
-                    </div> --}}
-
                     <!-- ATC -->
                     <div class="form-group atc-fields d-none">
                         <label>Nro. Tarjeta</label>
-                        <input type="text" id="nrotarjeta" name="nrotarjeta" class="form-control">
+                        <input type="text" id="nrotarjeta" name="nrotarjeta" class="form-control form-control-sm">
                         <label>AP.</label>
-                        <input type="text" id="nroap" name="nroap" class="form-control">
+                        <input type="text" id="nroap" name="nroap" class="form-control form-control-sm">
                         <label>REF.</label>
-                        <input type="text" id="nroref" name="nroref" class="form-control">
+                        <input type="text" id="nroref" name="nroref" class="form-control form-control-sm">
                     </div>
 
                     <!-- CHEQUE -->
                     <div class="form-group cheque-fields d-none">
                         <label>Nro. Cheque</label>
-                        <input type="text" id="nrocheque" name="nrocheque" class="form-control">
+                        <input type="text" id="nrocheque" name="nrocheque" class="form-control form-control-sm">
 
                         <label>Bancarización</label>
-                        <input type="text" id="nrobancarizacioncheque" name="nrobancarizacioncheque" class="form-control">
+                        <input type="text" id="nrobancarizacioncheque" name="nrobancarizacioncheque" class="form-control form-control-sm">
 
                         <div class="form-group mb-3">
                             <label for="tipobancocheque">Tipo Banco</label>
-                            <select name="tipobancocheque" id="tipobancocheque" class="form-control">
+                            <select name="tipobancocheque" id="tipobancocheque" class="form-control form-control-sm">
                                 <option value=""></option>
                                 @foreach ($bancos as $banco)
                                     <option value="{{ $banco->nombrebanco }}">{{ $banco->nombrebanco }}</option>
@@ -554,7 +468,7 @@
 
                         <div class="form-group mb-3">
                             <label for="bancoDestino">Nro. Banco Origen</label>
-                            <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control">
+                            <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control form-control-sm">
                                 <option value=""></option>
                                 @foreach ($cuentas as $cuenta)
                                     <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
@@ -568,7 +482,7 @@
                     <div class="form-group deposito-fields d-none">
                         <div class="form-group mb-3">
                             <label for="bancoDestino">Nro. Banco Origen</label>
-                            <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control">
+                            <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control form-control-sm">
                                 <option value=""></option>
                                 @foreach ($cuentas as $cuenta)
                                     <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
@@ -577,14 +491,14 @@
                         </div>
 
                         <label>Bancarización</label>
-                        <input type="text" id="nrobancarizaciondeposito" name="nrobancarizaciondeposito" class="form-control">
+                        <input type="text" id="nrobancarizaciondeposito" name="nrobancarizaciondeposito" class="form-control form-control-sm">
                     </div>
                     
                     <!-- TRANSFERENCIA BANCARIA -->
                     <div class="form-group transferencia-fields d-none">
                         <div class="form-group mb-3">
                             <label for="bancoDestino">Nro. Banco Origen</label>
-                            <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control">
+                            <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control form-control-sm">
                                 <option value=""></option>
                                 @foreach ($cuentas as $cuenta)
                                     <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
@@ -593,13 +507,13 @@
                         </div>
 
                         <label>Bancarización</label>
-                        <input type="text" id="nrobancarizaciontransferencia" name="nrobancarizaciontransferencia" class="form-control">
+                        <input type="text" id="nrobancarizaciontransferencia" name="nrobancarizaciontransferencia" class="form-control form-control-sm">
                     </div>
                     
                     <!-- EFECTIVO -->
                     <div class="form-group efectivo-fields d-none">
                         <label>Tipo de Cambio</label>
-                        <select name="tipocambio" id="tipocambio" class="form-control">
+                        <select name="tipocambio" id="tipocambio" class="form-control form-control-sm">
                             <option value="Bs.">Bs.</option>
                             <option value="Usd.">Usd.</option>
                         </select>
@@ -616,30 +530,30 @@
                             <div class="row">
                                 <div class="form-group col-lg-4">
                                     <label>ID</label>
-                                    <input type="text" class="form-control" id="proveedorid" name="proveedorid" placeholder="ID del proveedor" readonly>
+                                    <input type="text" class="form-control form-control-sm" id="proveedorid" name="proveedorid" placeholder="ID del proveedor" readonly>
                                 </div>
                                 <div class="form-group col-lg-8">
                                     <label>Proveedor</label>
-                                    <input type="text" id="proveedornombre" name="proveedornombre" class="form-control" placeholder="Nombre del proveedor" readonly>
+                                    <input type="text" id="proveedornombre" name="proveedornombre" class="form-control form-control-sm" placeholder="Nombre del proveedor" readonly>
                                 </div>
                                 <div class="form-group col-lg-4" hidden>
                                     <label>NIT</label>
-                                    <input type="text" class="form-control" placeholder="NIT del proveedor" readonly>
+                                    <input type="text" class="form-control form-control-sm" placeholder="NIT del proveedor" readonly>
                                 </div>
                             </div>
 
                             <div class="table-responsive">
-                                <table class="table table-bordered mt-3">
+                                <table class="table table-bordered mt-3 table-sm table-striped">
                                     <thead>
-                                        <tr style="background-color: #eff1f3">
+                                        <tr class="bg-secondary text-white" style="text-align: center;">
                                             <th style="width: 5%;">ID</th>
                                             <th style="width: 30%;">Detalle</th>
                                             <th style="width: 10%;">Fecha Asig.</th>
                                             <th hidden style="width: 0%;">Fecha de Batería</th>
                                             <th style="width: 20%;">Servicio</th>
-                                            <th style="width: 10%;">Subtotal</th>
-                                            <th style="width: 10%;">Descuento</th>
-                                            <th style="width: 10%;">Total</th>  
+                                            <th style="width: 9%;">Subtotal</th>
+                                            <th style="width: 9%;">Descuento</th>
+                                            <th style="width: 12%;">Total</th>  
                                             {{-- <th style="width: 5%;">Selec.</th> --}}
                                             <th style="width: 5%;">
                                                 <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 10px; margin-bottom: 0px;">
@@ -654,27 +568,27 @@
                                 </table>
                             </div>
 
-                            <div class="card-body card">
-                                <h5 class="text-left" style="margin-top: 0; font-weight: 700;">RESUMEN DE PAGO</h5>
+                            <div class="card-body card" style="background-color: #90909011">
+                                <h5 class="text-center" style="margin-top: 0; font-weight: 700;">RESUMEN DE EGRESO</h5>
                                 <div class="row">
 
-                                    <input type="hidden" class="form-control border border-dark" name="montoreal" id="montoreal" value="0" readonly>
+                                    <input type="hidden" class="form-control form-control-sm border border-dark" name="montoreal" id="montoreal" value="0" readonly>
 
                                     <div class="form-group col-lg-3">
                                         <label>Subtotal</label>
-                                        <input type="text" class="form-control" name="subtotal" placeholder="Subtotal" value="0" readonly>
+                                        <input type="text" class="form-control form-control-sm" name="subtotal" placeholder="Subtotal" value="0" readonly>
                                     </div>
                                     <div class="form-group col-lg-3">
                                         <label>Descuento</label>
-                                        <input type="text" class="form-control" name="descuento" placeholder="Descuento" value="0" readonly>
+                                        <input type="text" class="form-control form-control-sm" name="descuento" placeholder="Descuento" value="0" readonly>
                                     </div>
                                     <div class="form-group col-lg-3">
                                         <label>Total</label>
-                                        <input type="text" class="form-control border border-dark" name="montototal" placeholder="Total" value="0" readonly>
+                                        <input type="text" class="form-control form-control-sm border border-dark" name="montototal" placeholder="Total" value="0" readonly>
                                     </div>
                                     <div class="form-group col-lg-3">
                                         <label>Registrar</label>
-                                            <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
+                                            <button class="btn-sm btn btn-secondary btn-block registrar-btn" id="imprimirReciboBtn" 
                                                     onclick="imprimirReciboSeleccionados()">
                                                 GUARDAR REGISTRO
                                             </button>

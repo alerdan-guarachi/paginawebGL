@@ -52,9 +52,20 @@
 <body>
     <main>
         <h1>INSTRUCTIVA DE PODER</h1>
-        <h3><strong>QUE OTORGA:</strong> El Sr/a. {{$cliente->nombrecompleto}} con C.I. {{$cliente->ci}} {{$cliente->ciexp}}, 
-            {{ $estadoCivil }}, mayor de edad, Ocupación {{$cliente->ocupacion}}, con domicilio en {{$cliente->domicilio}} - {{$cliente->ciudadresidencia}}
-             y hábil por derecho. <br>
+        <h3><strong>QUE OTORGA:</strong> 
+            El Sr/a. {{$cliente->nombrecompleto}} con C.I. {{$cliente->ci}} {{$cliente->ciexp}}, 
+            {{ $estadoCivil }}, mayor de edad, Ocupación {{$cliente->ocupacion}}, 
+            con domicilio en {{$cliente->domicilio}} - {{$cliente->ciudadresidencia}}
+            y hábil por derecho{{ $derechohabientes->count() > 0 ? ',' : '.' }}
+            @if($derechohabientes->count() > 0)
+                @foreach($derechohabientes as $dh)
+                    y/o El Sr/a. {{$dh->nombrecompleto}} con C.I. {{$dh->ci}},
+                    {{$dh->estadocivil}}, mayor de edad, Ocupación {{$dh->ocupacion}},
+                    con domicilio en {{$dh->domicilio}} - {{$dh->ciudadresidencia}}
+                    y hábil por derecho{{ !$loop->last ? ',' : '.' }}
+                @endforeach
+            @endif
+            <br>
             <strong>A FAVOR DE:</strong>Al Sr. FABRICIO ORLANDO PRADO PARRADO con C.I. 5505371, mayor de edad con domicilio en la ciudad de SANTA CRUZ y hábil por derecho, 
             y/o al Sra. DENISSE MAUREN LOPEZ FLORES Con C.I. No. 5211568, mayor de edad, con domicilio en la ciudad de SANTA CRUZ y hábil por derecho; 
             @if ($sucursal === 'COCHABAMBA')

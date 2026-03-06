@@ -9,68 +9,90 @@
 @section('css')
 <link rel="stylesheet" href="{{ asset('css/tramitesgestora.css') }}">
 <style>
-    .input-group-material {
-        position: relative;
-        margin-top: 18px;
-    }
+.input-group-material {
+    position: relative;
+    margin-top: 22px;
+}
 
-    .input-material,
-    .select-material {
-        width: 100%;
-        border: none;
-        border-bottom: 2px solid #ccc;
-        outline: none;
-        padding: 8px 0;
-        font-size: 15px;
-        background: transparent;
-    }
+/* INPUT Y SELECT */
+.input-material,
+.select-material {
+    width: 100%;
+    border: none;
+    border-bottom: 2px solid #dcdcdc;
+    outline: none;
+    padding: 10px 30px 8px 0;
+    font-size: 15px;
+    background: transparent;
+    transition: 0.3s ease all;
+}
 
-    .input-material:focus,
-    .select-material:focus {
-        border-bottom: 2px solid #94c93b;
-    }
+/* EFECTO HOVER */
+.select-material:hover {
+    border-bottom: 2px solid #b5b5b5;
+}
 
-    .label-material {
-        position: absolute;
-        left: 0;
-        top: 8px;
-        color: #777;
-        font-size: 15px;
-        transition: 0.3s ease all;
-        pointer-events: none;
-    }
+/* FOCUS */
+.input-material:focus,
+.select-material:focus {
+    border-bottom: 2px solid #94c93b;
+}
 
-    /* Cuando tiene foco o valor */
-    .input-material:focus + .label-material,
-    .input-material:not(:placeholder-shown) + .label-material,
-    .select-material:focus + .label-material,
-    .select-material:not([value=""]) + .label-material {
-        top: -12px;
-        font-size: 12px;
-        color: #94c93b;
-    }
+/* LABEL */
+.label-material {
+    position: absolute;
+    left: 0;
+    top: 10px;
+    color: #888;
+    font-size: 15px;
+    transition: 0.25s ease all;
+    pointer-events: none;
+}
 
-    /* Línea animada */
-    .linea-animada {
-        position: absolute;
-        bottom: 0;
-        left: 50%;
-        width: 0;
-        height: 2px;
-        background: #94c93b;
-        transition: 0.3s ease all;
-    }
+/* LABEL ACTIVO */
+.input-material:focus + .label-material,
+.input-material:not(:placeholder-shown) + .label-material,
+.select-material:focus + .label-material,
+.select-material.has-value + .label-material {
+    top: -14px;
+    font-size: 12px;
+    color: #94c93b;
+}
 
-    .input-material:focus ~ .linea-animada,
-    .select-material:focus ~ .linea-animada {
-        width: 100%;
-        left: 0;
-    }
+/* LÍNEA ANIMADA */
+.linea-animada {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #94c93b;
+    transition: 0.3s ease all;
+}
 
-    /* Quitar flecha fea del select en algunos navegadores */
-    select {
-        appearance: none;
-    }
+.input-material:focus ~ .linea-animada,
+.select-material:focus ~ .linea-animada {
+    width: 100%;
+    left: 0;
+}
+
+/* FLECHA PERSONALIZADA */
+.select-material {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg fill='%2394c93b' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0 center;
+    background-size: 18px;
+}
+
+/* EFECTO DISABLED */
+.select-material:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
 </style>
 @stop
 
@@ -244,7 +266,7 @@
                  <!-- Apellido Materno -->
                 <div class="col-md-4">
                     <div class="input-group-material">
-                        <input type="text" class="input-material" id="apematerno" name="apematerno" placeholder=" " maxlength="20">
+                        <input type="text" class="input-material" id="apematerno" name="apematerno" placeholder=" " maxlength="30">
                         <label class="label-material">Apellido Materno</label>
                         <span class="linea-animada"></span>
                     </div>
@@ -253,14 +275,14 @@
                 <!-- Nombres -->
                 <div class="col-md-4">
                     <div class="input-group-material">
-                        <input type="text" class="input-material" id="nombres" name="nombres" placeholder=" " maxlength="20" required>
+                        <input type="text" class="input-material" id="nombres" name="nombres" placeholder=" " maxlength="60" required>
                         <label class="label-material">Nombres</label>
                         <span class="linea-animada"></span>
                     </div>
                 </div>
 
                 <!-- CI -->
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="input-group-material">
                         <input type="text" class="input-material" id="ci" name="ci" maxlength="20" placeholder=" " required>
                         <label class="label-material">CI</label>
@@ -269,7 +291,7 @@
                 </div>
 
                 <!-- Email -->
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="input-group-material">
                         <input type="email" class="input-material" id="email" name="email" maxlength="100" placeholder=" " required>
                         <label class="label-material">Email</label>
@@ -278,9 +300,9 @@
                 </div>
 
                 <!-- Celular -->
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <div class="input-group-material">
-                        <input type="text" class="input-material" id="celular" name="celular" maxlength="20" placeholder=" " required>
+                        <input type="text" class="input-material" id="celular" name="celular" maxlength="30" placeholder=" " required>
                         <label class="label-material">Celular</label>
                         <span class="linea-animada"></span>
                     </div>
@@ -289,19 +311,56 @@
                 <!-- Sucursal -->
                 <div class="col-md-3">
                     <div class="input-group-material">
-                        <input type="text" class="input-material" id="sucursal" name="sucursal" value="SANTA CRUZ" placeholder=" " readonly>
+                        <select class="select-material" id="sucursal" name="sucursal" required>
+                            <option value="" disabled selected hidden></option>
+                            <option value="SANTA CRUZ">SANTA CRUZ</option>
+                            <option value="COCHABAMBA">COCHABAMBA</option>
+                            <option value="LA PAZ">LA PAZ</option>
+                            <option value="BENI">BENI</option>
+                            <option value="ORURO">ORURO</option>
+                            <option value="POTOSI">POTOSI</option>
+                            <option value="TARIJA">TARIJA</option>
+                            <option value="SUCRE">SUCRE</option>
+                            <option value="PANDO">PANDO</option>
+                        </select>
                         <label class="label-material">Sucursal</label>
                         <span class="linea-animada"></span>
                     </div>
                 </div>
 
+                <div class="col-md-3">
+                    <div class="input-group-material">
+                        <input type="text" class="input-material" id="modalidad" name="modalidad" readonly>
+                        <label class="label-material">Modalidad</label>
+                        <span class="linea-animada"></span>
+                        <div id="modalidad-alert" class="text-danger mt-1" style="display:none; font-style: italic;">
+                            SE LE CONFIRMARÁ LA ASESORIA A SU EMAIL
+                        </div>
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const sucursalSelect = document.getElementById('sucursal');
+                                const alertDiv = document.getElementById('modalidad-alert');
+                                function actualizarAlerta() {
+                                    if (sucursalSelect.value && sucursalSelect.value.toUpperCase() !== 'SANTA CRUZ') {
+                                        alertDiv.style.display = 'block';
+                                    } else {
+                                        alertDiv.style.display = 'none';
+                                    }
+                                }
+                                sucursalSelect.addEventListener('change', actualizarAlerta);
+                                actualizarAlerta();
+                            });
+                        </script>
+                    </div>
+                </div>
+
                 <!-- Motivo -->
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="input-group-material">
                         <select class="select-material" id="motivo" name="motivo" required>
                             <option value="" disabled selected hidden></option>
                             <option value="ENFERMEDADES">ENFERMEDADES</option>
-                            <option value="BENEFICIOS EN PENSIONES">BENEFICIOS EN PENSIONES</option>
+                            <option value="LEY DE PENSIONES">LEY DE PENSIONES</option>
                         </select>
                         <label class="label-material">Motivo</label>
                         <span class="linea-animada"></span>
@@ -309,17 +368,57 @@
                 </div>
 
                 <!-- Fecha -->
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="input-group-material">
-                        <input type="date" class="input-material" id="fecha" name="fecha"
-                            min="{{ now()->toDateString() }}"
-                            max="{{ now()->addDays(7)->toDateString() }}"
-                            placeholder=" " required>
+                        <input type="date" 
+                            class="input-material" 
+                            id="fecha" 
+                            name="fecha"
+                             onkeydown="return false"
+                            disabled
+                            required>
                         <label class="label-material">Fecha</label>
                         <span class="linea-animada"></span>
                     </div>
                 </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const sucursalSelect = document.getElementById('sucursal');
+                        const fechaInput = document.getElementById('fecha');
+                        function formatearFecha(fecha) {
+                            return fecha.toISOString().split('T')[0];
+                        }
+                        function actualizarRangoFecha() {
+                            const hoy = new Date();
+                            if (!sucursalSelect.value) {
+                                fechaInput.value = '';
+                                fechaInput.disabled = true;
+                                fechaInput.removeAttribute('min');
+                                fechaInput.removeAttribute('max');
+                                return;
+                            }
 
+                            fechaInput.disabled = false;
+                            let fechaMin = new Date(hoy);
+                            let fechaMax = new Date(hoy);
+
+                            if (sucursalSelect.value === 'SANTA CRUZ') {
+                                fechaMin.setDate(hoy.getDate() + 1);
+                            } else {
+                                fechaMin.setDate(hoy.getDate() + 7);
+                            }
+                            fechaMax.setDate(hoy.getDate() + 30);
+                            fechaInput.min = formatearFecha(fechaMin);
+                            fechaInput.max = formatearFecha(fechaMax);
+                            if (fechaInput.value && fechaInput.value < fechaInput.min) {
+                                fechaInput.value = '';
+                            }
+                        }
+
+                        sucursalSelect.addEventListener('change', actualizarRangoFecha);
+
+                    });
+                </script>
                 <script>
                     const nombres     = document.getElementById('nombres');
                     const apepaterno  = document.getElementById('apepaterno');
@@ -353,9 +452,9 @@
                     Seleccione una fecha para ver los horarios disponibles
                 </div>
             </div>
-            <div class="row mt-4">
+            <div class="row mt-2">
                 <div class="col-md-12">
-                    <button type="submit" id="btnGuardar" class="btn btn-crear btn-sm" disabled>CONFIRMAR ASESORIA</button>
+                    <button type="submit" id="btnGuardar" class="btn btn-crear btn-sm" disabled>GUARDAR ASESORIA</button>
                 </div>
             </div>
         </div>
@@ -442,11 +541,17 @@ const horariosUrl = "{{ route('admin.asesoramiento.progasesoramiento.horarios', 
             ]);
 
             const horarios = await horariosRes.json();
-            const ocupados = await ocupadosRes.json();
+            const ocupadosData = await ocupadosRes.json();
 
-            const ocupadosSet = new Set(
-                ocupados.map(o => `${o.horadesde}-${o.horahasta}`)
-            );
+if (ocupadosData.dia_completo) {
+    ticketsDiv.innerHTML =
+        `<div class="col-12 text-danger">NO HAY HORARIOS DISPONIBLES PARA ESTE DIA</div>`;
+    return;
+}
+
+const ocupados = ocupadosData.rangos;
+
+
 
             ticketsDiv.innerHTML = '';
 
@@ -463,6 +568,30 @@ const horariosUrl = "{{ route('admin.asesoramiento.progasesoramiento.horarios', 
                 const hoy = new Date();
                 const hoyISO = hoy.toISOString().slice(0,10);
                 const esHoy = fecha === hoyISO;
+
+                function convertirMinutos(hora) {
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
+}
+
+function estaOcupado(desde, hasta, ocupados) {
+
+    const inicioNuevo = convertirMinutos(desde);
+    const finNuevo = convertirMinutos(hasta);
+
+    for (let o of ocupados) {
+
+        const inicioOcupado = convertirMinutos(o.horadesde);
+        const finOcupado = convertirMinutos(o.horahasta);
+
+        // 🔴 Validación real de cruce
+        if (inicioNuevo < finOcupado && finNuevo > inicioOcupado) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
                 while (actual < horaFin) {
                     const [hh, mm] = actual.split(':').map(Number);
@@ -486,7 +615,7 @@ const horariosUrl = "{{ route('admin.asesoramiento.progasesoramiento.horarios', 
                             continue;
                         }
                     }
-                    if (hasta <= horaFin && !ocupadosSet.has(rango)) {
+                    if (hasta <= horaFin && !estaOcupado(actual, hasta, ocupados)) {
                         ticketsDiv.innerHTML += `
                             <div class="col-lg-2 col-md-3 col-sm-4 col-6 mb-3">
 
@@ -570,5 +699,33 @@ const horariosUrl = "{{ route('admin.asesoramiento.progasesoramiento.horarios', 
     });
 </script>
 
-@endsection
+<script>
+    document.getElementById('sucursal').addEventListener('change', function() {
 
+        let modalidadInput = document.getElementById('modalidad');
+
+        if (this.value === 'SANTA CRUZ') {
+            modalidadInput.value = 'PRESENCIAL';
+        } 
+        else if (this.value !== 'SANTA CRUZ') {
+            modalidadInput.value = 'PRESENCIAL POR CONFIRMAR';
+        } 
+        else {
+            modalidadInput.value = '';
+        }
+
+    });
+</script>
+
+<script>
+document.querySelectorAll('.select-material').forEach(function(select) {
+    select.addEventListener('change', function() {
+        if (this.value !== '') {
+            this.classList.add('has-value');
+        } else {
+            this.classList.remove('has-value');
+        }
+    });
+});
+</script>
+@endsection

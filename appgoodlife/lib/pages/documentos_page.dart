@@ -24,33 +24,27 @@ class _DocumentosPageState extends State<DocumentosPage> {
     fetchDocumentos();
   }
 
-  // ▼▼▼ FUNCIÓN MODIFICADA PARA AGRUPAR POR FECHA O HISTORIA CLÍNICA ▼▼▼
   void fetchDocumentos() async {
     try {
       final response = await ApiService.getDocumentosByUserId(widget.usuarioId);
       List<dynamic> data = List.from(response);
 
-      // Agrupar por fecha o "HISTORIA CLINICA"
       Map<String, List<dynamic>> grouped = {};
       final now = DateTime.now();
-      // Calculamos la fecha de hace 6 meses
       final sixMonthsAgo = DateTime(now.year, now.month - 6, now.day);
 
       for (var doc in data) {
         String groupKey;
         final createdAtString = doc['created_at'];
 
-        // Si el documento tiene fecha de creación, la evaluamos
         if (createdAtString != null) {
           final createdAtDate = DateTime.tryParse(createdAtString);
           if (createdAtDate != null && createdAtDate.isBefore(sixMonthsAgo)) {
             groupKey = 'HISTORIA CLINICA';
           } else {
-            // Si es reciente, se agrupa por fechabateria
             groupKey = doc['fechabateria'] ?? 'Sin fecha';
           }
         } else {
-          // Si no tiene created_at, se usa la lógica antigua
           groupKey = doc['fechabateria'] ?? 'Sin fecha';
         }
 
@@ -60,14 +54,16 @@ class _DocumentosPageState extends State<DocumentosPage> {
         grouped[groupKey]!.add(doc);
       }
 
-      setState(() {
-        documentos = data; // Aún mantenemos la lista original si se necesita
-        documentosPorFecha = grouped;
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() => isLoading = false);
       if (mounted) {
+        setState(() {
+          documentos = data;
+          documentosPorFecha = grouped;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al cargar documentos: $e')),
         );
@@ -75,11 +71,11 @@ class _DocumentosPageState extends State<DocumentosPage> {
     }
   }
 
-  // MÉTODO CORRECTO
   Widget _buildArchivoRow(Map<String, dynamic> doc, String label, String? value) {
     if (value == null || value.isEmpty) return SizedBox();
 
     final clienteId = doc['clienteitaid'];
+    // ▼▼▼ IP CORREGIDA ▼▼▼
     final url =
         "http://192.168.88.224:8000/documentacionclientesita/$clienteId/$value";
 
@@ -111,9 +107,9 @@ class _DocumentosPageState extends State<DocumentosPage> {
                 backgroundColor: MaterialStateProperty.resolveWith<Color>(
                       (Set<MaterialState> states) {
                     if (states.contains(MaterialState.pressed)) {
-                      return Colors.orange; // color cuando se presiona
+                      return Colors.orange;
                     }
-                    return verde; // color normal
+                    return verde;
                   },
                 ),
                 foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
@@ -153,22 +149,16 @@ class _DocumentosPageState extends State<DocumentosPage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
-    // ▼▼▼ WIDGET BUILD MODIFICADO PARA ORDENAR LOS GRUPOS ▼▼▼
-
-    // Ordenar las claves: Primero las fechas (más recientes primero), y al final "HISTORIA CLINICA"
     final sortedEntries = documentosPorFecha.entries.toList()
       ..sort((a, b) {
-        if (a.key == 'HISTORIA CLINICA') return 1; // Mueve 'HISTORIA CLINICA' al final
+        if (a.key == 'HISTORIA CLINICA') return 1;
         if (b.key == 'HISTORIA CLINICA') return -1;
-        // Ordena las fechas de más reciente a más antigua
         try {
-          // Asume que las claves son fechas en formato YYYY-MM-DD
           return b.key.compareTo(a.key);
         } catch (e) {
-          return 0; // No hacer nada si no se pueden comparar
+          return 0;
         }
       });
 
@@ -186,7 +176,6 @@ class _DocumentosPageState extends State<DocumentosPage> {
           final fecha = entry.key;
           final docs = entry.value;
 
-          // Se ajusta el título dinámicamente
           final titleText = fecha == 'HISTORIA CLINICA' ? fecha : 'INFORMES: $fecha';
 
           return Card(
@@ -215,16 +204,15 @@ class _DocumentosPageState extends State<DocumentosPage> {
                           style:
                           TextStyle(fontWeight: FontWeight.bold)),
                       SizedBox(height: 4),
-                      // ▼▼▼ LÍNEA AÑADIDA PARA MOSTRAR CREATED_AT ▼▼▼
                       if (doc['created_at'] != null)
                         Builder(builder: (context) {
                           try {
                             final date = DateTime.parse(doc['created_at']);
                             final formattedDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year.toString().substring(2)} - ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 1.0),
+                              padding: const EdgeInsets.only(bottom: 8.0),
                               child: Text(
-                                'Registrado el: $formattedDate',
+                                'Registrado: $formattedDate',
                                 style: TextStyle(
                                     fontSize: 11,
                                     fontStyle: FontStyle.italic,
@@ -232,10 +220,9 @@ class _DocumentosPageState extends State<DocumentosPage> {
                               ),
                             );
                           } catch (e) {
-                            return SizedBox.shrink(); // No mostrar nada si la fecha no es válida
+                            return SizedBox.shrink();
                           }
                         }),
-                      // _buildArchivoRow(doc, 'Informe', doc['document']),
                       _buildArchivoRow(doc, 'Informe', doc['documentfirmado']),
                       _buildArchivoRow(doc, 'Imagen 1', doc['image']),
                       _buildArchivoRow(doc, 'Imagen 2', doc['image2']),

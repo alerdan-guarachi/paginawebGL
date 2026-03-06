@@ -109,23 +109,56 @@
                     apematerno.addEventListener('input', actualizarNombre);
                 </script>
 
-                <div class="col-md-3 mb-2">
+                <div class="col-md-4 mb-2">
                     <label style="margin-bottom: -15px;">CI</label>
                     <input type="text" class="form-control" id="ci" name="ci" maxlength="20" placeholder="Escriba su ci" required>
                 </div>
-                <div class="col-md-3 mb-2">
+                <div class="col-md-4 mb-2">
                     <label style="margin-bottom: -15px;">Email</label>
                     <input type="text" class="form-control" id="email" name="email" maxlength="100" placeholder="Escriba su email" required>
                 </div>
-                <div class="col-md-3 mb-2">
+                <div class="col-md-4 mb-2">
                     <label style="margin-bottom: -15px;">Celular</label>
                     <input type="text" class="form-control" id="celular" name="celular" maxlength="20" placeholder="Escriba su número de celular" required>
                 </div>
                 <div class="col-md-3 mb-2">
-                    <label style="margin-bottom: -15px;">Sucursal</label>
-                    <input type="text" class="form-control" id="sucursal" name="sucursal" value="SANTA CRUZ" readonly>
+                    <label style="margin-bottom: -15px;">Ciudad</label>
+                    <select class="form-control" id="sucursal" name="sucursal" required>
+                        <option value="">Seleccione...</option>
+                        <option value="SANTA CRUZ">SANTA CRUZ</option>
+                        <option value="COCHABAMBA">COCHABAMBA</option>
+                        <option value="LA PAZ">LA PAZ</option>
+                        <option value="BENI">BENI</option>
+                        <option value="ORURO">ORURO</option>
+                        <option value="POTOSI">POTOSI</option>
+                        <option value="TARIJA">TARIJA</option>
+                        <option value="SUCRE">SUCRE</option>
+                        <option value="PANDO">PANDO</option>
+                    </select>
                 </div>
-                <div class="col-md-6 mb-2">
+                <div class="col-md-3 mb-2">
+                    <label style="margin-bottom: -15px;">Modalidad</label>
+                    <input type="text" class="form-control" id="modalidad" name="modalidad" readonly>
+                    <div id="modalidad-alert" class="text-danger mt-1" style="display:none; font-style: italic;">
+                        SE LE CONFIRMARÁ LA ASESORIA A SU EMAIL
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const sucursalSelect = document.getElementById('sucursal');
+                            const alertDiv = document.getElementById('modalidad-alert');
+                            function actualizarAlerta() {
+                                if (sucursalSelect.value && sucursalSelect.value.toUpperCase() !== 'SANTA CRUZ') {
+                                    alertDiv.style.display = 'block';
+                                } else {
+                                    alertDiv.style.display = 'none';
+                                }
+                            }
+                            sucursalSelect.addEventListener('change', actualizarAlerta);
+                            actualizarAlerta();
+                        });
+                    </script>
+                </div>
+                <div class="col-md-3 mb-2">
                     <label style="margin-bottom: -15px;">Motivo</label>
                     <select class="form-control" id="motivo" name="motivo" required>
                         <option value="" disabled selected>Seleccione un motivo</option>
@@ -133,10 +166,54 @@
                         <option value="BENEFICIOS EN PENSIONES">BENEFICIOS EN PENSIONES</option>
                     </select>
                 </div>
-                <div class="col-md-6 mb-2">
+                <div class="col-md-3 mb-2">
                     <label style="margin-bottom: -15px;">Fecha</label>
-                    <input type="date" class="form-control" id="fecha" name="fecha" min="{{ now()->toDateString() }}" max="{{ now()->addDays(7)->toDateString() }}" required>
+                    <input type="date"
+                        class="form-control"
+                        id="fecha"
+                        name="fecha"
+                        onkeydown="return false"
+                        disabled
+                        required>
                 </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const sucursalSelect = document.getElementById('sucursal');
+                        const fechaInput = document.getElementById('fecha');
+                        function formatearFecha(fecha) {
+                            return fecha.toISOString().split('T')[0];
+                        }
+                        function actualizarRangoFecha() {
+                            const hoy = new Date();
+                            if (!sucursalSelect.value) {
+                                fechaInput.value = '';
+                                fechaInput.disabled = true;
+                                fechaInput.removeAttribute('min');
+                                fechaInput.removeAttribute('max');
+                                return;
+                            }
+
+                            fechaInput.disabled = false;
+                            let fechaMin = new Date(hoy);
+                            let fechaMax = new Date(hoy);
+
+                            if (sucursalSelect.value === 'SANTA CRUZ') {
+                                fechaMin.setDate(hoy.getDate() + 1);
+                            } else {
+                                fechaMin.setDate(hoy.getDate() + 7);
+                            }
+                            fechaMax.setDate(hoy.getDate() + 30);
+                            fechaInput.min = formatearFecha(fechaMin);
+                            fechaInput.max = formatearFecha(fechaMax);
+                            if (fechaInput.value && fechaInput.value < fechaInput.min) {
+                                fechaInput.value = '';
+                            }
+                        }
+
+                        sucursalSelect.addEventListener('change', actualizarRangoFecha);
+
+                    });
+                </script>
             </div>
             <hr>
             <label>Horarios Disponibles:</label>
@@ -208,11 +285,16 @@ const horariosUrl = "{{ route('admin.asesoramiento.progasesoramiento.horarios', 
             ]);
 
             const horarios = await horariosRes.json();
-            const ocupados = await ocupadosRes.json();
+            const ocupadosData = await ocupadosRes.json();
 
-            const ocupadosSet = new Set(
-                ocupados.map(o => `${o.horadesde}-${o.horahasta}`)
-            );
+if (ocupadosData.dia_completo) {
+    ticketsDiv.innerHTML =
+        `<div class="col-12 text-danger">NO HAY HORARIOS DISPONIBLES PARA ESTE DIA</div>`;
+    return;
+}
+
+const ocupados = ocupadosData.rangos;
+
 
             ticketsDiv.innerHTML = '';
 
@@ -229,6 +311,30 @@ const horariosUrl = "{{ route('admin.asesoramiento.progasesoramiento.horarios', 
                 const hoy = new Date();
                 const hoyISO = hoy.toISOString().slice(0,10);
                 const esHoy = fecha === hoyISO;
+
+                function convertirMinutos(hora) {
+    const [h, m] = hora.split(':').map(Number);
+    return h * 60 + m;
+}
+
+function estaOcupado(desde, hasta, ocupados) {
+
+    const inicioNuevo = convertirMinutos(desde);
+    const finNuevo = convertirMinutos(hasta);
+
+    for (let o of ocupados) {
+
+        const inicioOcupado = convertirMinutos(o.horadesde);
+        const finOcupado = convertirMinutos(o.horahasta);
+
+        // 🔴 Validación real de cruce
+        if (inicioNuevo < finOcupado && finNuevo > inicioOcupado) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
                 while (actual < horaFin) {
                     const [hh, mm] = actual.split(':').map(Number);
@@ -252,7 +358,7 @@ const horariosUrl = "{{ route('admin.asesoramiento.progasesoramiento.horarios', 
                             continue;
                         }
                     }
-                    if (hasta <= horaFin && !ocupadosSet.has(rango)) {
+                    if (hasta <= horaFin && !estaOcupado(actual, hasta, ocupados)) {
                         ticketsDiv.innerHTML += `
                             <div class="col-md-2 mb-2">
                                 <div class="card ticket text-center p-2 selectable"
@@ -294,48 +400,64 @@ const horariosUrl = "{{ route('admin.asesoramiento.progasesoramiento.horarios', 
 </script>
 
 <script>
-document.getElementById('formAsesoria').addEventListener('submit', function (e) {
-    e.preventDefault();
+    document.getElementById('formAsesoria').addEventListener('submit', function (e) {
+        e.preventDefault();
 
-    const btn = document.getElementById('btnGuardar');
-    const formData = new FormData(this);
+        const btn = document.getElementById('btnGuardar');
+        const formData = new FormData(this);
 
-    if (!formData.get('horadesde')) {
-        alert('Seleccione un horario');
-        return;
-    }
-
-    btn.disabled = true;
-    btn.innerText = 'GUARDANDO...';
-
-    fetch("{{ route('admin.asesoramiento.guardar') }}", {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (!data.ok) {
-            alert(data.msg);
-            btn.disabled = false;
-            btn.innerText = 'CONFIRMAR ASESORIA';
+        if (!formData.get('horadesde')) {
+            alert('Seleccione un horario');
             return;
         }
 
-        window.open(data.ticket_url, '_blank');
-        setTimeout(() => location.reload(), 800);
-    })
-    .catch(() => {
-        alert('Error al guardar');
-        btn.disabled = false;
-        btn.innerText = 'CONFIRMAR ASESORIA';
+        btn.disabled = true;
+        btn.innerText = 'GUARDANDO...';
+
+        fetch("{{ route('admin.asesoramiento.guardar') }}", {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (!data.ok) {
+                alert(data.msg);
+                btn.disabled = false;
+                btn.innerText = 'CONFIRMAR ASESORIA';
+                return;
+            }
+
+            window.open(data.ticket_url, '_blank');
+            setTimeout(() => location.reload(), 800);
+        })
+        .catch(() => {
+            alert('Error al guardar');
+            btn.disabled = false;
+            btn.innerText = 'CONFIRMAR ASESORIA';
+        });
     });
-});
 </script>
 
+<script>
+    document.getElementById('sucursal').addEventListener('change', function() {
 
+        let modalidadInput = document.getElementById('modalidad');
+
+        if (this.value === 'SANTA CRUZ') {
+            modalidadInput.value = 'PRESENCIAL';
+        } 
+        else if (this.value !== 'SANTA CRUZ') {
+            modalidadInput.value = 'PRESENCIAL POR CONFIRMAR';
+        } 
+        else {
+            modalidadInput.value = '';
+        }
+
+    });
+</script>
 
 @endsection
 

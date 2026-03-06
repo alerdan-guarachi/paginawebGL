@@ -2,10 +2,7 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.tramites.index') }}">REGRESAR</a>
-@if($inicioocontinuidad)
-    {{-- <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalseguimientoproceso">SEGUIMIENTO</a> --}}
-    {{-- <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalcartayreclamo">CARTA/RECLAMO</a> --}}
-    {{-- <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modaladjuntosrespuestas">ADJ. Y RESP.</a> --}}
+{{-- @if($inicioocontinuidad)
     <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalcomunicaciones">COMUNICACIÓN</a>
     <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalsolicitudes">HISTORIAL DE MISIVAS</a>
     <a class="btn btn-sm float-right btn-cartareclamo" href="{{ route('admin.tramites.cartasprocretiroaportestotal', $cliente->id) }}">NUEVA MISIVA</a>
@@ -13,7 +10,65 @@
     <a class="btn btn-sm float-right btn-cancelacion" data-toggle="modal" data-target="#modalCancelacion">CANCELACIÓN</a>
     <a class="btn btn-sm float-right btn-cancelacion" data-toggle="modal" data-target="#modalNotifErroneas">NOTIF. ERRÓNEAS</a>
 @endif
-<a class="btn btn-sm float-right btn-seguimiento" data-toggle="modal" data-target="#modalCodigo">CÓD. PERMISO</a>
+<a class="btn btn-sm float-right btn-seguimiento" data-toggle="modal" data-target="#modalCodigo">CÓD. PERMISO</a> --}}
+
+@if($inicioocontinuidad)
+    <div class="dropdown float-right ml-2">
+        <button class="btn btn-sm btn-cartareclamo dropdown-toggle shadow-sm"
+                type="button"
+                id="dropdownAcciones"
+                data-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false">
+            <i class="fas fa-cogs mr-1"></i> ACCIONES
+        </button>
+        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+            aria-labelledby="dropdownAcciones"
+            style="min-width: 300px;">
+
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalDatos">
+                <i class="fas fa-user mr-2 text-orange"></i> DATOS DEL CLIENTE
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalcomunicaciones">
+                <i class="fas fa-envelope mr-2 text-orange"></i> COMUNICACIONES
+            </a>
+            <a class="dropdown-item" href="{{ route('admin.tramites.cartasprocretiroaportestotal', $cliente->id) }}">
+                <i class="fas fa-plus-circle mr-2 text-orange"></i> NUEVA MISIVA
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalsolicitudes">
+                <i class="fas fa-history mr-2 text-orange"></i> HISTORIAL DE MISIVAS
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalNotifErroneas">
+                <i class="fas fa-exclamation-triangle mr-2 text-orange"></i> NOTIFICACIONES ERRÓNEAS
+            </a>
+            {{-- NUEVO 130226 --}}
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalNotifObservadas">
+                <i class="fas fa-eye mr-2 text-orange"></i> NOTIFICACIONES OBSERVADAS
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalCancelacion">
+                <i class="fas fa-times-circle mr-2 text-orange"></i> CANCELACIÓN DE TRÁMITE
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#modalCodigo">
+                <i class="fas fa-key mr-2 text-orange"></i> CÓDIGOS DE PERMISO
+            </a>
+        </div>
+    </div>
+    <style>
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 18px;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            cursor: pointer !important;
+        }
+        .dropdown-item:hover {
+            background-color: rgba(255, 140, 0, 0.08);
+            transform: translateX(5px);
+        }
+    </style>
+@endif
 
 <div class="modal fade" id="modalCodigo" tabindex="-1" role="dialog" aria-labelledby="modalCodigoLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -2696,16 +2751,16 @@
                 <div class="card-header">
                     <ul class="nav nav-tabs card-header-tabs" id="tabs-solicitudes">
                         <li class="nav-item">
-                            <a class="nav-link active" id="solicitudes-tab-1" data-toggle="tab" href="#solicitudes-content-1" role="tab" aria-controls="solicitudes-content-1" aria-selected="true">HISTORIAL DE SOLICITUDES</a>
+                            <a class="nav-link active" id="solicitudes-tab-1" data-toggle="tab" href="#solicitudes-content-1" role="tab" aria-controls="solicitudes-content-1" aria-selected="true">HIST. DE SOLICITUDES</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="solicitudes-tab-2" data-toggle="tab" href="#solicitudes-content-2" role="tab" aria-controls="solicitudes-content-2" aria-selected="false">HISTORIAL DE ADJUNTOS / RESPUESTAS</a>
+                            <a class="nav-link" id="solicitudes-tab-2" data-toggle="tab" href="#solicitudes-content-2" role="tab" aria-controls="solicitudes-content-2" aria-selected="false">HIST. DE ADJUNTOS / RESPUESTAS</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="solicitudes-tab-3" data-toggle="tab" href="#solicitudes-content-3" role="tab" aria-controls="solicitudes-content-3" aria-selected="false">HISTORIAL DE CARTAS / RECLAMOS</a>
+                            <a class="nav-link" id="solicitudes-tab-3" data-toggle="tab" href="#solicitudes-content-3" role="tab" aria-controls="solicitudes-content-3" aria-selected="false">HIST. DE CARTAS / RECLAMOS</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" id="solicitudes-tab-4" data-toggle="tab" href="#solicitudes-content-4" role="tab" aria-controls="solicitudes-content-4" aria-selected="false">HISTORIAL DE MISIVAS LIBRES</a>
+                            <a class="nav-link" id="solicitudes-tab-4" data-toggle="tab" href="#solicitudes-content-4" role="tab" aria-controls="solicitudes-content-4" aria-selected="false">HIST. DE MISIVAS LIBRES</a>
                         </li>
                     </ul>
                 </div>
@@ -2750,7 +2805,7 @@
                                                         @if ($solicitud->document2)
                                                             <div>{{ $solicitud->observaciones }}</div>
                                                         @else
-                                                            <input type="text" name="observacionessolicitud" class="form-control form-control-sm" placeholder="Observación" required>
+                                                            <input type="text" name="observacionessolicitud" class="form-control form-control-sm" placeholder="Observación">
                                                         @endif
                                                     </td>
                                                     <td>
@@ -2784,7 +2839,7 @@
                                                                 <div class="col">
                                                                     <input type="file" name="document2solicitud" 
                                                                         class="form-control form-control-sm archivo-input" 
-                                                                        accept="application/pdf" required>
+                                                                        accept="application/pdf">
                                                                 </div>
                                                                 <div class="col-auto">
                                                                     <button type="submit" class="btn btn-guardarnuevo guardar-btn" disabled>
@@ -2859,7 +2914,7 @@
                                                         @if ($adjunto->document2)
                                                             <div>{{ $adjunto->observaciones }}</div>
                                                         @else
-                                                            <input type="text" name="observacionesadjunto" class="form-control form-control-sm" placeholder="Observación" required>
+                                                            <input type="text" name="observacionesadjunto" class="form-control form-control-sm" placeholder="Observación">
                                                         @endif
                                                     </td>
                                                     <td>
@@ -2893,7 +2948,7 @@
                                                                 <div class="col">
                                                                     <input type="file" name="document2adjunto" 
                                                                         class="form-control form-control-sm archivo-input2" 
-                                                                        accept="application/pdf" required>
+                                                                        accept="application/pdf">
                                                                 </div>
                                                                 <div class="col-auto">
                                                                     <button type="submit" class="btn btn-guardarnuevo guardar-btn2" disabled>
@@ -5765,6 +5820,172 @@
                             <script>
                                 function agregarnotiferronea() {
                                     const filaOculta = document.querySelector('.fila-notiferronea.d-none');
+                                    if (filaOculta) {
+                                        filaOculta.classList.remove('d-none');
+                                    }
+                                }
+                            </script>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-subirarchivos d-block mx-auto">GUARDAR</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- NUEVO 130226 --}}
+<!-- NOTIFICACIONES OBSERVADAS -->
+<div class="modal fade" id="modalNotifObservadas" tabindex="-1" role="dialog" aria-labelledby="modalNotifObservadasLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title titulomodal" id="modalNotifObservadasLabel">NOTIFICACIONES OBSERVADAS</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('admin.tramites.guardartramitesclienteita', $cliente) }}" method="POST" enctype="multipart/form-data">
+                    {!! Form::hidden('usuarioid', auth()->user()->id) !!}
+                    {!! Form::hidden('usuarioregistro', auth()->user()->name) !!}
+                    {!! Form::hidden('clienteid', $cliente->id) !!}
+                    {!! Form::hidden('clientenombre', $cliente->nombrecompleto) !!}
+                    {!! Form::hidden('apoderado', $apoderadoAsignado) !!}
+                    {!! Form::hidden('idtramite', $idTramite) !!}
+                    @csrf
+                    <div class="container">
+                        @php
+                            $notifobservadas = $cliente->tramites()
+                                ->where('nivelprocedimiento', 'NOTIFICACIÓN OBSERVADA')
+                                ->where('tramite', 'RETIRO DE APORTES TOTAL')
+                            ->get();
+                        @endphp
+                        <div class="table-responsive">
+                            <div class="scroll-shadow-wrapper">
+                                <div class="scroll-shadow-container">
+                                    <table class="table table-bordered table-sm align-middle text-center">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th style="width: 10%;">ID</th>
+                                                <th style="width: 10%;">NRO.</th>
+                                                <th style="width: 30%;">SUB_PROCEDIMIENTO</th>
+                                                <th style="width: 25%;">CITE_NOTA</th>
+                                                <th style="width: 25%;">FECHA_CITE_NOTA</th>
+                                                <th style="width: 25%;">FECHA_REGISTRO</th>
+                                                <th style="width: 25%;">DOCUMENTO</th>
+                                                <th style="width: 25%;">FECHA_RESPUESTA</th>
+                                                <th style="width: 25%;">DOCUMENTO_RESPUESTA</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($notifobservadas as $documento)
+                                                <tr>
+                                                    <td class="align-middle text-center">
+                                                        <p class="mb-0">{{ $documento->id }}</p>
+                                                    </td>
+                                                    <td class="align-middle text-center">
+                                                        <p class="mb-0">{{ $documento->nro }}</p>
+                                                    </td>
+                                                    <td class="align-middle text-center">
+                                                        <p class="mb-0">{{ $documento->subprocedimiento }}</p>
+                                                    </td>
+                                                    <td class="align-middle text-center">
+                                                        <p class="mb-0">{{ $documento->citenota }}</p>
+                                                    </td>
+                                                    <td class="align-middle text-center">
+                                                        <p class="mb-0">{{ $documento->fechacitenota }}</p>
+                                                    </td>
+                                                    <td class="align-middle text-center">
+                                                        <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechasubida)->format('d-m-Y') }}</p>
+                                                    </td>
+                                                    <td class="align-middle text-center">
+                                                        <a href="{{ url("/tramitesclientesita/{$cliente->id}/RETIRO DE APORTES TOTAL/NOTIFICACIÓN OBSERVADA/{$documento->document}") }}" class="btn btn-sm btn-verdocumento" target="_blank">VER DOCUMENTO</a>
+                                                    </td>
+                                                    <td>
+                                                        @if($documento->fechainclusion)
+                                                            {{ $documento->fechainclusion }}
+                                                        @else
+                                                            <input type="date"
+                                                                class="form-control form-control-sm"
+                                                                name="fechainclusion[{{ $documento->id }}]">
+                                                        @endif
+                                                    </td>
+                                                    <td>
+                                                        @if($documento->document2)
+                                                            <a href="{{ url("/tramitesclientesita/{$cliente->id}/RETIRO DE APORTES TOTAL/NOTIFICACIÓN OBSERVADA/{$documento->document2}") }}"
+                                                            target="_blank"
+                                                            class="btn btn-sm btn-verdocumento">
+                                                            VER RESPUESTA
+                                                            </a>
+                                                        @else
+                                                            <input type="file"
+                                                                name="document2[{{ $documento->id }}]"
+                                                                class="form-control form-control-sm"
+                                                                accept="application/pdf">
+                                                        @endif
+                                                        @if(!$documento->fechainclusion || !$documento->document2)
+                                                            <button type="submit"
+                                                                    name="actualizar_id"
+                                                                    value="{{ $documento->id }}"
+                                                                    class="btn btn-sm btn-subirarchivos">
+                                                                ACTUALIZAR RESPUESTA
+                                                            </button>
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+
+                                            @if ($notifobservadas->isEmpty())
+                                                <tr class="fila-notifobservadas">
+                                            @else
+                                                <tr class="fila-notifobservadas d-none">
+                                            @endif
+                                                <td class="align-middle text-center">
+                                                    <input type="text" class="form-control" disabled>
+                                                </td>
+                                                <td class="align-middle text-center">
+                                                    <input type="text" class="form-control" disabled>
+                                                </td>
+                                                <td class="align-middle text-center">
+                                                    <input type="hidden" name="tramite[notifobservadas]" value="RETIRO DE APORTES TOTAL">
+                                                    <input type="hidden" name="nivelprocedimiento[notifobservadas]" value="NOTIFICACIÓN OBSERVADA">
+                                                    <input type="text" class="form-control" name="subprocedimiento[notifobservadas]">
+                                                </td>
+                                                <td class="align-middle text-center">
+                                                    <input type="text" class="form-control" name="citenota[notifobservadas]">
+                                                </td>
+                                                <td class="align-middle text-center">
+                                                    <input type="date" class="form-control" name="fechacitenota[notifobservadas]">
+                                                </td>
+                                                <td class="align-middle text-center">
+                                                    @php
+                                                        $fechaSubidaDefault = \Carbon\Carbon::now()->toDateString();
+                                                    @endphp
+                                                    <input type="date" class="form-control text-center" name="fechasubida[notifobservadas]" value="{{ $fechaSubidaDefault }}" {{ $puedeEditarFecha ? '' : 'readonly' }}>
+                                                </td>
+                                                <td class="align-middle text-center">
+                                                    <input type="file" name="archivo[notifobservadas]" class="dropify mx-auto d-block" accept="application/pdf">
+                                                </td>
+                                                <td class="align-middle text-center">
+                                                    
+                                                </td>
+                                                <td class="align-middle text-center">
+                                                    
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            @if (!$notifobservadas->isEmpty())
+                                <div class="text-left mt-2" style="margin-bottom: 10px;">
+                                    <button type="button" class="btn btn-sm btn-verdocumento" onclick="agregarnotifobservadas()">AGREGAR MÁS</button>
+                                </div>
+                            @endif
+                            <script>
+                                function agregarnotifobservadas() {
+                                    const filaOculta = document.querySelector('.fila-notifobservadas.d-none');
                                     if (filaOculta) {
                                         filaOculta.classList.remove('d-none');
                                     }

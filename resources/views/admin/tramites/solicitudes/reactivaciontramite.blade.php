@@ -34,23 +34,19 @@
                 Yo, @if ($sexo === 'masculino')el Sr.@elseif ($sexo === 'femenino')la Sra.@endif <strong>{{$cliente->nombrecompleto}}</strong>, 
                 con C.I. <strong>{{$cliente->ci}} {{$cliente->ciexp}}</strong>, con CUA N.º <strong>{{$cliente->nuacua}}</strong>, 
             @endif
-           Me dirijo a su Institución con la finalidad de solicitar la <strong>REACTIVACIÓN DEL TRÁMITE @if (
-                        strtoupper($nombretramite) === 'INVALIDEZ' ||
-                        strtoupper($nombretramite) === 'APELACIÓN' ||
-                        strtoupper($nombretramite) === 'SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN TERCERA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN' ||
-                        strtoupper($nombretramite) === 'RECALIFICACIÓN SEGUNDA SOLICITUD' ||
-                        strtoupper($nombretramite) === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD'
-                    )
-                        PENSIÓN POR INVALIDEZ
-                    @else
-                        {{ $nombretramite }}
-                    @endif </strong>efectuado por el Afiliado en la <strong>GESTIÓN DEL {!! $fechatramite ?? '<span class="textoedita">FECHA TRÁMITE</span>' !!}</strong> 
-                                                y poder dar curso al mismo.
+            Me dirijo a su Institución con la finalidad de solicitar la 
+            @php
+                $tramite = strtoupper($nombretramite);
+            @endphp
+            @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                <strong>REACTIVACIÓN DEL TRÁMITE DE PENSIÓN POR INVALIDEZ (RECALIFICACIÓN)</strong>
+            @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                <strong>REACTIVACIÓN DEL TRÁMITE DE PENSIÓN POR INVALIDEZ</strong>
+            @else
+                <strong>REACTIVACIÓN DEL TRÁMITE DE {{ $nombretramite }}</strong>
+            @endif
+            efectuado por el Afiliado en la <strong>GESTIÓN DEL {!! $fechatramite ?? '<span class="textoedita">FECHA TRÁMITE</span>' !!}</strong> 
+            y poder dar curso al mismo.
         </div>
 
         <div class="tipo6">

@@ -9,6 +9,8 @@ use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Evento;
+use App\Models\Arqueocaja;
+use App\Models\Consolidadocaja;
 
 class UserController extends Controller
 {
@@ -104,11 +106,65 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, User $user)
+    /* public function update(Request $request, User $user)
     {
         $user->roles()->sync($request->roles);
 
         return redirect()->route('admin.users.edit', $user)->with('info', 'Se asignaron los roles correctamente');
+    } */
+
+    public function update(Request $request, User $user)
+    {
+        $user->roles()->sync($request->roles);
+
+        $tieneContable = $user->roles()->where('name', 'CONTABLE')->exists();
+
+        if ($tieneContable) {
+
+            $existeArqueo = Arqueocaja::where('usuarioarqueoid', $user->id)
+                ->where('usuarioarqueonombre', $user->name)
+                ->exists();
+
+            if (!$existeArqueo) {
+                Arqueocaja::create([
+                    'usuarioarqueoid' => $user->id,
+                    'usuarioarqueonombre' => $user->name,
+                    'billetecorte200' => 0,
+                    'billetecorte100' => 0,
+                    'billetecorte50'  => 0,
+                    'billetecorte20'  => 0,
+                    'billetecorte10'  => 0,
+                    'monedacorte5'    => 0,
+                    'monedacorte2'    => 0,
+                    'monedacorte1'    => 0,
+                    'monedacorte050'  => 0,
+                    'monedacorte020'  => 0,
+                    'monedacorte010'  => 0,
+                ]);
+            }
+
+            $existeConsolidado = Consolidadocaja::where('usuarioconsolidadoid', $user->id)
+                ->where('usuarioconsolidadonombre', $user->name)
+                ->exists();
+
+            if (!$existeConsolidado) {
+                Consolidadocaja::create([
+                    'usuarioconsolidadoid'     => $user->id,
+                    'usuarioconsolidadonombre' => $user->name,
+                    'consolidadoefectivo'      => 0.00,
+                    'consolidadodeposito'      => 0.00,
+                    'consolidadotransferencia' => 0.00,
+                    'consolidadocheque'        => 0.00,
+                    'consolidadoatc'           => 0.00,
+                    'consolidadocxc'           => 0.00,
+                    'consolidadocpp'           => 0.00,
+                ]);
+            }
+        }
+
+        return redirect()
+            ->route('admin.users.edit', $user)
+            ->with('info', 'Se asignaron los roles correctamente');
     }
 
     /**

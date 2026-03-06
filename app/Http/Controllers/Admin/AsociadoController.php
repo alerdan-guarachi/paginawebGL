@@ -80,6 +80,7 @@ use App\Models\ModificacionesDatos;
 use App\Models\AdjuntoaCartas;
 use App\Models\Informefinal;
 use App\Models\RecomendacionBaterias;
+use App\Models\Derechohabientes;
 /* NUEVO 141125 */
 use App\Models\SubTramite;
 
@@ -595,29 +596,22 @@ class AsociadoController extends Controller
         }
 
         /* NUEVO APP MOVIL */
-        if ($request->referenciadorid) {
+        /* if ($request->referenciadorid) {
 
             $clienteReferenciador = Cliente::find($request->referenciadorid);
 
             if ($clienteReferenciador) {
 
-                // Sumar billetera
                 $clienteReferenciador->billeteramovil += 20;
                 $clienteReferenciador->save();
-
-                // 🔔 BUSCAR USER DEL REFERENCIADOR
                 $userReferenciador = User::where('clienteid', $clienteReferenciador->id)->first();
                 if ($userReferenciador) {
-
-                    // 1️⃣ Notificación Laravel (BD)
                     $userReferenciador->notify(
                         new ClienteReferenciadoNotification(
                             $cliente,
                             $clienteReferenciador
                         )
                     );
-
-                    // 2️⃣ Push Firebase (FCM)
                     if (!empty($userReferenciador->fcm_token)) {
                         FirebaseService::sendNotification(
                             $userReferenciador->fcm_token,
@@ -628,7 +622,7 @@ class AsociadoController extends Controller
                 }
 
             }
-        }
+        } */
 
         return redirect()->route('admin.asociados.verclienteita', $cliente->id)->with('info', 'El cliente se creó con éxito');
     }
@@ -2761,7 +2755,8 @@ class AsociadoController extends Controller
             'fechaasignada' => 'required|date',
             'horadesde' => 'required',
             'horahasta' => 'required',
-            'proveedornombre' => 'required'
+            'proveedornombre' => 'required',
+            'usuarioeliminacion' => 'required'
         ]);
 
         $ids = explode(',', $request->ids);
@@ -2783,6 +2778,7 @@ class AsociadoController extends Controller
             $nuevo->fechaasignada = $request->fechaasignada;
             $nuevo->horadesde = $request->horadesde;
             $nuevo->horahasta = $request->horahasta;
+            $nuevo->usuarioeliminacion = $request->usuarioeliminacion;
             $nuevo->save();
 
             if ($idsubproc) {
@@ -4204,6 +4200,54 @@ class AsociadoController extends Controller
         $contacto = Contactosubcliente::create($clienteData);
         return redirect()->route('admin.asociados.vercontactoclienteita', ['cliente' => $cliente])->with('info', 'El contacto se creó con éxito');
     }
+
+    public function verderechohabientes(Cliente $cliente, $tramite)
+    {
+        $idclienteita = $cliente->id;
+
+        $contactos = Derechohabientes::where('clienteid', $idclienteita)
+                        ->where('tipocliente', 'ITA')
+                        ->where('tramite', str_replace('_', ' ', $tramite))
+                        ->get();
+
+        return view('admin.asociados.verderechohabientes', 
+            compact('contactos', 'cliente', 'tramite'));
+    }
+
+    public function guardarderechohabientes(Request $request, Cliente $cliente, $tramite)
+{
+    $request->validate([
+        'nombrecontacto' => 'required|max:90',
+        'cidh' => 'required|max:30',
+        'estadocivil' => 'required',
+        'parentesco' => 'required',
+        'ocupaciondh' => 'required|max:100',
+        'domiciliodh' => 'required|max:100',
+        'ciudadresidenciadh' => 'required',
+        'genero_tmp' => 'required'
+    ]);
+
+    Derechohabientes::create([
+        'clienteid' => $cliente->id,
+        'clientenombre' => $cliente->nombrecompleto,
+        'tipocliente' => 'ITA',
+        'tramite' => str_replace('_', ' ', $tramite),
+        'nombrecompleto' => $request->nombrecontacto = strtoupper($request->nombrecontacto),
+        'genero' => $request->genero_tmp,
+        'ci' => $request->cidh,
+        'estadocivil' => $request->estadocivil,
+        'parentesco' => $request->parentesco,
+        'ocupacion' => $request->ocupaciondh = strtoupper($request->ocupaciondh),
+        'domicilio' => $request->domiciliodh = strtoupper($request->domiciliodh),
+        'ciudadresidencia' => $request->ciudadresidenciadh,
+        'usuarioid' => Auth::id(),
+        'usuarioregistro' => Auth::user()->name,
+    ]);
+
+    return redirect()->route('admin.asociados.verderechohabientes', 
+        [$cliente->id, $tramite]
+    )->with('info', 'El derechohabiente se creó con éxito');
+}
 //
 //ETIQUETAS CLIENTE ITA
     public function generaretiquetaclienteita(Request $request, Cliente $cliente)

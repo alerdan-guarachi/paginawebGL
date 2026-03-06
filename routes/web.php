@@ -46,6 +46,7 @@ use App\Http\Controllers\ExcelController;
 use App\Http\Controllers\Admin\PartnersController;
 use App\Http\Controllers\Admin\AssistancesController;
 use App\Http\Controllers\Admin\AsesoramientoController;
+use App\Http\Controllers\Admin\AtMedicasController;
 
 //APP MOVIL
 use App\Http\Controllers\Api\AuthController;
@@ -57,9 +58,8 @@ Route::get('/contact', [App\Http\Controllers\PaginawebController::class, 'contac
 Route::get('/medicina', [App\Http\Controllers\PaginawebController::class, 'medicina'])->name('medicina');
 Route::get('/sobrenosotros', [App\Http\Controllers\PaginawebController::class, 'sobrenosotros'])->name('sobrenosotros');
 
-//ASESORAMIENTO
+//HORARIOS ASESORAMIENTO
     Route::resource('asesoramiento', AsesoramientoController::class)->names('admin.asesoramiento');
-
     Route::get('/agendarasesoria', [AsesoramientoController::class, 'programarasesoria'])->name('programarasesoria');
     Route::get('/horarios', [AsesoramientoController::class, 'horarios'])->name('admin.asesoramiento.horarios');
     Route::post('/horarios', [AsesoramientoController::class, 'store'])->name('admin.asesoramiento.store');
@@ -72,8 +72,11 @@ Route::get('/sobrenosotros', [App\Http\Controllers\PaginawebController::class, '
     Route::post('/progasesoramiento/guardar', [AsesoramientoController::class, 'guardarProgramacion'])->name('admin.asesoramiento.guardar');
     Route::get('/progasesoramiento/ocupados/{asesor}/{fecha}',[AsesoramientoController::class, 'horariosOcupados'])->name('admin.asesoramiento.ocupados');
     Route::get('/asesoramiento/ticket-imagen/{id}', [AsesoramientoController::class, 'ticketImagen'])->name('admin.asesoramiento.ticket.imagen');
+    Route::get('/asesoramiento/ticket/{id}', [AsesoramientoController::class, 'ticketPdf'])->name('admin.asesoramiento.ticket.pdf');
     Route::post('/asesoria/actualizar-estado', [AsesoramientoController::class, 'actualizarEstado'])->name('asesoria.actualizarEstado');
+    Route::post('admin/asesoramiento/confirmar-correo',[AsesoramientoController::class, 'confirmarCorreo'])->name('admin.asesoramiento.confirmarCorreo');
 //
+
 
 Auth::routes();
 
@@ -124,6 +127,13 @@ Route::post('/compras/actualizar-estado', [FacturasEgresoController::class, 'act
 //NUEVO 190126
 Route::post('/facturasegreso/cerrar-mes', [FacturasEgresoController::class, 'cerrarMes'])->name('facturasegreso.cerrarMes');
 
+//HORARIOS ATENCION MEDICA
+    Route::resource('atmedicas', AtMedicasController::class)->names('admin.atmedicas');
+    Route::get('/horariosfijos', [AtMedicasController::class, 'horariosfijos'])->name('admin.atmedicas.horariosfijos');
+    Route::get('/horariosdiarios', [AtMedicasController::class, 'horariosdiarios'])->name('admin.atmedicas.horariosdiarios');
+    Route::post('/horariodiario', [AtMedicasController::class, 'guardarhorariodiario'])->name('admin.atmedicas.guardarhorariodiario');
+    Route::post('/bloqueos', [AtMedicasController::class, 'bloquear'])->name('admin.atmedicas.bloquear');
+//
 
 Route::post('/permisoscodigo/cambiofacturacambiorsocial', [FacturasEgresoController::class, 'codigocambiofacturacambiorsocial'])->name('permisoscodigo.codigocambiofacturacambiorsocial');
 Route::put('/facturasegreso/actualizarfacturaimpuestos/{id}', [FacturasEgresoController::class, 'actualizarfacturaimpuestos'])->name('facturasegreso.actualizarfacturaimpuestos');
@@ -846,6 +856,9 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
         Route::get('asociados/vercontactoclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@vercontactoclienteita')->name('admin.asociados.vercontactoclienteita');
         Route::get('asociados/crearcontactoclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@crearcontactoclienteita')->name('admin.asociados.crearcontactoclienteita');
         Route::post('asociados/guardarcontactoclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardarcontactoclienteita')->name('admin.asociados.guardarcontactoclienteita');
+
+        Route::get('asociados/verderechohabientes/{cliente}/{tramite}', 'App\Http\Controllers\Admin\AsociadoController@verderechohabientes')->name('admin.asociados.verderechohabientes');
+        Route::post('asociados/guardarderechohabientes/{cliente}/{tramite}', 'App\Http\Controllers\Admin\AsociadoController@guardarderechohabientes')->name('admin.asociados.guardarderechohabientes');
 
     //PROVEEDOR INFORME FINAL
         Route::post('asociados/guardarproveedorinformefinal/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardarproveedorinformefinal')->name('admin.asociados.guardarproveedorinformefinal');

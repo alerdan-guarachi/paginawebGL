@@ -326,12 +326,12 @@ return [
         ],
 
         [
-            'text' => 'Asesorías',
+            'text' => 'Administrar Asesorías',
             'icon' => 'fas fa-fw fas fa-user-nurse',
             'can'  => 'admin.asesoramiento.listaprogramaciones',
             'submenu' => [
                 [
-                    'text' => 'Horarios de Atención',
+                    'text' => 'Horarios',
                     'route'  => 'admin.asesoramiento.horarios',
                     'icon' => 'fas fa-fw fas fa-clock',
                     'can'  => 'admin.asesoramiento.horarios',
@@ -347,6 +347,26 @@ return [
                     'route'  => 'admin.asesoramiento.progasesoramiento',
                     'icon' => 'fas fa-fw fas fa-calendar-plus',
                     'can'  => 'admin.asesoramiento.progasesoramiento',
+                ],
+            ],
+        ],
+
+        [
+            'text' => 'Administrar At. Médicas',
+            'icon' => 'fas fa-fw fas fa-laptop-medical',
+            'can'  => 'admin.atmedicas.horarios',
+            'submenu' => [
+                [
+                    'text' => 'Horarios Fijos',
+                    'route'  => 'admin.atmedicas.horariosfijos',
+                    'icon' => 'fas fa-fw fas fa-clock',
+                    'can'  => 'admin.atmedicas.horarios',
+                ],
+                [
+                    'text' => 'Horarios Diarios',
+                    'route'  => 'admin.atmedicas.horariosdiarios',
+                    'icon' => 'fas fa-fw fas fa-hourglass-half',
+                    'can'  => 'admin.atmedicas.horarios',
                 ],
             ],
         ],

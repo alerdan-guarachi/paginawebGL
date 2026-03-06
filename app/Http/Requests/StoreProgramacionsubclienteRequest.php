@@ -74,6 +74,7 @@ class StoreProgramacionsubclienteRequest extends FormRequest
         'cheque' => '',
         'codautorizacion' => '',
         'idsubproc' => '',
+        'confasistencia' => '',
     ]; 
     return $rules;
 }

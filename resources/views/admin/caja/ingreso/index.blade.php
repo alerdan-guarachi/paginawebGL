@@ -2,16 +2,72 @@
 
 <link href="assets/img/logo.png" rel="icon">
 
-
 @section('content_header')
 @php
     $rolUsuario = auth()->user()->getRoleNames()->first();
-@endphp
-@php
     $tieneRolContable = auth()->user()->getRoleNames()->contains('CONTABLE');
+    $tieneRolMaestro = auth()->user()->getRoleNames()->contains('MAESTRO');
+    $tieneRolAdm = auth()->user()->getRoleNames()->contains('ADMINISTRADOR');
 @endphp
 
-{{-- @if (!$mostrarVista && $rolUsuario === 'CONTABLE') --}}
+<div class="dropdown float-right ml-2">
+    <button class="btn btn-sm btn-outline-secondary dropdown-toggle shadow-sm"
+            type="button"
+            id="dropdownAcciones"
+            data-toggle="dropdown"
+            aria-haspopup="true"
+            aria-expanded="false">
+        <i class="fas fa-cogs mr-1"></i> ACCIONES
+    </button>
+    <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+        aria-labelledby="dropdownAcciones"
+        style="min-width: 300px;">
+        
+        <a class="dropdown-item" data-toggle="modal" data-target="#arqueoModal">
+            <i class="fas fa-comments-dollar mr-2 text-secondary"></i> MI ARQUEO DE HOY
+        </a>
+        <a class="dropdown-item" data-toggle="modal" data-target="#consolidadosporusuarioModal">
+            <i class="fas fa-piggy-bank mr-2 text-secondary"></i> MI CONSOLIDADO
+        </a>
+        <a class="dropdown-item" data-toggle="modal" data-target="#aperturacaja">
+            <i class="fas fa-cash-register mr-2 text-secondary"></i> APERTURAR CAJA DE HOY
+        </a>
+        @if ($tieneRolMaestro || $tieneRolAdm)
+            <a class="dropdown-item" data-toggle="modal" data-target="#consolidadosModal">
+                <i class="fas fa-coins mr-2 text-secondary"></i> CONSOLIDADOS GENERAL
+            </a>
+            <a class="dropdown-item" data-toggle="modal" data-target="#aperturacaja2">
+                <i class="fas fa-donate mr-2 text-secondary"></i> APERTURAS DE CAJA GENERAL
+            </a>
+        @endif
+        <a class="dropdown-item" href="{{ route('admin.caja.ingreso.ingresosexternos') }}">
+            <i class="fas fa-hand-holding-usd mr-2 text-secondary"></i> INGRESOS EXTERNOS
+        </a>
+        <a class="dropdown-item" data-toggle="modal" data-target="#modalCodigo">
+            <i class="fas fa-key mr-2 text-secondary"></i> CÓDIGOS DE PERMISO
+        </a>
+    </div>
+</div>
+
+<style>
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 18px;
+        font-size: 15px;
+        transition: all 0.2s ease;
+        cursor: pointer !important;
+    }
+    .dropdown-item:hover {
+        background-color: rgba(0, 0, 0, 0.08);
+        transform: translateX(5px);
+    }
+    label {
+        margin-bottom: 0;
+    }
+</style>
+
 @if (!$mostrarVista && $tieneRolContable)
     <div class="alert alert-danger text-center py-4" style="border-radius: 10px; background-color: #f8d7da; color: #842029; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);">
         <h4 class="font-weight-bold mb-3" style="text-transform: uppercase; letter-spacing: 1px;">Caja Bloqueada</h4>
@@ -30,7 +86,7 @@
 @else
     <div class="d-flex align-items-center justify-content-between mb-0">
         <div class="flex-grow-1">
-            <h2 class="font-weight-bold">CAJA DE INGRESOS INTERNOS</h2>
+            <h3 class="font-weight-bold">CAJA DE INGRESOS INTERNOS</h3>
         </div>
         <a class="btn btn-outline-warning btn-sm" id="btnVerCreditos" 
             data-toggle="modal" data-target="#modalCreditos" 
@@ -53,28 +109,25 @@
                 animation: pulsate 1.5s infinite;
             }
         </style>
-        <a class="btn btn-outline-success btn-sm" data-toggle="modal" data-target="#modalCodigo" style="margin-right: 10px;">
-            CODIGO DESC. O CAMBIO FECHA
-        </a>
 
         <div class="modal fade" id="modalCodigo" tabindex="-1" role="dialog" aria-labelledby="modalCodigoLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
-                <form id="formCodigo">
-                    <div class="modal-header">
-                    <h3 class="modal-title" id="modalCodigoLabel" style="font-weight: 900;">Ingresar Código</h3>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    </div>
-                    <div class="modal-body">
-                    <input type="text" id="codigoInput" name="codigo" class="form-control" placeholder="Ingrese el código" required>
-                    <div id="codigoMensaje" class="mt-2 text-danger" style="display: none;"></div>
-                    </div>
-                    <div class="modal-footer">
-                    <button type="submit" class="btn btn-sm btn-outline-secondary">VALIDAR</button>
-                    </div>
-                </form>
+                    <form id="formCodigo">
+                        <div class="modal-header">
+                            <h3 class="modal-title" id="modalCodigoLabel" style="font-weight: 900;">Ingresar Código</h3>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="text" id="codigoInput" name="codigo" class="form-control" placeholder="Ingrese el código" required>
+                            <div id="codigoMensaje" class="mt-2 text-danger" style="display: none;"></div>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary">VALIDAR</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -112,37 +165,7 @@
             });
         </script>
 
-        <a class="btn btn-outline-primary btn-sm" href="{{ route('admin.caja.ingreso.ingresosexternos') }}" style="margin-right: 10px;">
-            INGRESOS EXTERNOS
-        </a>
-        {{-- @if ($rolUsuario !== 'CONTABLE' || $rolUsuario !== 'OPERATIVO') --}}
-        @if (!$tieneRolContable)
-        <a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#aperturacaja2" style="margin-right: 10px;">
-            APERTURAS DE CAJA
-        </a>
-        @endif
-        {{-- @if ($rolUsuario === 'CONTABLE' || $rolUsuario === 'OPERATIVO') --}}
-        @if ($tieneRolContable)
-        <a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#aperturacaja" style="margin-right: 10px;">
-            APERTURAR CAJA
-        </a>
-        @endif
-        {{-- @if ($rolUsuario !== 'CONTABLE' || $rolUsuario !== 'OPERATIVO') --}}
-        @if (!$tieneRolContable)
-        <a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#consolidadosModal">
-            CONSOLIDADOS GENERAL
-        </a>
-        @endif
-        {{-- @if ($rolUsuario === 'CONTABLE' || $rolUsuario === 'OPERATIVO') --}}
-        @if ($tieneRolContable)
-        <a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#consolidadosporusuarioModal">
-            CONSOLIDADO
-        </a>
-        @endif
-        <a class="btn btn-outline-secondary btn-sm" data-toggle="modal" data-target="#arqueoModal" style="margin-left: 10px;">
-            ARQUEO
-        </a>
-        <!-- Modal con los créditos del cliente -->
+        {{-- MODAL CREDITOS DEL CLIENTE --}}
         <div class="modal fade" id="modalCreditos" tabindex="-1" role="dialog">
             <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -185,17 +208,17 @@
         </div>
     </div>
 @endif
-    <!-- Modal Consolidado General-->
+    {{-- MODAL CONSOLIDADO GENERAL --}}
     <div class="modal fade" id="consolidadosModal" tabindex="-1" aria-labelledby="consolidadosModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 shadow-sm">
                 <div class="modal-header text-center">
-                    <h5 class="modal-title w-100 fw-bold" id="consolidadosModalLabel">CONSOLIDADOS DE CAJA</h5>
+                    <h5 class="modal-title w-100 fw-bold" id="consolidadosModalLabel">CONSOLIDADOS GENERAL DE CAJA</h5>
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle">
-                            <thead>
+                        <table class="table table-striped table-hover align-middle table-bordered table-sm">
+                            <thead class="bg-secondary text-white">
                                 <tr class="border-bottom">
                                     <th class="text-start">Usuario</th>
                                     <th class="text-center">Efectivo</th>
@@ -238,26 +261,27 @@
                             </tfoot>
                         </table>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
+                    <div class="text-center">
+                        <button type="button" class="btn-sm btn btn-outline-secondary" data-dismiss="modal">CERRAR</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Modal Consolidado por Usuario-->
+
+    {{-- MODAL CONSOLIDADO POR USUARIO --}}
     <div class="modal fade" id="consolidadosporusuarioModal" tabindex="-1" aria-labelledby="consolidadosporusuarioModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 shadow-sm">
                 <div class="modal-header w-100 text-center" style="display: block; text-align: center;">
-                    <h6 class="modal-title w-100 fw-bold" style="font-size: 20px;" id="consolidadosporusuarioModalLabel">CONSOLIDADOS DE CAJA</h5>
+                    <h6 class="modal-title w-100 fw-bold" style="font-size: 20px;" id="consolidadosporusuarioModalLabel">MI CONSOLIDADO DE CAJA</h5>
                     <h5 class="modal-title w-100 fw-bold">{{ auth()->user()->name }}</h5>
-                    <p class="text-muted mt-2 mb-0">{{ now()->format('d/m/Y') }}</p>
+                    {{-- <p class="text-muted mt-2 mb-0">{{ now()->format('d/m/Y') }}</p> --}}
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle">
-                            <thead>
+                        <table class="table table-striped table-hover align-middle table-bordered table-sm">
+                            <thead class="bg-secondary text-white">
                                 <tr class="border-bottom">
                                     <th class="text-start">Usuario</th>
                                     <th class="text-center">Efectivo</th>
@@ -291,9 +315,9 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
+                    <div class="text-center">
+                        <button type="button" class="btn-sm btn btn-outline-secondary" data-dismiss="modal">CERRAR</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -321,12 +345,13 @@
             padding: 5px 10px;;
         }
     </style>
-    <!-- Modal Arqueo Total-->
+
+    {{-- MODAL ARQUEO POR USUARIO --}}
     <div class="modal fade" id="arqueoModal" tabindex="-1" aria-labelledby="arqueoModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 shadow-sm">
                 <div class="modal-header w-100 text-center" style="display: block; text-align: center;">
-                    <h6 class="modal-title w-100 fw-bold" style="font-size: 20px;" id="arqueoModalLabel">ARQUEO DE CAJA</h6>
+                    <h6 class="modal-title w-100 fw-bold" style="font-size: 20px;" id="arqueoModalLabel">MI ARQUEO DE CAJA DE HOY</h6>
                     <h5 class="modal-title w-100 fw-bold">{{ auth()->user()->name }}</h5>
                     <p class="text-muted mt-2 mb-0">{{ now()->format('d/m/Y') }}</p>
                 </div>
@@ -415,17 +440,18 @@
                         <span class="fw-bold">Total:</span> 
                         <span class="text-dark fw-bold">{{ number_format($total, 2, '.', ',') }} Bs.</span>
                     </div>
-                    <button type="button" class="btn btn-outline-secondary mt-2" data-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn-sm btn btn-outline-secondary mt-2" data-dismiss="modal">CERRAR</button>
                 </div>
             </div>
         </div>
     </div>
-    {{-- APERTURA DE CAJA POR USUARIO --}}
+
+    {{-- MODAL APERTURA DE CAJA POR USUARIO --}}
     <div class="modal fade" id="aperturacaja" tabindex="-1" role="dialog" aria-labelledby="aperturacajaLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="aperturacajaLabel">Apertura de Caja</h5>
+                    <h5 class="modal-title fw-bold" id="aperturacajaLabel">APERTURAR CAJA DE HOY</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -438,7 +464,11 @@
                                 <label for="archivo">Subir Apertura</label>
                                 <input type="file" name="archivo" id="archivo" class="form-control" accept=".jpg, .jpeg, .png" required>
                             </div>
-                            <button type="submit" class="btn btn-outline-secondary btn-sm">Guardar Apertura</button>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                                    GUARDAR APERTURA
+                                </button>
+                            </div>
                         </form>
                     @else <!-- Si existe el registro -->
                         <h5>REGISTROS DE APERTURA:</h5>
@@ -452,38 +482,41 @@
             </div>
         </div>
     </div>
+
+    {{-- MODAL APERTURAS DE CAJA GENERAL --}}
     <div class="modal fade" id="aperturacaja2" tabindex="-1" aria-labelledby="aperturacaja2Label" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 shadow-sm">
-                <div class="modal-header text-center">
-                    <h5 class="modal-title w-100 fw-bold" id="aperturacaja2Label">APERTURAS DE CAJA</h5>
+                <div class="modal-header w-100 text-center" style="display: block; text-align: center;">
+                    <h5 class="modal-title w-100 fw-bold" id="aperturacaja2Label">APERTURAS DE CAJA GENERAL</h5>
+                    <p class="text-muted mt-2 mb-0">ÚLTIMAS 10 APERTURAS</p>
                 </div>
                 <div class="modal-body">
                     <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
+                        <table class="table table-striped table-bordered table-sm">
+                            <thead class="bg-secondary text-white">
                                 <tr class="border-bottom">
                                     <th>Usuario Apertura</th>
                                     <th>Fecha Apertura</th>
-                                    <th>Archivo</th>
+                                    <th class="text-center">Archivo</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($aperturascajas as $aperturas)
                                     <tr>
                                         <td>{{ $aperturas->usuarioaperturanombre }}</td>
-                                        <td>{{ $aperturas->created_at }}</td>
-                                        <td>
-                                            <a type="submit" class="btn btn-outline-secondary" href="{{ asset('aperturacaja/' . $aperturas->usuarioaperturaid . '/' . $aperturas->documentoapertura) }}" target="_blank"><i class="fas fa-search"></i></a>
+                                        <td>{{ $aperturas->created_at->format('d-m-Y / H:i') }}</td>
+                                        <td class="text-center">
+                                            <a type="submit" class="btn-sm btn btn-secondary" href="{{ asset('aperturacaja/' . $aperturas->usuarioaperturaid . '/' . $aperturas->documentoapertura) }}" target="_blank"><i class="fas fa-eye"></i></a>
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cerrar</button>
+                    <div class="text-center">
+                        <button type="button" class="btn-sm btn btn-outline-secondary" data-dismiss="modal">CERRAR</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -513,7 +546,6 @@
     </script>
 @endif
 
-{{-- @if (!$mostrarVista && $rolUsuario === 'CONTABLE') --}}
 @if (!$mostrarVista && $tieneRolContable)
 
 @else
@@ -522,17 +554,16 @@
     <div class="card">
         <div class="card-body">
             <div class="row">
-                <!-- Panel Izquierdo -->
+                {{-- PANEL IZQUIERDO --}}
                 <div class="col-md-2 panel">
                     <div class="form-group" hidden>
                         <label>Ciudad de Operación</label>
                         <input type="text" class="form-control" name="ciudadregistro" value="{{ $sucursal }}">
                     </div>
-
                     <div class="row">
                         <div class="form-group col-lg-4">
                             <label for="siguienteId">Recibo</label>
-                            <input type="text" id="siguienteId" class="form-control" readonly>
+                            <input type="text" id="siguienteId" class="form-control form-control-sm" readonly>
                         </div>
                         <script>
                             function actualizarSiguienteId() {
@@ -547,33 +578,33 @@
                             setInterval(actualizarSiguienteId, 1000);
                             actualizarSiguienteId();
                         </script>
-
                         <div class="form-group col-lg-8">
-                            <label>Tipo de Cliente</label>
-                            <select id="tipoCliente" class="form-control" name="tipocliente" onchange="cambiarArea()">
+                            <label>Tipo Cliente/Prov.</label>
+                            <select id="tipoCliente" class="form-control form-control-sm" name="tipocliente" onchange="cambiarArea()">
                                 <option value="" selected disabled>Seleccione un tipo</option>
-                                <option value="clienteitaid">Cliente ITA</option>
-                                <option value="clienteauditoriaid">Cliente Auditoría</option>
-                                <option value="clientecomunid">Cliente Común</option>
-                                <option value="proveedorid">Proveedor</option>
+                                <option value="clienteitaid">CLIENTES ITA</option>
+                                <option value="clienteauditoriaid">CLIENTES AUDITORIA</option>
+                                <option value="clientecomunid">CLIENTES COMUNES</option>
+                                <option value="proveedorid">PROVEEDORES DE SERVICIOS</option>
+                                <option value="medicoid">PROVEEDORES MÉDICOS</option>
                             </select>
                             <input type="hidden" id="area" class="form-control" name="area" value="MEDICA">
                         </div>
                     </div>
-                    <label for="clienteid">Nombre del Cliente</label>
+                    <label for="clienteid">Nombre Cliente/Prov.</label>
                     <div class="row mb-3">
                         <div class="form-group col-lg-12">
-                            <input list="clientes" id="clienteSearch" class="form-control" placeholder="Buscar cliente..." oninput="actualizarID()">
+                            <input list="clientes" id="clienteSearch" class="form-control form-control-sm" placeholder="Buscar cliente/proveedor..." oninput="actualizarID()">
                             <datalist id="clientes"></datalist>
                             <input type="hidden" id="clienteid" name="clienteid">
                         </div>
                     </div>
-
                     <script>
                         const clientesIta = @json($clientesIta);
                         const clientesAuditoria = @json($clientesAuditoria);
                         const clientesComunes = @json($clientesComunes);
                         const proveedores = @json($proveedores);
+                        const medicos = @json($medicos);
 
                         function cambiarArea() {
                             const tipoCliente = document.getElementById("tipoCliente").value;
@@ -583,16 +614,14 @@
                                 
                                 if (tipoCliente === 'clienteitaid' || tipoCliente === 'clienteauditoriaid' || tipoCliente === 'clientecomunid') {
                                     areaInput.value = 'MEDICA';
-                                } else if (tipoCliente === 'proveedorid') {
+                                } else if (tipoCliente === 'proveedorid' || tipoCliente === 'medicoid') {
                                     areaInput.value = 'CUENTA POR COBRAR';
                                 }
 
-                            // Limpiar las opciones anteriores
                             datalist.innerHTML = '';
 
                             let clientes = [];
 
-                            // Obtener los clientes adecuados según el tipo
                             if (tipoCliente === 'clienteitaid') {
                                 clientes = clientesIta;
                             } else if (tipoCliente === 'clienteauditoriaid') {
@@ -601,18 +630,18 @@
                                 clientes = clientesComunes;
                             } else if (tipoCliente === 'proveedorid') {
                                 clientes = proveedores;
+                            } else if (tipoCliente === 'medicoid') {
+                                clientes = medicos;
                             }
 
-                            // Agregar las nuevas opciones al datalist
                             clientes.forEach(cliente => {
                                 const option = document.createElement("option");
-                                option.value = cliente.nombrecompleto || cliente.razonsocial;
-                                option.dataset.id = cliente.id; // Guardamos el id como un atributo de datos
+                                option.value = cliente.nombrecompleto || cliente.razonsocial || cliente.proveedor;
+                                option.dataset.id = cliente.id;
                                 datalist.appendChild(option);
                             });
                         }
 
-                        // Actualizar el campo oculto con el id del cliente seleccionado
                         function actualizarID() {
                             const clienteSearch = document.getElementById("clienteSearch");
                             const datalist = document.getElementById("clientes");
@@ -620,7 +649,6 @@
 
                             options.forEach(option => {
                                 if (option.value === clienteSearch.value) {
-                                    // Al encontrar una opción que coincida, asignamos su id al campo oculto
                                     document.getElementById("clienteid").value = option.dataset.id;
                                 }
                             });
@@ -636,10 +664,10 @@
                     </div>
                     <div class="row mb-3" style="margin-top: -20px;">
                         <div class="form-group col-lg-6">
-                            <input type="date" id="fechaInicio" class="form-control" placeholder="Fecha de inicio">
+                            <input type="date" id="fechaInicio" class="form-control form-control-sm" placeholder="Fecha de inicio">
                         </div>
                         <div class="form-group col-lg-6">
-                            <input type="date" id="fechaFinal" class="form-control" placeholder="Fecha final">
+                            <input type="date" id="fechaFinal" class="form-control form-control-sm" placeholder="Fecha final">
                         </div>
                     </div>
                     <div class="row mb-3" style="margin-top: -25px;">
@@ -650,21 +678,18 @@
                     <div id="campoFechas" style="display: none;">
                         <div class="form-group">
                             <label>Registro</label>
-                            <input type="datetime-local" name="created_at" id="created_at" class="form-control">
+                            <input type="datetime-local" name="created_at" id="created_at" class="form-control form-control-sm">
                             <input type="datetime-local" name="updated_at" id="updated_at" class="form-control" hidden>
                         </div>
                     </div>
-
-                    <div class="form-group">
+                    <div class="form-group" style="margin-top: -20px;">
                         <label>Cod. Autorización</label>
-                        <input type="text" id="codautorizacion" name="codautorizacion" class="form-control">
+                        <input type="text" id="codautorizacion" name="codautorizacion" class="form-control form-control-sm">
                     </div>
-
-                    {{-- TIPO TRANSACCION --}}
                     <div class="form-group">
                         <label>Tipo de Transacción</label>
                         <div>
-                            <select class="form-control" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
+                            <select class="form-control form-control-sm" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
                                 <option disabled selected></option>
                                 <option value="ATC">ATC</option>
                                 <option value="CHEQUE">CHEQUE</option>
@@ -676,7 +701,7 @@
                                 <input type="checkbox" class="form-check-input" id="dobleTransaccion" onchange="validarTipoTransaccion()">
                                 <label class="form-check-label" for="dobleTransaccion">Doble Tipo de Transac.</label>
                             </div>
-                            <select class="form-control mt-2 d-none" id="tipoTransaccion2" name="tipotransaccion2" onchange="validarTipoTransaccion()">
+                            <select class="form-control form-control-sm mt-2 d-none" id="tipoTransaccion2" name="tipotransaccion2" onchange="validarTipoTransaccion()">
                                 <option disabled selected></option>
                                 <option value="ATC">ATC</option>
                                 <option value="CHEQUE">CHEQUE</option>
@@ -686,17 +711,13 @@
                             </select>
                         </div>
                     </div>
-                    
-                    {{-- FACTURA --}}
                     <div class="form-group">
                         <label>Nro. Factura</label>
-                        <input type="text" id="nrofactura" name="nrofactura" class="form-control">
+                        <input type="text" id="nrofactura" name="nrofactura" class="form-control form-control-sm">
                     </div>
-
-                    <!-- ATC -->
                     <div class="form-group atc-fields d-none">
                         <label>Nro. Tarjeta</label>
-                        <input type="text" id="nrotarjeta" name="nrotarjeta" class="form-control" maxlength="16" oninput="formatearTarjeta(this)">
+                        <input type="text" id="nrotarjeta" name="nrotarjeta" class="form-control form-control-sm" maxlength="16" oninput="formatearTarjeta(this)">
                         <script>
                             function formatearTarjeta(input) {
                                 let valor = input.value.replace(/\D/g, '');
@@ -713,28 +734,25 @@
                             }
                         </script>
                         <label>AP.</label>
-                        <input type="text" id="nroap" name="nroap" class="form-control">
+                        <input type="text" id="nroap" name="nroap" class="form-control form-control-sm">
                         <label>REF.</label>
-                        <input type="text" id="nroref" name="nroref" class="form-control">
+                        <input type="text" id="nroref" name="nroref" class="form-control form-control-sm">
                     </div>
-                    
-                    <!-- CHEQUE -->
                     <div class="form-group cheque-fields d-none">
                         <label>Nro. Cheque</label>
-                        <input type="text" id="nrocheque" name="nrocheque" class="form-control">
+                        <input type="text" id="nrocheque" name="nrocheque" class="form-control form-control-sm">
                         <div class="form-group mb-3">
                             <label for="tipobancocheque">Tipo Banco</label>
-                            <select name="tipobancocheque" id="tipobancocheque" class="form-control">
+                            <select name="tipobancocheque" id="tipobancocheque" class="form-control form-control-sm">
                                 <option value=""></option>
                                 @foreach ($bancos as $banco)
                                     <option value="{{ $banco->nombrebanco }}">{{ $banco->nombrebanco }}</option>
                                 @endforeach
                             </select>
                         </div>
-
                         <div class="form-group mb-3">
                             <label for="bancoDestino">Nro. Banco Destino</label>
-                            <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control">
+                            <select name="nrocuentadestinocheque" id="nrocuentadestinocheque" class="form-control form-control-sm">
                                 <option value=""></option>
                                 @foreach ($cuentas as $cuenta)
                                     <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
@@ -742,12 +760,10 @@
                             </select>
                         </div>
                     </div>
-                    
-                    <!-- DEPOSITO BANCARIO -->
                     <div class="form-group deposito-fields d-none">
                         <div class="form-group mb-3">
                             <label for="bancoDestino">Nro. Banco Origen</label>
-                            <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control">
+                            <select name="nrocuentadestinodeposito" id="nrocuentadestinodeposito" class="form-control form-control-sm">
                                 <option value=""></option>
                                 @foreach ($cuentas as $cuenta)
                                     <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
@@ -755,14 +771,12 @@
                             </select>
                         </div>
                         <label>Bancarización</label>
-                        <input type="text" id="nrobancarizaciondeposito" name="nrobancarizaciondeposito" class="form-control">
+                        <input type="text" id="nrobancarizaciondeposito" name="nrobancarizaciondeposito" class="form-control form-control-sm">
                     </div>
-                    
-                    <!-- TRANSFERENCIA BANCARIA -->
                     <div class="form-group transferencia-fields d-none">
                         <div class="form-group mb-3">
                             <label for="bancoDestino">Nro. Banco Origen</label>
-                            <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control">
+                            <select name="nrocuentadestinotransferencia" id="nrocuentadestinotransferencia" class="form-control form-control-sm">
                                 <option value=""></option>
                                 @foreach ($cuentas as $cuenta)
                                     <option value="{{ $cuenta->numerocuenta }}">{{ $cuenta->numerocuenta }}</option>
@@ -770,20 +784,18 @@
                             </select>
                         </div>
                         <label>Bancarización</label>
-                        <input type="text" id="nrobancarizaciontransferencia" name="nrobancarizaciontransferencia" class="form-control">
+                        <input type="text" id="nrobancarizaciontransferencia" name="nrobancarizaciontransferencia" class="form-control form-control-sm">
                     </div>
-                    
-                    <!-- EFECTIVO -->
                     <div class="form-group efectivo-fields d-none">
                         <label>Tipo de Cambio</label>
-                        <select name="tipocambio" id="tipocambio" class="form-control">
+                        <select name="tipocambio" id="tipocambio" class="form-control form-control-sm">
                             <option value="Bs.">Bs.</option>
                             <option value="Usd.">Usd.</option>
                         </select>
                     </div>
                 </div>
 
-                {{-- REGISTROS --}}
+                {{-- PANEL DERECHO --}}
                 <div class="col-md-10">
                     <div class="card">
                         <div class="card-header bg-secondary text-white text-center">
@@ -793,30 +805,29 @@
                             <div class="row">
                                 <div class="form-group col-lg-2">
                                     <label>ID</label>
-                                    <input type="text" class="form-control" id="clienteid" name="clienteid" placeholder="ID del cliente" readonly>
+                                    <input type="text" class="form-control form-control-sm" id="clienteid" name="clienteid" placeholder="ID del cliente/proveedor" readonly>
                                 </div>
                                 <div class="form-group col-lg-6">
-                                    <label>Cliente</label>
-                                    <input type="text" id="clientenombre" name="clientenombre" class="form-control" placeholder="Nombre del cliente" readonly>
+                                    <label>Cliente/Proveedor</label>
+                                    <input type="text" id="clientenombre" name="clientenombre" class="form-control form-control-sm" placeholder="Nombre del cliente/proveedor" readonly>
                                 </div>
                                 <div class="form-group col-lg-4">
-                                    <label>CI</label>
-                                    <input type="text" class="form-control" placeholder="CI del cliente" readonly>
+                                    <label>CI/NIT</label>
+                                    <input type="text" class="form-control form-control-sm" placeholder="CI/NIT del cliente/proveedor" readonly>
                                 </div>
                             </div>
-
                             <div class="table-responsive">
-                                <table class="table table-bordered mt-3">
+                                <table class="table table-bordered mt-3 table-sm table-striped">
                                     <thead>
-                                        <tr style="background-color: #eff1f3">
-                                            <th style="width: 5%; text-align: center;">ID</th>
-                                            <th style="width: 28%; text-align: center;">Detalle</th>
-                                            <th style="width: 12%; text-align: center;">Prog.</th>
+                                        <tr class="bg-secondary text-white" style="text-align: center;">
+                                            <th style="width: 5%;">ID</th>
+                                            <th style="width: 28%;">Detalle</th>
+                                            <th style="width: 12%;">Prog.</th>
                                             <th hidden style="width: 0%;">Fecha de Batería</th>
-                                            <th style="width: 20%; text-align: center;">Servicio</th>
-                                            <th style="width: 10%; text-align: center;">Precio</th>
-                                            <th style="width: 10%; text-align: center;">Descuento</th>
-                                            <th style="width: 10%; text-align: center;">Pago</th>  
+                                            <th style="width: 20%;">Servicio</th>
+                                            <th style="width: 9%;">Precio</th>
+                                            <th style="width: 9%;">Descuento</th>
+                                            <th style="width: 12%;">Pago</th>  
                                             <th style="width: 5%;">
                                                 <label for="selectAll" style="display: inline-flex; align-items: center; justify-content: center; padding-left: 10px; margin-bottom: 0px;">
                                                     <input type="checkbox" id="selectAll" class="form-check-input" style="margin-right: 20px;">
@@ -829,41 +840,31 @@
                                     </tbody>
                                 </table>
                             </div>
-
-                            <div class="card-body card">
-                                <h5 class="text-left" style="margin-top: 0; font-weight: 700;">RESUMEN DE PAGO</h5>
+                            <div class="card-body card" style="background-color: #90909011">
+                                <h5 class="text-center" style="margin-top: 0; font-weight: 700;">RESUMEN DE INGRESO</h5>
                                 <div class="row">
                                     <input type="hidden" class="form-control border border-dark" name="montoreal" id="montoreal" value="0" readonly>
                                     <div class="form-group col-lg-3">
                                         <label>Subtotal</label>
-                                        <input type="text" class="form-control" name="subtotal" placeholder="Subtotal" value="0" readonly>
+                                        <input type="text" class="form-control form-control-sm" name="subtotal" placeholder="Subtotal" value="0" readonly>
                                     </div>
                                     <div class="form-group col-lg-3">
                                         <label>Descuento</label>
-                                        <input type="text" class="form-control" name="descuento" placeholder="Descuento" value="0" readonly>
+                                        <input type="text" class="form-control form-control-sm" name="descuento" placeholder="Descuento" value="0" readonly>
                                     </div>
                                     <div class="form-group col-lg-3">
                                         <label>Total</label>
-                                        <input type="text" class="form-control border border-dark" name="montototal" id="montototal" placeholder="Total" value="0" readonly>
+                                        <input type="text" class="form-control form-control-sm border border-dark" name="montototal" id="montototal" placeholder="Total" value="0" readonly>
                                     </div>
                                     <div class="form-group col-lg-3">
                                         <label>Registrar</label>
-                                            <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
+                                            <button class="btn-sm btn btn-secondary btn-block registrar-btn" id="imprimirReciboBtn" 
                                                     onclick="imprimirReciboSeleccionados()">
                                                 GUARDAR REGISTRO
                                             </button>
-                                        {{-- <div id="buttonContainer" style="display: flex; flex-direction: column; gap: 10px;">
-                                            <a id="actualizarId" class="btn btn-secondary btn-block" style="display: none;">
-                                                INSERTAR DATOS
+                                            <a class="btn-sm btn btn-secondary" id="abrirModalBtn" data-toggle="modal" data-target="#modalArqueo" style="display: none;">
+                                                ARQUEO DE CAJA
                                             </a>
-                                            <button class="btn btn-success btn-block registrar-btn" id="imprimirReciboBtn" 
-                                                    onclick="imprimirReciboSeleccionados()" disabled style="display: none;">
-                                                GUARDAR REGISTRO
-                                            </button>
-                                        </div> --}}
-                                        <a class="btn btn-secondary" id="abrirModalBtn" data-toggle="modal" data-target="#modalArqueo" style="display: none;">
-                                            ARQUEO DE CAJA
-                                        </a>
 
                                         <script>
                                             let timer;
@@ -906,7 +907,6 @@
                                                             ARQUEO DE CAJA
                                                         </h5>
                                                     </div>
-                                                    
                                                     <div class="modal-body">
                                                         <div class="card shadow-sm border p-2" style="background-color: #eeeded">
                                                             <h6 class="card-title fw-bold mb-1" style="text-align: center; width: 100%; justify-content: center; margin-bottom:-10px;">RESUMEN DE MOVIMIENTO</h6>
@@ -944,7 +944,6 @@
                                                             <div class="col-lg-6">
                                                                 <div class="card shadow-sm border p-2" style="background-color: #eeeded">
                                                                     <div class="card-body p-2" style="background-color: #ffffff">
-                                                                        <!-- Pago del Cliente -->
                                                                         <div class="form-group">
                                                                             <label for="montoPagado" class="mb-1" style="text-align: center; width: 100%; justify-content: center; background-color: #eeeded"><strong>PAGO DEL CLIENTE</strong></label>
                                                                             <input type="number" name="montoPagado" id="montoPagado" class="form-control form-control-lg text-center" value="0" style="height: 30px;">
@@ -1225,7 +1224,7 @@
                                                             {{-- <a id="actualizarId" class="btn btn-secondary btn-flotante btn-insertar">
                                                                 INSERTAR DATOS
                                                             </a> --}}
-                                                            <button class="btn btn-success btn-flotante btn-guardar"
+                                                            <button class="btn-sm btn btn-secondary btn-flotante btn-guardar"
                                                                 onclick="imprimirReciboSeleccionados()"
                                                                 {{-- disabled --}}>
                                                                 GUARDAR REGISTRO
@@ -1247,28 +1246,8 @@
                                                         });
                                                     </script>
 
-                                                {{--  CALCULAR MONTOS TOTALES Y REDONDEO --}}
+                                                    {{--  CALCULAR MONTOS TOTALES Y REDONDEO --}}
                                                     <script>
-                                                        /* function actualizarMontoRestante() {
-                                                            var montoTotal = parseFloat(document.getElementById('montoTotalModal').textContent) || 0;
-                                                            var totalBilletesYMonedas = 0;
-                                                    
-                                                            // Obtener los valores de los billetes y monedas
-                                                            var inputsBilletesYMonedas = document.querySelectorAll('input[data-billete], input[data-moneda]');
-                                                            inputsBilletesYMonedas.forEach(function(input) {
-                                                                var cantidad = parseFloat(input.value) || 0;
-                                                                var valor = parseFloat(input.getAttribute('data-billete')) || parseFloat(input.getAttribute('data-moneda')) || 0;
-                                                                totalBilletesYMonedas += cantidad * valor;
-                                                            });
-                                                    
-                                                            // Calcular el monto restante
-                                                            var montoRestante = montoTotal - totalBilletesYMonedas;
-                                                            document.getElementById('montoTotalDisplay').value = montoRestante.toFixed(2);
-                                                    
-                                                            // Habilitar o deshabilitar el botón de impresión según el monto restante
-                                                            var botonGuardar = document.getElementById('imprimirReciboBtn');
-                                                            botonGuardar.disabled = (montoRestante.toFixed(2) !== "0.00");
-                                                        } */
                                                         document.getElementById('montoPagado').addEventListener('input', function() {
                                                             var montoPagado = parseFloat(this.value) || 0;
                                                             document.getElementById('montoTotalDisplay').value = montoPagado.toFixed(2);
@@ -1295,7 +1274,6 @@
                                                             botonGuardar.disabled = (montoRestante.toFixed(2) !== "0.00");
                                                         }
 
-                                                    
                                                         // Agregar eventos a los inputs de billetes y monedas
                                                         document.querySelectorAll('input[data-billete], input[data-moneda]').forEach(function(input) {
                                                             input.addEventListener('input', actualizarMontoRestante);
@@ -1533,12 +1511,12 @@
 @stop
 
 {{-- <td>
-                                <input type="number" style="height: 25px;" class="form-control registro-descuento" 
-                                    placeholder="0.00" 
-                                    value="0.00" 
-                                    data-precio="${precio}" 
-                                    data-id="${registro.id}" step="0.01" />
-                            </td> --}}
+    <input type="number" style="height: 25px;" class="form-control registro-descuento" 
+        placeholder="0.00" 
+        value="0.00" 
+        data-precio="${precio}" 
+        data-id="${registro.id}" step="0.01" />
+</td> --}}
 @section('js')
 {{-- BUSCAR REGISTROS DE PROGRAMACIONES DE CLIENTES --}}
 <script>
@@ -1752,17 +1730,17 @@
         /* function actualizarTabla(data) { */
         function actualizarTabla(data, permitirDescuento = false) {
 
-            const nombreInput = document.querySelector('input[placeholder="Nombre del cliente"]');
-            const idnombreInput = document.querySelector('input[placeholder="ID del cliente"]');
-            const ciInput = document.querySelector('input[placeholder="CI del cliente"]');
+            const nombreInput = document.querySelector('input[placeholder="Nombre del cliente/proveedor"]');
+            const idnombreInput = document.querySelector('input[placeholder="ID del cliente/proveedor"]');
+            const ciInput = document.querySelector('input[placeholder="CI/NIT del cliente/proveedor"]');
             const subtotalInput = document.querySelector('input[placeholder="Subtotal"]');
             const descuentoInput = document.querySelector('input[placeholder="Descuento"]');
             const totalInput = document.querySelector('input[placeholder="Total"]');
 
             if (data.cliente) {
-                nombreInput.value = data.cliente.nombrecompleto || data.cliente.razonsocial;
+                nombreInput.value = data.cliente.nombrecompleto || data.cliente.razonsocial || data.cliente.proveedor;
                 idnombreInput.value = data.cliente.id;
-                ciInput.value = data.cliente.ci;
+                ciInput.value = data.cliente.ci || data.cliente.nit;
             } else {
                 alert('Cliente no encontrado');
                 nombreInput.value = '';
@@ -1813,7 +1791,7 @@
                 });
                 actualizarEventosRegistro();
             } else {
-                tabla.innerHTML = '<tr><td colspan="6">NO SE ENCONTRARON REGISTROS.</td></tr>';
+                tabla.innerHTML = '<tr><td colspan="8">NO SE ENCONTRARON REGISTROS.</td></tr>';
             }
 
             // Lógica para el checkbox de seleccionar todo
@@ -1994,6 +1972,13 @@
             actualizarId.style.display = "block"; // Mostrar botón insertar datos
         } */
 
+        if (tipoTransaccion1 === "EFECTIVO") {
+            abrirModalBtn.style.display = "block";
+            imprimirReciboBtn.style.display = "none";
+        } else {
+            abrirModalBtn.style.display = "none";
+            imprimirReciboBtn.style.display = "block";
+        }
 
         // Limpiar todos los campos de transacciones antes de mostrar los nuevos
         document.querySelectorAll(".atc-fields, .cheque-fields, .deposito-fields, .transferencia-fields, .efectivo-fields").forEach(function (element) {

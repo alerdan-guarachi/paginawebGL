@@ -104,6 +104,7 @@
                             <option value="PROVEEDOR EXTERNO">PROVEEDOR EXTERNO</option>
                             <option value="PROVEEDOR INTERNO">PROVEEDOR INTERNO</option>
                             <option value="PROVEEDOR GENERAL">PROVEEDOR GENERAL</option>
+                            <option value="PROVEEDOR MEDICO">PROVEEDOR MEDICO</option>
                             <option value="CLIENTE ITA">CLIENTE ITA</option>
                             <option value="CLIENTE AUDITORIA">CLIENTE AUDITORIA</option>
                             <option value="CLIENTE COMUN">CLIENTE COMUN</option>
@@ -121,6 +122,11 @@
                             @foreach ($proveedores as $p)
                                 <option value="{{ $p->id }}" data-tipo="{{ $p->categoria }}" data-razon="{{ $p->razonsocial }}" data-tipotrans="{{ $p->tipotransaccion }}" data-ciudad="{{ $p->ciudad }}" data-ciudad2="{{ $p->ciudad2 }}" data-bancoorigen="{{ $p->bancoorigen }}">
                                     {{ $p->razonsocial }}
+                                </option>
+                            @endforeach
+                            @foreach ($proveedormedico as $pm)
+                                <option value="{{ $pm->id }}" data-tipo="PROVEEDOR MEDICO" data-razon="{{ $pm->proveedor }}" data-tipotrans="{{ $pm->mododepago }}" data-ciudad="{{ $pm->ciudad }}" data-ciudad2="{{ $pm->ciudad2 }}" data-bancoorigen="{{ $pm->bancoorigen }}">
+                                    {{ $pm->proveedor }}
                                 </option>
                             @endforeach
                             @foreach ($clientesIta as $c)
@@ -265,28 +271,28 @@
                         </select>
                     </div>
                     <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const detalleSelect = document.getElementById('detalle');
-    const precioInput   = document.getElementById('preciounitario');
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const detalleSelect = document.getElementById('detalle');
+                            const precioInput   = document.getElementById('preciounitario');
 
-    detalleSelect.addEventListener('change', function () {
-      const selectedOption = this.options[this.selectedIndex];
-      const precio = selectedOption.getAttribute('data-precio');
+                            detalleSelect.addEventListener('change', function () {
+                            const selectedOption = this.options[this.selectedIndex];
+                            const precio = selectedOption.getAttribute('data-precio');
 
-      // Asegúrate de que el precio no sea nulo, vacío o NaN
-      if (precio && !isNaN(precio) && parseFloat(precio) > 0) {
-        precioInput.value = parseFloat(precio).toFixed(2);
-      } else {
-        precioInput.value = '';
-      }
+                            // Asegúrate de que el precio no sea nulo, vacío o NaN
+                            if (precio && !isNaN(precio) && parseFloat(precio) > 0) {
+                                precioInput.value = parseFloat(precio).toFixed(2);
+                            } else {
+                                precioInput.value = '';
+                            }
 
-      // Si usas alguna función como calcularTotalUnitario(), llámala aquí
-      if (typeof calcularTotalUnitario === 'function') {
-        calcularTotalUnitario();
-      }
-    });
-  });
-</script>
+                            // Si usas alguna función como calcularTotalUnitario(), llámala aquí
+                            if (typeof calcularTotalUnitario === 'function') {
+                                calcularTotalUnitario();
+                            }
+                            });
+                        });
+                    </script>
 
                     <div class="form-group col-lg-2" hidden>
                         {!! Form::label('cantidad', 'Cantidad:') !!}

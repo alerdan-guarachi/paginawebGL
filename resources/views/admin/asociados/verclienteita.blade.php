@@ -1106,17 +1106,17 @@
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        {{-- @if($tienerequisitosjubilacion)
+                                        @if($tienerequisitosjubilacion)
                                             <a href="{{ route('admin.asociados.subirdocrequisitosjubilacion', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else --}}
+                                        @else
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitajubilacion', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        {{-- @endif --}}
+                                        @endif
                                     </div>
                                 </div>
                             @endcan
@@ -1136,17 +1136,17 @@
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        {{-- @if($tienerequisitosretiroaportestotal)
+                                        @if($tienerequisitosretiroaportestotal)
                                             <a href="{{ route('admin.asociados.subirdocrequisitosretiroaportestotal', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else --}}
+                                        @else
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitaretiroaportestotal', $cliente) }}" class="btn btn-subirdocumento2 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        {{-- @endif --}}
+                                        @endif
                                     </div>
                                 </div>
                             @endcan
@@ -1166,17 +1166,17 @@
                             @can('admin.asociados.generarchecklistclienteita')
                                 <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        {{-- @if($tienerequisitosretiroaportesparcial)
+                                        @if($tienerequisitosretiroaportesparcial)
                                             <a href="{{ route('admin.asociados.subirdocrequisitosretiroaportesparcial', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else --}}
+                                        @else
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitaretiroaportesparcial', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        {{-- @endif --}}
+                                        @endif
                                     </div>
                                 </div>
                             @endcan
@@ -1194,22 +1194,30 @@
                         </div>
                         <div class="row text-center">
                             @can('admin.asociados.generarchecklistclienteita')
-                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        {{-- @if($tienerequisitospensionmuerte)
+                                        @if($tienerequisitospensionmuerte)
                                             <a href="{{ route('admin.asociados.subirdocrequisitospensionmuerte', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else --}}
+                                        @else
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitapensionmuerte', $cliente) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        {{-- @endif --}}
+                                        @endif
                                     </div>
                                 </div>
                             @endcan
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.verderechohabientes', [$cliente->id, 'PENSIÓN_POR_MUERTE']) }}" class="btn btn-programar btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="VER DERECHOHABIENTES">
+                                        <i class="fas fa-user-friends"></i>
+                                        <strong>DERECHOHAB.</strong>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1224,22 +1232,30 @@
                         </div>
                         <div class="row text-center">
                             @can('admin.asociados.generarchecklistclienteita')
-                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
                                     <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
-                                        {{-- @if($tienerequisitosmasahereditaria)
+                                        @if($tienerequisitosmasahereditaria)
                                             <a href="{{ route('admin.asociados.subirdocrequisitosmasahereditaria', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR DOCUMENTOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        @else --}}
+                                        @else
                                             <a href="{{ route('admin.asociados.generarchecklistclienteitamasahereditaria', $cliente) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
                                                 <i class="fas fa-tasks"></i>
                                                 <strong>REQUISITOS</strong>
                                             </a>
-                                        {{-- @endif --}}
+                                        @endif
                                     </div>
                                 </div>
                             @endcan
+                            <div class="col-6 mb-3 d-flex justify-content-center align-items-center">
+                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                    <a href="{{ route('admin.asociados.verderechohabientes', [$cliente->id, 'MASA_HEREDITARIA']) }}" class="btn btn-programar222 btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="VER DERECHOHABIENTES">
+                                        <i class="fas fa-user-friends"></i>
+                                        <strong>DERECHOHAB.</strong>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

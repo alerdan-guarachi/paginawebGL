@@ -56,6 +56,7 @@ class Programacionsubcliente extends Model
         'usuariocomprobante' => '',
         'codautorizacion' => '',
         'idsubproc' => '',
+        'confasistencia' => '',
     ]; 
 
     protected $fillable = [
@@ -104,6 +105,7 @@ class Programacionsubcliente extends Model
         'usuariocomprobante',
         'codautorizacion',
         'idsubproc',
+        'confasistencia',
     ];
     public function clienteAuditoria()
     {

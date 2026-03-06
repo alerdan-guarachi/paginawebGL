@@ -9,7 +9,8 @@ import '../widgets/good_life_loader.dart';
 import 'documentos_page.dart';
 import 'tramites_page.dart';
 import 'notificaciones_page.dart';
-import 'programaciones_page.dart'; // 1. IMPORTAR LA NUEVA PÁGINA
+import 'programaciones_page.dart';
+import 'ausencias_page.dart'; // 1. IMPORTAR LA NUEVA PÁGINA
 
 class HomePage extends StatefulWidget {
   final String nombreUsuario;
@@ -108,7 +109,7 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               dense: true,
               leading: Icon(Icons.medical_services, color: verde),
-              title: Text('Atención Médicos'),
+              title: Text('Atención Médicos', style: TextStyle(fontSize: 15)),
               onTap: () {
                 showDialog(
                   context: context,
@@ -152,11 +153,23 @@ class _HomePageState extends State<HomePage> {
               },
             ),
 
-            // 2. ACCIÓN DEL BOTÓN MODIFICADA
+            // ▼▼▼ NUEVA OPCIÓN AÑADIDA ▼▼▼
+            ListTile(
+              dense: true,
+              leading: Icon(Icons.person_off_outlined, color: verde),
+              title: Text('Ausencias Médicos', style: TextStyle(fontSize: 15)),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AusenciasPage()),
+                );
+              },
+            ),
+
             ListTile(
               dense: true,
               leading: Icon(Icons.calendar_month, color: verde),
-              title: Text('Programaciones Médicas'),
+              title: Text('Programaciones Médicas', style: TextStyle(fontSize: 15)),
               onTap: () {
                 Navigator.push(
                   context,
@@ -167,10 +180,11 @@ class _HomePageState extends State<HomePage> {
               },
             ),
 
+
             ListTile(
               dense: true,
               leading: Icon(Icons.description, color: verde),
-              title: Text('Informes Médicos'),
+              title: Text('Informes Médicos', style: TextStyle(fontSize: 15)),
               onTap: () async {
                 final prefs = await SharedPreferences.getInstance();
                 final usuarioId = prefs.getString('usuarioId');
@@ -193,7 +207,7 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               dense: true,
               leading: Icon(Icons.assignment, color: verde),
-              title: Text('Trámites'),
+              title: Text('Trámites', style: TextStyle(fontSize: 15)),
               onTap: () async {
                 final prefs = await SharedPreferences.getInstance();
                 final usuarioId = prefs.getString('usuarioId');
@@ -212,7 +226,7 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               dense: true,
               leading: Icon(Icons.account_balance_wallet, color: verde),
-              title: Text('Billetera Móvil'),
+              title: Text('Billetera Móvil', style: TextStyle(fontSize: 15)),
               onTap: () {
                 Navigator.push(
                   context,
@@ -226,7 +240,7 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               dense: true,
               leading: Icon(Icons.notifications, color: verde),
-              title: const Text('Notificaciones'),
+              title: const Text('Notificaciones', style: TextStyle(fontSize: 15)),
               trailing: _unreadCount > 0
                   ? Container(
                       padding: const EdgeInsets.all(6),
@@ -243,12 +257,12 @@ class _HomePageState extends State<HomePage> {
               onTap: _navigateToNotificaciones,
             ),
 
-            Spacer(),
+            // Spacer(),
 
             ListTile(
               dense: true,
               leading: Icon(Icons.logout, color: Colors.red),
-              title: Text('Cerrar sesión'),
+              title: Text('Cerrar sesión', style: TextStyle(fontSize: 15)),
               onTap: () {
                 showDialog(
                   context: context,
