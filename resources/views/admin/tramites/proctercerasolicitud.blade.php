@@ -896,8 +896,11 @@
                                                                                                                 name="seleccionadosit[]">
                                                                                                         </td>
                                                                                                         <td class="text-center align-middle">
-                                                                                                            <a href="{{ url("documentacionclientesita/{$cliente->id}/{$doc->document}") }}"
-                                                                                                            target="_blank" class="btn btn-sm btn-verdoc" title="Ver Documento">
+                                                                                                            <a href="{{ 
+                                                                                                                trim($doc->accionnombre) === 'INFORME FINAL' 
+                                                                                                                ? url("informesfinalesclientesita/{$cliente->id}/{$doc->document}") 
+                                                                                                                : url("documentacionclientesita/{$cliente->id}/{$doc->document}") 
+                                                                                                            }}" target="_blank" class="btn btn-sm btn-verdoc" title="Ver Documento">
                                                                                                                 <i class="fas fa-eye"></i>
                                                                                                             </a>
                                                                                                             @if(!empty($doc->image))

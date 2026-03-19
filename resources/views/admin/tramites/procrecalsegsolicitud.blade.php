@@ -832,8 +832,224 @@
                                                 </div>
                                             </div>
                                         @endif
+                                        <label style="margin-top: 20px; margin-bottom: -30px;">ADJUNTAR DOCUMENTACIÓN MÉDICA:</label>
+                                        <div class="row" id="tablaEspecialidades">
+                                            @if($regITprog->isEmpty())
+                                                <div class="col-lg-5">
+                                                    <div id="contenedor_areas" class="mt-3">
+                                                        @foreach ($programaciones as $fecha => $grupos)
+                                                            <div class="card shadow-sm border mb-2">
+                                                                <div class="card-header py-2 px-3 bg-secondary text-white">
+                                                                    <button class="btn btn-link text-white text-left w-100 p-0" type="button"
+                                                                        data-toggle="collapse" data-target="#fecha_{{ \Str::slug($fecha) }}">
+                                                                        <strong>FECHA BATERIA:</strong> {{ $fecha }}
+                                                                    </button>
+                                                                </div>
+                                                                <div id="fecha_{{ \Str::slug($fecha) }}" class="collapse">
+                                                                    <div class="card-body py-2 px-3">
+                                                                        @foreach ($grupos->groupBy('areanombre') as $area => $acciones)
+                                                                            <div class="card border mb-2">
+                                                                                <div class="card-header py-2 px-3 bg-light">
+                                                                                    <button class="btn btn-sm btn-outline-secondary w-100 text-left p-1"
+                                                                                        type="button"
+                                                                                        data-toggle="collapse"
+                                                                                        data-target="#area_{{ \Str::slug($fecha . '_' . $area) }}">
+                                                                                        <strong>ÁREA:</strong> {{ $area }}
+                                                                                    </button>
+                                                                                </div>
+                                                                                <div id="area_{{ \Str::slug($fecha . '_' . $area) }}" class="collapse" style="margin-top: -15px;">
+                                                                                    <div class="card-body pt-2 pb-1 px-3">
+                                                                                        <div class="table-responsive">
+                                                                                            <table class="table table-sm table-bordered mb-3" style="white-space: nowrap;">
+                                                                                                <thead class="thead-light text-center">
+                                                                                                    <tr>
+                                                                                                        <th class="text-center"><input type="checkbox" class="seleccionar-todo-area" data-area="{{ \Str::slug($fecha . '_' . $area) }}" /></th>
+                                                                                                        <th>VER</th>
+                                                                                                        <th>ID</th>
+                                                                                                        <th>ESTUDIO/ESPECIALIDAD</th>
+                                                                                                    </tr>
+                                                                                                </thead>
+                                                                                                <tbody>
+                                                                                                    @foreach ($acciones as $doc)
+                                                                                                    <tr>
+                                                                                                        <td class="text-center align-middle">
+                                                                                                            <input type="hidden" name="tramitenombreprog" value="RECALIFICACIÓN SEGUNDA SOLICITUD">
+                                                                                                            <input type="checkbox" class="documento-checkbox"
+                                                                                                                data-id="{{ $doc->doc_id }}"
+                                                                                                                data-accion="{{ $doc->accionnombre }}"
+                                                                                                                data-document="{{ $doc->document }}"
+                                                                                                                data-image="{{ $doc->image }}"
+                                                                                                                data-image2="{{ $doc->image2 }}"
+                                                                                                                name="seleccionadosit[]">
+                                                                                                        </td>
+                                                                                                        <td class="text-center align-middle">
+                                                                                                            <a href="{{ 
+                                                                                                                trim($doc->accionnombre) === 'INFORME FINAL' 
+                                                                                                                ? url("informesfinalesclientesita/{$cliente->id}/{$doc->document}") 
+                                                                                                                : url("documentacionclientesita/{$cliente->id}/{$doc->document}") 
+                                                                                                            }}" target="_blank" class="btn btn-sm btn-verdoc" title="Ver Documento">
+                                                                                                                <i class="fas fa-eye"></i>
+                                                                                                            </a>
+                                                                                                            @if(!empty($doc->image))
+                                                                                                            <a href="{{ url("documentacionclientesita/{$cliente->id}/{$doc->image}") }}"
+                                                                                                            target="_blank" class="btn btn-sm btn-verdoc" title="Ver Imagen 1">
+                                                                                                                <i class="fas fa-image"></i>
+                                                                                                            </a>
+                                                                                                            @endif
+                                                                                                            @if(!empty($doc->image2))
+                                                                                                            <a href="{{ url("documentacionclientesita/{$cliente->id}/{$doc->image2}") }}"
+                                                                                                            target="_blank" class="btn btn-sm btn-verdoc" title="Ver Imagen 2">
+                                                                                                                <i class="fas fa-image"></i>
+                                                                                                            </a>
+                                                                                                            @endif
+                                                                                                        </td>
+                                                                                                        <td class="align-middle">{{ $doc->doc_id }}</td>
+                                                                                                        <td class="align-middle">{{ $doc->accionnombre }}</td>
+                                                                                                    </tr>
+                                                                                                    @endforeach
+                                                                                                </tbody>
+                                                                                            </table>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        @endforeach
+                                                                        <div class="text-right mt-3">
+                                                                            <div class="form-group row justify-content-end align-items-center">
+                                                                                <div class="col-auto">
+                                                                                    <button id="btnAgregarSeleccionados" type="button" class="btn btn-sm btn-adjuntosrespuestas">
+                                                                                        <i class="fas fa-plus"></i>
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-7" style="margin-top: 15px;">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered">
+                                                            <thead class="table-secondary text-center table-sm">
+                                                                <tr>
+                                                                    <th>VER</th>
+                                                                    <th>ID</th>
+                                                                    <th>ESTUDIO/ESPECIALIDAD</th>
+                                                                    <th>QUITAR</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="tabla-especialistas">
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="col-12">
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered">
+                                                            <thead class="thead-light text-center table-sm">
+                                                                <tr>
+                                                                    <th>ID_REG.</th>
+                                                                    <th>DOC.</th>
+                                                                    <th>ESTUDIO/ESPECIALIDAD</th>
+                                                                    <th>VER</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach($regITprog as $reg)
+                                                                <tr>
+                                                                    <td class="text-center align-middle">{{ $reg->id }}</td>
+                                                                    <td class="text-center align-middle">{{ $reg->idtramite }}</td>
+                                                                    <td class="text-center align-middle">{{ $reg->estudioespecialidad }}</td>
+                                                                    <td class="text-center align-middle">
+                                                                        <a href="{{ url("documentacionclientesita/{$cliente->id}/{$reg->informeprogramacion}") }}" target="_blank" class="btn btn-sm btn-verdoc"><i class="fas fa-eye"></i></a>
+                                                                        @if($reg->solicitante1)
+                                                                        <a href="{{ url("documentacionclientesita/{$cliente->id}/{$reg->solicitante1}") }}" target="_blank" class="btn btn-sm btn-verdoc"><i class="fas fa-image"></i></a>
+                                                                        @endif
+                                                                        @if($reg->solicitante2)
+                                                                        <a href="{{ url("documentacionclientesita/{$cliente->id}/{$reg->solicitante2}") }}" target="_blank" class="btn btn-sm btn-verdoc"><i class="fas fa-image"></i></a>
+                                                                        @endif
+                                                                    </td>
+                                                                </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                            <script>
+                                                document.addEventListener('DOMContentLoaded', function() {
+                                                    const tablaSecundaria = document.getElementById('tabla-especialistas');
+                                                    const clienteId = "{{ $cliente->id }}";
+
+                                                    function agregarSeleccionados() {
+                                                        const seleccionados = document.querySelectorAll('.documento-checkbox:checked');
+
+                                                        seleccionados.forEach(input => {
+                                                            const id = input.dataset.id;
+                                                            const accion = input.dataset.accion;
+                                                            const documentFile = input.dataset.document;
+                                                            const image1 = input.dataset.image;
+                                                            const image2 = input.dataset.image2;
+
+                                                            let botonesArchivos = `
+                                                                <a href="/documentacionclientesita/${clienteId}/${documentFile}" target="_blank" class="btn btn-sm btn-verdoc"><i class="fas fa-eye"></i></a>
+                                                            `;
+                                                            if (image1) {
+                                                                botonesArchivos += `
+                                                                    <a href="/documentacionclientesita/${clienteId}/${image1}" target="_blank" class="btn btn-sm btn-verdoc"><i class="fas fa-image"></i></a>
+                                                                `;
+                                                            }
+                                                            if (image2) {
+                                                                botonesArchivos += `
+                                                                    <a href="/documentacionclientesita/${clienteId}/${image2}" target="_blank" class="btn btn-sm btn-verdoc"><i class="fas fa-image"></i></a>
+                                                                `;
+                                                            }
+
+                                                            const fila = document.createElement('tr');
+                                                                fila.innerHTML = `
+                                                                    <td class="text-center align-middle">
+                                                                        <input type="hidden" name="documentoit[]" value="${documentFile}">
+                                                                        <input type="hidden" name="imageit[]" value="${image1 || ''}">
+                                                                        <input type="hidden" name="image2it[]" value="${image2 || ''}">
+                                                                        ${botonesArchivos}
+                                                                    </td>
+                                                                    <td class="text-center align-middle">
+                                                                        <input type="hidden" name="especialistait[]" value="${accion}">
+                                                                        ${id}
+                                                                    </td>
+                                                                    <td class="align-middle">${accion}</td>
+                                                                    <td class="text-center">
+                                                                        <button type="button" class="btn btn-outline-danger btn-sm btn-quitar"><i class="fas fa-trash"></i></button>
+                                                                    </td>
+                                                                `;
+
+                                                            tablaSecundaria.appendChild(fila);
+
+                                                            fila.querySelector('.btn-quitar').addEventListener('click', function () {
+                                                                fila.remove();
+                                                            });
+                                                        });
+
+                                                        document.querySelectorAll('.documento-checkbox:checked').forEach(chk => chk.checked = false);
+                                                    }
+
+                                                    document.getElementById('btnAgregarSeleccionados').addEventListener('click', agregarSeleccionados);
+
+                                                    document.querySelectorAll('.seleccionar-todo-area').forEach(checkbox => {
+                                                        checkbox.addEventListener('change', function () {
+                                                            const area = this.dataset.area;
+                                                            const checkboxes = document.querySelectorAll(`#area_${area} .documento-checkbox`);
+                                                            checkboxes.forEach(c => c.checked = this.checked);
+                                                        });
+                                                    });
+                                                });
+                                            </script>
+                                        </div>
                                     </div>
-                                    @if (!$documento1 && !$documento2)
+                                    @if (/* !$documento1 && !$documento2 &&  */$regITprog->isEmpty())
                                         <button type="submit" class="btn btn-sm btn-subirarchivos d-block mx-auto">GUARDAR</button>
                                     @endif
                                 </form>

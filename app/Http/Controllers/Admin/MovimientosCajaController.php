@@ -914,7 +914,7 @@ class MovimientosCajaController extends Controller
             'clienteitaid' => 'ITA',
             'clienteauditoriaid' => 'AUDITORIA',
             'clientecomunid' => 'COMUN',
-            'clientebancoid' => 'PROVEEDOR DE SERVICIO',
+            'proveedorid' => 'PROVEEDOR DE SERVICIO',
             default => $request->tipocliente,
         };
 
