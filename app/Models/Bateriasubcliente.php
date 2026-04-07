@@ -218,6 +218,10 @@ class Bateriasubcliente extends Model
     {
         return $this->hasOne(Programacionsubcliente::class, 'bateriaid', 'id');
     }
+    public function programaciones()
+    {
+        return $this->hasMany(Programacionsubcliente::class, 'bateriaid');
+    }
     public function proveedorinformefinal()
     {
         return $this->hasOne(ProveedorInformefinal::class, 'id', 'provinfofinalid');

@@ -1051,12 +1051,12 @@ class TramitesController extends Controller
 
         /* NUEVO 021225 */
         $provintext = Proveedoresservicios::where('estado', 'ACTIVO')
-        ->whereIn('categoria', ['PROVEEDOR INTERNO', 'PROVEEDOR EXTERNO'])
-        ->orderBy('razonsocial', 'asc')
+            ->whereIn('categoria', ['PROVEEDOR INTERNO', 'PROVEEDOR EXTERNO'])
+            ->orderBy('razonsocial', 'asc')
         ->pluck('razonsocial');
 
         $contactos = Contactosubcliente::where('clienteid', $cliente->id)
-        ->where('tipocliente', 'ITA')
+            ->where('tipocliente', 'ITA')
         ->pluck('nombrecontacto');
 
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
@@ -2757,7 +2757,7 @@ class TramitesController extends Controller
         }
 
         /* NUEVO 081125 */
-        $estesp = $request->input('1estudioespecialidad', $request->input('2estudioespecialidad', $request->input('3estudioespecialidad', $request->input('4estudioespecialidad', $request->input('5estudioespecialidad', [])))));
+        $estesp = $request->input('1estudioespecialidad', $request->input('2estudioespecialidad', $request->input('3estudioespecialidad', $request->input('4estudioespecialidad', $request->input('5estudioespecialidad',$request->input('6estudioespecialidad',$request->input('7estudioespecialidad', [])))))));
         $espcentromedico = $request->input('1nombremedicoprog', $request->input('2nombremedicoprog', $request->input('3nombremedicoprog', $request->input('4nombremedicoprog', $request->input('5nombremedicoprog', [])))));
         $fechaemision = $request->input('1fechaprogramacion', $request->input('2fechaprogramacion', $request->input('3fechaprogramacion', $request->input('4fechaprogramacion', $request->input('5fechaprogramacion', [])))));
         $informeadic = $request->file('1informeprogramacion', $request->file('2informeprogramacion', $request->file('3informeprogramacion', $request->file('4informeprogramacion', $request->file('5informeprogramacion', [])))));
@@ -4236,6 +4236,29 @@ class TramitesController extends Controller
             ->get();
 
         /* NUEVO 051225 */
+        /* $subprogramaciones = DB::table('subprocedimientotramites')
+            ->select(
+                'tipo',
+                DB::raw("NULL as fechabateria"),
+                DB::raw("estudioespecialidad as areanombre"),
+                'estudioespecialidad as accionnombre',
+                'nombremedico as proveedornombre',
+                'informeprogramacion as document',
+                DB::raw("NULL as image"),
+                DB::raw("NULL as image2"),
+                'id as doc_id',
+                DB::raw("CASE WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES' ELSE 'INFORMES ADICIONALES' ELSE 'RSRD' END as tipoarea"),
+                'nombremedico as proveedor_real'
+            )
+            ->where('clienteid', $cliente->id)
+            ->where(function($query) {
+                $query->where('tipo', 'LIKE', 'PROGRAMACIONES%')
+                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%')
+                    ->orWhere('tipo', 'LIKE', 'RSRD%');
+            })
+            ->whereNotNull('informeprogramacion')
+        ->get(); */
+
         $subprogramaciones = DB::table('subprocedimientotramites')
             ->select(
                 'tipo',
@@ -4247,13 +4270,21 @@ class TramitesController extends Controller
                 DB::raw("NULL as image"),
                 DB::raw("NULL as image2"),
                 'id as doc_id',
-                DB::raw("CASE WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES' ELSE 'INFORMES ADICIONALES' END as tipoarea"),
+                DB::raw("
+                    CASE 
+                        WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES'
+                        WHEN tipo LIKE 'INFORMES ADICIONALES%' THEN 'INFORMES ADICIONALES'
+                        WHEN tipo LIKE 'RSRD%' THEN 'RSRD'
+                        ELSE 'OTROS'
+                    END as tipoarea
+                "),
                 'nombremedico as proveedor_real'
             )
             ->where('clienteid', $cliente->id)
             ->where(function($query) {
                 $query->where('tipo', 'LIKE', 'PROGRAMACIONES%')
-                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%');
+                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%')
+                    ->orWhere('tipo', 'LIKE', 'RSRD%');
             })
             ->whereNotNull('informeprogramacion')
         ->get();
@@ -4269,6 +4300,9 @@ class TramitesController extends Controller
             }
             elseif (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES'])) {
                 $path = public_path("tramitesclientesita/{$cliente->id}/APELACIÓN/INFORMES/{$doc->document}");
+            }
+            elseif (in_array($tipoarea, ['RSRD'])) {
+                $path = public_path("tramitesclientesita/{$cliente->id}/APELACIÓN/RSRD - ADJUNTO DOCUMENTACIÓN MÉDICA/{$doc->document}");
             }
             else {
                 $path = public_path("documentacionclientesita/{$cliente->id}/{$doc->document}");
@@ -4288,7 +4322,7 @@ class TramitesController extends Controller
 
         $programaciones = $documentos->groupBy(function ($item) {
             $tipoarea = strtoupper($item->tipoarea ?? '');
-            if (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES'])) {
+            if (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES', 'RSRD'])) {
                 return $item->tipo;
             }
             return $item->fechabateria;
@@ -4300,7 +4334,7 @@ class TramitesController extends Controller
                 $ordenTipoarea =
                     $tipoarea === 'ESPECIALIDAD' ? 0 :
                     ($tipoarea === 'INFORME FINAL' ? 1 :
-                    (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES']) ? 2 : 3));
+                    (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES', 'RSRD']) ? 2 : 3));
 
                 return [$ordenTipoarea, $item->areanombre, $item->accionnombre];
             })->values();
@@ -9939,13 +9973,21 @@ class TramitesController extends Controller
                 DB::raw("NULL as image"),
                 DB::raw("NULL as image2"),
                 'id as doc_id',
-                DB::raw("CASE WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES' ELSE 'INFORMES ADICIONALES' END as tipoarea"),
+                DB::raw("
+                    CASE 
+                        WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES'
+                        WHEN tipo LIKE 'INFORMES ADICIONALES%' THEN 'INFORMES ADICIONALES'
+                        WHEN tipo LIKE 'RSRD%' THEN 'RSRD'
+                        ELSE 'OTROS'
+                    END as tipoarea
+                "),
                 'nombremedico as proveedor_real'
             )
             ->where('clienteid', $cliente->id)
             ->where(function($query) {
                 $query->where('tipo', 'LIKE', 'PROGRAMACIONES%')
-                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%');
+                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%')
+                    ->orWhere('tipo', 'LIKE', 'RSRD%');
             })
             ->whereNotNull('informeprogramacion')
         ->get();
@@ -9961,6 +10003,9 @@ class TramitesController extends Controller
             }
             elseif (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES'])) {
                 $path = public_path("tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN/INFORMES/{$doc->document}");
+            }
+            elseif (in_array($tipoarea, ['RSRD'])) {
+                $path = public_path("tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN/RSRD - ADJUNTO DOCUMENTACIÓN MÉDICA/{$doc->document}");
             }
             else {
                 $path = public_path("documentacionclientesita/{$cliente->id}/{$doc->document}");
@@ -9980,7 +10025,7 @@ class TramitesController extends Controller
 
         $programaciones = $documentos->groupBy(function ($item) {
             $tipoarea = strtoupper($item->tipoarea ?? '');
-            if (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES'])) {
+            if (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES', 'RSRD'])) {
                 return $item->tipo;
             }
             return $item->fechabateria;
@@ -9992,7 +10037,7 @@ class TramitesController extends Controller
                 $ordenTipoarea =
                     $tipoarea === 'ESPECIALIDAD' ? 0 :
                     ($tipoarea === 'INFORME FINAL' ? 1 :
-                    (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES']) ? 2 : 3));
+                    (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES', 'RSRD']) ? 2 : 3));
 
                 return [$ordenTipoarea, $item->areanombre, $item->accionnombre];
             })->values();
@@ -10682,13 +10727,21 @@ class TramitesController extends Controller
                 DB::raw("NULL as image"),
                 DB::raw("NULL as image2"),
                 'id as doc_id',
-                DB::raw("CASE WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES' ELSE 'INFORMES ADICIONALES' END as tipoarea"),
+                DB::raw("
+                    CASE 
+                        WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES'
+                        WHEN tipo LIKE 'INFORMES ADICIONALES%' THEN 'INFORMES ADICIONALES'
+                        WHEN tipo LIKE 'RSRD%' THEN 'RSRD'
+                        ELSE 'OTROS'
+                    END as tipoarea
+                "),
                 'nombremedico as proveedor_real'
             )
             ->where('clienteid', $cliente->id)
             ->where(function($query) {
                 $query->where('tipo', 'LIKE', 'PROGRAMACIONES%')
-                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%');
+                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%')
+                    ->orWhere('tipo', 'LIKE', 'RSRD%');
             })
             ->whereNotNull('informeprogramacion')
         ->get();
@@ -10704,6 +10757,9 @@ class TramitesController extends Controller
             }
             elseif (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES'])) {
                 $path = public_path("tramitesclientesita/{$cliente->id}/APELACIÓN SEGUNDA SOLICITUD/INFORMES/{$doc->document}");
+            }
+            elseif (in_array($tipoarea, ['RSRD'])) {
+                $path = public_path("tramitesclientesita/{$cliente->id}/APELACIÓN SEGUNDA SOLICITUD/RSRD - ADJUNTO DOCUMENTACIÓN MÉDICA/{$doc->document}");
             }
             else {
                 $path = public_path("documentacionclientesita/{$cliente->id}/{$doc->document}");
@@ -10723,7 +10779,7 @@ class TramitesController extends Controller
 
         $programaciones = $documentos->groupBy(function ($item) {
             $tipoarea = strtoupper($item->tipoarea ?? '');
-            if (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES'])) {
+            if (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES', 'RSRD'])) {
                 return $item->tipo;
             }
             return $item->fechabateria;
@@ -10735,7 +10791,7 @@ class TramitesController extends Controller
                 $ordenTipoarea =
                     $tipoarea === 'ESPECIALIDAD' ? 0 :
                     ($tipoarea === 'INFORME FINAL' ? 1 :
-                    (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES']) ? 2 : 3));
+                    (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES', 'RSRD']) ? 2 : 3));
 
                 return [$ordenTipoarea, $item->areanombre, $item->accionnombre];
             })->values();
@@ -11426,13 +11482,21 @@ class TramitesController extends Controller
                 DB::raw("NULL as image"),
                 DB::raw("NULL as image2"),
                 'id as doc_id',
-                DB::raw("CASE WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES' ELSE 'INFORMES ADICIONALES' END as tipoarea"),
+                DB::raw("
+                    CASE 
+                        WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES'
+                        WHEN tipo LIKE 'INFORMES ADICIONALES%' THEN 'INFORMES ADICIONALES'
+                        WHEN tipo LIKE 'RSRD%' THEN 'RSRD'
+                        ELSE 'OTROS'
+                    END as tipoarea
+                "),
                 'nombremedico as proveedor_real'
             )
             ->where('clienteid', $cliente->id)
             ->where(function($query) {
                 $query->where('tipo', 'LIKE', 'PROGRAMACIONES%')
-                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%');
+                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%')
+                    ->orWhere('tipo', 'LIKE', 'RSRD%');
             })
             ->whereNotNull('informeprogramacion')
         ->get();
@@ -11448,6 +11512,9 @@ class TramitesController extends Controller
             }
             elseif (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES'])) {
                 $path = public_path("tramitesclientesita/{$cliente->id}/APELACIÓN TERCERA SOLICITUD/INFORMES/{$doc->document}");
+            }
+            elseif (in_array($tipoarea, ['RSRD'])) {
+                $path = public_path("tramitesclientesita/{$cliente->id}/APELACIÓN TERCERA SOLICITUD/RSRD - ADJUNTO DOCUMENTACIÓN MÉDICA/{$doc->document}");
             }
             else {
                 $path = public_path("documentacionclientesita/{$cliente->id}/{$doc->document}");
@@ -11467,7 +11534,7 @@ class TramitesController extends Controller
 
         $programaciones = $documentos->groupBy(function ($item) {
             $tipoarea = strtoupper($item->tipoarea ?? '');
-            if (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES'])) {
+            if (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES', 'RSRD'])) {
                 return $item->tipo;
             }
             return $item->fechabateria;
@@ -11479,7 +11546,7 @@ class TramitesController extends Controller
                 $ordenTipoarea =
                     $tipoarea === 'ESPECIALIDAD' ? 0 :
                     ($tipoarea === 'INFORME FINAL' ? 1 :
-                    (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES']) ? 2 : 3));
+                    (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES', 'RSRD']) ? 2 : 3));
 
                 return [$ordenTipoarea, $item->areanombre, $item->accionnombre];
             })->values();
@@ -12911,13 +12978,21 @@ class TramitesController extends Controller
                 DB::raw("NULL as image"),
                 DB::raw("NULL as image2"),
                 'id as doc_id',
-                DB::raw("CASE WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES' ELSE 'INFORMES ADICIONALES' END as tipoarea"),
+                DB::raw("
+                    CASE 
+                        WHEN tipo LIKE 'PROGRAMACIONES%' THEN 'PROGRAMACIONES'
+                        WHEN tipo LIKE 'INFORMES ADICIONALES%' THEN 'INFORMES ADICIONALES'
+                        WHEN tipo LIKE 'RSRD%' THEN 'RSRD'
+                        ELSE 'OTROS'
+                    END as tipoarea
+                "),
                 'nombremedico as proveedor_real'
             )
             ->where('clienteid', $cliente->id)
             ->where(function($query) {
                 $query->where('tipo', 'LIKE', 'PROGRAMACIONES%')
-                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%');
+                    ->orWhere('tipo', 'LIKE', 'INFORMES ADICIONALES%')
+                    ->orWhere('tipo', 'LIKE', 'RSRD%');
             })
             ->whereNotNull('informeprogramacion')
         ->get();
@@ -12933,6 +13008,9 @@ class TramitesController extends Controller
             }
             elseif (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES'])) {
                 $path = public_path("tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/INFORMES/{$doc->document}");
+            }
+            elseif (in_array($tipoarea, ['RSRD'])) {
+                $path = public_path("tramitesclientesita/{$cliente->id}/APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD/RSRD - ADJUNTO DOCUMENTACIÓN MÉDICA/{$doc->document}");
             }
             else {
                 $path = public_path("documentacionclientesita/{$cliente->id}/{$doc->document}");
@@ -12952,7 +13030,7 @@ class TramitesController extends Controller
 
         $programaciones = $documentos->groupBy(function ($item) {
             $tipoarea = strtoupper($item->tipoarea ?? '');
-            if (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES'])) {
+            if (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES', 'RSRD'])) {
                 return $item->tipo;
             }
             return $item->fechabateria;
@@ -12964,7 +13042,7 @@ class TramitesController extends Controller
                 $ordenTipoarea =
                     $tipoarea === 'ESPECIALIDAD' ? 0 :
                     ($tipoarea === 'INFORME FINAL' ? 1 :
-                    (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES']) ? 2 : 3));
+                    (in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES', 'RSRD']) ? 2 : 3));
 
                 return [$ordenTipoarea, $item->areanombre, $item->accionnombre];
             })->values();
@@ -13274,6 +13352,88 @@ class TramitesController extends Controller
             $texto3reclamoaps = $request->input('texto3reclamoaps');
         //
 
+        /* NUEVO 020426 */
+        $fechaform1sitInput = $request->input('fechaform1sit');
+        $fechaform1sit = null;
+        if ($fechaform1sitInput) {
+            $fechaform1sit = Carbon::parse($fechaform1sitInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform1sit = $request->input('nroform1sit');
+
+        $fechaform2sitInput = $request->input('fechaform2sit');
+        $fechaform2sit = null;
+        if ($fechaform2sitInput) {
+            $fechaform2sit = Carbon::parse($fechaform2sitInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform2sit = $request->input('nroform2sit');
+
+        $fechaform3sitInput = $request->input('fechaform3sit');
+        $fechaform3sit = null;
+        if ($fechaform3sitInput) {
+            $fechaform3sit = Carbon::parse($fechaform3sitInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform3sit = $request->input('nroform3sit');
+
+        $fechaform1reclamogpInput = $request->input('fechaform1reclamogp');
+        $fechaform1reclamogp = null;
+        if ($fechaform1reclamogpInput) {
+            $fechaform1reclamogp = Carbon::parse($fechaform1reclamogpInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform1reclamogp = $request->input('nroform1reclamogp');
+
+        $fechaform2reclamogpInput = $request->input('fechaform2reclamogp');
+        $fechaform2reclamogp = null;
+        if ($fechaform2reclamogpInput) {
+            $fechaform2reclamogp = Carbon::parse($fechaform2reclamogpInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform2reclamogp = $request->input('nroform2reclamogp');
+
+        $fechaform3reclamogpInput = $request->input('fechaform3reclamogp');
+        $fechaform3reclamogp = null;
+        if ($fechaform3reclamogpInput) {
+            $fechaform3reclamogp = Carbon::parse($fechaform3reclamogpInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform3reclamogp = $request->input('nroform3reclamogp');
+
+        $fechaform1reclamoapsInput = $request->input('fechaform1reclamoaps');
+        $fechaform1reclamoaps = null;
+        if ($fechaform1reclamoapsInput) {
+            $fechaform1reclamoaps = Carbon::parse($fechaform1reclamoapsInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform1reclamoaps = $request->input('nroform1reclamoaps');
+
+        $fechaform2reclamoapsInput = $request->input('fechaform2reclamoaps');
+        $fechaform2reclamoaps = null;
+        if ($fechaform2reclamoapsInput) {
+            $fechaform2reclamoaps = Carbon::parse($fechaform2reclamoapsInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform2reclamoaps = $request->input('nroform2reclamoaps');
+
+        $fechaform3reclamoapsInput = $request->input('fechaform3reclamoaps');
+        $fechaform3reclamoaps = null;
+        if ($fechaform3reclamoapsInput) {
+            $fechaform3reclamoaps = Carbon::parse($fechaform3reclamoapsInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform3reclamoaps = $request->input('nroform3reclamoaps');
+
         $apoderado = DB::table('proveedoresservicios')
             ->where('razonsocial', $apoderadoNombre)
             ->first();
@@ -13479,7 +13639,10 @@ class TramitesController extends Controller
         'fecha1reclamoaps','cite1reclamoaps','fechacite1reclamoaps','fecharesp1reclamoaps','texto1reclamoaps',
         'fecha2reclamoaps','cite2reclamoaps','fechacite2reclamoaps','fecharesp2reclamoaps','texto2reclamoaps',
         'fecha3reclamoaps','cite3reclamoaps','fechacite3reclamoaps','fecharesp3reclamoaps','texto3reclamoaps',
-        'fechasolrevdictamen','nrorevisiondictamen','fecharevdictamen','porcentajedictamen','origendictamen','motivoorigendictamen'));
+        'fechasolrevdictamen','nrorevisiondictamen','fecharevdictamen','porcentajedictamen','origendictamen','motivoorigendictamen',
+        'fechaform1sit','nroform1sit','fechaform2sit','nroform2sit','fechaform3sit','nroform3sit',
+        'fechaform1reclamogp','nroform1reclamogp','fechaform2reclamogp','nroform2reclamogp','fechaform3reclamogp','nroform3reclamogp',
+        'fechaform1reclamoaps','nroform1reclamoaps','fechaform2reclamoaps','nroform2reclamoaps','fechaform3reclamoaps','nroform3reclamoaps'));
 
         // Generar un nombre único para el PDF basado en el tipo y la fecha
         $timestamp = now()->format('Ymd_His'); // Genera un timestamp para asegurar unicidad
@@ -13680,6 +13843,7 @@ class TramitesController extends Controller
                 $pdfView = 'admin.tramites.adjuntosyrespuestas.adjrespinformeempleador';
                 break;
             case 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC':
+            case 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR':
                 $pdfView = 'admin.tramites.adjuntosyrespuestas.adjrespnotificaciontmc';
                 break;
             case 'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO':
@@ -15245,6 +15409,90 @@ class TramitesController extends Controller
             $texto3reclamoaps = $request->input('texto3reclamoaps');
         //
 
+        /* NUEVO 020426 */
+        $fechaform1sitInput = $request->input('fechaform1sit');
+        $fechaform1sit = null;
+        if ($fechaform1sitInput) {
+            $fechaform1sit = Carbon::parse($fechaform1sitInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform1sit = $request->input('nroform1sit');
+
+        $fechaform2sitInput = $request->input('fechaform2sit');
+        $fechaform2sit = null;
+        if ($fechaform2sitInput) {
+            $fechaform2sit = Carbon::parse($fechaform2sitInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform2sit = $request->input('nroform2sit');
+
+        $fechaform3sitInput = $request->input('fechaform3sit');
+        $fechaform3sit = null;
+        if ($fechaform3sitInput) {
+            $fechaform3sit = Carbon::parse($fechaform3sitInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform3sit = $request->input('nroform3sit');
+
+        $fechaform1reclamogpInput = $request->input('fechaform1reclamogp');
+        $fechaform1reclamogp = null;
+        if ($fechaform1reclamogpInput) {
+            $fechaform1reclamogp = Carbon::parse($fechaform1reclamogpInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform1reclamogp = $request->input('nroform1reclamogp');
+
+        $fechaform2reclamogpInput = $request->input('fechaform2reclamogp');
+        $fechaform2reclamogp = null;
+        if ($fechaform2reclamogpInput) {
+            $fechaform2reclamogp = Carbon::parse($fechaform2reclamogpInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform2reclamogp = $request->input('nroform2reclamogp');
+
+        $fechaform3reclamogpInput = $request->input('fechaform3reclamogp');
+        $fechaform3reclamogp = null;
+        if ($fechaform3reclamogpInput) {
+            $fechaform3reclamogp = Carbon::parse($fechaform3reclamogpInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform3reclamogp = $request->input('nroform3reclamogp');
+
+        $fechaform1reclamoapsInput = $request->input('fechaform1reclamoaps');
+        $fechaform1reclamoaps = null;
+        if ($fechaform1reclamoapsInput) {
+            $fechaform1reclamoaps = Carbon::parse($fechaform1reclamoapsInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform1reclamoaps = $request->input('nroform1reclamoaps');
+
+        $fechaform2reclamoapsInput = $request->input('fechaform2reclamoaps');
+        $fechaform2reclamoaps = null;
+        if ($fechaform2reclamoapsInput) {
+            $fechaform2reclamoaps = Carbon::parse($fechaform2reclamoapsInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform2reclamoaps = $request->input('nroform2reclamoaps');
+
+        $fechaform3reclamoapsInput = $request->input('fechaform3reclamoaps');
+        $fechaform3reclamoaps = null;
+        if ($fechaform3reclamoapsInput) {
+            $fechaform3reclamoaps = Carbon::parse($fechaform3reclamoapsInput)
+                ->locale('es')
+                ->isoFormat('D [de] MMMM [del] YYYY');
+        }
+        $nroform3reclamoaps = $request->input('nroform3reclamoaps');
+
+
+
         $apoderado = DB::table('proveedoresservicios')
             ->where('razonsocial', $apoderadoNombre)
             ->first();
@@ -15452,7 +15700,11 @@ class TramitesController extends Controller
         'fecha1reclamoaps','cite1reclamoaps','fechacite1reclamoaps','fecharesp1reclamoaps','texto1reclamoaps',
         'fecha2reclamoaps','cite2reclamoaps','fechacite2reclamoaps','fecharesp2reclamoaps','texto2reclamoaps',
         'fecha3reclamoaps','cite3reclamoaps','fechacite3reclamoaps','fecharesp3reclamoaps','texto3reclamoaps',
-        'fechasolrevdictamen','nrorevisiondictamen','fecharevdictamen','porcentajedictamen','origendictamen','motivoorigendictamen'));
+        'fechasolrevdictamen','nrorevisiondictamen','fecharevdictamen','porcentajedictamen','origendictamen','motivoorigendictamen',
+        /* NUEVO 020426 */
+        'fechaform1sit','nroform1sit','fechaform2sit','nroform2sit','fechaform3sit','nroform3sit',
+        'fechaform1reclamogp','nroform1reclamogp','fechaform2reclamogp','nroform2reclamogp','fechaform3reclamogp','nroform3reclamogp',
+        'fechaform1reclamoaps','nroform1reclamoaps','fechaform2reclamoaps','nroform2reclamoaps','fechaform3reclamoaps','nroform3reclamoaps'));
 
         return $pdf->stream('preview.carta');
     }
@@ -15607,6 +15859,7 @@ class TramitesController extends Controller
                 $pdfView = 'admin.tramites.adjuntosyrespuestas.adjrespinformeempleador';
                 break;
             case 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC':
+            case 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR':
                 $pdfView = 'admin.tramites.adjuntosyrespuestas.adjrespnotificaciontmc';
                 break;
             case 'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO':
@@ -16023,54 +16276,72 @@ class TramitesController extends Controller
                 'citenota_primera' => $primera->citenota ?? null,
                 'fechasubida_primera' => $primera->fechasubida ?? null,
                 'fecharespuesta_primera' => $primera->fechainclusion ?? null,
+                'fechaestadotramite_primera' => $primera->fechaestadotramite ?? null,
+                'nroformulario_primera' => $primera->nroformulario ?? null,
             //
             // SEGUNDA CARTA SIT
                 'fechacitenota_segunda' => $segunda->fechacitenota ?? null,
                 'citenota_segunda' => $segunda->citenota ?? null,
                 'fechasubida_segunda' => $segunda->fechasubida ?? null,
                 'fecharespuesta_segunda' => $segunda->fechainclusion ?? null,
+                'fechaestadotramite_segunda' => $segunda->fechaestadotramite ?? null,
+                'nroformulario_segunda' => $segunda->nroformulario ?? null,
             //
             // TERCERA CARTA SIT
                 'fechacitenota_tercera' => $tercera->fechacitenota ?? null,
                 'citenota_tercera' => $tercera->citenota ?? null,
                 'fechasubida_tercera' => $tercera->fechasubida ?? null,
                 'fecharespuesta_tercera' => $tercera->fechainclusion ?? null,
+                'fechaestadotramite_tercera' => $tercera->fechaestadotramite ?? null,
+                'nroformulario_tercera' => $tercera->nroformulario ?? null,
             //
             // PRIMERA CARTA DE RECLAMO GP
                 'fechacitenota_primerareclamogp' => $primerareclamogp->fechacitenota ?? null,
                 'citenota_primerareclamogp' => $primerareclamogp->citenota ?? null,
                 'fechasubida_primerareclamogp' => $primerareclamogp->fechasubida ?? null,
                 'fecharespuesta_primerareclamogp' => $primerareclamogp->fechainclusion ?? null,
+                'fechaestadotramite_primerareclamogp' => $primerareclamogp->fechaestadotramite ?? null,
+                'nroformulario_primerareclamogp' => $primerareclamogp->nroformulario ?? null,
             //
             // PRIMERA CARTA DE RECLAMO APS
                 'fechacitenota_primerareclamoaps' => $primerareclamoaps->fechacitenota ?? null,
                 'citenota_primerareclamoaps' => $primerareclamoaps->citenota ?? null,
                 'fechasubida_primerareclamoaps' => $primerareclamoaps->fechasubida ?? null,
                 'fecharespuesta_primerareclamoaps' => $primerareclamoaps->fechainclusion ?? null,
+                'fechaestadotramite_primerareclamoaps' => $primerareclamoaps->fechaestadotramite ?? null,
+                'nroformulario_primerareclamoaps' => $primerareclamoaps->nroformulario ?? null,
             //
             // SEGUNDA CARTA DE RECLAMO GP
                 'fechacitenota_segundareclamogp' => $segundareclamogp->fechacitenota ?? null,
                 'citenota_segundareclamogp' => $segundareclamogp->citenota ?? null,
                 'fechasubida_segundareclamogp' => $segundareclamogp->fechasubida ?? null,
                 'fecharespuesta_segundareclamogp' => $segundareclamogp->fechainclusion ?? null,
+                'fechaestadotramite_segundareclamogp' => $segundareclamogp->fechaestadotramite ?? null,
+                'nroformulario_segundareclamogp' => $segundareclamogp->nroformulario ?? null,
             //
             // SEGUNDA CARTA DE RECLAMO APS
                 'fechacitenota_segundareclamoaps' => $segundareclamoaps->fechacitenota ?? null,
                 'citenota_segundareclamoaps' => $segundareclamoaps->citenota ?? null,
                 'fechasubida_segundareclamoaps' => $segundareclamoaps->fechasubida ?? null,
                 'fecharespuesta_segundareclamoaps' => $segundareclamoaps->fechainclusion ?? null,
+                'fechaestadotramite_segundareclamoaps' => $segundareclamoaps->fechaestadotramite ?? null,
+                'nroformulario_segundareclamoaps' => $segundareclamoaps->nroformulario ?? null,
             //
             // TERCERA CARTA DE RECLAMO GP
                 'fechacitenota_tercerareclamogp' => $tercerareclamogp->fechacitenota ?? null,
                 'citenota_tercerareclamogp' => $tercerareclamogp->citenota ?? null,
                 'fechasubida_tercerareclamogp' => $tercerareclamogp->fechasubida ?? null,
                 'fecharespuesta_tercerareclamogp' => $tercerareclamogp->fechainclusion ?? null,
+                'fechaestadotramite_tercerareclamogp' => $tercerareclamogp->fechaestadotramite ?? null,
+                'nroformulario_tercerareclamogp' => $tercerareclamogp->nroformulario ?? null,
             //
             // TERCERA CARTA DE RECLAMO APS
                 'fechacitenota_tercerareclamoaps' => $tercerareclamoaps->fechacitenota ?? null,
                 'citenota_tercerareclamoaps' => $tercerareclamoaps->citenota ?? null,
                 'fechasubida_tercerareclamoaps' => $tercerareclamoaps->fechasubida ?? null,
                 'fecharespuesta_tercerareclamoaps' => $tercerareclamoaps->fechainclusion ?? null,
+                'fechaestadotramite_tercerareclamoaps' => $tercerareclamoaps->fechaestadotramite ?? null,
+                'nroformulario_tercerareclamoaps' => $tercerareclamoaps->nroformulario ?? null,
             //
             ]);
         }

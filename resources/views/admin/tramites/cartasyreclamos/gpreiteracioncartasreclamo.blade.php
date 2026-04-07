@@ -173,6 +173,12 @@
                             en donde se indicó: {!! $texto1sit ?? '<span class="textoedita">TEXTO COMP.</span>' !!}
                         @endif
                     </li>
+                    @if($fechaform1sit)
+                        <li>
+                            En fecha <strong>{{$fechaform1sit}}</strong> 
+                            se presentó dentro Buzón de Reclamos y Sugerencias APS el Formulario de Reclamo <strong>Nº {{ $nroform1sit }}.</strong>
+                        </li>
+                    @endif
                 @endif
                 @if($fecha2sit)
                     <li>
@@ -185,6 +191,12 @@
                             en donde se indicó: {!! $texto2sit ?? '<span class="textoedita">TEXTO COMP.</span>' !!}
                         @endif
                     </li>
+                    @if($fechaform2sit)
+                        <li>
+                            En fecha <strong>{{$fechaform2sit}}</strong> 
+                            se presentó dentro Buzón de Reclamos y Sugerencias APS el Formulario de Reclamo <strong>Nº {{ $nroform2sit }}.</strong>
+                        </li>
+                    @endif
                 @endif
                 @if($fecha3sit)
                     <li>
@@ -197,6 +209,12 @@
                             en donde se indicó: {!! $texto3sit ?? '<span class="textoedita">TEXTO COMP.</span>' !!}
                         @endif
                     </li>
+                    @if($fechaform3sit)
+                        <li>
+                            En fecha <strong>{{$fechaform3sit}}</strong> 
+                            se presentó dentro Buzón de Reclamos y Sugerencias APS el Formulario de Reclamo <strong>Nº {{ $nroform3sit }}.</strong>
+                        </li>
+                    @endif
                 @endif
                 @if($fecha1reclamogp)
                     <li>
@@ -209,6 +227,12 @@
                             en donde se indicó: {!! $texto1reclamogp ?? '<span class="textoedita">TEXTO COMP.</span>' !!}
                         @endif
                     </li>
+                    @if($fechaform1reclamogp)
+                        <li>
+                            En fecha <strong>{{$fechaform1reclamogp}}</strong> 
+                            se presentó dentro Buzón de Reclamos y Sugerencias APS el Formulario de Reclamo <strong>Nº {{ $nroform1reclamogp }}.</strong>
+                        </li>
+                    @endif
                 @endif
                 @if($fecha2reclamogp)
                     <li>
@@ -221,6 +245,12 @@
                             en donde se indicó: {!! $texto2reclamogp ?? '<span class="textoedita">TEXTO COMP.</span>' !!}
                         @endif
                     </li>
+                    @if($fechaform2reclamogp)
+                        <li>
+                            En fecha <strong>{{$fechaform2reclamogp}}</strong> 
+                            se presentó dentro Buzón de Reclamos y Sugerencias APS el Formulario de Reclamo <strong>Nº {{ $nroform2reclamogp }}.</strong>
+                        </li>
+                    @endif
                 @endif
                 @if($fecha3reclamogp)
                     <li>
@@ -233,6 +263,12 @@
                             en donde se indicó: {!! $texto3reclamogp ?? '<span class="textoedita">TEXTO COMP.</span>' !!}
                         @endif
                     </li>
+                    @if($fechaform3reclamogp)
+                        <li>
+                            En fecha <strong>{{$fechaform3reclamogp}}</strong> 
+                            se presentó dentro Buzón de Reclamos y Sugerencias APS el Formulario de Reclamo <strong>Nº {{ $nroform3reclamogp }}.</strong>
+                        </li>
+                    @endif
                 @endif
             </ul>
         </div>

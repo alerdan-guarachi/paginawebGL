@@ -1037,9 +1037,15 @@ class MovimientosCajaController extends Controller
                 $idEntidad = $request->clienteid ?? $request->proveedorid;
 
                 // Consultar en las 3 tablas
-                $cliente = DB::table('clientes')->where('id', $idEntidad)->first()
-                    ?? DB::table('clienteauditorias')->where('id', $idEntidad)->first()
-                    ?? DB::table('clientescomunes')->where('id', $idEntidad)->first();
+                if ($tipocliente === 'ITA') {
+                    $cliente = DB::table('clientes')->where('id', $idEntidad)->first();
+                } elseif ($tipocliente === 'AUDITORIA') {
+                    $cliente = DB::table('clienteauditorias')->where('id', $idEntidad)->first();
+                } elseif ($tipocliente === 'COMUN') {
+                    $cliente = DB::table('clientescomunes')->where('id', $idEntidad)->first();
+                } else {
+                    $cliente = null;
+                }
 
                 // Si encontró
                 if ($cliente) {
@@ -1084,10 +1090,6 @@ class MovimientosCajaController extends Controller
             //
 
         foreach ($programacionIds as $index => $programacionId) {
-            /* $programacion = ProgramacionSubCliente::find($programacionId);
-            $proveedor = ProveedorInformeFinal::find($programacionId);
-            $cuentapagar = CuentasCobrar::where('id', $programacionId)->first(); */
-
             $programacion = null;
             $proveedor = null;
             $cuentapagar = null;
@@ -1096,8 +1098,16 @@ class MovimientosCajaController extends Controller
             }
             if (!$cuentapagar) {
                 $programacion = ProgramacionSubCliente::find($programacionId);
-                if (!$programacion) {
-                    $proveedor = ProveedorInformeFinal::find($programacionId);
+                $proveedor = ProveedorInformeFinal::find($programacionId);
+
+                // 🔥 DECISIÓN REAL
+                if ($proveedor && $proveedor->accionnombre === 'INFORME FINAL') {
+                    // usar proveedor
+                    $programacion = null;
+
+                } else {
+                    // usar programación (si existe)
+                    $proveedor = null;
                 }
             }
 
@@ -1129,8 +1139,6 @@ class MovimientosCajaController extends Controller
                 $pagoDetalle = $pagos[$index];
             }
 
-            /* $subtotalDetalle = is_numeric($subtotalDetalle) ? floatval($subtotalDetalle) : 0; */
-
             $subtotalDetalle = is_numeric(str_replace(',', '.', $subtotalDetalle)) 
                 ? (float) str_replace(',', '.', $subtotalDetalle) : 0;
 
@@ -1144,13 +1152,6 @@ class MovimientosCajaController extends Controller
             $saldoDetalle = number_format($saldoDetalle, 2, '.', '');
             $estadoDetalle = ($saldoDetalle == 0) ? 'PAGO PROCESADO' : 'SALDO PENDIENTE';
 
-            /* if ($estadoDetalle == 'PAGO PROCESADO') {
-                Detallerecibo::where('programacionid', $programacionId)
-                    ->orwhere('provinfofinalid', $programacionId)
-                    ->orwhere('cuentacobrarid', $programacionId)
-                    ->where('estado', '!=', 'PAGO PROCESADO')
-                    ->update(['estado' => 'PAGO PROCESADO']);
-            } */
             if ($estadoDetalle == 'PAGO PROCESADO') {
                 if ($programacion) {
                     Detallerecibo::where('programacionid', $programacionId)
@@ -2324,6 +2325,60 @@ class MovimientosCajaController extends Controller
                     }
                 }
 
+                /* NUEVO 011225 */
+                $registrosarqueocaja = DB::table('arqueocaja')
+                    ->where('usuarioarqueoid', auth()->user()->id)
+                    ->get();
+
+                foreach ($registrosarqueocaja as $registro) {
+                    $fechaArqueo = now()->format('Y-m-d');
+
+                    $consolidado = DB::table('consolidadoscaja')
+                        ->where('usuarioconsolidadoid', $registro->usuarioarqueoid)
+                        ->first();
+                    $totalMonto = $consolidado ? $consolidado->consolidadoefectivo : 0;
+
+                    $hayDinero = (
+                        $registro->billetecorte200 != 0 ||
+                        $registro->billetecorte100 != 0 ||
+                        $registro->billetecorte50 != 0 ||
+                        $registro->billetecorte20 != 0 ||
+                        $registro->billetecorte10 != 0 ||
+                        $registro->monedacorte5 != 0 ||
+                        $registro->monedacorte2 != 0 ||
+                        $registro->monedacorte1 != 0 ||
+                        $registro->monedacorte050 != 0 ||
+                        $registro->monedacorte020 != 0 ||
+                        $registro->monedacorte010 != 0
+                    ) && $totalMonto != 0.00;
+
+                    if ($hayDinero) {
+                        DB::table('historialarqueocaja')->updateOrInsert(
+                            [
+                                'usuarioarqueoid' => $registro->usuarioarqueoid,
+                                'fechaarqueo' => $fechaArqueo,
+                            ],
+                            [
+                                'usuarioarqueonombre' => $registro->usuarioarqueonombre,
+                                'billetecorte200' => $registro->billetecorte200,
+                                'billetecorte100' => $registro->billetecorte100,
+                                'billetecorte50' => $registro->billetecorte50,
+                                'billetecorte20' => $registro->billetecorte20,
+                                'billetecorte10' => $registro->billetecorte10,
+                                'monedacorte5' => $registro->monedacorte5,
+                                'monedacorte2' => $registro->monedacorte2,
+                                'monedacorte1' => $registro->monedacorte1,
+                                'monedacorte050' => $registro->monedacorte050,
+                                'monedacorte020' => $registro->monedacorte020,
+                                'monedacorte010' => $registro->monedacorte010,
+                                'totalmonto' => $totalMonto,
+                                'updated_at' => now(),
+                                'created_at' => now(),
+                            ]
+                        );
+                    }
+                }
+
                 return back()->with('info', 'Caja cerrada. Cierres actualizados o creados correctamente.');
             }
         }
@@ -2387,59 +2442,7 @@ class MovimientosCajaController extends Controller
         $mostrarVista = ($registroCierreCaja && !$restriccionDeposito) || $codigoAprobacion;
         //
 
-        /* NUEVO 011225 */
-        $registrosarqueocaja = DB::table('arqueocaja')
-            ->where('usuarioarqueoid', auth()->user()->id)
-            ->get();
-
-        foreach ($registrosarqueocaja as $registro) {
-            $fechaArqueo = now()->format('Y-m-d');
-
-            $consolidado = DB::table('consolidadoscaja')
-                ->where('usuarioconsolidadoid', $registro->usuarioarqueoid)
-                ->first();
-            $totalMonto = $consolidado ? $consolidado->consolidadoefectivo : 0;
-
-            $hayDinero = (
-                $registro->billetecorte200 != 0 ||
-                $registro->billetecorte100 != 0 ||
-                $registro->billetecorte50 != 0 ||
-                $registro->billetecorte20 != 0 ||
-                $registro->billetecorte10 != 0 ||
-                $registro->monedacorte5 != 0 ||
-                $registro->monedacorte2 != 0 ||
-                $registro->monedacorte1 != 0 ||
-                $registro->monedacorte050 != 0 ||
-                $registro->monedacorte020 != 0 ||
-                $registro->monedacorte010 != 0
-            ) && $totalMonto != 0.00;
-
-            if ($hayDinero) {
-                DB::table('historialarqueocaja')->updateOrInsert(
-                    [
-                        'usuarioarqueoid' => $registro->usuarioarqueoid,
-                        'fechaarqueo' => $fechaArqueo,
-                    ],
-                    [
-                        'usuarioarqueonombre' => $registro->usuarioarqueonombre,
-                        'billetecorte200' => $registro->billetecorte200,
-                        'billetecorte100' => $registro->billetecorte100,
-                        'billetecorte50' => $registro->billetecorte50,
-                        'billetecorte20' => $registro->billetecorte20,
-                        'billetecorte10' => $registro->billetecorte10,
-                        'monedacorte5' => $registro->monedacorte5,
-                        'monedacorte2' => $registro->monedacorte2,
-                        'monedacorte1' => $registro->monedacorte1,
-                        'monedacorte050' => $registro->monedacorte050,
-                        'monedacorte020' => $registro->monedacorte020,
-                        'monedacorte010' => $registro->monedacorte010,
-                        'totalmonto' => $totalMonto,
-                        'updated_at' => now(),
-                        'created_at' => now(),
-                    ]
-                );
-            }
-        }
+        
 
         return view('admin.caja.ingreso.cierre', [
             'registros' => $registros,
@@ -4808,8 +4811,16 @@ class MovimientosCajaController extends Controller
             }
             if (!$cuentapagar) {
                 $programacion = ProgramacionSubCliente::find($programacionId);
-                if (!$programacion) {
-                    $proveedor = ProveedorInformeFinal::find($programacionId);
+                $proveedor = ProveedorInformeFinal::find($programacionId);
+
+                // 🔥 DECISIÓN REAL
+                if ($proveedor && $proveedor->accionnombre === 'INFORME FINAL') {
+                    // usar proveedor
+                    $programacion = null;
+
+                } else {
+                    // usar programación (si existe)
+                    $proveedor = null;
                 }
             }
         
@@ -5622,8 +5633,16 @@ class MovimientosCajaController extends Controller
             }
             if (!$cuentapagar) {
                 $programacion = ProgramacionSubCliente::find($programacionId);
-                if (!$programacion) {
-                    $proveedor = ProveedorInformeFinal::find($programacionId);
+                $proveedor = ProveedorInformeFinal::find($programacionId);
+
+                // 🔥 DECISIÓN REAL
+                if ($proveedor && $proveedor->accionnombre === 'INFORME FINAL') {
+                    // usar proveedor
+                    $programacion = null;
+
+                } else {
+                    // usar programación (si existe)
+                    $proveedor = null;
                 }
             }
         
@@ -5703,6 +5722,32 @@ class MovimientosCajaController extends Controller
                 $area = 'CUENTA POR PAGAR';
             }
 
+            $sucursalGasto = null;
+
+            if ($area === 'MEDICA' || $area === 'INFORME FINAL') {
+                $clienteId = $cuentapagar ? null : (
+                    $programacion ? 
+                        ($programacion->clienteitaid ?? $programacion->clienteauditoriaid ?? $programacion->clientecomunid) : 
+                        ($proveedor ? 
+                            ($proveedor->clienteitaid ?? $proveedor->clienteauditoriaid ?? $proveedor->clientecomunid) : 
+                        null)
+                );
+
+                if ($clienteId) {
+                    $cliente = Cliente::find($clienteId);
+                    if (!$cliente) {
+                        $cliente = ClienteAuditoria::find($clienteId);
+                    }
+                    if (!$cliente) {
+                        $cliente = ClienteComun::find($clienteId);
+                    }
+
+                    if ($cliente) {
+                        $sucursalGasto = $cliente->sucursal ?? null;
+                    }
+                }
+            }
+            
             $detalleRecibo = Detallerecibo::create([
                 'reciboid' => $recibo->id,
                 'programacionid' => $programacion ? $programacionId : null,
@@ -5746,7 +5791,8 @@ class MovimientosCajaController extends Controller
                 'estado' => ($cuentapagar && $cuentapagar->ordenid) ? 'PAGO PROCESADO' : $estadoDetalle,
                 'tipomovimiento' => 'EGRESO',
                 'tipotransaccion' => $tipotransaccion,
-                'sucursalgasto' => ($area === 'CUENTA POR PAGAR') ? $cuentapagar->sucursalgasto : null,
+                /* 'sucursalgasto' => ($area === 'CUENTA POR PAGAR') ? $cuentapagar->sucursalgasto : null, */
+                'sucursalgasto' => ($area === 'CUENTA POR PAGAR') ? $cuentapagar->sucursalgasto : $sucursalGasto,
                 'comprobante' => $cuentapagar ? $cuentapagar->comprobante : ($programacion ? $programacion->comprobante : $proveedor->comprobante),
                 'factura' => $cuentapagar ? $cuentapagar->factura : ($programacion ? $programacion->factura : $proveedor->factura),
                 'created_at' => $fechaCreacion,
@@ -7134,6 +7180,9 @@ class MovimientosCajaController extends Controller
             }
             $ordenExistente = BateriaSubCliente::where('fechapago', $fechaPagoProv)
                 ->where('proveedorasignado', $proveedorAsignado)
+                ->whereHas('programaciones', function ($query) use ($nroFactura) {
+                    $query->where('nrofactura', $nroFactura);
+                })
                 ->orderBy('id', 'desc')
                 ->first();
 
@@ -7162,26 +7211,10 @@ class MovimientosCajaController extends Controller
                 $bateria = Bateriasubcliente::find($registro->bateriaid);
                 if ($bateria) {
                     $proveedor = Proveedor::where('proveedor', $bateria->proveedorasignado)->first();
-                    /* $bateria->fechapago = $fechaPagoProv;
-                    $bateria->prioridad = 'CUENTA POR PAGAR';
-                    if ($bateria->bancoorigen === 'CUENTA FACTURADA') {
-                        $bateria->nrobancoorigen = '3000189269';
-                    } elseif ($bateria->bancoorigen === 'CUENTA NO FACTURADA') {
-                        $bateria->nrobancoorigen = '2505314878';
-                    }
-                    $bateria->ordenid = $nuevoOrdenId;
-                    $bateria->save(); */
 
                     if ($proveedor) {
                         $bateria->fechapago = $fechaPagoProv;
                         $bateria->prioridad = 'CUENTA POR PAGAR';
-
-                        // Ahora depende del proveedor
-                        /* if ($proveedor->bancoorigen === 'CUENTA FACTURADA') {
-                            $bateria->nrobancoorigen = '3000189269';
-                        } elseif ($proveedor->bancoorigen === 'CUENTA NO FACTURADA') {
-                            $bateria->nrobancoorigen = '2505314878';
-                        } */
                         $bateria->nrobancoorigen = $nrocuentabanco;
                         $bateria->ordenid = $nuevoOrdenId;
                         $bateria->save();
@@ -7198,27 +7231,10 @@ class MovimientosCajaController extends Controller
                 $bateria = Bateriasubcliente::where('provinfofinalid', $registroFinal->id)->first();
                 if ($bateria) {
                     $proveedor = Proveedor::where('proveedor', $bateria->proveedorasignado)->first();
-                    /* $bateria->fechapago = $fechaPagoProv;
-                    $bateria->prioridad = 'CUENTA POR PAGAR';
-                    if ($bateria->bancoorigen === 'CUENTA FACTURADA') {
-                        $bateria->nrobancoorigen = '3000189269';
-                    } elseif ($bateria->bancoorigen === 'CUENTA NO FACTURADA') {
-                        $bateria->nrobancoorigen = '2505314878';
-                    }
-                    $bateria->ordenid = $nuevoOrdenId;
-                    $bateria->save(); */
 
                     if ($proveedor) {
                         $bateria->fechapago = $fechaPagoProv;
                         $bateria->prioridad = 'CUENTA POR PAGAR';
-
-                        // Ahora depende del proveedor
-                        /* if ($proveedor->bancoorigen === 'CUENTA FACTURADA') {
-                            $bateria->nrobancoorigen = '3000189269';
-                        } elseif ($proveedor->bancoorigen === 'CUENTA NO FACTURADA') {
-                            $bateria->nrobancoorigen = '2505314878';
-                        } */
-
                         $bateria->nrobancoorigen = $nrocuentabanco;
                         $bateria->ordenid = $nuevoOrdenId;
                         $bateria->save();
@@ -7243,7 +7259,31 @@ class MovimientosCajaController extends Controller
                 $proveedor = Proveedor::where('proveedor', $razonsocial)->first();
                 $nit = ($proveedor && !empty($proveedor->nit) && $proveedor->nit != '0') ? $proveedor->nit : ($proveedor->ci ?? '');
 
-                $ciudad = $proveedor->ciudad ?? 'NO DEFINIDO';
+                /* $ciudad = $proveedor->ciudad ?? 'NO DEFINIDO'; */
+
+                if ($proveedor && !empty($proveedor->ciudad2)) {
+                    $registroBase = $registros->first();
+                    $ciudad = null;
+                    if ($registroBase->clienteitaid) {
+                        $ciudad = DB::table('clientes')
+                            ->where('id', $registroBase->clienteitaid)
+                            ->value('sucursal');
+
+                    } elseif ($registroBase->clienteauditoriaid) {
+                        $ciudad = DB::table('clienteauditorias')
+                            ->where('id', $registroBase->clienteauditoriaid)
+                            ->value('sucursal');
+
+                    } elseif ($registroBase->clientecomunid) {
+                        $ciudad = DB::table('clientescomunes')
+                            ->where('id', $registroBase->clientecomunid)
+                            ->value('sucursal');
+                    }
+                    $ciudad = $ciudad ?? 'NO DEFINIDO';
+                } else {
+                    $ciudad = $proveedor->ciudad ?? 'NO DEFINIDO';
+                }
+
 
                 $usuarioId = Auth::id();
                 $usuarioNombre = Auth::user()->name;
@@ -7317,7 +7357,31 @@ class MovimientosCajaController extends Controller
                 $proveedor = Proveedor::where('proveedor', $razonsocial)->first();
                 $nit = ($proveedor && !empty($proveedor->nit) && $proveedor->nit != '0') ? $proveedor->nit : ($proveedor->ci ?? '');
 
-                $ciudad = $proveedor->ciudad ?? 'NO DEFINIDO';
+                /* $ciudad = $proveedor->ciudad ?? 'NO DEFINIDO'; */
+
+                if ($proveedor && !empty($proveedor->ciudad2)) {
+                    $registroBase = $registros->first();
+                    $ciudad = null;
+                    if ($registroBase->clienteitaid) {
+                        $ciudad = DB::table('clientes')
+                            ->where('id', $registroBase->clienteitaid)
+                            ->value('sucursal');
+
+                    } elseif ($registroBase->clienteauditoriaid) {
+                        $ciudad = DB::table('clienteauditorias')
+                            ->where('id', $registroBase->clienteauditoriaid)
+                            ->value('sucursal');
+
+                    } elseif ($registroBase->clientecomunid) {
+                        $ciudad = DB::table('clientescomunes')
+                            ->where('id', $registroBase->clientecomunid)
+                            ->value('sucursal');
+                    }
+                    $ciudad = $ciudad ?? 'NO DEFINIDO';
+                } else {
+                    $ciudad = $proveedor->ciudad ?? 'NO DEFINIDO';
+                }
+
 
                 $usuarioId = Auth::id();
                 $usuarioNombre = Auth::user()->name;
@@ -10244,17 +10308,31 @@ class MovimientosCajaController extends Controller
         //
 
         foreach ($programacionIds as $index => $programacionId) {
-            $programacion = ProgramacionSubCliente::find($programacionId);
+            /* $programacion = ProgramacionSubCliente::find($programacionId);
             $proveedor = ProveedorInformeFinal::find($programacionId);
-            $cuentapagar = CuentasPagar::find($programacionId);
-        
-            // Verificar si ya existe un registro en Detallerecibo con el mismo programacionid
-            /* $ultimoDetalleRecibo = Detallerecibo::where('programacionid', $programacionId)
-                ->orwhere('provinfofinalid', $programacionId)
-                ->orwhere('cuentapagarid', $programacionId)
-                ->orderBy('created_at', 'desc')
-                ->first(); */
+            $cuentapagar = CuentasPagar::find($programacionId); */
 
+            $programacion = null;
+            $proveedor = null;
+            $cuentapagar = null;
+            if (str_ends_with($programacionId, 'CC')) {
+                $cuentapagar = CuentasCobrar::find($programacionId);
+            }
+            if (!$cuentapagar) {
+                $programacion = ProgramacionSubCliente::find($programacionId);
+                $proveedor = ProveedorInformeFinal::find($programacionId);
+
+                // 🔥 DECISIÓN REAL
+                if ($proveedor && $proveedor->accionnombre === 'INFORME FINAL') {
+                    // usar proveedor
+                    $programacion = null;
+
+                } else {
+                    // usar programación (si existe)
+                    $proveedor = null;
+                }
+            }
+        
             $ultimoDetalleRecibo = Detallerecibo::where(function ($query) use ($programacionId) {
                     $query->where('programacionid', $programacionId)
                           ->orWhere('provinfofinalid', $programacionId);
@@ -10262,24 +10340,6 @@ class MovimientosCajaController extends Controller
                 ->where('tipomovimiento', 'INGRESO')
                 ->orderBy('created_at', 'desc') 
                 ->first();
-
-            /* if ($ultimoDetalleRecibo) {
-                $subtotalDetalle = $ultimoDetalleRecibo->saldo;
-                $descuentoDetalle = $descuentos[$index];
-                $pagoDetalle = $pagos[$index];
-            } else {
-                if ($programacion) {
-                    $subtotalDetalle = $programacion->precio - $programacion->preciocompra;
-                } elseif ($proveedor) {
-                    $subtotalDetalle = $proveedor->preciocompra;
-                } elseif ($cuentapagar) {
-                    $subtotalDetalle = $cuentapagar->preciocompra;
-                } else {
-                    $subtotalDetalle = 0;
-                }
-                $descuentoDetalle = $descuentos[$index];
-                $pagoDetalle = $pagos[$index];
-            } */
 
             if ($ultimoDetalleRecibo) {
                 $subtotalDetalle = is_numeric(str_replace(',', '.', $ultimoDetalleRecibo->saldo)) 

@@ -501,21 +501,18 @@ class AsociadoController extends Controller
         $cliente = Cliente::create($clienteData);
 
         /* NUEVO APP MOVIL */
-        if ($request->referenciadorid) {
+        /* if ($request->referenciadorid) {
 
             $clienteReferenciador = Cliente::find($request->referenciadorid);
 
             if ($clienteReferenciador) {
 
-                // Sumar billetera
                 $clienteReferenciador->billeteramovil += 20;
                 $clienteReferenciador->save();
 
-                // 🔔 BUSCAR USER DEL REFERENCIADOR
                 $userReferenciador = User::where('clienteid', $clienteReferenciador->id)->first();
                 if ($userReferenciador) {
 
-                    // 1️⃣ Notificación Laravel (BD)
                     $userReferenciador->notify(
                         new ClienteReferenciadoNotification(
                             $cliente,
@@ -523,7 +520,6 @@ class AsociadoController extends Controller
                         )
                     );
 
-                    // 2️⃣ Push Firebase (FCM)
                     if (!empty($userReferenciador->fcm_token)) {
                         FirebaseService::sendNotification(
                             $userReferenciador->fcm_token,
@@ -534,7 +530,7 @@ class AsociadoController extends Controller
                 }
 
             }
-        }
+        } */
 
         return redirect()->route('admin.asociados.verclienteita', $cliente->id)->with('info', 'El cliente se creó con éxito');
     }
@@ -657,7 +653,7 @@ class AsociadoController extends Controller
         ]);
 
         Mail::to($cliente->email)
-    ->send(new CredencialesClienteMail($cliente, $passwordPlano));
+        ->send(new CredencialesClienteMail($cliente, $passwordPlano));
 
 
         return back()->with(
@@ -1054,6 +1050,7 @@ class AsociadoController extends Controller
             'MASA HEREDITARIA' => 'MASA HEREDITARIA',
             'COMPENSACIÓN DE COTIZACIONES (SENASIR)' => 'COMPENSACIÓN DE COTIZACIONES (SENASIR)',
             'AUDITORIA MÉDICA' => 'AUDITORIA MÉDICA',
+            'INCLUSIÓN CC (GESTORA)' => 'INCLUSIÓN CC (GESTORA)'
         ];
 
         $tramitesRegistrados = Tramitesubcliente::where('clienteitaid', $cliente->id)

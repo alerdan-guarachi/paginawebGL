@@ -184,7 +184,7 @@
                                                         {!! Form::select('solicitudmodificar', [
                                                             'TÉCNICO MÉDICO' => 'TÉCNICO MÉDICO',
                                                             'COMPLEMENTARIO' => 'COMPLEMENTARIO',
-                                                            'ACTA DEL TMC' => 'ACTA DEL TMC',
+                                                            'ACTA DEL TMR' => 'ACTA DEL TMR',
                                                             'DEL EMPLEADOR' => 'DEL EMPLEADOR',
                                                         ], null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                                     </div>
@@ -430,6 +430,7 @@
                                                                                                                     $ruta = match(true) {
                                                                                                                         $tipoarea === 'INFORME FINAL' => "informesfinalesclientesita/{$cliente->id}/{$doc->document}",
                                                                                                                         in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES']) => "tramitesclientesita/{$cliente->id}/APELACIÓN TERCERA SOLICITUD/INFORMES/{$doc->document}",
+                                                                                                                        $tipoarea === 'RSRD'=> "tramitesclientesita/{$cliente->id}/APELACIÓN TERCERA SOLICITUD/RSRD - ADJUNTO DOCUMENTACIÓN MÉDICA/{$doc->document}",
                                                                                                                         default => "documentacionclientesita/{$cliente->id}/{$doc->document}",
                                                                                                                     };
                                                                                                                 @endphp
@@ -1258,8 +1259,8 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5 class="mb-0" style="font-weight: 700;">VISTA PREVIA DE SOLICITUD</h5>
-                                        <a id="btnActualizarVista" class="btn btn-sm btn-verdocumento">
-                                            <i class="fas fa-sync-alt"></i> ACTUALIZAR
+                                        <a id="btnActualizarVista" class="btn btn-sm btn-verdocumento" title="ACTUALIZAR">
+                                            <i class="fas fa-sync-alt"></i>
                                         </a>
                                     </div>
                                     <iframe id="pdfPreview" style="width:100%; height:500px; border:1px solid #ddd;"></iframe>
@@ -1329,7 +1330,7 @@
                                                             'ADJUNTO DE DOCUMENTOS' => 'ADJUNTO DE DOCUMENTOS',
                                                             'ADJUNTO DE DOCUMENTACIÓN MÉDICA' => 'ADJUNTO DE DOCUMENTACIÓN MÉDICA',
                                                             'ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR' => 'ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR',
-                                                            'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC' => 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC',
+                                                            'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR' => 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR',
                                                             'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO' => 'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO',
                                                             'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO' => 'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO',
                                                             'CARTA ACLARATIVA' => 'CARTA ACLARATIVA'                               
@@ -1348,7 +1349,7 @@
                                                         ) !!}
                                                     </div>
                                                     <div class="form-group col-lg-2">
-                                                        <label for="fontsize2">Tamaño_Fuente:</label>
+                                                        <label for="fontsize2">Tamaño F.:</label>
                                                         <select id="fontsize2" class="form-control">
                                                             <option value="12px">9</option>
                                                             <option value="13px">10</option>
@@ -1482,6 +1483,7 @@
                                                                                                                         $ruta = match(true) {
                                                                                                                             $tipoarea === 'INFORME FINAL' => "informesfinalesclientesita/{$cliente->id}/{$doc->document}",
                                                                                                                             in_array($tipoarea, ['PROGRAMACIONES', 'INFORMES ADICIONALES']) => "tramitesclientesita/{$cliente->id}/APELACIÓN TERCERA SOLICITUD/INFORMES/{$doc->document}",
+                                                                                                                            $tipoarea === 'RSRD'=> "tramitesclientesita/{$cliente->id}/APELACIÓN TERCERA SOLICITUD/RSRD - ADJUNTO DOCUMENTACIÓN MÉDICA/{$doc->document}",
                                                                                                                             default => "documentacionclientesita/{$cliente->id}/{$doc->document}",
                                                                                                                         };
                                                                                                                     @endphp
@@ -1620,7 +1622,7 @@
                                                             $('#fechanotatecnicomedico2Container').show();
                                                             $('#tablaEspecialistas').show();
                                                             $('#nombremedico2Container').show();
-                                                        } else if (selectedValue === 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC') {
+                                                        } else if (selectedValue === 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR') {
                                                             $('#notatecnicomedico2Container').show();
                                                             $('#fechanotatecnicomedico2Container').show();
                                                             $('#tablaEspecialistas').show();
@@ -1816,8 +1818,8 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5 class="mb-0" style="font-weight: 700;">VISTA PREVIA DEL ADJUNTO/RESPUESTA</h5>
-                                        <a id="btnActualizarVistaAdjunto" class="btn btn-sm btn-verdocumento">
-                                            <i class="fas fa-sync-alt"></i> ACTUALIZAR
+                                        <a id="btnActualizarVistaAdjunto" class="btn btn-sm btn-verdocumento" title="ACTUALIZAR">
+                                            <i class="fas fa-sync-alt"></i>
                                         </a>
                                     </div>
                                     <iframe id="pdfPreview2" style="width:100%; height:500px; border:1px solid #ddd;"></iframe>
@@ -1894,10 +1896,10 @@
                                                     'SOLICITUD DE REVISIÓN DE DICTAMEN' => 'SOLICITUD DE REVISIÓN DE DICTAMEN',
                                                     'RESPUESTA A SOLICITUD DE REVISIÓN DE DICTAMEN' => 'RESPUESTA A SOLICITUD DE REVISIÓN DE DICTAMEN',
                                                     'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - ENTE GESTOR DE SALUD' => 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - ENTE GESTOR DE SALUD',
-                                                    'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - NOTIFICACIÓN TMC' => 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - NOTIFICACIÓN TMC',
+                                                    'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - NOTIFICACIÓN TMR' => 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - NOTIFICACIÓN TMR',
                                                     'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - EMPLEADOR' => 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - EMPLEADOR',
                                                     'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - ENTE GESTOR DE SALUD' => 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - ENTE GESTOR DE SALUD',
-                                                    'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - NOTIFICACIÓN TMC' => 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - NOTIFICACIÓN TMC',
+                                                    'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - NOTIFICACIÓN TMR' => 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - NOTIFICACIÓN TMR',
                                                     'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - EMPLEADOR' => 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - EMPLEADOR',
                                                     'COMPRA DE SERVICIOS' => 'COMPRA DE SERVICIOS',
                                                     'RESOLUCIÓN ADMINISTRATIVA' => 'RESOLUCIÓN ADMINISTRATIVA',
@@ -1911,7 +1913,7 @@
                                                     'AUTO DE ADMISIÓN' => 'AUTO DE ADMISIÓN',
                                                     'AUTO DE RECHAZO' => 'AUTO DE RECHAZO',
                                                     'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO' => 'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO',
-                                                    'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC' => 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC',
+                                                    'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR' => 'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR',
                                                     'ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR' => 'ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR',
                                                     'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO' => 'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO',
                                                     'COMPRA DE SERVICIOS' => 'COMPRA DE SERVICIOS',
@@ -1927,10 +1929,10 @@
                                                         "SOLICITUD DE REVISIÓN DE DICTAMEN": ["SOLICITUD DE REVISIÓN DE DICTAMEN"],
                                                         "RESPUESTA A SOLICITUD DE REVISIÓN DE DICTAMEN": ["AUTO DE ADMISIÓN", "AUTO DE RECHAZO"],
                                                         "SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - ENTE GESTOR DE SALUD": ["ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO"],
-                                                        "SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - NOTIFICACIÓN TMC": ["ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC"],
+                                                        "SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - NOTIFICACIÓN TMR": ["ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR"],
                                                         "SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - EMPLEADOR": ["ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR"],
                                                         "SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - ENTE GESTOR DE SALUD": ["ADJUNTO Y RESPUESTA AL COMPLEMENTARIO"],
-                                                        "SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - NOTIFICACIÓN TMC": ["ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC"],
+                                                        "SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - NOTIFICACIÓN TMR": ["ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR"],
                                                         "SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - EMPLEADOR": ["ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR"],
                                                         "COMPRA DE SERVICIOS": ["COMPRA DE SERVICIOS"],
                                                         "RESOLUCIÓN ADMINISTRATIVA": ["RESOLUCIÓN ADMINISTRATIVA"],
@@ -1950,7 +1952,7 @@
                                                     nivel.addEventListener("change", actualizarSubniveles);
                                                 });
                                             </script>
-                                            <div class="form-group col-lg-2">
+                                            <div class="form-group col-lg-4">
                                                 {!! Form::label('tipo_pdf3', 'Tipo Carta:') !!}
                                                 {!! Form::select('tipo_pdf3', [
                                                     'PRIMERA CARTA SIT' => 'PRIMERA CARTA SIT',
@@ -1971,7 +1973,7 @@
                                                 <input type="date" class="form-control" id="fechaactual3" name="fechaactual3" value="{{ \Carbon\Carbon::now()->toDateString() }}" min="{{ \Carbon\Carbon::now()->toDateString() }}">
                                             </div>
                                             <div class="form-group col-lg-2">
-                                                {!! Form::label('fecharetorno3', 'Fecha Retorno:') !!}
+                                                {!! Form::label('fecharetorno3', 'Fecha Ret.:') !!}
                                                 <input type="date" class="form-control" id="fecharetorno3" name="fecharetorno3" value="{{ \Carbon\Carbon::now()->toDateString() }}" readonly>
                                             </div>
                                             <script>
@@ -2007,7 +2009,7 @@
                                                 ) !!}
                                             </div>
                                             <div class="form-group col-lg-2">
-                                                <label for="fontsize">Tamaño Fuente:</label>
+                                                <label for="fontsize">Tamaño F.:</label>
                                                 <select id="fontsize" class="form-control">
                                                     <option value="12px">9</option>
                                                     <option value="13px">10</option>
@@ -2051,8 +2053,8 @@
                                                 {!! Form::label('cargomedico3', 'Cargo Destinatario:') !!}
                                                 {!! Form::text('cargomedico3', null, ['class' => 'form-control']) !!}
                                             </div>
-                                            <div class="form-group col-lg-3">
-                                                {!! Form::label('fechasolrevdictamen3', 'Fecha Sol. Rev. Dic.:') !!}
+                                            <div class="form-group col-lg-4">
+                                                {!! Form::label('fechasolrevdictamen3', 'Fecha Sol. Rev. Dictamen:') !!}
                                                 {!! Form::date('fechasolrevdictamen3', null, ['class' => 'form-control']) !!}
                                             </div>
                                             <div class="form-group col-lg-3">
@@ -2084,7 +2086,7 @@
                                                 {!! Form::select('solmodificar3', [
                                                     'TÉCNICO MÉDICO' => 'TÉCNICO MÉDICO',
                                                     'COMPLEMENTARIO' => 'COMPLEMENTARIO',
-                                                    'ACTA DEL TMC' => 'ACTA DEL TMC',
+                                                    'ACTA DEL TMR' => 'ACTA DEL TMR',
                                                     'DEL EMPLEADOR' => 'DEL EMPLEADOR',
                                                 ], null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                             </div>
@@ -2429,6 +2431,27 @@
                                             </div>
                                         </div>
 
+                                        <input type="hidden" id="fechaform1sit" name="fechaform1sit">
+                                        <input type="hidden" id="nroform1sit" name="nroform1sit">
+                                        <input type="hidden" id="fechaform2sit" name="fechaform2sit">
+                                        <input type="hidden" id="nroform2sit" name="nroform2sit">
+                                        <input type="hidden" id="fechaform3sit" name="fechaform3sit">
+                                        <input type="hidden" id="nroform3sit" name="nroform3sit">
+
+                                        <input type="hidden" id="fechaform1reclamogp" name="fechaform1reclamogp">
+                                        <input type="hidden" id="nroform1reclamogp" name="nroform1reclamogp">
+                                        <input type="hidden" id="fechaform2reclamogp" name="fechaform2reclamogp">
+                                        <input type="hidden" id="nroform2reclamogp" name="nroform2reclamogp">
+                                        <input type="hidden" id="fechaform3reclamogp" name="fechaform3reclamogp">
+                                        <input type="hidden" id="nroform3reclamogp" name="nroform3reclamogp">
+
+                                        <input type="hidden" id="fechaform1reclamoaps" name="fechaform1reclamoaps">
+                                        <input type="hidden" id="nroform1reclamoaps" name="nroform1reclamoaps">
+                                        <input type="hidden" id="fechaform2reclamoaps" name="fechaform2reclamoaps">
+                                        <input type="hidden" id="nroform2reclamoaps" name="nroform2reclamoaps">
+                                        <input type="hidden" id="fechaform3reclamoaps" name="fechaform3reclamoaps">
+                                        <input type="hidden" id="nroform3reclamoaps" name="nroform3reclamoaps">
+
                                         <script>
                                             $(document).ready(function(){
 
@@ -2449,15 +2472,15 @@
                                                                 clienteid3: {{ $cliente->id }}
                                                             },
                                                             success: function(response) {
-                                                                $('#fecha1sit, #cite1sit, #fechacite1sit, #fecharesp1sit' +
-                                                                '#fecha2sit, #cite2sit, #fechacite2sit, #fecharesp2sit' +
-                                                                '#fecha3sit, #cite3sit, #fechacite3sit, #fecharesp3sit' + 
-                                                                '#fecha1reclamogp, #cite1reclamogp, #fechacite1reclamogp, #fecharesp1reclamogp' + 
-                                                                '#fecha2reclamogp, #cite2reclamogp, #fechacite2reclamogp, #fecharesp2reclamogp' + 
-                                                                '#fecha3reclamogp, #cite3reclamogp, #fechacite3reclamogp, #fecharesp3reclamogp' + 
-                                                                '#fecha1reclamoaps, #cite1reclamoaps, #fechacite1reclamoaps, #fecharesp1reclamoaps' + 
-                                                                '#fecha2reclamoaps, #cite2reclamoaps, #fechacite2reclamoaps, #fecharesp2reclamoaps' + 
-                                                                '#fecha3reclamoaps, #cite3reclamoaps, #fechacite3reclamoaps, #fecharesp3reclamoaps')
+                                                                $('#fecha1sit, #cite1sit, #fechacite1sit, #fecharesp1sit, #fechaform1sit, #nroform1sit' +
+                                                                '#fecha2sit, #cite2sit, #fechacite2sit, #fecharesp2sit, #fechaform2sit, #nroform2sit' +
+                                                                '#fecha3sit, #cite3sit, #fechacite3sit, #fecharesp3sit, #fechaform3sit, #nroform3sit' + 
+                                                                '#fecha1reclamogp, #cite1reclamogp, #fechacite1reclamogp, #fecharesp1reclamogp, #fechaform1reclamogp, #nroform1reclamogp' + 
+                                                                '#fecha2reclamogp, #cite2reclamogp, #fechacite2reclamogp, #fecharesp2reclamogp, #fechaform2reclamogp, #nroform2reclamogp' + 
+                                                                '#fecha3reclamogp, #cite3reclamogp, #fechacite3reclamogp, #fecharesp3reclamogp, #fechaform3reclamogp, #nroform3reclamogp' + 
+                                                                '#fecha1reclamoaps, #cite1reclamoaps, #fechacite1reclamoaps, #fecharesp1reclamoaps, #fechaform1reclamoaps, #nroform1reclamoaps' + 
+                                                                '#fecha2reclamoaps, #cite2reclamoaps, #fechacite2reclamoaps, #fecharesp2reclamoaps, #fechaform2reclamoaps, #nroform2reclamoaps' + 
+                                                                '#fecha3reclamoaps, #cite3reclamoaps, #fechacite3reclamoaps, #fecharesp3reclamoaps, #fechaform3reclamoaps, #nroform3reclamoaps')
                                                                 .val('');
 
                                                                 if(response.success) {
@@ -2466,66 +2489,88 @@
                                                                         $('#cite1sit').val(response.citenota_primera);
                                                                         $('#fechacite1sit').val(response.fechacitenota_primera);
                                                                         $('#fecharesp1sit').val(response.fecharespuesta_primera);
-
+                                                                        $('#fechaform1sit').val(response.fechaestadotramite_primera);
+                                                                        $('#nroform1sit').val(response.nroformulario_primera);
                                                                     }
                                                                     if(tipo === 'TERCERA CARTA SIT'){
                                                                         $('#fecha1sit').val(response.fechasubida_primera);
                                                                         $('#cite1sit').val(response.citenota_primera);
                                                                         $('#fechacite1sit').val(response.fechacitenota_primera);
                                                                         $('#fecharesp1sit').val(response.fecharespuesta_primera);
+                                                                        $('#fechaform1sit').val(response.fechaestadotramite_primera);
+                                                                        $('#nroform1sit').val(response.nroformulario_primera);
 
-                                                                        /* $('#fecha2sitContainer, #cite2sitContainer, #fecharesp2sitContainer').show(); */
                                                                         $('#fecha2sit').val(response.fechasubida_segunda);
                                                                         $('#cite2sit').val(response.citenota_segunda);
                                                                         $('#fechacite2sit').val(response.fechacitenota_segunda);
                                                                         $('#fecharesp2sit').val(response.fecharespuesta_segunda);
+                                                                        $('#fechaform2sit').val(response.fechaestadotramite_segunda);
+                                                                        $('#nroform2sit').val(response.nroformulario_segunda);
                                                                     }
                                                                     if(tipo === 'PRIMERA CARTA DE RECLAMO GP'){
                                                                         $('#fecha1sit').val(response.fechasubida_primera);
                                                                         $('#cite1sit').val(response.citenota_primera);
                                                                         $('#fechacite1sit').val(response.fechacitenota_primera);
                                                                         $('#fecharesp1sit').val(response.fecharespuesta_primera);
+                                                                        $('#fechaform1sit').val(response.fechaestadotramite_primera);
+                                                                        $('#nroform1sit').val(response.nroformulario_primera);
 
                                                                         $('#fecha2sit').val(response.fechasubida_segunda);
                                                                         $('#cite2sit').val(response.citenota_segunda);
                                                                         $('#fechacite2sit').val(response.fechacitenota_segunda);
                                                                         $('#fecharesp2sit').val(response.fecharespuesta_segunda);
+                                                                        $('#fechaform2sit').val(response.fechaestadotramite_segunda);
+                                                                        $('#nroform2sit').val(response.nroformulario_segunda);
 
                                                                         $('#fecha3sit').val(response.fechasubida_tercera);
                                                                         $('#cite3sit').val(response.citenota_tercera);
                                                                         $('#fechacite3sit').val(response.fechacitenota_tercera);
                                                                         $('#fecharesp3sit').val(response.fecharespuesta_tercera);
+                                                                        $('#fechaform3sit').val(response.fechaestadotramite_tercera);
+                                                                        $('#nroform3sit').val(response.nroformulario_tercera);
                                                                     }
                                                                     if(tipo === 'PRIMERA CARTA DE RECLAMO APS'){
                                                                         $('#fecha1sit').val(response.fechasubida_primera);
                                                                         $('#cite1sit').val(response.citenota_primera);
                                                                         $('#fechacite1sit').val(response.fechacitenota_primera);
                                                                         $('#fecharesp1sit').val(response.fecharespuesta_primera);
+                                                                        $('#fechaform1sit').val(response.fechaestadotramite_primera);
+                                                                        $('#nroform1sit').val(response.nroformulario_primera);
 
                                                                         $('#fecha2sit').val(response.fechasubida_segunda);
                                                                         $('#cite2sit').val(response.citenota_segunda);
                                                                         $('#fechacite2sit').val(response.fechacitenota_segunda);
                                                                         $('#fecharesp2sit').val(response.fecharespuesta_segunda);
+                                                                        $('#fechaform2sit').val(response.fechaestadotramite_segunda);
+                                                                        $('#nroform2sit').val(response.nroformulario_segunda);
 
                                                                         $('#fecha3sit').val(response.fechasubida_tercera);
                                                                         $('#cite3sit').val(response.citenota_tercera);
                                                                         $('#fechacite3sit').val(response.fechacitenota_tercera);
                                                                         $('#fecharesp3sit').val(response.fecharespuesta_tercera);
+                                                                        $('#fechaform3sit').val(response.fechaestadotramite_tercera);
+                                                                        $('#nroform3sit').val(response.nroformulario_tercera);
 
                                                                         $('#fecha1reclamogp').val(response.fechasubida_primerareclamogp);
                                                                         $('#cite1reclamogp').val(response.citenota_primerareclamogp);
                                                                         $('#fechacite1reclamogp').val(response.fechacitenota_primerareclamogp);
                                                                         $('#fecharesp1reclamogp').val(response.fecharespuesta_primerareclamogp);
+                                                                        $('#fechaform1reclamogp').val(response.fechaestadotramite_primerareclamogp);
+                                                                        $('#nroform1reclamogp').val(response.nroformulario_primerareclamogp);
 
                                                                         $('#fecha2reclamogp').val(response.fechasubida_segundareclamogp);
                                                                         $('#cite2reclamogp').val(response.citenota_segundareclamogp);
                                                                         $('#fechacite2reclamogp').val(response.fechacitenota_segundareclamogp);
                                                                         $('#fecharesp2reclamogp').val(response.fecharespuesta_segundareclamogp);
+                                                                        $('#fechaform2reclamogp').val(response.fechaestadotramite_segundareclamogp);
+                                                                        $('#nroform2reclamogp').val(response.nroformulario_segundareclamogp);
 
                                                                         $('#fecha3reclamogp').val(response.fechasubida_tercerareclamogp);
                                                                         $('#cite3reclamogp').val(response.citenota_tercerareclamogp);
                                                                         $('#fechacite3reclamogp').val(response.fechacitenota_tercerareclamogp);
                                                                         $('#fecharesp3reclamogp').val(response.fecharespuesta_tercerareclamogp);
+                                                                        $('#fechaform3reclamogp').val(response.fechaestadotramite_tercerareclamogp);
+                                                                        $('#nroform3reclamogp').val(response.nroformulario_tercerareclamogp);
 
                                                                         $('#1reclamogpContainer').toggle(!!response.fechasubida_primerareclamogp);
                                                                         $('#2reclamogpContainer').toggle(!!response.fechasubida_segundareclamogp);
@@ -2536,57 +2581,79 @@
                                                                         $('#cite1sit').val(response.citenota_primera);
                                                                         $('#fechacite1sit').val(response.fechacitenota_primera);
                                                                         $('#fecharesp1sit').val(response.fecharespuesta_primera);
+                                                                        $('#fechaform1sit').val(response.fechaestadotramite_primera);
+                                                                        $('#nroform1sit').val(response.nroformulario_primera);
 
                                                                         $('#fecha2sit').val(response.fechasubida_segunda);
                                                                         $('#cite2sit').val(response.citenota_segunda);
                                                                         $('#fechacite2sit').val(response.fechacitenota_segunda);
                                                                         $('#fecharesp2sit').val(response.fecharespuesta_segunda);
+                                                                        $('#fechaform2sit').val(response.fechaestadotramite_segunda);
+                                                                        $('#nroform2sit').val(response.nroformulario_segunda);
 
                                                                         $('#fecha3sit').val(response.fechasubida_tercera);
                                                                         $('#cite3sit').val(response.citenota_tercera);
                                                                         $('#fechacite3sit').val(response.fechacitenota_tercera);
                                                                         $('#fecharesp3sit').val(response.fecharespuesta_tercera);
+                                                                        $('#fechaform3sit').val(response.fechaestadotramite_tercera);
+                                                                        $('#nroform3sit').val(response.nroformulario_tercera);
 
                                                                         $('#fecha1reclamogp').val(response.fechasubida_primerareclamogp);
                                                                         $('#cite1reclamogp').val(response.citenota_primerareclamogp);
                                                                         $('#fechacite1reclamogp').val(response.fechacitenota_primerareclamogp);
                                                                         $('#fecharesp1reclamogp').val(response.fecharespuesta_primerareclamogp);
+                                                                        $('#fechaform1reclamogp').val(response.fechaestadotramite_primerareclamogp);
+                                                                        $('#nroform1reclamogp').val(response.nroformulario_primerareclamogp);
                                                                     }
                                                                     if(tipo === 'SEGUNDA CARTA DE RECLAMO APS'){
                                                                         $('#fecha1sit').val(response.fechasubida_primera);
                                                                         $('#cite1sit').val(response.citenota_primera);
                                                                         $('#fechacite1sit').val(response.fechacitenota_primera);
                                                                         $('#fecharesp1sit').val(response.fecharespuesta_primera);
+                                                                        $('#fechaform1sit').val(response.fechaestadotramite_primera);
+                                                                        $('#nroform1sit').val(response.nroformulario_primera);
 
                                                                         $('#fecha2sit').val(response.fechasubida_segunda);
                                                                         $('#cite2sit').val(response.citenota_segunda);
                                                                         $('#fechacite2sit').val(response.fechacitenota_segunda);
                                                                         $('#fecharesp2sit').val(response.fecharespuesta_segunda);
+                                                                        $('#fechaform2sit').val(response.fechaestadotramite_segunda);
+                                                                        $('#nroform2sit').val(response.nroformulario_segunda);
 
                                                                         $('#fecha3sit').val(response.fechasubida_tercera);
                                                                         $('#cite3sit').val(response.citenota_tercera);
                                                                         $('#fechacite3sit').val(response.fechacitenota_tercera);
                                                                         $('#fecharesp3sit').val(response.fecharespuesta_tercera);
+                                                                        $('#fechaform3sit').val(response.fechaestadotramite_tercera);
+                                                                        $('#nroform3sit').val(response.nroformulario_tercera);
 
                                                                         $('#fecha1reclamogp').val(response.fechasubida_primerareclamogp);
                                                                         $('#cite1reclamogp').val(response.citenota_primerareclamogp);
                                                                         $('#fechacite1reclamogp').val(response.fechacitenota_primerareclamogp);
                                                                         $('#fecharesp1reclamogp').val(response.fecharespuesta_primerareclamogp);
+                                                                        $('#fechaform1reclamogp').val(response.fechaestadotramite_primerareclamogp);
+                                                                        $('#nroform1reclamogp').val(response.nroformulario_primerareclamogp);
 
                                                                         $('#fecha1reclamoaps').val(response.fechasubida_primerareclamoaps);
                                                                         $('#cite1reclamoaps').val(response.citenota_primerareclamoaps);
                                                                         $('#fechacite1reclamoaps').val(response.fechacitenota_primerareclamoaps);
                                                                         $('#fecharesp1reclamoaps').val(response.fecharespuesta_primerareclamoaps);
+                                                                        $('#fechaform1reclamoaps').val(response.fechaestadotramite_primerareclamoaps);
+                                                                        $('#nroform1reclamoaps').val(response.nroformulario_primerareclamoaps);
 
                                                                         $('#fecha2reclamogp').val(response.fechasubida_segundareclamogp);
                                                                         $('#cite2reclamogp').val(response.citenota_segundareclamogp);
                                                                         $('#fechacite2reclamogp').val(response.fechacitenota_segundareclamogp);
                                                                         $('#fecharesp2reclamogp').val(response.fecharespuesta_segundareclamogp);
+                                                                        $('#fechaform2reclamogp').val(response.fechaestadotramite_segundareclamogp);
+                                                                        $('#nroform2reclamogp').val(response.nroformulario_segundareclamogp);
 
                                                                         $('#fecha3reclamogp').val(response.fechasubida_tercerareclamogp);
                                                                         $('#cite3reclamogp').val(response.citenota_tercerareclamogp);
                                                                         $('#fechacite3reclamogp').val(response.fechacitenota_tercerareclamogp);
                                                                         $('#fecharesp3reclamogp').val(response.fecharespuesta_tercerareclamogp);
+                                                                        $('#fechaform3reclamogp').val(response.fechaestadotramite_tercerareclamogp);
+                                                                        $('#nroform3reclamogp').val(response.nroformulario_tercerareclamogp);
 
                                                                         $('#2reclamogpContainer').toggle(!!response.fechasubida_segundareclamogp);
                                                                         $('#3reclamogpContainer').toggle(!!response.fechasubida_tercerareclamogp);
@@ -2596,67 +2663,93 @@
                                                                         $('#cite1sit').val(response.citenota_primera);
                                                                         $('#fechacite1sit').val(response.fechacitenota_primera);
                                                                         $('#fecharesp1sit').val(response.fecharespuesta_primera);
+                                                                        $('#fechaform1sit').val(response.fechaestadotramite_primera);
+                                                                        $('#nroform1sit').val(response.nroformulario_primera);
 
                                                                         $('#fecha2sit').val(response.fechasubida_segunda);
                                                                         $('#cite2sit').val(response.citenota_segunda);
                                                                         $('#fechacite2sit').val(response.fechacitenota_segunda);
                                                                         $('#fecharesp2sit').val(response.fecharespuesta_segunda);
+                                                                        $('#fechaform2sit').val(response.fechaestadotramite_segunda);
+                                                                        $('#nroform2sit').val(response.nroformulario_segunda);
 
                                                                         $('#fecha3sit').val(response.fechasubida_tercera);
                                                                         $('#cite3sit').val(response.citenota_tercera);
                                                                         $('#fechacite3sit').val(response.fechacitenota_tercera);
                                                                         $('#fecharesp3sit').val(response.fecharespuesta_tercera);
+                                                                        $('#fechaform3sit').val(response.fechaestadotramite_tercera);
+                                                                        $('#nroform3sit').val(response.nroformulario_tercera);
 
                                                                         $('#fecha1reclamogp').val(response.fechasubida_primerareclamogp);
                                                                         $('#cite1reclamogp').val(response.citenota_primerareclamogp);
                                                                         $('#fechacite1reclamogp').val(response.fechacitenota_primerareclamogp);
                                                                         $('#fecharesp1reclamogp').val(response.fecharespuesta_primerareclamogp);
+                                                                        $('#fechaform1reclamogp').val(response.fechaestadotramite_primerareclamogp);
+                                                                        $('#nroform1reclamogp').val(response.nroformulario_primerareclamogp);
 
                                                                         $('#fecha2reclamogp').val(response.fechasubida_segundareclamogp);
                                                                         $('#cite2reclamogp').val(response.citenota_segundareclamogp);
                                                                         $('#fechacite2reclamogp').val(response.fechacitenota_segundareclamogp);
                                                                         $('#fecharesp2reclamogp').val(response.fecharespuesta_segundareclamogp);
+                                                                        $('#fechaform2reclamogp').val(response.fechaestadotramite_segundareclamogp);
+                                                                        $('#nroform2reclamogp').val(response.nroformulario_segundareclamogp);
                                                                     }
                                                                     if(tipo === 'TERCERA CARTA DE RECLAMO APS'){
                                                                         $('#fecha1sit').val(response.fechasubida_primera);
                                                                         $('#cite1sit').val(response.citenota_primera);
                                                                         $('#fechacite1sit').val(response.fechacitenota_primera);
                                                                         $('#fecharesp1sit').val(response.fecharespuesta_primera);
+                                                                        $('#fechaform1sit').val(response.fechaestadotramite_primera);
+                                                                        $('#nroform1sit').val(response.nroformulario_primera);
 
                                                                         $('#fecha2sit').val(response.fechasubida_segunda);
                                                                         $('#cite2sit').val(response.citenota_segunda);
                                                                         $('#fechacite2sit').val(response.fechacitenota_segunda);
                                                                         $('#fecharesp2sit').val(response.fecharespuesta_segunda);
+                                                                        $('#fechaform2sit').val(response.fechaestadotramite_segunda);
+                                                                        $('#nroform2sit').val(response.nroformulario_segunda);
 
                                                                         $('#fecha3sit').val(response.fechasubida_tercera);
                                                                         $('#cite3sit').val(response.citenota_tercera);
                                                                         $('#fechacite3sit').val(response.fechacitenota_tercera);
                                                                         $('#fecharesp3sit').val(response.fecharespuesta_tercera);
+                                                                        $('#fechaform3sit').val(response.fechaestadotramite_tercera);
+                                                                        $('#nroform3sit').val(response.nroformulario_tercera);
 
                                                                         $('#fecha1reclamogp').val(response.fechasubida_primerareclamogp);
                                                                         $('#cite1reclamogp').val(response.citenota_primerareclamogp);
                                                                         $('#fechacite1reclamogp').val(response.fechacitenota_primerareclamogp);
                                                                         $('#fecharesp1reclamogp').val(response.fecharespuesta_primerareclamogp);
+                                                                        $('#fechaform1reclamogp').val(response.fechaestadotramite_primerareclamogp);
+                                                                        $('#nroform1reclamogp').val(response.nroformulario_primerareclamogp);
 
                                                                         $('#fecha1reclamoaps').val(response.fechasubida_primerareclamoaps);
                                                                         $('#cite1reclamoaps').val(response.citenota_primerareclamoaps);
                                                                         $('#fechacite1reclamoaps').val(response.fechacitenota_primerareclamoaps);
                                                                         $('#fecharesp1reclamoaps').val(response.fecharespuesta_primerareclamoaps);
+                                                                        $('#fechaform1reclamoaps').val(response.fechaestadotramite_primerareclamoaps);
+                                                                        $('#nroform1reclamoaps').val(response.nroformulario_primerareclamoaps);
 
                                                                         $('#fecha2reclamogp').val(response.fechasubida_segundareclamogp);
                                                                         $('#cite2reclamogp').val(response.citenota_segundareclamogp);
                                                                         $('#fechacite2reclamogp').val(response.fechacitenota_segundareclamogp);
                                                                         $('#fecharesp2reclamogp').val(response.fecharespuesta_segundareclamogp);
+                                                                        $('#fechaform2reclamogp').val(response.fechaestadotramite_segundareclamogp);
+                                                                        $('#nroform2reclamogp').val(response.nroformulario_segundareclamogp);
 
                                                                         $('#fecha2reclamoaps').val(response.fechasubida_segundareclamoaps);
                                                                         $('#cite2reclamoaps').val(response.citenota_segundareclamoaps);
                                                                         $('#fechacite2reclamoaps').val(response.fechacitenota_segundareclamoaps);
                                                                         $('#fecharesp2reclamoaps').val(response.fecharespuesta_segundareclamoaps);
+                                                                        $('#fechaform2reclamoaps').val(response.fechaestadotramite_segundareclamoaps);
+                                                                        $('#nroform2reclamoaps').val(response.nroformulario_segundareclamoaps);
 
                                                                         $('#fecha3reclamogp').val(response.fechasubida_tercerareclamogp);
                                                                         $('#cite3reclamogp').val(response.citenota_tercerareclamogp);
                                                                         $('#fechacite3reclamogp').val(response.fechacitenota_tercerareclamogp);
                                                                         $('#fecharesp3reclamogp').val(response.fecharespuesta_tercerareclamogp);
+                                                                        $('#fechaform3reclamogp').val(response.fechaestadotramite_tercerareclamogp);
+                                                                        $('#nroform3reclamogp').val(response.nroformulario_tercerareclamogp);
 
                                                                         $('#3reclamogpContainer').toggle(!!response.fechasubida_tercerareclamogp);
                                                                     }
@@ -2665,77 +2758,107 @@
                                                                         $('#cite1sit').val(response.citenota_primera);
                                                                         $('#fechacite1sit').val(response.fechacitenota_primera);
                                                                         $('#fecharesp1sit').val(response.fecharespuesta_primera);
+                                                                        $('#fechaform1sit').val(response.fechaestadotramite_primera);
+                                                                        $('#nroform1sit').val(response.nroformulario_primera);
 
                                                                         $('#fecha2sit').val(response.fechasubida_segunda);
                                                                         $('#cite2sit').val(response.citenota_segunda);
                                                                         $('#fechacite2sit').val(response.fechacitenota_segunda);
                                                                         $('#fecharesp2sit').val(response.fecharespuesta_segunda);
+                                                                        $('#fechaform2sit').val(response.fechaestadotramite_segunda);
+                                                                        $('#nroform2sit').val(response.nroformulario_segunda);
 
                                                                         $('#fecha3sit').val(response.fechasubida_tercera);
                                                                         $('#cite3sit').val(response.citenota_tercera);
                                                                         $('#fechacite3sit').val(response.fechacitenota_tercera);
                                                                         $('#fecharesp3sit').val(response.fecharespuesta_tercera);
+                                                                        $('#fechaform3sit').val(response.fechaestadotramite_tercera);
+                                                                        $('#nroform3sit').val(response.nroformulario_tercera);
 
                                                                         $('#fecha1reclamogp').val(response.fechasubida_primerareclamogp);
                                                                         $('#cite1reclamogp').val(response.citenota_primerareclamogp);
                                                                         $('#fechacite1reclamogp').val(response.fechacitenota_primerareclamogp);
                                                                         $('#fecharesp1reclamogp').val(response.fecharespuesta_primerareclamogp);
+                                                                        $('#fechaform1reclamogp').val(response.fechaestadotramite_primerareclamogp);
+                                                                        $('#nroform1reclamogp').val(response.nroformulario_primerareclamogp);
 
                                                                         $('#fecha2reclamogp').val(response.fechasubida_segundareclamogp);
                                                                         $('#cite2reclamogp').val(response.citenota_segundareclamogp);
                                                                         $('#fechacite2reclamogp').val(response.fechacitenota_segundareclamogp);
                                                                         $('#fecharesp2reclamogp').val(response.fecharespuesta_segundareclamogp);
+                                                                        $('#fechaform2reclamogp').val(response.fechaestadotramite_segundareclamogp);
+                                                                        $('#nroform2reclamogp').val(response.nroformulario_segundareclamogp);
 
                                                                         $('#fecha3reclamogp').val(response.fechasubida_tercerareclamogp);
                                                                         $('#cite3reclamogp').val(response.citenota_tercerareclamogp);
                                                                         $('#fechacite3reclamogp').val(response.fechacitenota_tercerareclamogp);
                                                                         $('#fecharesp3reclamogp').val(response.fecharespuesta_tercerareclamogp);
+                                                                        $('#fechaform3reclamogp').val(response.fechaestadotramite_tercerareclamogp);
+                                                                        $('#nroform3reclamogp').val(response.nroformulario_tercerareclamogp);
                                                                     }
                                                                     if(tipo === 'REITERACIÓN A CARTAS DE RECLAMO APS'){
                                                                         $('#fecha1sit').val(response.fechasubida_primera);
                                                                         $('#cite1sit').val(response.citenota_primera);
                                                                         $('#fechacite1sit').val(response.fechacitenota_primera);
                                                                         $('#fecharesp1sit').val(response.fecharespuesta_primera);
+                                                                        $('#fechaform1sit').val(response.fechaestadotramite_primera);
+                                                                        $('#nroform1sit').val(response.nroformulario_primera);
 
                                                                         $('#fecha2sit').val(response.fechasubida_segunda);
                                                                         $('#cite2sit').val(response.citenota_segunda);
                                                                         $('#fechacite2sit').val(response.fechacitenota_segunda);
                                                                         $('#fecharesp2sit').val(response.fecharespuesta_segunda);
+                                                                        $('#fechaform2sit').val(response.fechaestadotramite_segunda);
+                                                                        $('#nroform2sit').val(response.nroformulario_segunda);
 
                                                                         $('#fecha3sit').val(response.fechasubida_tercera);
                                                                         $('#cite3sit').val(response.citenota_tercera);
                                                                         $('#fechacite3sit').val(response.fechacitenota_tercera);
                                                                         $('#fecharesp3sit').val(response.fecharespuesta_tercera);
+                                                                        $('#fechaform3sit').val(response.fechaestadotramite_tercera);
+                                                                        $('#nroform3sit').val(response.nroformulario_tercera);
 
                                                                         $('#fecha1reclamogp').val(response.fechasubida_primerareclamogp);
                                                                         $('#cite1reclamogp').val(response.citenota_primerareclamogp);
                                                                         $('#fechacite1reclamogp').val(response.fechacitenota_primerareclamogp);
                                                                         $('#fecharesp1reclamogp').val(response.fecharespuesta_primerareclamogp);
+                                                                        $('#fechaform1reclamogp').val(response.fechaestadotramite_primerareclamogp);
+                                                                        $('#nroform1reclamogp').val(response.nroformulario_primerareclamogp);
 
                                                                         $('#fecha1reclamoaps').val(response.fechasubida_primerareclamoaps);
                                                                         $('#cite1reclamoaps').val(response.citenota_primerareclamoaps);
                                                                         $('#fechacite1reclamoaps').val(response.fechacitenota_primerareclamoaps);
                                                                         $('#fecharesp1reclamoaps').val(response.fecharespuesta_primerareclamoaps);
+                                                                        $('#fechaform1reclamoaps').val(response.fechaestadotramite_primerareclamoaps);
+                                                                        $('#nroform1reclamoaps').val(response.nroformulario_primerareclamoaps);
 
                                                                         $('#fecha2reclamogp').val(response.fechasubida_segundareclamogp);
                                                                         $('#cite2reclamogp').val(response.citenota_segundareclamogp);
                                                                         $('#fechacite2reclamogp').val(response.fechacitenota_segundareclamogp);
                                                                         $('#fecharesp2reclamogp').val(response.fecharespuesta_segundareclamogp);
+                                                                        $('#fechaform2reclamogp').val(response.fechaestadotramite_segundareclamogp);
+                                                                        $('#nroform2reclamogp').val(response.nroformulario_segundareclamogp);
 
                                                                         $('#fecha2reclamoaps').val(response.fechasubida_segundareclamoaps);
                                                                         $('#cite2reclamoaps').val(response.citenota_segundareclamoaps);
                                                                         $('#fechacite2reclamoaps').val(response.fechacitenota_segundareclamoaps);
                                                                         $('#fecharesp2reclamoaps').val(response.fecharespuesta_segundareclamoaps);
+                                                                        $('#fechaform2reclamoaps').val(response.fechaestadotramite_segundareclamoaps);
+                                                                        $('#nroform2reclamoaps').val(response.nroformulario_segundareclamoaps);
 
                                                                         $('#fecha3reclamoaps').val(response.fechasubida_tercerareclamoaps);
                                                                         $('#cite3reclamoaps').val(response.citenota_tercerareclamoaps);
                                                                         $('#fechacite3reclamoaps').val(response.fechacitenota_tercerareclamoaps);
                                                                         $('#fecharesp3reclamoaps').val(response.fecharespuesta_tercerareclamoaps);
+                                                                        $('#fechaform3reclamoaps').val(response.fechaestadotramite_tercerareclamoaps);
+                                                                        $('#nroform3reclamoaps').val(response.nroformulario_tercerareclamoaps);
 
                                                                         $('#fecha3reclamogp').val(response.fechasubida_tercerareclamogp);
                                                                         $('#cite3reclamogp').val(response.citenota_tercerareclamogp);
                                                                         $('#fechacite3reclamogp').val(response.fechacitenota_tercerareclamogp);
                                                                         $('#fecharesp3reclamogp').val(response.fecharespuesta_tercerareclamogp);
+                                                                        $('#fechaform3reclamogp').val(response.fechaestadotramite_tercerareclamogp);
+                                                                        $('#nroform3reclamogp').val(response.nroformulario_tercerareclamogp);
                                                                     }
                                                                 }
                                                             }
@@ -2746,159 +2869,129 @@
                                                 $('#nivelprocedimiento3, #subnivelprocedimiento3, #tipo_pdf3').on('change', buscarProcedimiento);
 
                                                 function toggleAdjuntoFields() {
-                                                    $('#tipoadjuntoContainer').hide();
-                                                    $('#fechaadjuntoContainer').hide();
-                                                    $('#solmodificar3Container').hide();
-                                                    $('#nronota3Container').hide();
-                                                    $('#fechanota3Container').hide();
-                                                    $('#dirigidoa3Container').hide();
-                                                    $('#estadolab3Container').hide();
-                                                    $('#afiliadoa3Container').hide();
-                                                    $('#textocomplementario3Container').hide();
-                                                    $('#fechaconclusionprog3Container').hide();
-                                                    $('#1sitContainer').hide();
-                                                    $('#2sitContainer').hide();
-                                                    $('#3sitContainer').hide();
-                                                    $('#1reclamogpContainer').hide();
-                                                    $('#1reclamoapsContainer').hide();
-                                                    $('#2reclamogpContainer').hide();
-                                                    $('#2reclamoapsContainer').hide();
-                                                    $('#3reclamogpContainer').hide();
-                                                    $('#3reclamoapsContainer').hide();
-                                                    $('#nombremedico3Container').hide();
-                                                    $('#cargomedico3Container').hide();
 
-                                                    var subnivel = $('#subnivelprocedimiento3').val();
-                                                    var tipoPdf = $('#tipo_pdf3').val();
+                                                    const allContainers = [
+                                                        '#tipoadjuntoContainer', '#fechaadjuntoContainer',
+                                                        '#solmodificar3Container', '#nronota3Container', '#fechanota3Container',
+                                                        '#dirigidoa3Container', '#estadolab3Container', '#afiliadoa3Container',
+                                                        '#textocomplementario3Container', '#fechaconclusionprog3Container',
+                                                        '#1sitContainer', '#2sitContainer', '#3sitContainer',
+                                                        '#1reclamogpContainer', '#1reclamoapsContainer',
+                                                        '#2reclamogpContainer', '#2reclamoapsContainer',
+                                                        '#3reclamogpContainer', '#3reclamoapsContainer',
+                                                        '#nombremedico3Container', '#cargomedico3Container',
+                                                        '#fechaadjdoc'
+                                                    ];
 
-                                                    if (
-                                                        tipoPdf === 'PRIMERA CARTA SIT'
-                                                    ) {
-                                                        /* $('#tipoadjuntoContainer').show(); */
-                                                        /* $('#fechaadjuntoContainer').show(); */
-                                                    } else if (
-                                                        tipoPdf === 'SEGUNDA CARTA SIT'
-                                                    ) {
-                                                        /* $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show(); */
-                                                        $('#solmodificar3Container').show();
-                                                        $('#1sitContainer').show();
-                                                    } else if (
-                                                        tipoPdf === 'TERCERA CARTA SIT'
-                                                    ) {
-                                                        /* $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show(); */
-                                                        $('#solmodificar3Container').show();
-                                                        $('#1sitContainer').show();
-                                                        $('#2sitContainer').show();
-                                                    } else if (
-                                                        tipoPdf === 'PRIMERA CARTA DE RECLAMO GP'
-                                                    ) {
-                                                       /*  $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show(); */
-                                                        $('#solmodificar3Container').show();
-                                                        $('#1sitContainer').show();
-                                                        $('#2sitContainer').show();
-                                                        $('#3sitContainer').show();
-                                                    } else if (
-                                                        tipoPdf === 'PRIMERA CARTA DE RECLAMO APS'
-                                                    ) {
-                                                        /* $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show(); */
-                                                        $('#solmodificar3Container').show();
-                                                        $('#1sitContainer').show();
-                                                        $('#2sitContainer').show();
-                                                        $('#3sitContainer').show();
-                                                        $('#nombremedico3Container').show();
-                                                        $('#cargomedico3Container').show();
-                                                    } else if (
-                                                        tipoPdf === 'SEGUNDA CARTA DE RECLAMO GP'
-                                                    ) {
-                                                        /* $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show(); */
-                                                        $('#solmodificar3Container').show();
-                                                        $('#1sitContainer').show();
-                                                        $('#2sitContainer').show();
-                                                        $('#3sitContainer').show();
-                                                        $('#1reclamogpContainer').show();
-                                                    } else if (
-                                                        tipoPdf === 'SEGUNDA CARTA DE RECLAMO APS'
-                                                    ) {
-                                                        /* $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show(); */
-                                                        $('#solmodificar3Container').show();
-                                                        $('#1sitContainer').show();
-                                                        $('#2sitContainer').show();
-                                                        $('#3sitContainer').show();
-                                                        $('#1reclamogpContainer').show();
-                                                        $('#1reclamoapsContainer').show();
-                                                        $('#nombremedico3Container').show();
-                                                        $('#cargomedico3Container').show();
-                                                    } else if (
-                                                        tipoPdf === 'TERCERA CARTA DE RECLAMO GP'
-                                                    ) {
-                                                        /* $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show(); */
-                                                        $('#solmodificar3Container').show();
-                                                        $('#1sitContainer').show();
-                                                        $('#2sitContainer').show();
-                                                        $('#3sitContainer').show();
-                                                        $('#1reclamogpContainer').show();
-                                                        $('#2reclamogpContainer').show();
-                                                    } else if (
-                                                        tipoPdf === 'TERCERA CARTA DE RECLAMO APS'
-                                                    ) {
-                                                        /* $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show(); */
-                                                        $('#solmodificar3Container').show();
-                                                        $('#1sitContainer').show();
-                                                        $('#2sitContainer').show();
-                                                        $('#3sitContainer').show();
-                                                        $('#1reclamogpContainer').show();
-                                                        $('#1reclamoapsContainer').show();
-                                                        $('#2reclamogpContainer').show();
-                                                        $('#2reclamoapsContainer').show();
-                                                        $('#nombremedico3Container').show();
-                                                        $('#cargomedico3Container').show();
-                                                    } else if (
-                                                        tipoPdf === 'REITERACIÓN A CARTAS DE RECLAMO GP'
-                                                    ) {
-                                                        /* $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show(); */
-                                                        $('#solmodificar3Container').show();
-                                                        $('#1sitContainer').show();
-                                                        $('#2sitContainer').show();
-                                                        $('#3sitContainer').show();
-                                                        $('#1reclamogpContainer').show();
-                                                        $('#2reclamogpContainer').show();
-                                                        $('#3reclamogpContainer').show();
-                                                    } else if (
-                                                        tipoPdf === 'REITERACIÓN A CARTAS DE RECLAMO APS'
-                                                    ) {
-                                                        /* $('#nronota3Container').show();
-                                                        $('#fechanota3Container').show();
-                                                        $('#fechaconclusionprog3Container').show(); */
-                                                        $('#solmodificar3Container').show();
-                                                        $('#1sitContainer').show();
-                                                        $('#2sitContainer').show();
-                                                        $('#3sitContainer').show();
-                                                        $('#1reclamogpContainer').show();
-                                                        $('#1reclamoapsContainer').show();
-                                                        $('#2reclamogpContainer').show();
-                                                        $('#2reclamoapsContainer').show();
-                                                        $('#3reclamogpContainer').show();
-                                                        $('#3reclamoapsContainer').show();
-                                                        $('#nombremedico3Container').show();
-                                                        $('#cargomedico3Container').show();
+                                                    // 🔴 Ocultar todo
+                                                    allContainers.forEach(id => $(id).hide());
+
+                                                    const subnivel = $('#subnivelprocedimiento3').val();
+                                                    const tipoPdf = $('#tipo_pdf3').val();
+
+                                                    // 🔵 Funciones reutilizables
+                                                    const mostrar = (...ids) => ids.forEach(id => $(id).show());
+
+                                                    const subnivelesAdjuntos = [
+                                                        'ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO',
+                                                        'ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR',
+                                                        'ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR',
+                                                        'ADJUNTO Y RESPUESTA AL COMPLEMENTARIO'
+                                                    ];
+
+                                                    const subnivelesDocs = [
+                                                        'ADJUNTO DE DOCUMENTOS',
+                                                        'ADJUNTO DE DOCUMENTACIÓN MÉDICA'
+                                                    ];
+
+                                                    // 🟡 Función común para subniveles
+                                                    function manejarSubnivel() {
+                                                        if (subnivelesAdjuntos.includes(subnivel)) {
+                                                            mostrar('#solmodificar3Container', '#nronota3Container', '#fechanota3Container', '#fechaadjdoc');
+
+                                                        } else if (subnivelesDocs.includes(subnivel)) {
+                                                            mostrar('#tipoadjuntoContainer', '#fechaadjuntoContainer');
+
+                                                        } else if (subnivel === 'SOLICITUD DE MODIFICACIÓN DE CITE') {
+                                                            mostrar(
+                                                                '#solmodificar3Container', '#nronota3Container', '#fechanota3Container',
+                                                                '#dirigidoa3Container', '#estadolab3Container',
+                                                                '#afiliadoa3Container', '#textocomplementario3Container'
+                                                            );
+
+                                                        } else if (subnivel === 'COMPRA DE SERVICIOS') {
+                                                            mostrar('#nronota3Container', '#fechanota3Container', '#fechaconclusionprog3Container');
+
+                                                        } else if (subnivel === 'SOLICITUD DE COMPRA DE SERVICIOS') {
+                                                            mostrar('#solmodificar3Container', '#nronota3Container', '#fechanota3Container', '#textocomplementario3Container');
+                                                        }
+                                                    }
+
+                                                    // 🟢 TIPOS PDF
+
+                                                    if (tipoPdf === 'PRIMERA CARTA SIT') {
+                                                        manejarSubnivel();
+
+                                                    } else if (tipoPdf === 'SEGUNDA CARTA SIT') {
+                                                        mostrar('#1sitContainer');
+                                                        manejarSubnivel();
+
+                                                    } else if (tipoPdf === 'TERCERA CARTA SIT') {
+                                                        mostrar('#1sitContainer', '#2sitContainer');
+                                                        manejarSubnivel();
+
+                                                    } else if (tipoPdf === 'PRIMERA CARTA DE RECLAMO GP') {
+                                                        mostrar('#1sitContainer', '#2sitContainer', '#3sitContainer');
+                                                        manejarSubnivel();
+
+                                                    } else if (tipoPdf === 'PRIMERA CARTA DE RECLAMO APS') {
+                                                        mostrar('#1sitContainer', '#2sitContainer', '#3sitContainer', '#nombremedico3Container', '#cargomedico3Container');
+                                                        manejarSubnivel();
+
+                                                    } else if (tipoPdf === 'SEGUNDA CARTA DE RECLAMO GP') {
+                                                        mostrar('#1sitContainer', '#2sitContainer', '#3sitContainer', '#1reclamogpContainer');
+                                                        manejarSubnivel();
+
+                                                    } else if (tipoPdf === 'SEGUNDA CARTA DE RECLAMO APS') {
+                                                        mostrar(
+                                                            '#1sitContainer', '#2sitContainer', '#3sitContainer',
+                                                            '#1reclamogpContainer', '#1reclamoapsContainer',
+                                                            '#nombremedico3Container', '#cargomedico3Container'
+                                                        );
+                                                        manejarSubnivel();
+
+                                                    } else if (tipoPdf === 'TERCERA CARTA DE RECLAMO GP') {
+                                                        mostrar(
+                                                            '#1sitContainer', '#2sitContainer', '#3sitContainer',
+                                                            '#1reclamogpContainer', '#2reclamogpContainer'
+                                                        );
+                                                        manejarSubnivel();
+
+                                                    } else if (tipoPdf === 'TERCERA CARTA DE RECLAMO APS') {
+                                                        mostrar(
+                                                            '#1sitContainer', '#2sitContainer', '#3sitContainer',
+                                                            '#1reclamogpContainer', '#1reclamoapsContainer',
+                                                            '#2reclamogpContainer', '#2reclamoapsContainer',
+                                                            '#nombremedico3Container', '#cargomedico3Container'
+                                                        );
+                                                        manejarSubnivel();
+
+                                                    } else if (tipoPdf === 'REITERACIÓN A CARTAS DE RECLAMO GP') {
+                                                        mostrar(
+                                                            '#1sitContainer', '#2sitContainer', '#3sitContainer',
+                                                            '#1reclamogpContainer', '#2reclamogpContainer', '#3reclamogpContainer'
+                                                        );
+                                                        manejarSubnivel();
+
+                                                    } else if (tipoPdf === 'REITERACIÓN A CARTAS DE RECLAMO APS') {
+                                                        mostrar(
+                                                            '#1sitContainer', '#2sitContainer', '#3sitContainer',
+                                                            '#1reclamogpContainer', '#1reclamoapsContainer',
+                                                            '#2reclamogpContainer', '#2reclamoapsContainer',
+                                                            '#3reclamogpContainer', '#3reclamoapsContainer',
+                                                            '#nombremedico3Container', '#cargomedico3Container'
+                                                        );
+                                                        manejarSubnivel();
                                                     }
                                                 }
 
@@ -2933,8 +3026,8 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5 class="mb-0" style="font-weight: 700;">VISTA PREVIA DE CARTA/RECLAMO</h5>
-                                        <a id="btnActualizarVistaCarta" class="btn btn-sm btn-verdocumento">
-                                            <i class="fas fa-sync-alt"></i> ACTUALIZAR
+                                        <a id="btnActualizarVistaCarta" class="btn btn-sm btn-verdocumento" title="ACTUALIZAR">
+                                            <i class="fas fa-sync-alt"></i>
                                         </a>
                                     </div>
                                     <iframe id="pdfPreview3" style="width:100%; height:500px; border:1px solid #ddd;"></iframe>
@@ -3002,10 +3095,10 @@
                                                             <option value="VALIDACIÓN DE TRÁMITE">
                                                             <option value="FIRMA EAP">
                                                             <option value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - ENTE GESTOR DE SALUD">
-                                                            <option value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - NOTIFICACIÓN TMC">
+                                                            <option value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - NOTIFICACIÓN TMR">
                                                             <option value="SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO - EMPLEADOR">
                                                             <option value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - ENTE GESTOR DE SALUD">
-                                                            <option value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - NOTIFICACIÓN TMC">
+                                                            <option value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - NOTIFICACIÓN TMR">
                                                             <option value="SOLICITUD DE INFORMACIÓN COMPLEMENTARIA - EMPLEADOR">
                                                             <option value="COMPRA DE SERVICIOS">
                                                             <option value="COMPLEMENTACIÓN DEL TRÁMITE">
@@ -3021,7 +3114,7 @@
                                                             <option value="VALIDACIÓN DE TRÁMITE">
                                                             <option value="FIRMA EAP">
                                                             <option value="ADJUNTO Y RESPUESTA AL TÉCNICO MÉDICO">
-                                                            <option value="ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMC">
+                                                            <option value="ADJUNTO Y RESPUESTA A NOTIFICACIÓN TMR">
                                                             <option value="ADJUNTO Y RESPUESTA DE INFORME DEL EMPLEADOR">
                                                             <option value="ADJUNTO Y RESPUESTA AL COMPLEMENTARIO">
                                                             <option value="COMPRA DE SERVICIOS">
@@ -3058,7 +3151,7 @@
                                                         <input type="date" class="form-control" id="fechaactual4" name="fechaactual4" value="{{ \Carbon\Carbon::now()->toDateString() }}" min="{{ \Carbon\Carbon::now()->toDateString() }}">
                                                     </div>
                                                     <div class="form-group col-lg-2">
-                                                        <label for="fontsize4">Tamaño Fuente:</label>
+                                                        <label for="fontsize4">Tamaño F.:</label>
                                                         <select id="fontsize4" class="form-control">
                                                             <option value="12px">9</option>
                                                             <option value="13px">10</option>
@@ -3122,8 +3215,8 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <h5 class="mb-0" style="font-weight: 700;">VISTA PREVIA DE LA MISIVA LIBRE</h5>
-                                        <a id="btnActualizarVistaLibre" class="btn btn-sm btn-verdocumento">
-                                            <i class="fas fa-sync-alt"></i> ACTUALIZAR
+                                        <a id="btnActualizarVistaLibre" class="btn btn-sm btn-verdocumento" title="ACTUALIZAR">
+                                            <i class="fas fa-sync-alt"></i>
                                         </a>
                                     </div>
                                     <iframe id="pdfPreview4" style="width:100%; height:500px; border:1px solid #ddd;"></iframe>

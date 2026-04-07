@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import 'login_page.dart';
 import 'areas_page.dart';
-import 'goodbits_page.dart';
 import 'atencion_medicos_page.dart';
 import '../widgets/good_life_loader.dart';
 import 'documentos_page.dart';
 import 'tramites_page.dart';
 import 'notificaciones_page.dart';
 import 'programaciones_page.dart';
-import 'ausencias_page.dart'; // 1. IMPORTAR LA NUEVA PÁGINA
+import 'ausencias_page.dart';
 
 class HomePage extends StatefulWidget {
   final String nombreUsuario;
@@ -68,6 +68,15 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     _loadUnreadCount();
+  }
+
+  Future<void> _abrirUrl(String urlString) async {
+    final Uri url = Uri.parse(urlString);
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No se pudo abrir el enlace')),
+      );
+    }
   }
 
   @override
@@ -153,7 +162,6 @@ class _HomePageState extends State<HomePage> {
               },
             ),
 
-            // ▼▼▼ NUEVA OPCIÓN AÑADIDA ▼▼▼
             ListTile(
               dense: true,
               leading: Icon(Icons.person_off_outlined, color: verde),
@@ -179,7 +187,6 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
-
 
             ListTile(
               dense: true,
@@ -225,20 +232,6 @@ class _HomePageState extends State<HomePage> {
 
             ListTile(
               dense: true,
-              leading: Icon(Icons.account_balance_wallet, color: verde),
-              title: Text('Billetera Móvil', style: TextStyle(fontSize: 15)),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => GoodBitsPage(usuarioId: widget.usuarioId),
-                  ),
-                );
-              },
-            ),
-
-            ListTile(
-              dense: true,
               leading: Icon(Icons.notifications, color: verde),
               title: const Text('Notificaciones', style: TextStyle(fontSize: 15)),
               trailing: _unreadCount > 0
@@ -257,7 +250,21 @@ class _HomePageState extends State<HomePage> {
               onTap: _navigateToNotificaciones,
             ),
 
-            // Spacer(),
+            const Divider(),
+
+            ListTile(
+              dense: true,
+              leading: Icon(Icons.gavel_outlined, color: verde),
+              title: const Text('Términos de Servicio', style: TextStyle(fontSize: 15)),
+              onTap: () => _abrirUrl('https://goodlife.com.bo/terminos-condiciones-servicio'),
+            ),
+
+            ListTile(
+              dense: true,
+              leading: Icon(Icons.privacy_tip_outlined, color: verde),
+              title: const Text('Política de Privacidad', style: TextStyle(fontSize: 15)),
+              onTap: () => _abrirUrl('https://goodlife.com.bo/politicas-privacidad'),
+            ),
 
             ListTile(
               dense: true,

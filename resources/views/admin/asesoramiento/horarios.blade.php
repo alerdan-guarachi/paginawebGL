@@ -269,7 +269,7 @@
 {{-- ===================== MODAL BLOQUEAR FECHAS ===================== --}}
 <div class="modal fade" id="bloquearFecha" tabindex="-1">
     <div class="modal-dialog">
-        <form method="POST" action="{{ route('admin.asesoramiento.bloquear') }}">
+        <form method="POST" action="{{ route('admin.asesoramiento.bloquearasesora') }}">
             @csrf
             <div class="modal-content">
                 <div class="modal-header">

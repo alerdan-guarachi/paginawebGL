@@ -632,14 +632,15 @@
                 });
             </script>
             <script>
-                function actualizarStock2(codigoProducto, cantidad) {
+                function actualizarStock2(codigoProducto, cantidad, detalleId) {
                     $.ajax({
                         url: '{{ route("inventario.actualizarStock") }}',
                         method: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}',
                             codigo_producto: codigoProducto,
-                            cantidad: cantidad
+                            cantidad: cantidad,
+                            detalle_id: detalleId
                         },
                         success: function(response) {
                             if(response.success) {
@@ -1344,8 +1345,8 @@
                                             <tr>
                                                 <td>{{ $registro->id }}</td>
                                                 <td>{{ $registro->fechamovimiento }}</td>
-                                                <td>{{ $registro->nrofactura }}</td>
-                                                <td>{{ $registro->nrorecibo }}</td>
+                                                <td>{{ $registro->nrofactura ?? 0 }}</td>
+                                                <td>{{ $registro->nrorecibo ?? 0 }}</td>
                                                 <td>{{ $registro->precio }}</td>
                                                 <td>{{ $registro->cantidad }}</td>
                                                 <td>{{ $registro->usuarioregistronombre }}</td>

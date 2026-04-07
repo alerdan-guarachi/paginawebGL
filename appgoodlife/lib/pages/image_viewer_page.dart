@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:screen_protector/screen_protector.dart';
+import '../widgets/good_life_loader.dart';
 
 class ImageViewerPage extends StatefulWidget {
   final String url;

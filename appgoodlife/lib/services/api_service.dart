@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.88.224:8000';
+  static const String baseUrl = 'https://api.goodlife.com.bo';
 
   static Future<Map<String, dynamic>> login(String email, String password, {String? fcmToken}) async {
     final url = Uri.parse('$baseUrl/api/login');

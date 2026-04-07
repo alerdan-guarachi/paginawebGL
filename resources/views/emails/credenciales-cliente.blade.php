@@ -9,7 +9,7 @@
         {{ $cliente->nombrecompleto }}
     </h3>
 
-    <p>Su acceso a la "Good Life App" ha sido creado correctamente.</p>
+    <p>Su acceso a "Good Life App" ha sido creado correctamente.</p>
 
     <p><strong>Usuario:</strong> {{ $cliente->email }}</p>
     <p><strong>Contraseña:</strong> {{ $password }}</p>
@@ -39,6 +39,7 @@
 
     <br>
     <p>Atentamente,<br>
+    Área de Sistemas<br>
     <strong>Good Life S.R.L.</strong></p>
 </body>
 </html>

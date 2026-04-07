@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../widgets/good_life_loader.dart';
+import 'pdf_viewer_page.dart';
+import 'image_viewer_page.dart';
 
 class DocumentosPage extends StatefulWidget {
   final String usuarioId;
@@ -72,20 +74,23 @@ class _DocumentosPageState extends State<DocumentosPage> {
   }
 
   Widget _buildArchivoRow(Map<String, dynamic> doc, String label, String? value) {
-    if (value == null || value.isEmpty) return SizedBox();
+    if (value == null || value.toString().isEmpty || value.toString() == "null") return SizedBox();
 
     final clienteId = doc['clienteitaid'];
-    // ▼▼▼ IP CORREGIDA ▼▼▼
     final url =
-        "http://192.168.88.224:8000/documentacionclientesita/$clienteId/$value";
+        "https://api.goodlife.com.bo/documentacionclientesita/$clienteId/$value";
 
     IconData icon;
-    if (label.contains('Imagen')) {
+    bool isImage = false;
+    bool isPdf = value.toLowerCase().endsWith('.pdf');
+
+    if (label.contains('Imagen') || value.toLowerCase().endsWith('.jpg') || value.toLowerCase().endsWith('.png') || value.toLowerCase().endsWith('.jpeg')) {
       icon = Icons.image;
-    } else if (label.contains('firmado')) {
-      icon = Icons.edit_document;
-    } else {
+      isImage = true;
+    } else if (label.contains('Informe') || label.contains('firmado') || isPdf) {
       icon = Icons.picture_as_pdf;
+    } else {
+      icon = Icons.insert_drive_file;
     }
 
     return Padding(
@@ -123,21 +128,37 @@ class _DocumentosPageState extends State<DocumentosPage> {
                 ),
               ),
               onPressed: () async {
-                final uri = Uri.parse(url);
-                if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-                  if(mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('No se puede abrir el archivo')),
-                    );
+                if (isPdf) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PdfViewerPage(url: url, title: label),
+                    ),
+                  );
+                } else if (isImage) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ImageViewerPage(url: url, title: label),
+                    ),
+                  );
+                } else {
+                  final uri = Uri.parse(url);
+                  if (!await launchUrl(uri, mode: LaunchMode.inAppWebView)) {
+                    if(mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('No se puede abrir el archivo')),
+                      );
+                    }
                   }
                 }
               },
               child: Row(
                 children: [
-                  Icon(Icons.open_in_new, size: 14, color: Colors.white),
+                  Icon(Icons.remove_red_eye, size: 14, color: Colors.white),
                   SizedBox(width: 4),
                   Text(
-                    "Abrir",
+                    "Ver",
                     style: TextStyle(fontSize: 12, color: Colors.white),
                   ),
                 ],
@@ -194,6 +215,14 @@ class _DocumentosPageState extends State<DocumentosPage> {
                       fontWeight: FontWeight.bold,
                       color: Colors.black)),
               children: docs.map((doc) {
+                // Lógica de prioridad: documentfirmado > document
+                String? archivoInforme;
+                if (doc['documentfirmado'] != null && doc['documentfirmado'].toString().isNotEmpty && doc['documentfirmado'].toString() != "null") {
+                  archivoInforme = doc['documentfirmado'];
+                } else if (doc['document'] != null && doc['document'].toString().isNotEmpty && doc['document'].toString() != "null") {
+                  archivoInforme = doc['document'];
+                }
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 16, vertical: 3),
@@ -223,7 +252,10 @@ class _DocumentosPageState extends State<DocumentosPage> {
                             return SizedBox.shrink();
                           }
                         }),
-                      _buildArchivoRow(doc, 'Informe', doc['documentfirmado']),
+                      // Solo muestra la fila si archivoInforme tiene algo
+                      if (archivoInforme != null)
+                        _buildArchivoRow(doc, 'Informe', archivoInforme),
+
                       _buildArchivoRow(doc, 'Imagen 1', doc['image']),
                       _buildArchivoRow(doc, 'Imagen 2', doc['image2']),
                       Divider(),

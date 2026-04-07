@@ -419,7 +419,7 @@ class AsesoramientoController extends Controller
 
         return back();
     }
-    public function bloquear(Request $request)
+    public function bloquearasesora(Request $request)
     {
         $inicio = \Carbon\Carbon::parse($request->fecha_inicio);
         $fin = \Carbon\Carbon::parse($request->fecha_fin);

@@ -68,39 +68,36 @@
                                     : false;
                             @endphp
                             <h5>ID: {{$cliente->id}}
-                                {{-- @if($tieneCI && $emailValido && !$emailExiste)
-                                    <form action="{{ route('clientes.crearUsuario', $cliente->id) }}" method="POST"
-                                        onsubmit="return confirm('¿CREAR COMO USUARIO DE SISTEMA?')" style="margin-top: -20px;">
-                                        @csrf
-                                        <button type="submit" class="btn float-right btn-acciones btn-sm" title="CREAR COMO USUARIO DE SISTEMA"><i class="fas fa-user-plus"></i></button>
-                                    </form>
-                                @endif --}}
                                 @if($tieneCI && $emailValido && !$emailExiste)
-                                <form action="{{ route('clientes.crearUsuario', $cliente->id) }}"
-                                    method="POST"
-                                    onsubmit="bloquearBotonCrearUsuario(this)"
-                                    style="margin-top: -20px;">
-                                    @csrf
-
-                                    <button type="submit"
-                                            id="btnCrearUsuario"
-                                            class="btn float-right btn-acciones btn-sm"
-                                            title="CREAR COMO USUARIO DE SISTEMA">
-                                        <i class="fas fa-user-plus"></i>
-                                    </button>
-                                </form>
+                                    <form action="{{ route('clientes.crearUsuario', $cliente->id) }}"
+                                        method="POST" onsubmit="bloquearBotonCrearUsuario(this)" style="margin-top: -20px; margin-right: -10px;">
+                                        @csrf
+                                        <button type="submit"
+                                                id="btnCrearUsuario"
+                                                class="btn float-right btn-acciones btn-sm"
+                                                title="CREAR COMO USUARIO DE SISTEMA" disabled>
+                                            <i class="fas fa-user-plus"></i>
+                                        </button>
+                                    </form>
+                                @elseif($emailExiste)
+                                    <span class="badge badge-primary float-right" style="margin-top: 5px; font-size: 10px; padding: 3px 6px;">
+                                        USUARIO CREADO
+                                    </span>
+                                @else
+                                    <span class="badge badge-danger float-right" style="margin-top: 5px; font-size: 10px; padding: 3px 6px;">
+                                        DATOS FALTANTES
+                                    </span>
                                 @endif
                                 <script>
-                                function bloquearBotonCrearUsuario(form) {
-                                    const btn = form.querySelector('button[type="submit"]');
+                                    function bloquearBotonCrearUsuario(form) {
+                                        const btn = form.querySelector('button[type="submit"]');
 
-                                    btn.disabled = true;
-                                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CREANDO...';
+                                        btn.disabled = true;
+                                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-                                    return true; // permite que el form se envíe
-                                }
+                                        return true;
+                                    }
                                 </script>
-
                             </h5>
                         </div>
                     </div>

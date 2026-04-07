@@ -215,41 +215,121 @@ class InventarioController extends Controller
         }
         return response()->json(['error' => 'Registro no encontrado'], 404);
     }
-    public function actualizarStockinventario(Request $request) 
+    /* public function actualizarStockinventario(Request $request) 
+    {
+        $codigoProducto = $request->codigo_producto;
+        $cantidad = $request->cantidad;
+
+        $inventario = Inventario::where('codigo', $codigoProducto)->first();
+
+        if ($inventario) {
+            $inventario->stockactual += $cantidad;
+            $inventario->inventario = 'PRINCIPAL';
+            $inventario->save();
+
+            $detalleOrdenes = DB::table('detalleordenes')
+                ->where('codigo', $codigoProducto)
+                ->get();
+
+            foreach ($detalleOrdenes as $detalle) {
+                $cuentaPagar = CuentasPagar::where('detalleordenid', $detalle->id)->first();
+
+                if ($cuentaPagar) {
+                    $cuentaPagar->estado = 'FINALIZADO';
+                    $cuentaPagar->save();
+
+                    DB::table('detalleordenes')
+                        ->where('id', $detalle->id)
+                        ->update(['estado' => 'FINALIZADO']);
+                }
+            }
+
+            // Mensaje en la sesión
+            session()->flash('info', 'STOCK ACTUALIZADO EN INVENTARIO.');
+
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Producto no encontrado en el inventario.']);
+        }
+    } */
+
+        public function actualizarStockinventario(Request $request) 
 {
     $codigoProducto = $request->codigo_producto;
     $cantidad = $request->cantidad;
+    $detalleId = $request->detalle_id;
 
     $inventario = Inventario::where('codigo', $codigoProducto)->first();
 
     if ($inventario) {
+
+        // 🔹 ACTUALIZAR STOCK
         $inventario->stockactual += $cantidad;
         $inventario->inventario = 'PRINCIPAL';
         $inventario->save();
 
-        $detalleOrdenes = DB::table('detalleordenes')
-            ->where('codigo', $codigoProducto)
-            ->get();
+        // 🔹 OBTENER DETALLE CORRECTO
+        $detalle = DB::table('detalleordenes')
+            ->where('id', $detalleId)
+            ->first();
 
-        foreach ($detalleOrdenes as $detalle) {
-            $cuentaPagar = CuentasPagar::where('detalleordenid', $detalle->id)->first();
+        if ($detalle) {
 
-            if ($cuentaPagar) {
-                $cuentaPagar->estado = 'FINALIZADO';
-                $cuentaPagar->save();
+            // 🔹 DETALLE RECIBO
+            $detalleRecibo = DB::table('detallerecibos')
+                ->where('ordenid', $detalle->ordenid)
+                ->orderByDesc('id')
+                ->first();
 
-                DB::table('detalleordenes')
-                    ->where('id', $detalle->id)
-                    ->update(['estado' => 'FINALIZADO']);
+            $reciboId = $detalleRecibo ? $detalleRecibo->reciboid : null;
+
+            // 🔹 FACTURA
+            $nroFactura = null;
+
+            if ($reciboId) {
+                $cajaCentral = DB::table('cajacentral')
+                    ->where('nrorecibo', $reciboId)
+                    ->orderByDesc('id')
+                    ->first();
+
+                $nroFactura = $cajaCentral ? $cajaCentral->nrofactura : null;
             }
+
+            // 🔹 MOVIMIENTO INVENTARIO
+            DB::table('entradasalidainventario')->insert([
+                'codigoproducto' => $codigoProducto,
+                'tipo' => 'ENTRADA',
+                'cantidad' => $detalle->cantidad,
+                'fechacompra' => $detalle->fechacomprar,
+                'precio' => $detalle->totalunitario,
+                'fechamovimiento' => now(),
+                'nrorecibo' => $reciboId,
+                'nrofactura' => $nroFactura,
+                'usuarioregistroid' => auth()->id(),
+                'usuarioregistronombre' => auth()->user()->name,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            // 🔹 FINALIZAR DETALLE
+            DB::table('detalleordenes')
+                ->where('id', $detalleId)
+                ->update(['estado' => 'FINALIZADO']);
+
+            // 🔹 FINALIZAR CUENTA
+            CuentasPagar::where('detalleordenid', $detalleId)
+                ->where('ordenid', $detalle->ordenid)
+                ->update(['estado' => 'FINALIZADO']);
         }
 
-        // Mensaje en la sesión
         session()->flash('info', 'STOCK ACTUALIZADO EN INVENTARIO.');
-
         return response()->json(['success' => true]);
+
     } else {
-        return response()->json(['success' => false, 'message' => 'Producto no encontrado en el inventario.']);
+        return response()->json([
+            'success' => false,
+            'message' => 'Producto no encontrado en el inventario.'
+        ]);
     }
 }
 

@@ -57,7 +57,8 @@ Route::get('/asesoramientolegal', [App\Http\Controllers\PaginawebController::cla
 Route::get('/contact', [App\Http\Controllers\PaginawebController::class, 'contact'])->name('contact');
 Route::get('/medicina', [App\Http\Controllers\PaginawebController::class, 'medicina'])->name('medicina');
 Route::get('/sobrenosotros', [App\Http\Controllers\PaginawebController::class, 'sobrenosotros'])->name('sobrenosotros');
-
+Route::get('/politicas-privacidad', function () {return view('politicas');});
+Route::get('/terminos-condiciones-servicio', function () {return view('terminos');});
 //HORARIOS ASESORAMIENTO
     Route::resource('asesoramiento', AsesoramientoController::class)->names('admin.asesoramiento');
     Route::get('/agendarasesoria', [AsesoramientoController::class, 'programarasesoria'])->name('programarasesoria');
@@ -65,7 +66,7 @@ Route::get('/sobrenosotros', [App\Http\Controllers\PaginawebController::class, '
     Route::post('/horarios', [AsesoramientoController::class, 'store'])->name('admin.asesoramiento.store');
     Route::put('/horarios/{id}', [AsesoramientoController::class, 'update'])->name('admin.asesoramiento.update');
     Route::post('/horarios/{id}/toggle', [AsesoramientoController::class, 'toggle'])->name('admin.asesoramiento.toggle');
-    Route::post('/bloqueos', [AsesoramientoController::class, 'bloquear'])->name('admin.asesoramiento.bloquear');
+    Route::post('/bloqueosasesora', [AsesoramientoController::class, 'bloquearasesora'])->name('admin.asesoramiento.bloquearasesora');
     Route::get('/progasesoramiento', [AsesoramientoController::class, 'progasesoramiento'])->name('admin.asesoramiento.progasesoramiento');
     Route::get('/listaprogramaciones', [AsesoramientoController::class, 'listaprogramaciones'])->name('admin.asesoramiento.listaprogramaciones');
     Route::get('/progasesoramiento/horarios/{asesor}/{dia}',[AsesoramientoController::class, 'horariosPorDia'])->name('admin.asesoramiento.progasesoramiento.horarios');

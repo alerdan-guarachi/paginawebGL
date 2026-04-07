@@ -135,6 +135,10 @@
                         <strong>{!! $fecharesp1sit ?? '<span class="textoedita">RESPUESTA 1ER. CARTA SIT</span>' !!}</strong>, 
                         en esta respuesta, se indicó lo siguiente: {!! $texto1sit ?? '<span class="textoedita">TEXTO COMP. 1ER CARTA SIT</span>' !!}
                     @endif
+                    @if($fechaform1sit)
+                        En fecha <strong>{{$fechaform1sit}}</strong> 
+                        se presentó dentro Buzón de Reclamos y Sugerencias APS el Formulario de Reclamo <strong>Nº {{ $nroform1sit }}.</strong>
+                    @endif
                 @endif
             </div>
             <div class="tipo6">
@@ -173,6 +177,10 @@
                     <strong>{!! $fechacite1sit ?? '<span class="textoedita">FECHA NOTA CITE 1ER. CARTA SIT</span>' !!}</strong> el cual se recogió en fecha 
                     <strong>{!! $fecharesp1sit ?? '<span class="textoedita">RESPUESTA 1ER. CARTA SIT</span>' !!}</strong>, 
                     en esta respuesta, se indicó lo siguiente: {!! $texto1sit ?? '<span class="textoedita">TEXTO COMP. 1ER CARTA SIT</span>' !!}
+                @endif
+                @if($fechaform1sit)
+                    En fecha <strong>{{$fechaform1sit}}</strong> 
+                    se presentó dentro Buzón de Reclamos y Sugerencias APS el Formulario de Reclamo <strong>Nº {{ $nroform1sit }}.</strong>
                 @endif
                 Hasta la fecha no se tiene ninguna respuesta ni pronunciamiento sobre el Trámite, por lo que solicito, se pueda hacer un 
                 seguimiento y se dé una respuesta a la brevedad posible del presente caso.

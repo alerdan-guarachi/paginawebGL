@@ -165,6 +165,20 @@
 </div>
 <h5>PROCEDIMIENTO DE APELACIÓN DE RECALIFICACIÓN DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
+@php
+    $estadoTramite = \App\Models\Tramitesubcliente::where('id', $idTramite)->value('estado');
+@endphp
+
+<strong>Estado:</strong>
+<span class="badge 
+    @if($estadoTramite == 'PENDIENTE') bg-warning
+    @elseif($estadoTramite == 'FINALIZADO') bg-success
+    @elseif($estadoTramite == 'INTERRUMPIDO') bg-danger
+    @else bg-secondary
+    @endif
+">
+    {{ $estadoTramite ?? 'SIN ESTADO' }}
+</span>
 @stop
 
 @section('css')
@@ -2699,7 +2713,7 @@
                                                     <tr>
                                                         <th class="text-center">INFORMES_ADICIONALES_EST./ESP.</th>
                                                         <th class="text-center">ESPECIALISTA/CENTRO_MÉDICO</th>
-                                                        <th class="text-center">FECHA_EMSIÓN</th>
+                                                        <th class="text-center">FECHA_EMISIÓN</th>
                                                         <th class="text-center">INFORME_ESTUDIO/ESPECIALIDAD</th>
                                                     </tr>
                                                 </thead>
@@ -3759,7 +3773,7 @@
                                                     <tr>
                                                         <th class="text-center">INFORMES_ADICIONALES_EST./ESP.</th>
                                                         <th class="text-center">ESPECIALISTA/CENTRO_MÉDICO</th>
-                                                        <th class="text-center">FECHA_EMSIÓN</th>
+                                                        <th class="text-center">FECHA_EMISIÓN</th>
                                                         <th class="text-center">INFORME_ESTUDIO/ESPECIALIDAD</th>
                                                     </tr>
                                                 </thead>
@@ -3815,7 +3829,7 @@
                                                     fila.innerHTML = `
                                                         <input type="hidden" name="tramitenombreprog" value="APELACIÓN DE RECALIFICACIÓN">
                                                         <td>
-                                                            <select class="form-control form-control-sm" name="2estudioespecialidad[]">
+                                                            <select class="form-control form-control-sm" name="6estudioespecialidad[]">
                                                                 <option value="" disabled selected>Seleccione un estudio/especialidad...</option>
                                                                 ${areas2.map(area => `<option value="${area.area}">${area.area}</option>`).join('')}
                                                             </select>
@@ -5325,7 +5339,7 @@
                                                     <tr>
                                                         <th class="text-center">INFORMES_ADICIONALES_EST./ESP.</th>
                                                         <th class="text-center">ESPECIALISTA/CENTRO_MÉDICO</th>
-                                                        <th class="text-center">FECHA_EMSIÓN</th>
+                                                        <th class="text-center">FECHA_EMISIÓN</th>
                                                         <th class="text-center">INFORME_ESTUDIO/ESPECIALIDAD</th>
                                                     </tr>
                                                 </thead>
@@ -5381,7 +5395,7 @@
                                                     fila.innerHTML = `
                                                         <input type="hidden" name="tramitenombreprog" value="APELACIÓN DE RECALIFICACIÓN">
                                                         <td>
-                                                            <select class="form-control form-control-sm" name="3estudioespecialidad[]">
+                                                            <select class="form-control form-control-sm" name="5estudioespecialidad[]">
                                                                 <option value="" disabled selected>Seleccione un estudio/especialidad...</option>
                                                                 ${areas3.map(area => `<option value="${area.area}">${area.area}</option>`).join('')}
                                                             </select>
@@ -6731,7 +6745,7 @@
                                                     <tr>
                                                         <th class="text-center">INFORMES_ADICIONALES_EST./ESP.</th>
                                                         <th class="text-center">ESPECIALISTA/CENTRO_MÉDICO</th>
-                                                        <th class="text-center">FECHA_EMSIÓN</th>
+                                                        <th class="text-center">FECHA_EMISIÓN</th>
                                                         <th class="text-center">INFORME_ESTUDIO/ESPECIALIDAD</th>
                                                     </tr>
                                                 </thead>
@@ -6787,7 +6801,7 @@
                                                     fila.innerHTML = `
                                                         <input type="hidden" name="tramitenombreprog" value="APELACIÓN DE RECALIFICACIÓN">
                                                         <td>
-                                                            <select class="form-control form-control-sm" name="4estudioespecialidad[]">
+                                                            <select class="form-control form-control-sm" name="3estudioespecialidad[]">
                                                                 <option value="" disabled selected>Seleccione un estudio/especialidad...</option>
                                                                 ${areas4.map(area => `<option value="${area.area}">${area.area}</option>`).join('')}
                                                             </select>
@@ -7790,7 +7804,7 @@
                                                     <tr>
                                                         <th class="text-center">INFORMES_ADICIONALES_EST./ESP.</th>
                                                         <th class="text-center">ESPECIALISTA/CENTRO_MÉDICO</th>
-                                                        <th class="text-center">FECHA_EMSIÓN</th>
+                                                        <th class="text-center">FECHA_EMISIÓN</th>
                                                         <th class="text-center">INFORME_ESTUDIO/ESPECIALIDAD</th>
                                                     </tr>
                                                 </thead>
@@ -7846,7 +7860,7 @@
                                                     fila.innerHTML = `
                                                         <input type="hidden" name="tramitenombreprog" value="APELACIÓN DE RECALIFICACIÓN">
                                                         <td>
-                                                            <select class="form-control form-control-sm" name="5estudioespecialidad[]">
+                                                            <select class="form-control form-control-sm" name="7estudioespecialidad[]">
                                                                 <option value="" disabled selected>Seleccione un estudio/especialidad...</option>
                                                                 ${areas5.map(area => `<option value="${area.area}">${area.area}</option>`).join('')}
                                                             </select>

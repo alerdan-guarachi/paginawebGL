@@ -424,15 +424,21 @@
                                         <td>{{ $detalle->tipomovimiento }}</td>
                                         <td>
                                             @if ($detalle->tipomovimiento === 'INGRESO')
-                                                0
+                                                {{ $detalle->sucursal_origen ?? '0' }}
                                             @elseif ($detalle->tipomovimiento === 'EGRESO')
-                                                @if ($detalle->sucursalgasto)
-                                                    {{ $detalle->sucursalgasto }}
+                                                @if ($detalle->area === 'MEDICA')
+                                                    @if (!empty($detalle->proveedores_ciudad2))
+                                                        {{-- Si ciudad2 existe, usamos sucursalgasto --}}
+                                                        {{ $detalle->sucursalgasto ?? $detalle->cajacentral_ciudadregistro }}
+                                                    @else
+                                                        {{-- Si ciudad2 no existe, usamos ciudad del proveedor --}}
+                                                        {{ $detalle->sucursal_origen ?? $detalle->cajacentral_ciudadregistro }}
+                                                    @endif
                                                 @else
-                                                    {{ $detalle->cajacentral_ciudadregistro }}
+                                                    {{-- Para otros tipos de cliente usamos sucursalgasto o ciudad registro --}}
+                                                    {{ $detalle->sucursalgasto ?? $detalle->cajacentral_ciudadregistro }}
                                                 @endif
                                             @else
-                                                <!-- Si quieres mostrar algo por defecto en otro caso -->
                                                 -
                                             @endif
                                         </td>

@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart'; // Se vuelve a usar url_launcher
+import 'package:url_launcher/url_launcher.dart';
 import '../widgets/good_life_loader.dart';
+import 'pdf_viewer_page.dart';
+import 'image_viewer_page.dart';
 
 class DetalleTramitePage extends StatefulWidget {
   final String tramiteId;
@@ -30,7 +32,7 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
 
   Future<void> cargarProcedimientos() async {
     final url = Uri.parse(
-        "http://192.168.88.224:8000/api/tramite/${widget.tramiteId}");
+        "https://api.goodlife.com.bo/api/tramite/${widget.tramiteId}");
     final resp = await http.get(url);
 
     if (resp.statusCode == 200) {
@@ -61,20 +63,41 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
     }
   }
 
-  // FUNCIÓN RESTAURADA A LA VERSIÓN ORIGINAL
   void _abrirDocumento(Map p) async {
     final clienteId = p["clienteid"] ?? "";
     final tramite = p["tramite"] ?? "";
     final sub = p["nivelprocedimiento"] ?? "";
     final documento = p["document"] ?? "";
 
-    final urlString = "http://192.168.88.224:8000/tramitesclientesita/$clienteId/$tramite/$sub/$documento";
-    final url = Uri.parse(urlString);
+    final urlString = "https://api.goodlife.com.bo/tramitesclientesita/$clienteId/$tramite/$sub/$documento";
 
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No se pudo abrir el documento: $urlString')),
+    final String label = "Documento";
+    final bool isPdf = documento.toLowerCase().endsWith('.pdf');
+    final bool isImage = documento.toLowerCase().endsWith('.jpg') ||
+                       documento.toLowerCase().endsWith('.png') ||
+                       documento.toLowerCase().endsWith('.jpeg');
+
+    if (isPdf) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PdfViewerPage(url: urlString, title: label),
+        ),
       );
+    } else if (isImage) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ImageViewerPage(url: urlString, title: label),
+        ),
+      );
+    } else {
+      final url = Uri.parse(urlString);
+      if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No se pudo abrir el documento')),
+        );
+      }
     }
   }
 
@@ -93,9 +116,7 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
         itemCount: procedimientos.length,
         itemBuilder: (context, i) {
           final p = procedimientos[i];
-          final tipo = p["tipo"] ?? "Sin tipo";
           final fecha = p["fechasubida"] ?? "Sin fecha";
-          final tipoCarta = p["tipocarta"] ?? "";
           final documento = p["document"];
 
           return Card(
@@ -109,26 +130,10 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Text(
-                  //   tipo,
-                  //   style: TextStyle(
-                  //       fontWeight: FontWeight.w600, fontSize: 14),
-                  // ),
-                  // SizedBox(height: 6),
                   Text(
                     _nivelSub(p),
                     style: TextStyle(fontSize: 12),
                   ),
-                  // if (tipo != "PROCEDIMIENTO" &&
-                  //     ["SOLICITUD", "ADJUNTO / RESPUESTA", "CARTA / RECLAMO", "MISIVA LIBRE"]
-                  //         .contains(tipo.toUpperCase()))
-                  //   Padding(
-                  //     padding: const EdgeInsets.only(top: 4),
-                  //     child: Text(
-                  //       "Tipo: $tipoCarta",
-                  //       style: TextStyle(fontSize: 12),
-                  //     ),
-                  //   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
@@ -155,9 +160,9 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
                             ),
                           ),
                           onPressed: () => _abrirDocumento(p),
-                          icon: Icon(Icons.open_in_new, size: 14, color: Colors.white),
+                          icon: Icon(Icons.remove_red_eye, size: 14, color: Colors.white),
                           label: Text(
-                            "Abrir",
+                            "Ver",
                             style: TextStyle(fontSize: 12, color: Colors.white),
                           ),
                         ),

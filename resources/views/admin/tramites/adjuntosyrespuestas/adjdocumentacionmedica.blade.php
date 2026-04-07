@@ -68,6 +68,15 @@
                 en cuenta dentro de la Revisión correspondiente por el Tribunal Medico Revisor. Solicito de la Manera más Humana 
                 a su Institución Publica se remita y haga llegar dicha Documentación al área correspondiente TMR de la Autoridad 
                 de Fiscalización y Control de Pensiones y Seguros APS.
+            @elseif ($nivelprocedimiento === 'COMPLEMENTACIÓN DEL TRÁMITE')
+                Mediante la presente me dirijo a su Institución con la finalidad de Adjuntar <strong>Documentación Medica</strong>, para complementar con el 
+                Trámite de @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                                <strong>PENSIÓN POR INVALIDEZ (RECALIFICACIÓN),</strong>
+                            @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
+                                <strong>PENSIÓN POR INVALIDEZ,</strong>
+                            @else
+                                <strong>{{ $nombretramite }},</strong>
+                            @endif Iniciado en su Institución Publica en fecha {{ $fechaingresotramite }}. 
             @else
                 Me dirijo a su Institución con la finalidad de brindar respuesta a la <strong>{{ $nivelprocedimiento }}</strong> con 
                 <strong>NOTA CITE {!! $notatecnicomedico ?? '<span class="textoedita">NOTA CITE</span>' !!}</strong> con fecha 

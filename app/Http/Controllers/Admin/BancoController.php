@@ -332,12 +332,47 @@ public function index(Request $request)
         'cajacentral.nrobancarizacioncheque as cajacentral_nrobancarizacioncheque',
         'cajacentral.diferenciafavor as cajacentral_diferenciafavor',
         'cajacentral.diferenciacontra as cajacentral_diferenciacontra',
+
+        //NUEVO 260326
+        DB::raw("
+            CASE 
+                WHEN cajacentral.tipocliente = 'ITA' THEN clientes.sucursal
+                WHEN cajacentral.tipocliente = 'AUDITORIA' THEN clienteauditorias.sucursal
+                WHEN cajacentral.tipocliente = 'COMUN' THEN clientescomunes.sucursal
+                WHEN cajacentral.tipocliente = 'MEDICO' THEN proveedores.ciudad
+                WHEN cajacentral.tipocliente = 'PROVEEDOR DE SERVICIO' THEN proveedoresservicios.ciudad
+                ELSE NULL
+            END as sucursal_origen
+        "),
     )
     ->leftJoin('depositosbancarios', function($join) {
         $join->on(DB::raw('DATE(detallerecibos.created_at)'), '=', 'depositosbancarios.fecha')
              ->on('detallerecibos.usuarioregistronombre', '=', 'depositosbancarios.usuarioregistronombre');
     })
     ->leftJoin('cajacentral', 'detallerecibos.reciboid', '=', 'cajacentral.nrorecibo')
+    
+    //NUEVO 260326
+    ->leftJoin('clientes', function($join) {
+        $join->on('cajacentral.clienteid', '=', 'clientes.id')
+            ->where('cajacentral.tipocliente', '=', 'ITA');
+    })
+    ->leftJoin('clienteauditorias', function($join) {
+        $join->on('cajacentral.clienteid', '=', 'clienteauditorias.id')
+            ->where('cajacentral.tipocliente', '=', 'AUDITORIA');
+    })
+    ->leftJoin('clientescomunes', function($join) {
+        $join->on('cajacentral.clienteid', '=', 'clientescomunes.id')
+            ->where('cajacentral.tipocliente', '=', 'COMUN');
+    })
+    ->leftJoin('proveedores', function($join) {
+        $join->on('cajacentral.proveedorid', '=', 'proveedores.id')
+            ->where('cajacentral.tipocliente', '=', 'MEDICO');
+    })
+    ->leftJoin('proveedoresservicios', function($join) {
+        $join->on('cajacentral.proveedorid', '=', 'proveedoresservicios.id')
+            ->where('cajacentral.tipocliente', '=', 'PROVEEDOR DE SERVICIO');
+    })
+    ->addSelect('proveedores.ciudad2 as proveedores_ciudad2')
     ->where('detallerecibos.estado', '<>', 'ANULADO');
 
     if ($request->filled('fecha_desde') && $request->filled('fecha_hasta')) {

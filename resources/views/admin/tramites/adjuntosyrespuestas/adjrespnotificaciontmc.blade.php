@@ -37,10 +37,18 @@
         <div class="tipo3"><strong>Gestora Publica de la Seguridad Social</strong></div>
         <div class="tipo3"><strong>de Largo Plazo</strong></div>
         <div class="tipo9" style="margin-top: -10px;">Presente. -</div>
-        <div class="tipo5"><strong>REF.- ADJUNTO DOCUMENTACIÓN MEDICA RESPUESTA AL ACTA TCM</strong></div>
-        <div class="tipo5">@php
-                                $tramite = strtoupper($nombretramite);
-                            @endphp
+        <div class="tipo5"><strong>REF.- ADJUNTO DOCUMENTACIÓN MEDICA RESPUESTA AL ACTA 
+            @php
+                $tramite = strtoupper($nombretramite);
+            @endphp
+            @if ($tramite === 'INVALIDEZ' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+                TMC
+            @elseif ($tramite === 'APELACIÓN' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                TMR
+            @else
+                TMC
+            @endif</strong></div>
+        <div class="tipo5">
                             @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
                                 <strong>TRÁMITE DE PENSIÓN POR INVALIDEZ (RECALIFICACIÓN)</strong>
                             @elseif ($tramite === 'INVALIDEZ' || $tramite === 'APELACIÓN' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD')
@@ -55,8 +63,15 @@
             {{ $afiliadoTexto }} <strong>{{$cliente->nombrecompleto}}</strong> con CUA N.º <strong>{{$cliente->nuacua}}</strong>, con C.I. <strong>{{$cliente->ci}} {{$cliente->ciexp}}</strong>
         </div>
         <div class="tipo6">
-            Me dirijo a su Institución con la finalidad de brindar respuesta al Acta del Tribunal Medico Calificador (TCM) de la 
-            Entidad Encargada de Calificar (EEC) Habiendo sido notificado por su Institución Publica con 
+            Me dirijo a su Institución con la finalidad de brindar respuesta al Acta del Tribunal Medico 
+            @if ($tramite === 'INVALIDEZ' || $tramite === 'SEGUNDA SOLICITUD' || $tramite === 'TERCERA SOLICITUD' || $tramite === 'RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+                Calificador (TMC) de la Entidad Encargada de Calificar (EEC)
+            @elseif ($tramite === 'APELACIÓN' || $tramite === 'APELACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN TERCERA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
+                Revisor (TMR) de la Entidad Encargada de Revisar (EER)
+            @else
+                Calificador (TMC) de la Entidad Encargada de Calificar (EEC)
+            @endif
+            Habiendo sido notificado por su Institución Publica con 
             <strong>NOTA CITE {!! $notatecnicomedico ?? '<span class="textoedita">NOTA CITE</span>' !!}</strong> con fecha 
             <strong>{!! $fechanotatecnicomedico ?? '<span class="textoedita">FECHA NOTA CITE</span>' !!}</strong>. 
             Dentro del Trámite de @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')

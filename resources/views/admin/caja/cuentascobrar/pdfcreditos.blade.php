@@ -161,7 +161,7 @@
             Adicionalmente, se le informará con <strong>un día de anticipación</strong> antes del vencimiento de su línea de crédito.
         </div>
         <div class="tipo6">
-            La <strong>única persona autorizada</strong> para realizar el cobro es <strong>CRISTHIAN ALAIN DURAN SULLCA</strong>, quien puede ser contactado al siguiente número: <strong>722-22963</strong>.
+            La <strong>única persona autorizada</strong> para realizar el cobro es <strong>ADRIAN DAVID POMA CUELLAR</strong>, quien puede ser contactado al siguiente número: <strong>722-22963</strong>.
         </div>
         <div class="tipo6">
             Agradecemos su atención y compromiso con las condiciones establecidas.

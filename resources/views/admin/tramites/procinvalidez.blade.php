@@ -2,15 +2,6 @@
 
 @section('content_header')
 <a class="btn btn-sm float-right btn-regresar" href="{{ route('admin.tramites.index') }}">REGRESAR</a>
-{{-- @if($inicioocontinuidad)
-    <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalcomunicaciones">COMUNICACIÓN</a>
-    <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalsolicitudes">HISTORIAL DE MISIVAS</a>
-    <a class="btn btn-sm float-right btn-cartareclamo" href="{{ route('admin.tramites.cartasprocinvalidez', $cliente->id) }}">NUEVA MISIVA</a>
-    <a class="btn btn-sm float-right btn-cartareclamo" data-toggle="modal" data-target="#modalDatos">DATOS CLIENTE</a>
-    <a class="btn btn-sm float-right btn-cancelacion" data-toggle="modal" data-target="#modalCancelacion">CANCELACIÓN</a>
-    <a class="btn btn-sm float-right btn-cancelacion" data-toggle="modal" data-target="#modalNotifErroneas">NOTIF. ERRÓNEAS</a>
-@endif
-<a class="btn btn-sm float-right btn-seguimiento" data-toggle="modal" data-target="#modalCodigo">CÓD. PERMISO</a> --}}
 
 @if($inicioocontinuidad)
     <div class="dropdown float-right ml-2">
@@ -41,7 +32,6 @@
             <a class="dropdown-item" data-toggle="modal" data-target="#modalNotifErroneas">
                 <i class="fas fa-exclamation-triangle mr-2 text-orange"></i> NOTIFICACIONES ERRÓNEAS
             </a>
-            {{-- NUEVO 130226 --}}
             <a class="dropdown-item" data-toggle="modal" data-target="#modalNotifObservadas">
                 <i class="fas fa-eye mr-2 text-orange"></i> NOTIFICACIONES OBSERVADAS
             </a>
@@ -72,6 +62,20 @@
 
 <h5>PROCEDIMIENTO DE INVALIDEZ DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
+@php
+    $estadoTramite = \App\Models\Tramitesubcliente::where('id', $idTramite)->value('estado');
+@endphp
+
+<strong>Estado:</strong>
+<span class="badge 
+    @if($estadoTramite == 'PENDIENTE') bg-warning
+    @elseif($estadoTramite == 'FINALIZADO') bg-success
+    @elseif($estadoTramite == 'INTERRUMPIDO') bg-danger
+    @else bg-secondary
+    @endif
+">
+    {{ $estadoTramite ?? 'SIN ESTADO' }}
+</span>
 @stop
 
 @section('css')
@@ -2522,7 +2526,7 @@
                                                     <tr>
                                                         <th class="text-center">INFORMES_ADICIONALES_EST./ESP.</th>
                                                         <th class="text-center">ESPECIALISTA/CENTRO_MÉDICO</th>
-                                                        <th class="text-center">FECHA_EMSIÓN</th>
+                                                        <th class="text-center">FECHA_EMISIÓN</th>
                                                         <th class="text-center">INFORME_ESTUDIO/ESPECIALIDAD</th>
                                                     </tr>
                                                 </thead>
@@ -3053,7 +3057,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- MODAL NOTIFICACION TMC -->
                 <div class="modal fade" id="modalNotificacionTMC" tabindex="-1" role="dialog" aria-labelledby="modalNotificacionTMCLabel" aria-hidden="true">
                     <div class="modal-dialog modal-xl" role="document">
@@ -3578,7 +3581,7 @@
                                                     <tr>
                                                         <th class="text-center">INFORMES_ADICIONALES_EST./ESP.</th>
                                                         <th class="text-center">ESPECIALISTA/CENTRO_MÉDICO</th>
-                                                        <th class="text-center">FECHA_EMSIÓN</th>
+                                                        <th class="text-center">FECHA_EMISIÓN</th>
                                                         <th class="text-center">INFORME_ESTUDIO/ESPECIALIDAD</th>
                                                     </tr>
                                                 </thead>
@@ -4111,7 +4114,6 @@
                         </div>
                     </div>
                 </div>
-
                 <!-- MODAL EMPLEADOR -->
                 <div class="modal fade" id="modalEmpleador" tabindex="-1" role="dialog" aria-labelledby="modalEmpleadorLabel" aria-hidden="true">
                     <div class="modal-dialog modal-xl" role="document">
@@ -5094,7 +5096,7 @@
                                                     <tr>
                                                         <th class="text-center">INFORMES_ADICIONALES_EST./ESP.</th>
                                                         <th class="text-center">ESPECIALISTA/CENTRO_MÉDICO</th>
-                                                        <th class="text-center">FECHA_EMSIÓN</th>
+                                                        <th class="text-center">FECHA_EMISIÓN</th>
                                                         <th class="text-center">INFORME_ESTUDIO/ESPECIALIDAD</th>
                                                     </tr>
                                                 </thead>
@@ -5150,7 +5152,7 @@
                                                     fila.innerHTML = `
                                                         <input type="hidden" name="tramitenombreprog" value="INVALIDEZ">
                                                         <td>
-                                                            <select class="form-control form-control-sm" name="3estudioespecialidad[]">
+                                                            <select class="form-control form-control-sm" name="5estudioespecialidad[]">
                                                                 <option value="" disabled selected>Seleccione un estudio/especialidad...</option>
                                                                 ${areas3.map(area => `<option value="${area.area}">${area.area}</option>`).join('')}
                                                             </select>
@@ -6496,7 +6498,7 @@
                                                     <tr>
                                                         <th class="text-center">INFORMES_ADICIONALES_EST./ESP.</th>
                                                         <th class="text-center">ESPECIALISTA/CENTRO_MÉDICO</th>
-                                                        <th class="text-center">FECHA_EMSIÓN</th>
+                                                        <th class="text-center">FECHA_EMISIÓN</th>
                                                         <th class="text-center">INFORME_ESTUDIO/ESPECIALIDAD</th>
                                                     </tr>
                                                 </thead>
@@ -6552,7 +6554,7 @@
                                                     fila.innerHTML = `
                                                         <input type="hidden" name="tramitenombreprog" value="INVALIDEZ">
                                                         <td>
-                                                            <select class="form-control form-control-sm" name="4estudioespecialidad[]">
+                                                            <select class="form-control form-control-sm" name="3estudioespecialidad[]">
                                                                 <option value="" disabled selected>Seleccione un estudio/especialidad...</option>
                                                                 ${areas4.map(area => `<option value="${area.area}">${area.area}</option>`).join('')}
                                                             </select>
@@ -7556,7 +7558,7 @@
                                                     <tr>
                                                         <th class="text-center">INFORMES_ADICIONALES_EST./ESP.</th>
                                                         <th class="text-center">ESPECIALISTA/CENTRO_MÉDICO</th>
-                                                        <th class="text-center">FECHA_EMSIÓN</th>
+                                                        <th class="text-center">FECHA_EMISIÓN</th>
                                                         <th class="text-center">INFORME_ESTUDIO/ESPECIALIDAD</th>
                                                     </tr>
                                                 </thead>
@@ -7612,7 +7614,7 @@
                                                     fila.innerHTML = `
                                                         <input type="hidden" name="tramitenombreprog" value="INVALIDEZ">
                                                         <td>
-                                                            <select class="form-control form-control-sm" name="5estudioespecialidad[]">
+                                                            <select class="form-control form-control-sm" name="4estudioespecialidad[]">
                                                                 <option value="" disabled selected>Seleccione un estudio/especialidad...</option>
                                                                 ${areas5.map(area => `<option value="${area.area}">${area.area}</option>`).join('')}
                                                             </select>
@@ -8643,9 +8645,9 @@
                                     $documento47 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->where('tramite', 'INVALIDEZ')->first();
 
                                     $accedepensiondictamen = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'RENUNCIA A REVISIÓN DE DICTAMEN')->where('accesopension', 'SI')->where('tramite', 'INVALIDEZ')->first();
-                                    $noaccedepensiondictamene6 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'RENUNCIA A REVISIÓN DE DICTAMEN (EXCESO DE 6 MESES)')->where('accesopension', 'NO')->where('motivonopension', 'EXCESO DE 6 MESES')->where('tramite', 'INVALIDEZ')->first();
-                                    $noaccedepensiondictamenfc = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'RENUNCIA A REVISIÓN DE DICTAMEN (FALTA DE COBERTURA)')->where('accesopension', 'NO')->where('motivonopension', 'FALTA DE COBERTURA')->where('tramite', 'INVALIDEZ')->first();
-                                    $noaccedepensiondictamenfp = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'RENUNCIA A REVISIÓN DE DICTAMEN (FALTA DE COBERTURA)')->where('accesopension', 'NO')->where('motivonopension', 'FALTA DE PORCENTAJE')->where('tramite', 'INVALIDEZ')->first();
+                                    $noaccedepensiondictamene6 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('accesopension', 'NO')->where('motivonopension', 'EXCESO DE 6 MESES')->where('tramite', 'INVALIDEZ')->first();
+                                    $noaccedepensiondictamenfc = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('accesopension', 'NO')->where('motivonopension', 'FALTA DE COBERTURA')->where('tramite', 'INVALIDEZ')->first();
+                                    $noaccedepensiondictamenfp = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('accesopension', 'NO')->where('motivonopension', 'FALTA DE PORCENTAJE')->where('tramite', 'INVALIDEZ')->first();
                                 @endphp
                                 <div class="text-center">
                                     @if (!$accedepensiondictamen && !$noaccedepensiondictamene6 && !$noaccedepensiondictamenfc)
@@ -12762,7 +12764,6 @@
     </div>
 </div>
 
-{{-- NUEVO 130226 --}}
 <!-- NOTIFICACIONES OBSERVADAS -->
 <div class="modal fade" id="modalNotifObservadas" tabindex="-1" role="dialog" aria-labelledby="modalNotifObservadasLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">

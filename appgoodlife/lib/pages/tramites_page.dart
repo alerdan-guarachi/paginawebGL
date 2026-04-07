@@ -21,7 +21,7 @@ class _TramitesPageState extends State<TramitesPage> {
 
   Future<void> cargarTramites() async {
     // ▼▼▼ IP CORREGIDA ▼▼▼
-    final url = Uri.parse("http://192.168.88.224:8000/api/tramites/${widget.usuarioId}");
+    final url = Uri.parse("https://api.goodlife.com.bo/api/tramites/${widget.usuarioId}");
     final resp = await http.get(url);
 
     if (resp.statusCode == 200) {

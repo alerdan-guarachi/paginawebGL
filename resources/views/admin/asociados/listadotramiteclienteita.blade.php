@@ -80,7 +80,8 @@
                                             'RETIRO DE APORTES TOTAL',
                                             'RETIRO DE APORTES PARCIAL',
                                             'MASA HEREDITARIA',
-                                            'COMPENSACIÓN DE COTIZACIONES (SENASIR)'
+                                            'COMPENSACIÓN DE COTIZACIONES (SENASIR)',
+                                            'INCLUSIÓN CC (GESTORA)'
                                         ];
                                     @endphp
 

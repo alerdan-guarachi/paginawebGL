@@ -167,6 +167,20 @@
 
 <h5>PROCEDIMIENTO DE MASA HEREDITARIA DE:</h5>
 <h3>{{$cliente->nombrecompleto}}</h3>
+@php
+    $estadoTramite = \App\Models\Tramitesubcliente::where('id', $idTramite)->value('estado');
+@endphp
+
+<strong>Estado:</strong>
+<span class="badge 
+    @if($estadoTramite == 'PENDIENTE') bg-warning
+    @elseif($estadoTramite == 'FINALIZADO') bg-success
+    @elseif($estadoTramite == 'INTERRUMPIDO') bg-danger
+    @else bg-secondary
+    @endif
+">
+    {{ $estadoTramite ?? 'SIN ESTADO' }}
+</span>
 @stop
 
 @section('css')
