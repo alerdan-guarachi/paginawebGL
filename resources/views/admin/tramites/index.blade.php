@@ -2,7 +2,7 @@
 
 @section('content_header')
 @php
-    $tieneRolEjecutivo = auth()->user()->getRoleNames()->contains('EJECUTIVO PRESTACIONES');
+    $tieneRolEjecutivo = auth()->user()->getRoleNames()->contains('MAESTRO');
 @endphp
 
 @if ($bloquearSistema && $tieneRolEjecutivo)
@@ -82,9 +82,9 @@
                             </style>
                             <td>
                                 @if($tramite->estado_tiempo == 'FALTAN')
-                                    Faltan {{ $tramite->dias }} días y {{ $tramite->horas }} horas
+                                    Faltan {{ $tramite->dias }} días{{--  y {{ $tramite->horas }} horas --}}
                                 @else
-                                    Vencido hace {{ $tramite->dias }} días y {{ $tramite->horas }} horas
+                                    Vencido hace {{ $tramite->dias }} días{{--  y {{ $tramite->horas }} horas --}}
                                 @endif
                             </td>
                         </tr>
@@ -358,7 +358,7 @@
                                 ->map(fn($r) => strtoupper(trim($r)))
                                 ->toArray();
 
-                    $esEjecutivo = in_array('EJECUTIVO PRESTACIONES', $roles);
+                    $esEjecutivo = in_array('MAESTRO', $roles);
                 @endphp
                 @if($esEjecutivo)
                     <li class="nav-item">
@@ -1282,9 +1282,9 @@
                                             <td>{{ \Carbon\Carbon::parse($tramite->fecharetorno)->format('d-m-Y') }}</td>
                                             <td>
                                                 @if($tramite->estado_tiempo == 'FALTAN')
-                                                    Faltan {{ $tramite->dias }} días y {{ $tramite->horas }} horas
+                                                    Faltan {{ $tramite->dias }} días{{--  y {{ $tramite->horas }} horas --}}
                                                 @else
-                                                    Vencido hace {{ $tramite->dias }} días y {{ $tramite->horas }} horas
+                                                    Vencido hace {{ $tramite->dias }} días{{--  y {{ $tramite->horas }} horas --}}
                                                 @endif
                                             </td>
                                         </tr>

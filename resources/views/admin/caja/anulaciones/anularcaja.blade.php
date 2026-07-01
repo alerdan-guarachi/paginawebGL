@@ -38,7 +38,7 @@
             @csrf
             
             <div class="table-responsive">
-                <table class="table table-striped">
+                <table class="table table-striped table-bordered table-sm">
                     <thead class="table-secondary">
                         <tr>
                             <th>ID_Caja</th>

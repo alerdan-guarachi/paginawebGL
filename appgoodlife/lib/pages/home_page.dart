@@ -48,15 +48,58 @@ class _HomePageState extends State<HomePage> {
 
   void cerrarSesion(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('nombreUsuario');
-    await prefs.remove('sucursalUsuario');
-    await prefs.remove('usuarioId');
-    await prefs.remove('token');
+    await prefs.clear();
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => LoginPage()),
-      (Route<dynamic> route) => false,
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => LoginPage()),
+        (Route<dynamic> route) => false,
+      );
+    }
+  }
+
+  // Función para cumplir con Apple 5.1.1 (Eliminación de cuenta)
+  void _confirmarEliminacionCuenta() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Eliminar Cuenta'),
+        content: const Text(
+          '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es irreversible y perderás acceso a tus informes y trámites de manera inmediata. Sus datos serán procesados de acuerdo a nuestra política de privacidad y normativas legales de salud.'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              try {
+                // Llamada real a la API para inactivar la cuenta
+                await ApiService.eliminarCuenta();
+
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Cuenta inactivada con éxito.'))
+                  );
+                  cerrarSesion(context);
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al eliminar cuenta: $e'))
+                  );
+                }
+              }
+            },
+            child: const Text('Eliminar definitivamente', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -73,9 +116,11 @@ class _HomePageState extends State<HomePage> {
   Future<void> _abrirUrl(String urlString) async {
     final Uri url = Uri.parse(urlString);
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo abrir el enlace')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo abrir el enlace')),
+        );
+      }
     }
   }
 
@@ -88,14 +133,14 @@ class _HomePageState extends State<HomePage> {
             Container(
               color: verde,
               width: double.infinity,
-              padding: EdgeInsets.only(top: 40, bottom: 20),
+              padding: const EdgeInsets.only(top: 40, bottom: 20),
               child: Column(
                 children: [
                   Container(
                     width: 70,
                     height: 70,
                     clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
@@ -104,27 +149,27 @@ class _HomePageState extends State<HomePage> {
                       child: Image.asset('assets/iconogoodlife.png', fit: BoxFit.contain),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
                     widget.nombreUsuario,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             ListTile(
               dense: true,
               leading: Icon(Icons.medical_services, color: verde),
-              title: Text('Listado de Especialistas', style: TextStyle(fontSize: 15)),
+              title: const Text('Listado de Especialistas', style: TextStyle(fontSize: 15)),
               onTap: () {
                 showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
-                    title: Text('Listado de Especialistas'),
-                    content: Text('¿Deseas ver Estudios o Especialidades?'),
+                    title: const Text('Listado de Especialistas'),
+                    content: const Text('¿Deseas ver Estudios o Especialidades?'),
                     actions: [
                       TextButton(
                         onPressed: () {
@@ -139,7 +184,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           );
                         },
-                        child: Text('ESTUDIOS'),
+                        child: const Text('ESTUDIOS'),
                       ),
                       TextButton(
                         onPressed: () {
@@ -154,7 +199,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           );
                         },
-                        child: Text('ESPECIALIDADES'),
+                        child: const Text('ESPECIALIDADES'),
                       ),
                     ],
                   ),
@@ -165,11 +210,11 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               dense: true,
               leading: Icon(Icons.person_off_outlined, color: verde),
-              title: Text('Ausencias Médicos', style: TextStyle(fontSize: 15)),
+              title: const Text('Ausencias Médicos', style: TextStyle(fontSize: 15)),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AusenciasPage()),
+                  MaterialPageRoute(builder: (context) => const AusenciasPage()),
                 );
               },
             ),
@@ -177,7 +222,7 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               dense: true,
               leading: Icon(Icons.calendar_month, color: verde),
-              title: Text('Programaciones Médicas', style: TextStyle(fontSize: 15)),
+              title: const Text('Programaciones Médicas', style: TextStyle(fontSize: 15)),
               onTap: () {
                 Navigator.push(
                   context,
@@ -191,22 +236,26 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               dense: true,
               leading: Icon(Icons.description, color: verde),
-              title: Text('Informes Médicos', style: TextStyle(fontSize: 15)),
+              title: const Text('Informes Médicos', style: TextStyle(fontSize: 15)),
               onTap: () async {
                 final prefs = await SharedPreferences.getInstance();
                 final usuarioId = prefs.getString('usuarioId');
 
                 if (usuarioId != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DocumentosPage(usuarioId: usuarioId),
-                    ),
-                  );
+                  if (mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => DocumentosPage(usuarioId: usuarioId),
+                      ),
+                    );
+                  }
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Usuario no autenticado')),
-                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Usuario no autenticado')),
+                    );
+                  }
                 }
               },
             ),
@@ -214,18 +263,20 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               dense: true,
               leading: Icon(Icons.assignment, color: verde),
-              title: Text('Trámites', style: TextStyle(fontSize: 15)),
+              title: const Text('Trámites', style: TextStyle(fontSize: 15)),
               onTap: () async {
                 final prefs = await SharedPreferences.getInstance();
                 final usuarioId = prefs.getString('usuarioId');
 
                 if (usuarioId != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => TramitesPage(usuarioId: usuarioId),
-                    ),
-                  );
+                  if (mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TramitesPage(usuarioId: usuarioId),
+                      ),
+                    );
+                  }
                 }
               },
             ),
@@ -237,13 +288,13 @@ class _HomePageState extends State<HomePage> {
               trailing: _unreadCount > 0
                   ? Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.orange,
                         shape: BoxShape.circle,
                       ),
                       child: Text(
                         '$_unreadCount',
-                        style: TextStyle(color: Colors.white, fontSize: 10),
+                        style: const TextStyle(color: Colors.white, fontSize: 10),
                       ),
                     )
                   : null,
@@ -266,29 +317,29 @@ class _HomePageState extends State<HomePage> {
               onTap: () => _abrirUrl('https://goodlife.com.bo/politicas-privacidad'),
             ),
 
-            ListTile(
-              dense: true,
-              leading: Icon(Icons.share_outlined, color: verde),
-              title: const Text('Referir Good Life', style: TextStyle(fontSize: 15)),
-              onTap: () => _abrirUrl('https://goodlife.com.bo/digital-card'),
-            ),
-
             const Divider(),
 
             ListTile(
               dense: true,
-              leading: Icon(Icons.logout, color: Colors.red),
-              title: Text('Cerrar sesión', style: TextStyle(fontSize: 15)),
+              leading: const Icon(Icons.no_accounts_outlined, color: Colors.grey),
+              title: const Text('Eliminar mi cuenta', style: TextStyle(fontSize: 15, color: Colors.grey)),
+              onTap: _confirmarEliminacionCuenta,
+            ),
+
+            ListTile(
+              dense: true,
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Cerrar sesión', style: TextStyle(fontSize: 15)),
               onTap: () {
                 showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
-                    title: Text('Confirmar'),
-                    content: Text('¿Deseas cerrar sesión?'),
+                    title: const Text('Confirmar'),
+                    content: const Text('¿Deseas cerrar sesión?'),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: Text('Cancelar'),
+                        child: const Text('Cancelar'),
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -296,7 +347,7 @@ class _HomePageState extends State<HomePage> {
                           Navigator.pop(context);
                           cerrarSesion(context);
                         },
-                        child: Text('Sí, cerrar', style: TextStyle(color: Colors.white)),
+                        child: const Text('Sí, cerrar', style: TextStyle(color: Colors.white)),
                       ),
                     ],
                   ),
@@ -306,7 +357,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      appBar: AppBar(backgroundColor: verde, title: Text("")),
+      appBar: AppBar(backgroundColor: verde, title: const Text("")),
       body: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -363,7 +414,7 @@ class _HomePageState extends State<HomePage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
+                  boxShadow: const [
                     BoxShadow(
                       color: Colors.black12,
                       blurRadius: 15,

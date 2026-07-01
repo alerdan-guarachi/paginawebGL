@@ -49,7 +49,11 @@
             <strong>{{ $numeropoder }}</strong>, {{ $afiliadoTexto }} <strong>{{ $cliente->nombrecompleto }}</strong> con <strong>CUA N.º {{ $cliente->nuacua }}</strong>, 
             con <strong>C.I. {{ $cliente->ci }} {{ $cliente->ciexp }}</strong>
         </div>
-        @if ($nombretramite !== 'APELACIÓN')
+        @php
+            use Illuminate\Support\Str;
+        @endphp
+
+        @if (!Str::startsWith($nombretramite, 'APELACIÓN'))
             <div class="tipo6">
                 Me permito dirigirme a su Institución con el fin de solicitar información actualizada sobre el estado del trámite de
                 @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
@@ -125,7 +129,7 @@
                 @endif
             </div>
         @endif
-        @if ($nombretramite === 'APELACIÓN')
+        @if ($nombretramite === 'APELACIÓN' || Str::startsWith($nombretramite, 'APELACIÓN'))
             <div class="tipo6">
                 Me permito dirigirme a su Institución con el fin de solicitar información actualizada sobre el estado del trámite de
                 @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
@@ -136,7 +140,7 @@
                     <strong>{{ $nombretramite }}.</strong>
                 @endif
                 En fecha <strong>{!! $fechasolrevdictamen ?? '<span class="textoedita">FECHA SOL. REV. DICTAMEN</span>' !!}</strong>
-                @if ($subProcedimiento === 'VALIDACIÓN DE TRÁMITE' || $subProcedimiento === 'SOLICITUD DE REVISIÓN DE DICTAMEN' || $subProcedimiento === 'AUTO DE ADMISIÓN' || $subProcedimiento === 'AUTO DE RECHAZO')
+                @if ($subProcedimiento === 'VALIDACIÓN DE TRÁMITE' || $subProcedimiento === 'SOLICITUD DE REVISIÓN DE DICTAMEN'|| $subProcedimiento === 'AUTO DE RECHAZO')
                     se Solicitó la 
                 @else
                     se nos notificó con el Auto de Admisión emitido por la APS, con referencia a la 
@@ -199,7 +203,7 @@
                 @endif
             </ul>
         </div>
-        @if ($nombretramite !== 'APELACIÓN')
+        @if (!Str::startsWith($nombretramite, 'APELACIÓN'))
             <div class="tipo6">
                 Sin embargo, hasta la fecha no se ha recibido pronunciamiento alguno ni se ha brindado información sobre el avance 
                 del trámite. Por lo tanto, solicito amablemente que se realice el debido seguimiento y se me proporcione una 
@@ -207,10 +211,11 @@
             </div>
         @endif
 
-        @if ($nombretramite === 'APELACIÓN')
+        @if ($nombretramite === 'APELACIÓN' || Str::startsWith($nombretramite, 'APELACIÓN'))
             <div class="tipo6">
-                Hasta la fecha no se tiene ninguna respuesta ni pronunciamiento sobre el Trámite, por lo que solicito, se pueda hacer un 
-                seguimiento y se dé una respuesta a la brevedad posible del presente caso.
+                Sin embargo, hasta la fecha no se ha recibido pronunciamiento alguno ni se ha brindado información sobre el avance 
+                del trámite. Por lo tanto, solicito amablemente que se realice el debido seguimiento y se me proporcione una 
+                respuesta a la mayor brevedad posible sobre el estado del presente caso.
             </div>
             <div class="tipo6">
                 Sin más que decir y esperando su pronta respuesta me despido con las consideraciones más distinguidas.

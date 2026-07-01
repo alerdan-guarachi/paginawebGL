@@ -415,7 +415,7 @@
                     <div class="form-group">
                         <label>Tipo de Transacción</label>
                         <div>
-                            <select class="form-control form-control-sm" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
+                            <select class="form-control form-control-sm" id="tipoTransaccion1" name="tipotransaccion" required onchange="validarTipoTransaccion()">
                                 <option disabled selected></option>
                                 <option value="CHEQUE">CHEQUE</option>
                                 <option value="DEPOSITO_BANCARIO" hidden>DEPÓSITO BANCARIO</option>
@@ -746,7 +746,6 @@
                                 <td>${registro.id}</td>
                                 <td>${registro.accionnombre || ''} ${registro.tipoproveedor || ''} ${registro.cantidad > 0 ? registro.cantidad : ''} ${registro.detalleproducto || ''}
                                     ${registro.clienteitanombre ? ' - '  + registro.clienteitanombre : ''}
-                                    ${registro.clientenombre ? ' - ' + registro.clientenombre : ''}
                                     ${registro.clienteauditorianombre ? ' - ' + registro.clienteauditorianombre : ''}
                                     ${registro.clientecomunnombre ? ' - ' + registro.clientecomunnombre : ''}</td>
                                 <td hidden>${registro.fechabateria}</td>

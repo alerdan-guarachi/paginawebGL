@@ -473,8 +473,8 @@
                         <input type="month"
                                name="mes_anio"
                                class="form-control"
-                               min="{{ now()->subMonth()->format('Y-m') }}"
-                               max="{{ now()->format('Y-m') }}"
+                                min="{{ now()->subMonths(2)->format('Y-m') }}"
+                                max="{{ now()->subMonth()->format('Y-m') }}"
                                required>
                     </div>
                 </div>
@@ -603,6 +603,16 @@
 @stop
 
 @section('content')
+@if (session('error'))
+    <div id="alert-error" class="alert alert-danger">
+        <strong>{{ session('error') }}</strong>
+    </div>
+    <script>
+        setTimeout(function() {
+            $('#alert-error').fadeOut('fast');
+        }, 5000);
+    </script>
+@endif
 @if (session('info'))
     <div id="alert-info" class="alert alert-success">
         <strong>{{ session('info') }}</strong>

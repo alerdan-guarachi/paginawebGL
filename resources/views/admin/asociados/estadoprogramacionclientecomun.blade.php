@@ -348,6 +348,21 @@
                     {!! Form::text('nombrecompleto', $clientecomun->nombrecompleto, ['id' => 'modalNombreCompleto', 'class' => 'form-control', 'readonly']) !!}
                 </div>
                 <div class="form-group">
+                    {!! Form::label('requiereinforme', 'Requiere Informe:') !!}
+                    
+                    {!! Form::select(
+                        'requiereinforme',
+                        [
+                            'SI' => 'SI',
+                            'NO' => 'NO'
+                        ],
+                        'SI',
+                        [
+                            'class' => 'form-control'
+                        ]
+                    ) !!}
+                </div>
+                <div class="form-group">
                     {!! Form::label('fechaatencionprogramacion', 'Fecha de Atención:') !!}
                     {!! Form::date('fechaatencionprogramacion', \Carbon\Carbon::now(), ['class' => 'form-control']) !!}
                     @error('fechaatencionprogramacion')

@@ -1155,14 +1155,17 @@ class MovimientosCajaController extends Controller
             if ($estadoDetalle == 'PAGO PROCESADO') {
                 if ($programacion) {
                     Detallerecibo::where('programacionid', $programacionId)
+                        ->where('tipomovimiento', 'INGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 } elseif ($proveedor) {
                     Detallerecibo::where('provinfofinalid', $programacionId)
+                        ->where('tipomovimiento', 'INGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 } elseif ($cuentapagar) {
                     Detallerecibo::where('cuentacobrarid', $programacionId)
+                        ->where('tipomovimiento', 'INGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 }
@@ -2903,19 +2906,16 @@ class MovimientosCajaController extends Controller
     {
         return $this->listacuentascobrar($cliente, $clienteauditoria,$clientecomun, $request);
     }
-    public function cobrarhoy(Request $request)
+    /* public function cobrarhoy(Request $request)
     {
         $fechaActual = now()->toDateString();
 
-        /* PAGOS PENDIENTES INTERNOS */
         $pagosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clienteitaid')
             ->where('pagoservicio', 'INTERNO')
             ->where(function ($query) {
-                $query->where(function ($query) {
-                    $query->whereNull('pagoatencion')
-                        ->orWhere('pagoatencion', '');
-                });
+                $query->whereNull('pagoatencion')
+                    ->orWhere('pagoatencion', '');
             })
             ->whereNotExists(function ($query) {
                 $query->select(DB::raw(1))
@@ -2923,22 +2923,21 @@ class MovimientosCajaController extends Controller
                     ->whereColumn('detallerecibos.programacionid', 'programacionsubclientes.id');
             })
             ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            /* ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            }) */
-            ->leftJoin('creditos', function ($join) {
-                $join->on('programacionsubclientes.bateriaid', '=', 'creditos.bateriaid');
-            })
-            /* ->where('bateriaproveedores.servicio', 'INTERNO') */
             ->select(
-                'programacionsubclientes.id as programacionsubcliente_id',
+                'programacionsubclientes.id',
                 'programacionsubclientes.*', 
-                /* 'bateriaproveedores.servicio', */
                 'clientes.sucursal as cliente_sucursal',
-                DB::raw('CASE WHEN creditos.bateriaid IS NOT NULL THEN "SI" ELSE "NO" END AS tiene_credito')
+                DB::raw('
+                    CASE 
+                        WHEN EXISTS (
+                            SELECT 1 
+                            FROM creditos 
+                            WHERE creditos.bateriaid = programacionsubclientes.bateriaid
+                        ) 
+                        THEN "SI" 
+                        ELSE "NO" 
+                    END AS tiene_credito
+                ')
             )
         ->get();
 
@@ -2957,17 +2956,9 @@ class MovimientosCajaController extends Controller
                     ->whereColumn('detallerecibos.programacionid', 'programacionsubclientes.id');
             })
             ->join('clientescomunes', 'programacionsubclientes.clientecomunid', '=', 'clientescomunes.id')
-            /* ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientescomunes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'INTERNO') */
             ->select(
                 'programacionsubclientes.id as programacionsubcliente_id',
                 'programacionsubclientes.*', 
-                /* 'bateriaproveedores.servicio', */
                 'clientescomunes.sucursal as cliente_sucursal'
             )
         ->get();
@@ -2987,23 +2978,14 @@ class MovimientosCajaController extends Controller
                     ->whereColumn('detallerecibos.programacionid', 'programacionsubclientes.id');
             })
             ->join('clienteauditorias', 'programacionsubclientes.clienteauditoriaid', '=', 'clienteauditorias.id')
-            /* ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clienteauditorias.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'INTERNO') */
             ->select(
                 'programacionsubclientes.id as programacionsubcliente_id',
                 'programacionsubclientes.*', 
-                /* 'bateriaproveedores.servicio', */
                 'clienteauditorias.sucursal as cliente_sucursal'
             )
         ->get();
 
 
-        /* PAGOS PENDIENTES EXTERNOS */
         $pagosexternosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clienteitaid')
             ->where('pagoservicio', 'EXTERNO')
@@ -3019,17 +3001,9 @@ class MovimientosCajaController extends Controller
                     ->whereColumn('detallerecibos.programacionid', 'programacionsubclientes.id');
             })
             ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            /* ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'EXTERNO') */
             ->select(
                 'programacionsubclientes.id as programacionsubcliente_id',
                 'programacionsubclientes.*', 
-                /* 'bateriaproveedores.servicio', */
                 'clientes.sucursal as cliente_sucursal'
             )
         ->get();
@@ -3049,17 +3023,9 @@ class MovimientosCajaController extends Controller
                     ->whereColumn('detallerecibos.programacionid', 'programacionsubclientes.id');
             })
             ->join('clientescomunes', 'programacionsubclientes.clientecomunid', '=', 'clientescomunes.id')
-            /* ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientescomunes.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'EXTERNO') */
             ->select(
                 'programacionsubclientes.id as programacionsubcliente_id',
                 'programacionsubclientes.*', 
-                /* 'bateriaproveedores.servicio', */
                 'clientescomunes.sucursal as cliente_sucursal'
             )
         ->get();
@@ -3079,30 +3045,16 @@ class MovimientosCajaController extends Controller
                     ->whereColumn('detallerecibos.programacionid', 'programacionsubclientes.id');
             })
             ->join('clienteauditorias', 'programacionsubclientes.clienteauditoriaid', '=', 'clienteauditorias.id')
-            /* ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clienteauditorias.sucursal', '=', 'bateriaproveedores.sucursal');
-            })
-            ->where('bateriaproveedores.servicio', 'EXTERNO') */
             ->select(
                 'programacionsubclientes.id as programacionsubcliente_id',
                 'programacionsubclientes.*', 
-                /* 'bateriaproveedores.servicio', */
                 'clienteauditorias.sucursal as cliente_sucursal'
             )
         ->get();
 
 
-        /* PAGOS PROCESADOS */
         $pagadosprogramacionesita = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clienteitaid')
-            /* ->where(function ($query) {
-                $query->where(function ($query) {
-                    $query->Where('pagoatencion', 'PAGO PROCESADO');
-                });
-            }) */
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('detallerecibos')
@@ -3111,26 +3063,14 @@ class MovimientosCajaController extends Controller
             })
 
             ->join('clientes', 'programacionsubclientes.clienteitaid', '=', 'clientes.id')
-            /* ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientes.sucursal', '=', 'bateriaproveedores.sucursal');
-            }) */
             ->select(
                 'programacionsubclientes.*', 
-                /* 'bateriaproveedores.servicio', */
                 'clientes.sucursal as cliente_sucursal'
             )
         ->get();
         
         $pagadosprogramacionescomun = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clientecomunid')
-            /* ->where(function ($query) {
-                $query->where(function ($query) {
-                    $query->Where('pagoatencion', 'PAGO PROCESADO');
-                });
-            }) */
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('detallerecibos')
@@ -3138,27 +3078,15 @@ class MovimientosCajaController extends Controller
                     ->where('detallerecibos.estado', 'PAGO PROCESADO');
             })
             ->join('clientescomunes', 'programacionsubclientes.clientecomunid', '=', 'clientescomunes.id')
-            /* ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clientescomunes.sucursal', '=', 'bateriaproveedores.sucursal');
-            }) */
             ->select(
                 'programacionsubclientes.id as programacionsubcliente_id',
                 'programacionsubclientes.*', 
-                /* 'bateriaproveedores.servicio', */
                 'clientescomunes.sucursal as cliente_sucursal'
             )
         ->get();
 
         $pagadosprogramacionesauditoria = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
             ->whereNotNull('clienteauditoriaid')
-            /* ->where(function ($query) {
-                $query->where(function ($query) {
-                    $query->Where('pagoatencion', 'PAGO PROCESADO');
-                });
-            }) */
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('detallerecibos')
@@ -3166,24 +3094,15 @@ class MovimientosCajaController extends Controller
                     ->where('detallerecibos.estado', 'PAGO PROCESADO');
             })
             ->join('clienteauditorias', 'programacionsubclientes.clienteauditoriaid', '=', 'clienteauditorias.id')
-            /* ->join('bateriaproveedores', function ($join) {
-                $join->on('programacionsubclientes.proveedornombre', '=', 'bateriaproveedores.proveedor')
-                    ->on('programacionsubclientes.accionnombre', '=', 'bateriaproveedores.accion')
-                    ->on('programacionsubclientes.precio', '=', 'bateriaproveedores.precio')
-                    ->on('clienteauditorias.sucursal', '=', 'bateriaproveedores.sucursal');
-            }) */
             ->select(
                 'programacionsubclientes.*', 
-                /* 'bateriaproveedores.servicio', */
                 'clienteauditorias.sucursal as cliente_sucursal'
             )
         ->get();
 
 
-        /* PAGOS PENDIENTES INFORMES FINALES */
         $pagosinformefinalita = ProveedorInformefinal::where(function ($query) {
-                /* $query->whereNull('pagoinforme')
-                    ->orWhere('pagoinforme', ''); */
+
             })
             ->whereNotNull('clienteitaid')
             ->where('pagoservicio', '=', 'INTERNO')
@@ -3201,8 +3120,6 @@ class MovimientosCajaController extends Controller
         ->get();
 
         $pagosinformefinalauditoria = ProveedorInformefinal::where(function ($query) {
-                /* $query->whereNull('pagoinforme')
-                    ->orWhere('pagoinforme', ''); */
             })
             ->whereNotNull('clienteauditoriaid')
             ->where('pagoservicio', '=', 'INTERNO')
@@ -3220,7 +3137,6 @@ class MovimientosCajaController extends Controller
         ->get();
 
 
-        /* PAGOS PROCESADOS INFORMES FINALES */
         $pagosprocesadosinformefinalita = ProveedorInformefinal::whereNotNull('clienteitaid')
             ->where(function ($query) {
                 $query->where('pagoservicio', 'PAGO PROCESADO')
@@ -3257,36 +3173,297 @@ class MovimientosCajaController extends Controller
             )
         ->get();
 
-        $year = $request->year ?? date('Y');
-        $month = $request->month ?? date('m');
+        return view('admin.caja.cuentascobrar.cobrarhoy', compact('pagosprocesadosinformefinalauditoria','pagosprocesadosinformefinalita','pagosinformefinalauditoria','pagosinformefinalita','pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita','pagadosprogramacionesita','pagadosprogramacionescomun','pagadosprogramacionesauditoria','pagosprogramacionesita','pagosprogramacionescomun','pagosprogramacionesauditoria', 'fechaActual'));
+    } */
 
-        $records = DB::table('programacionsubclientes')
-            ->selectRaw("
-                COALESCE(fechacredito, fechaasignada) as fechaasignada,  -- Usar fechacredito si existe, sino usar fechaasignada
-                SUM(CASE 
-                    WHEN precio IS NULL THEN 0
-                    ELSE precio 
-                END) as total_ingresos,
-                SUM(CASE 
-                    WHEN preciocompra IS NULL THEN 0
-                    ELSE preciocompra 
-                END) as total_egresos
-            ")
-            ->where('preciocompra', '!=', 0)
-            ->where('preciocompra', '!=', 0.00)
-            ->whereNotNull('preciocompra')
-            ->whereYear(DB::raw('COALESCE(fechacredito, fechaasignada)'), $year)
-            ->whereMonth(DB::raw('COALESCE(fechacredito, fechaasignada)'), $month)
-            ->whereNull('deleted_at')
-            ->groupBy(DB::raw('COALESCE(fechacredito, fechaasignada)'))
+    public function cobrarhoy(Request $request)
+    {
+        $fechaActual = $request->fecha ?? now()->toDateString();
+        $criterio = $request->criterio;
+        $user = auth()->user();
+
+        /* PAGOS PENDIENTES INTERNOS */
+        $pagosproginterno = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where('pagoservicio', 'INTERNO')
+            ->where(function ($query) {
+                $query->whereNull('pagoatencion')
+                    ->orWhere('pagoatencion', '');
+            })
+
+            ->when($criterio, function ($query) use ($criterio) {
+                $query->where(function ($q) use ($criterio) {
+                    $q->where('clienteid', 'like', "%$criterio%")
+                    ->orWhere('clientenombre', 'like', "%$criterio%")
+                    ->orWhere('bateriaid', 'like', "%$criterio%");
+                });
+            })
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('detallerecibos')
+                    ->whereColumn('detallerecibos.programacionid', 'programacionsubclientes.id');
+            })
+            ->when(!in_array($user->role, ['MAESTRO', 'ADMINISTRADOR']), function ($q) use ($user) {
+
+                $q->where(function ($sub) use ($user) {
+
+                    $sub->where(function ($x) use ($user) {
+                        $x->where('tipocliente', 'ITA')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clientes')
+                                ->whereColumn('clientes.id', 'programacionsubclientes.clienteid')
+                                ->where('clientes.sucursal', $user->sucursal);
+                        });
+                    })
+
+                    ->orWhere(function ($x) use ($user) {
+                        $x->where('tipocliente', 'COMUN')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clientescomunes')
+                                ->whereColumn('clientescomunes.id', 'programacionsubclientes.clienteid')
+                                ->where('clientescomunes.sucursal', $user->sucursal);
+                        });
+                    })
+
+                    ->orWhere(function ($x) use ($user) {
+                        $x->where('tipocliente', 'AUDITORIA')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clienteauditorias')
+                                ->whereColumn('clienteauditorias.id', 'programacionsubclientes.clienteid')
+                                ->where('clienteauditorias.sucursal', $user->sucursal);
+                        });
+                    });
+
+                });
+
+            })
+            ->select('programacionsubclientes.*')
         ->get();
 
-        if ($request->ajax()) {
-            return response()->json($records);
-        }
+        /* PAGOS PROCESADOS EXTERNOS */
+        $pagosprogexterno = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+            ->where('pagoservicio', 'EXTERNO')
+            ->where(function ($query) {
+                $query->whereNull('pagoatencion')
+                    ->orWhere('pagoatencion', '');
+            })
 
-        return view('admin.caja.cuentascobrar.cobrarhoy', compact('year', 'month', 'records','pagosprocesadosinformefinalauditoria','pagosprocesadosinformefinalita','pagosinformefinalauditoria','pagosinformefinalita','pagosexternosprogramacionesauditoria','pagosexternosprogramacionescomun','pagosexternosprogramacionesita','pagadosprogramacionesita','pagadosprogramacionescomun','pagadosprogramacionesauditoria','pagosprogramacionesita','pagosprogramacionescomun','pagosprogramacionesauditoria', 'fechaActual'));
+            ->when($criterio, function ($query) use ($criterio) {
+                $query->where(function ($q) use ($criterio) {
+                    $q->where('clienteid', 'like', "%$criterio%")
+                    ->orWhere('clientenombre', 'like', "%$criterio%")
+                    ->orWhere('bateriaid', 'like', "%$criterio%");
+                });
+            })
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('detallerecibos')
+                    ->whereColumn('detallerecibos.programacionid', 'programacionsubclientes.id');
+            })
+            ->when(!in_array($user->role, ['MAESTRO', 'ADMINISTRADOR']), function ($q) use ($user) {
+
+                $q->where(function ($sub) use ($user) {
+
+                    $sub->where(function ($x) use ($user) {
+                        $x->where('tipocliente', 'ITA')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clientes')
+                                ->whereColumn('clientes.id', 'programacionsubclientes.clienteid')
+                                ->where('clientes.sucursal', $user->sucursal);
+                        });
+                    })
+
+                    ->orWhere(function ($x) use ($user) {
+                        $x->where('tipocliente', 'COMUN')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clientescomunes')
+                                ->whereColumn('clientescomunes.id', 'programacionsubclientes.clienteid')
+                                ->where('clientescomunes.sucursal', $user->sucursal);
+                        });
+                    })
+
+                    ->orWhere(function ($x) use ($user) {
+                        $x->where('tipocliente', 'AUDITORIA')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clienteauditorias')
+                                ->whereColumn('clienteauditorias.id', 'programacionsubclientes.clienteid')
+                                ->where('clienteauditorias.sucursal', $user->sucursal);
+                        });
+                    });
+
+                });
+
+            })
+
+            ->select('programacionsubclientes.*')
+        ->get();
+
+        /* PAGOS PROCESADOS PROGRAMACIONES */
+        $pagadosprogramaciones = Programacionsubcliente::whereDate('fechaasignada', $fechaActual)
+
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('detallerecibos')
+                    ->whereColumn('detallerecibos.programacionid', 'programacionsubclientes.id')
+                    ->where('detallerecibos.estado', 'PAGO PROCESADO');
+            })
+            ->when($criterio, function ($query) use ($criterio) {
+                $query->where(function ($q) use ($criterio) {
+                    $q->where('clienteid', 'like', "%$criterio%")
+                    ->orWhere('clientenombre', 'like', "%$criterio%")
+                    ->orWhere('bateriaid', 'like', "%$criterio%");
+                });
+            })
+
+            ->when(!in_array($user->role, ['MAESTRO', 'ADMINISTRADOR']), function ($q) use ($user) {
+
+                $q->where(function ($sub) use ($user) {
+
+                    $sub->where(function ($x) use ($user) {
+                        $x->where('tipocliente', 'ITA')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clientes')
+                                ->whereColumn('clientes.id', 'programacionsubclientes.clienteid')
+                                ->where('clientes.sucursal', $user->sucursal);
+                        });
+                    })
+
+                    ->orWhere(function ($x) use ($user) {
+                        $x->where('tipocliente', 'COMUN')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clientescomunes')
+                                ->whereColumn('clientescomunes.id', 'programacionsubclientes.clienteid')
+                                ->where('clientescomunes.sucursal', $user->sucursal);
+                        });
+                    })
+
+                    ->orWhere(function ($x) use ($user) {
+                        $x->where('tipocliente', 'AUDITORIA')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clienteauditorias')
+                                ->whereColumn('clienteauditorias.id', 'programacionsubclientes.clienteid')
+                                ->where('clienteauditorias.sucursal', $user->sucursal);
+                        });
+                    });
+                });
+            })
+
+            ->select('programacionsubclientes.*')
+
+        ->get();
+
+        /* PAGOS PENDIENTES INFORME FINAL */
+        $pagosinformefinal = ProveedorInformefinal::where('pagoservicio', 'INTERNO')
+
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('detallerecibos')
+                    ->whereColumn('detallerecibos.provinfofinalid', 'proveedorinformesfinales.id');
+            })
+
+            ->when($criterio, function ($query) use ($criterio) {
+                $query->where(function ($q) use ($criterio) {
+                    $q->where('clienteid', 'like', "%$criterio%")
+                    ->orWhere('clientenombre', 'like', "%$criterio%");
+                });
+            })
+
+            ->when(!in_array($user->role, ['MAESTRO', 'ADMINISTRADOR']), function ($q) use ($user) {
+
+                $q->where(function ($sub) use ($user) {
+
+                    $sub->where(function ($x) use ($user) {
+                        $x->whereNotNull('clienteitaid')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clientes')
+                                ->whereColumn('clientes.id', 'proveedorinformesfinales.clienteitaid')
+                                ->where('clientes.sucursal', $user->sucursal);
+                        });
+                    })
+
+                    ->orWhere(function ($x) use ($user) {
+                        $x->whereNotNull('clienteauditoriaid')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clienteauditorias')
+                                ->whereColumn('clienteauditorias.id', 'proveedorinformesfinales.clienteauditoriaid')
+                                ->where('clienteauditorias.sucursal', $user->sucursal);
+                        });
+                    });
+
+                });
+
+            })
+
+            ->select('proveedorinformesfinales.*')
+
+        ->get();
+
+        /* PAGOS PROCESADOS INFORME FINAL */
+        $pagadosinformefinal = ProveedorInformefinal::where(function ($query) {
+
+            $query->where('pagoservicio', 'PAGO PROCESADO')
+                ->orWhereExists(function ($subquery) {
+                    $subquery->select(DB::raw(1))
+                        ->from('detallerecibos')
+                        ->whereColumn('detallerecibos.provinfofinalid', 'proveedorinformesfinales.id')
+                        ->where('detallerecibos.estado', 'PAGO PROCESADO');
+                });
+
+            })
+
+            ->when($criterio, function ($query) use ($criterio) {
+                $query->where(function ($q) use ($criterio) {
+                    $q->where('clienteid', 'like', "%$criterio%")
+                    ->orWhere('clientenombre', 'like', "%$criterio%");
+                });
+            })
+
+            ->when(!in_array($user->role, ['MAESTRO', 'ADMINISTRADOR']), function ($q) use ($user) {
+
+                $q->where(function ($sub) use ($user) {
+
+                    $sub->where(function ($x) use ($user) {
+                        $x->whereNotNull('clienteitaid')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clientes')
+                                ->whereColumn('clientes.id', 'proveedorinformesfinales.clienteitaid')
+                                ->where('clientes.sucursal', $user->sucursal);
+                        });
+                    })
+
+                    ->orWhere(function ($x) use ($user) {
+                        $x->whereNotNull('clienteauditoriaid')
+                        ->whereExists(function ($e) use ($user) {
+                            $e->select(DB::raw(1))
+                                ->from('clienteauditorias')
+                                ->whereColumn('clienteauditorias.id', 'proveedorinformesfinales.clienteauditoriaid')
+                                ->where('clienteauditorias.sucursal', $user->sucursal);
+                        });
+                    });
+
+                });
+
+            })
+
+            ->select('proveedorinformesfinales.*')
+
+        ->get();
+
+        return view('admin.caja.cuentascobrar.cobrarhoy', compact('fechaActual','pagosproginterno','pagosprogexterno','pagadosprogramaciones',
+        'pagosinformefinal','pagadosinformefinal'));
     }
+
     public function buscarccporfecha(Request $request)
     {
         $fechaActual = $request->get('fecha') ?: now()->toDateString(); 
@@ -4868,25 +5045,21 @@ class MovimientosCajaController extends Controller
             $saldoDetalle = number_format($saldoDetalle, 2, '.', '');
             $estadoDetalle = ($saldoDetalle == 0) ? 'PAGO PROCESADO' : 'SALDO PENDIENTE';
 
-            /* if ($estadoDetalle == 'PAGO PROCESADO') {
-                Detallerecibo::where('programacionid', $programacionId)
-                ->orwhere('provinfofinalid', $programacionId)
-                ->orwhere('cuentapagarid', $programacionId)
-                    ->where('estado', '!=', 'PAGO PROCESADO')
-                    ->update(['estado' => 'PAGO PROCESADO']);
-            } */
 
             if ($estadoDetalle == 'PAGO PROCESADO') {
                 if ($programacion) {
                     Detallerecibo::where('programacionid', $programacionId)
+                        ->where('tipomovimiento', 'EGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 } elseif ($proveedor) {
                     Detallerecibo::where('provinfofinalid', $programacionId)
+                        ->where('tipomovimiento', 'EGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 } elseif ($cuentapagar) {
                     Detallerecibo::where('cuentapagarid', $programacionId)
+                        ->where('tipomovimiento', 'EGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 }
@@ -5691,24 +5864,20 @@ class MovimientosCajaController extends Controller
             $saldoDetalle = number_format($saldoDetalle, 2, '.', '');
             $estadoDetalle = ($saldoDetalle == 0) ? 'PAGO PROCESADO' : 'SALDO PENDIENTE';
 
-            /* if ($estadoDetalle == 'PAGO PROCESADO') {
-                Detallerecibo::where('programacionid', $programacionId)
-                ->orwhere('provinfofinalid', $programacionId)
-                ->orwhere('cuentapagarid', $programacionId)
-                    ->where('estado', '!=', 'PAGO PROCESADO')
-                    ->update(['estado' => 'PAGO PROCESADO']);
-            } */
             if ($estadoDetalle == 'PAGO PROCESADO') {
                 if ($programacion) {
                     Detallerecibo::where('programacionid', $programacionId)
+                        ->where('tipomovimiento', 'EGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 } elseif ($proveedor) {
                     Detallerecibo::where('provinfofinalid', $programacionId)
+                        ->where('tipomovimiento', 'EGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 } elseif ($cuentapagar) {
                     Detallerecibo::where('cuentapagarid', $programacionId)
+                        ->where('tipomovimiento', 'EGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 }
@@ -6028,6 +6197,21 @@ class MovimientosCajaController extends Controller
                 }
                 $registro->docfactura = $archivo_name2 ?? $registro->docfactura;
                 $registro->doccomprobante = $archivo_name3 ?? $registro->doccomprobante;
+
+                
+                if (!empty($request->nrobancarizacion_general)) {
+
+                    if ($registro->tipotransaccion === 'TRANSFERENCIA BANCARIA') {
+
+                        $registro->nrobancarizaciontransferencia = $request->nrobancarizacion_general;
+
+                    } elseif ($registro->tipotransaccion === 'CHEQUE') {
+
+                        $registro->nrobancarizacioncheque = $request->nrobancarizacion_general;
+                    }
+                }
+
+
                 $registro->save();
             }
         }
@@ -6408,7 +6592,7 @@ class MovimientosCajaController extends Controller
         ->where('pagoservicio', '<>', 'EXTERNO')
         ->whereNotIn('proveedorasignado', [
             'DIAGNOSTICO MEDICO POR IMAGEN DMI',
-            'PROVEEDOR AJENO'
+            'PROVEEDOR AJENO','DEMO PROVEEDOR'
         ])
         ->orderBy('proveedorasignado');
 
@@ -6427,6 +6611,11 @@ class MovimientosCajaController extends Controller
             foreach ($items as $item) {
 
                 $estadoProgramacion = $item->estadoprogclientes
+                    ->where('fechabateria', $item->fechabateria)
+                    ->where('accionnombre', $item->accionnombre)
+                    ->first();
+
+                $requiereInforme = $item->estadoprogclientes
                     ->where('fechabateria', $item->fechabateria)
                     ->where('accionnombre', $item->accionnombre)
                     ->first();
@@ -6503,6 +6692,7 @@ class MovimientosCajaController extends Controller
 
                     'fechabateria' => $item->fechabateria,
                     'fechaatencionprogramacion' => optional($estadoProgramacion)->fechaatencionprogramacion,
+                    'requiereinfo' => optional($requiereInforme)->requiereinforme,
                     'fechaprogramacion' => optional($programacion)->fechaasignada,
                     'idprogramacion' => optional($programacion)->id,
                     'nrofacturaprog' => optional($programacion)->nrofactura,
@@ -10381,19 +10571,16 @@ class MovimientosCajaController extends Controller
 
             $estadoDetalle = ($saldoDetalle == 0) ? 'PAGO PROCESADO' : 'SALDO PENDIENTE';
 
-            /* if ($estadoDetalle == 'PAGO PROCESADO') {
-                Detallerecibo::where('programacionid', $programacionId)
-                ->orwhere('provinfofinalid', $programacionId)
-                    ->where('estado', '!=', 'PAGO PROCESADO')
-                    ->update(['estado' => 'PAGO PROCESADO']);
-            } */
+
             if ($estadoDetalle == 'PAGO PROCESADO') {
                 if ($programacion) {
                     Detallerecibo::where('programacionid', $programacionId)
+                        ->where('tipomovimiento', 'INGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 } elseif ($proveedor) {
                     Detallerecibo::where('provinfofinalid', $programacionId)
+                        ->where('tipomovimiento', 'INGRESO')
                         ->where('estado', '!=', 'PAGO PROCESADO')
                         ->update(['estado' => 'PAGO PROCESADO']);
                 }
@@ -10616,9 +10803,9 @@ class MovimientosCajaController extends Controller
             $registros = Cajacentral::where('id', 'like', "%$search%")->get();
         }
 
-        $anulaciones = CajaCentral::withTrashed() // Incluye los registros eliminados
+        $anulaciones = CajaCentral::withTrashed()
             ->where('estado', 'ANULADO')
-            ->whereNotNull('deleted_at') // Asegura que deleted_at tenga un valor
+            ->whereNotNull('deleted_at')
             ->orderBy('deleted_at', 'desc')
             ->get();
 
@@ -10713,6 +10900,76 @@ class MovimientosCajaController extends Controller
         }
     }
 //
+
+    public function modifregprogcaja(Request $request)
+    {
+        $registros = collect();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $registros = DB::table('detallerecibos')
+                ->whereNotNull('programacionid')
+                ->where('tipomovimiento', 'INGRESO')
+                ->where('reciboid', 'LIKE', "%{$search}%")
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('admin.caja.modificaciones.modifregprogcaja', compact('registros'));
+    }
+    public function actualizarProgramacionDetalleRecibo(Request $request)
+    {
+        $request->validate([
+            'seleccionados' => 'required|array',
+            'seleccionados.*' => 'integer',
+            'nuevo_programacionid' => 'required|integer',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $nuevoProgramacionId = $request->nuevo_programacionid;
+            $usuario = auth()->user();
+
+            $registros = DB::table('detallerecibos')
+                ->whereIn('id', $request->seleccionados)
+                ->get();
+
+            foreach ($registros as $registro) {
+                $programacionAnterior = $registro->programacionid;
+
+                DB::table('detallerecibos')
+                    ->where('id', $registro->id)
+                    ->update([
+                        'programacionid' => $nuevoProgramacionId,
+                        'updated_at' => now(),
+                    ]);
+
+                DB::table('modificacionesdatos')->insert([
+                    'tabla' => 'detallerecibos',
+                    'clienteid' => $registro->clienteid,
+                    'clientenombre' => $registro->clientenombre,
+                    'columna' => 'programacionid',
+                    'datoantiguo' => $programacionAnterior,
+                    'datonuevo' => $nuevoProgramacionId,
+                    'usuarioedicionid' => $usuario->id,
+                    'usuarioedicionnombre' => $usuario->name,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
+            DB::commit();
+
+            return back()->with('info', 'Programación modificada correctamente.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->with('error', 'Error al modificar la programación: ' . $e->getMessage());
+        }
+    }
 
 // DEPOSITOS BANCARIOS DE EFECTIVO
     public function depositosbancarios(Request $request)
@@ -10873,6 +11130,7 @@ class MovimientosCajaController extends Controller
             'fecha' => '',
             'usuarioregistro' => '',
             'monto' => '',
+            'nrorecibos' => 'nullable|string',
         ]);
         $userId = auth()->id();
         $usuarioAutenticadoid = Auth::user()->id;
@@ -10898,11 +11156,30 @@ class MovimientosCajaController extends Controller
                 $archivo_name3 = time() . '_' . $file->getClientOriginalName();
                 $file->move($carpetaCliente, $archivo_name3);
             }
+
+            $montoDeposito = $request->monto;
+
+            $nrorecibos = [];
+
+            if ($request->filled('nrorecibos')) {
+                $nrorecibos = collect(explode(',', $request->nrorecibos))
+                    ->map(fn($item) => trim($item))
+                    ->filter()
+                    ->values()
+                    ->toArray();
+
+                $montoDeposito = CajaCentral::where('tipomovimiento', 'INGRESO')
+                    ->where('tipotransaccion', 'EFECTIVO')
+                    ->where('usuarioregistronombre', $request->usuarioregistro)
+                    ->whereDate('created_at', $request->fecha)
+                    ->whereIn('nrorecibo', $nrorecibos)
+                    ->sum('montototal');
+            }
             DepositosBancarios::create([
                 'usuarioregistroid' => $usuarioAutenticadoid,
                 'usuarioregistronombre' => $usuarioAutenticadonombre,
                 'detalle' => 'DEPOSITO BANCARIO',
-                'monto' => $request->monto,
+                'monto' => $montoDeposito,
                 'fecha' => $request->fecha,
                 'estado' => 'FINALIZADO',
                 'salida' => 'CAJA',
@@ -10914,13 +11191,32 @@ class MovimientosCajaController extends Controller
                 'documentofactura' => $archivo_name3,
             ]);
 
-            CajaCentral::where('tipomovimiento', 'INGRESO')
+            /* CajaCentral::where('tipomovimiento', 'INGRESO')
                 ->where('tipotransaccion', 'EFECTIVO')
                 ->where('usuarioregistronombre', $request->usuarioregistro)
                 ->whereDate('created_at', $request->fecha)
                 ->update([
                     'nrobancarizacionefectivo' => $request->bancarizacion,
                     'nrobancodestinoefectivo' => $request->bancodestino,
+            ]); */
+            $queryCaja = CajaCentral::where('tipomovimiento', 'INGRESO')
+                ->where('tipotransaccion', 'EFECTIVO')
+                ->where('usuarioregistronombre', $request->usuarioregistro)
+                ->whereDate('created_at', $request->fecha);
+
+            if ($request->filled('nrorecibos')) {
+                $nrorecibos = collect(explode(',', $request->nrorecibos))
+                    ->map(fn($item) => trim($item))
+                    ->filter()
+                    ->values()
+                    ->toArray();
+
+                $queryCaja->whereIn('nrorecibo', $nrorecibos);
+            }
+
+            $queryCaja->update([
+                'nrobancarizacionefectivo' => $request->bancarizacion,
+                'nrobancodestinoefectivo' => $request->bancodestino,
             ]);
 
         $usuarioId = auth()->user()->id;

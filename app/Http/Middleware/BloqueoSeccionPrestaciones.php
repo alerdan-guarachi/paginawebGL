@@ -48,7 +48,7 @@ class BloqueoSeccionPrestaciones
                         ->whereColumn('pt2.id', '>', 'pt.id');
                 })
                 ->where('pt.apoderado', $user->name)
-                ->whereRaw('pt.fecharetorno < NOW()') // SOLO vencidos reales
+                ->whereDate('pt.fecharetorno', '<', now()->toDateString()) // SOLO vencidos reales
                 ->exists();
 
             // 🔓 Código ACTIVO o EXPIRADO (tu lógica)

@@ -38,6 +38,11 @@ Route::post('/login', function(Request $request) {
         return response()->json(['message' => 'Credenciales inválidas'], 401);
     }
 
+    // ▼▼▼ AGREGA ESTE BLOQUE AQUÍ ▼▼▼
+    if ($user && $user->estado === 'INACTIVO') {
+        return response()->json(['message' => 'Esta cuenta ha sido eliminada y no puede acceder.'], 403);
+    }
+
     // 3. Guardar el FCM token si se envió
     if ($request->filled('fcm_token')) {
         $user->fcm_token = $request->fcm_token;
@@ -227,11 +232,44 @@ Route::get('/tramite/{idTramite}', function($idTramite) {
     }
 
     // Obtener procedimientos del trámite
-    $procedimientos = DB::table('procedimientotramites')
+    /* $procedimientos = DB::table('procedimientotramites')
         ->where('idtramite', $idTramite)
         ->whereNull('deleted_at')
         ->where('tipo', '!=', 'SEGUIMIENTO')
-        ->get();
+        ->whereNotIn('subprocedimiento', [
+            'ENTE GESTOR DE SALUD _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO',
+            'NOTIFICACIÓN TMC _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO',
+            'ENTE GESTOR DE SALUD _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO',
+            'NOTIFICACIÓN TMC _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO',
+        ])
+        ->get(); */
+    
+    $procedimientos = DB::table('procedimientotramites')
+    ->where('idtramite', $idTramite)
+    ->whereNull('deleted_at')
+    ->where('tipo', '!=', 'SEGUIMIENTO')
+    ->whereNotIn('subprocedimiento', [
+        'ENTE GESTOR DE SALUD _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO',
+        'NOTIFICACIÓN TMC _ ENTREGA DE CARPETA A MEDICINA DEL TRABAJO',
+        'ENTE GESTOR DE SALUD _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO',
+        'NOTIFICACIÓN TMC _ RECOJO DE CARPETA DE MEDICINA DEL TRABAJO',
+    ])
+    ->get()
+    ->map(function ($p) {
+
+        $tiposValidos = [
+            'CARTA / RECLAMO',
+            'SOLICITUD',
+            'ADJUNTO / RESPUESTA',
+            'MISIVA LIBRE'
+        ];
+
+        if (in_array($p->tipo, $tiposValidos) && !empty($p->document2)) {
+            $p->document = $p->document2;
+        }
+
+        return $p;
+    });
 
     return response()->json([
         'tramite' => $tramite,
@@ -596,6 +634,29 @@ Route::post('/confirmar-asistencia', function(Request $request) {
     } catch (\Exception $e) {
         return response()->json(['message' => 'Error al actualizar', 'error' => $e->getMessage()], 500);
     }
+});
+    // --- RUTA PARA ELIMINAR CUENTA (PROTEGIDA) ---
+    // --- RUTA PARA ELIMINAR CUENTA (PROTEGIDA) ---
+Route::post('/eliminar-cuenta', function(Request $request) {
+
+    $user = $request->user();
+
+    if (!$user) {
+        return response()->json(['message' => 'Usuario no autenticado'], 401);
+    }
+
+    DB::table('users')
+        ->where('id', $user->id)
+        ->update([
+            'estado' => 'INACTIVO',
+            'updated_at' => now(),
+        ]);
+
+    $user->tokens()->delete();
+
+    return response()->json([
+        'message' => 'Cuenta inactivada correctamente'
+    ], 200);
 });
 
 });

@@ -150,7 +150,19 @@ class InventarioController extends Controller
         ->pluck('clienteid')
         ->toArray();
 
-        return view('admin.inventario.index', compact('codigosPermitidos','detalleingresodirectoCount','detalleOrdenesCount','stockbajoCount','almacenCount','activosfijosCount','detalleingresodirecto','bienesalmacenstockbajo','detalleOrdenes', 'bienesalmacen', 'bienesactivosfijos', 'usuarios', 'historiales', 'historialessalidas'));
+        $registrosNoCoinciden = DB::table('inventario as i')
+        ->join('portafolioproveedores as p', 'i.codigo', '=', 'p.id')
+        ->whereColumn('i.nombreproducto', '!=', 'p.nombreproducto')
+        ->select(
+            'i.codigo',
+            'i.nombreproducto as nombre_inventario',
+            'p.nombreproducto as nombre_portafolio',
+            'i.materiaprima',
+            'i.especificacionmedida'
+        )
+        ->get();
+
+        return view('admin.inventario.index', compact('registrosNoCoinciden', 'codigosPermitidos','detalleingresodirectoCount','detalleOrdenesCount','stockbajoCount','almacenCount','activosfijosCount','detalleingresodirecto','bienesalmacenstockbajo','detalleOrdenes', 'bienesalmacen', 'bienesactivosfijos', 'usuarios', 'historiales', 'historialessalidas'));
     }
 
     public function anularproductoinventario(Request $request)
@@ -195,7 +207,6 @@ class InventarioController extends Controller
             'updated_at' => now(),
         ];
 
-        // Solo si el valor actual de 'inventario' es 'AGOTADO', se actualiza a 'PRINCIPAL'
         if (!is_null($producto) && strtoupper($producto->inventario) === 'AGOTADO') {
             $datosActualizados['inventario'] = 'PRINCIPAL';
         }
@@ -3617,24 +3628,12 @@ class InventarioController extends Controller
             if (!$producto) continue;
 
             $cantidad = $solicitud->cantidadofertado;
-
-            // Actualizar stock
             $producto->stockactual -= $cantidad;
             $producto->save();
-
-            // Marcar como procesado
             $solicitud->estado = 'PROCESADO';
             $solicitud->save();
 
-            // Notificar stock bajo
-            /* if ($producto->stockactual <= 3) {
-                $usuariosNotificar = User::whereIn('id', [1, 3, 10, 11, 25, 31])->get();
-                foreach ($usuariosNotificar as $usuarioDestino) {
-                    $usuarioDestino->notify(new StockBajoNotification($producto));
-                }
-            } */
             if ($producto->stockactual <= $producto->minimocantidad) {
-                // Notificar solo a usuarios con roles específicos y misma sucursal
                 $usuariosNotificar = User::role(['ADMINISTRADOR', 'CONTABLE', 'MAESTRO'])
                     ->where('sucursal', auth()->user()->sucursal)
                     ->get();
@@ -3643,8 +3642,6 @@ class InventarioController extends Controller
                     $usuarioDestino->notify(new StockBajoNotification($solicitud));
                 }
             }
-
-            // Agregar solicitud y producto al arreglo
             $solicitudesProcesadas[] = [
                 'solicitud' => $solicitud,
                 'producto' => $producto,
@@ -3652,9 +3649,7 @@ class InventarioController extends Controller
             ];
         }
 
-        // Generar comprobante único
         $htmlContent = view('admin.inventario.comprobante_masivo', compact('fecha', 'usuarioNombre', 'solicitudesProcesadas'))->render();
-
         $folderPath = public_path("comprobanteinventario/{$usuario->id}");
         if (!file_exists($folderPath)) {
             mkdir($folderPath, 0777, true);
@@ -3662,9 +3657,7 @@ class InventarioController extends Controller
 
         $fileName = "comprobante_masivo_" . now()->format('Ymd_His') . ".html";
         $filePath = $folderPath . '/' . $fileName;
-
         file_put_contents($filePath, $htmlContent);
-
         session()->flash('success', 'Salidas registradas exitosamente.');
         session()->flash('download_url', asset("comprobanteinventario/{$usuario->id}/{$fileName}"));
 

@@ -325,6 +325,13 @@ return [
             'can'  => 'admin.mensajes.create',
         ],
 
+        /* IA */
+        [
+            'text' => 'Evaluación Médica',
+            'url'  => 'consultas/create',
+            'icon' => 'fas fa-stethoscope',
+        ],
+
         [
             'text' => 'Administrar Asesorías',
             'icon' => 'fas fa-fw fas fa-user-nurse',
@@ -678,6 +685,12 @@ return [
                     'icon' => 'fas fa-fw fas fa-paste',
                     'can'  => 'admin.tramites.verasignacionestramites',
                 ],
+                [
+                    'text' => 'Archivos',
+                    'route'  => 'admin.archivos.explorador',
+                    'icon' => 'fas fa-fw fas fa-file',
+                    'can'  => 'admin.tramites.verasignacionestramites',
+                ],
                 /* [
                     'text' => 'Modelo Cartas/Reclamos',
                     'route'  => 'admin.tramites.modelocartareclamo',
@@ -878,7 +891,7 @@ return [
         ],
 
         [
-            'text' => 'Anulaciones',
+            'text' => 'Anulaciones y Modif.',
             'icon' => 'fas fa-ban',
             'can'  => 'admin.caja.anulaciones.anularcaja',
             'submenu' => [
@@ -893,6 +906,12 @@ return [
                     'route'  => 'admin.asociados.anulaciones.anularcuentacobrar',
                     'icon' => 'fas fa-file-excel',
                     'can'  => 'admin.caja.anulaciones.anularcaja',
+                ],
+                [
+                    'text' => 'Modificar ID-Prog. Caja',
+                    'route'  => 'admin.caja.modificaciones.modifregprogcaja',
+                    'icon' => 'fas fa-file-excel',
+                    'can'  => 'admin.caja.modificaciones.modifregprogcaja',
                 ],
             ],
         ],

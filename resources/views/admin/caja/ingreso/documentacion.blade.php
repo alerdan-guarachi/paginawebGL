@@ -85,7 +85,7 @@
                                 <th>Total</th>
                                 <th>Saldo</th>
                                 <th>Estado_Pago</th>
-                                <th>N.Rec.</th>
+                                {{-- <th>N.Rec.</th> --}}
                                 <th>N.Banc.</th>
                                 <th>Recibo</th>
                                 <th>Factura</th>
@@ -112,7 +112,7 @@
                                     
                                     <td>{{ number_format($registro->saldo, 2) }}</td>
                                     <td>{{ $registro->estado }}</td>
-                                    <td>{{ $registro->nrorecibo }}</td>
+                                    {{-- <td>{{ $registro->nrorecibo }}</td> --}}
                                     <td>
                                         @if ($registro->tipotransaccion === 'ATC')
                                             @if (!empty($registro->nrobancarizacionatc))
@@ -127,6 +127,7 @@
                                         @endif
                                     </td>
                                     <td>
+                                        {{ $registro->nrorecibo }}
                                         @if ($registro->documentorespaldo)
                                             <a href="{{ asset('documentacioncaja/ingresos/' . $registro->usuarioregistroid . '/' . $registro->documentorespaldo) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER RECIBO"><i class="fas fa-eye"></i></a>
                                         @else

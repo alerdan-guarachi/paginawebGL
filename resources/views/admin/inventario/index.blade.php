@@ -106,6 +106,39 @@
     });
 </script>
 
+
+@if(Auth::user()->name == 'CARLOS ALEJANDRO GUARACHI SANDOVAL')
+    <a class="btn float-right btn-outline-secondary btn-sm"
+       data-toggle="modal"
+       data-target="#modalProblemas">
+        VER PROBLEMAS
+    </a>
+@endif
+<div class="modal fade" id="modalProblemas" tabindex="-1" role="dialog" aria-labelledby="modalProblemasLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>INVENTARIO</th>
+                        <th>PORTAFOLIO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($registrosNoCoinciden as $item)
+                    <tr>
+                        <td>{{ $item->codigo }}</td>
+                        <td>{{ $item->nombre_inventario }}</td>
+                        <td>{{ $item->nombre_portafolio }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 <h1>ADMINISTRACION DE INVENTARIO</h1>
 @stop
 

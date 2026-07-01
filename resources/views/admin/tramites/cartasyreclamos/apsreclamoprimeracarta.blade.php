@@ -53,7 +53,11 @@
             <strong>{{ $numeropoder }}</strong>, {{ $afiliadoTexto }} <strong>{{ $cliente->nombrecompleto }}</strong> con <strong>CUA N.º {{ $cliente->nuacua }}</strong>, 
             con <strong>C.I. {{ $cliente->ci }} {{ $cliente->ciexp }}</strong>
         </div>
-        @if ($nombretramite !== 'APELACIÓN')
+        @php
+            use Illuminate\Support\Str;
+        @endphp
+
+        @if (!Str::startsWith($nombretramite, 'APELACIÓN'))
             <div class="tipo6">
                 Me permito dirigirme a su Autoridad con la finalidad de presentar mi Reclamo, ya que a la fecha no llega ninguna respuesta de la Gestora 
                 Pública de la Seguridad Social de Largo Plazo. Dentro del Trámite de
@@ -132,7 +136,7 @@
                 @endif
             </div>
         @endif
-        @if ($nombretramite === 'APELACIÓN')
+        @if ($nombretramite === 'APELACIÓN' || Str::startsWith($nombretramite, 'APELACIÓN'))
             <div class="tipo6">
                 Me permito dirigirme a su Autoridad con la finalidad de presentar mi Reclamo, ya que a la fecha no llega ninguna respuesta de la Gestora 
                 Pública de la Seguridad Social de Largo Plazo. Dentro del Trámite de
@@ -144,7 +148,7 @@
                     <strong>{{ $nombretramite }}</strong>
                 @endif
                 en fecha <strong>{!! $fechasolrevdictamen ?? '<span class="textoedita">FECHA SOL. REV. DICTAMEN</span>' !!}</strong>
-                @if ($subProcedimiento === 'VALIDACIÓN DE TRÁMITE' || $subProcedimiento === 'SOLICITUD DE REVISIÓN DE DICTAMEN' || $subProcedimiento === 'AUTO DE ADMISIÓN' || $subProcedimiento === 'AUTO DE RECHAZO')
+                @if ($subProcedimiento === 'VALIDACIÓN DE TRÁMITE' || $subProcedimiento === 'SOLICITUD DE REVISIÓN DE DICTAMEN' || $subProcedimiento === 'AUTO DE RECHAZO')
                     se Solicitó la 
                 @else
                     se nos notificó con el Auto de Admisión emitido por la APS, con referencia a la 

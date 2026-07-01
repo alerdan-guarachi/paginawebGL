@@ -20,12 +20,11 @@ class ApiService {
     throw Exception('Credenciales inválidas');
   }
 
-  // ▼▼▼ FUNCIÓN MODIFICADA PARA DEVOLVER EL MAPA COMPLETO ▼▼▼
   static Future<Map<String, dynamic>> getBaterias(String userId) async {
     final url = Uri.parse('$baseUrl/api/baterias/$userId');
     final response = await http.get(url);
     if (response.statusCode == 200) {
-      return json.decode(response.body); // Devuelve {'baterias': [...], 'is_blocked': bool}
+      return json.decode(response.body);
     } else {
       throw Exception('Error al obtener las programaciones');
     }
@@ -147,7 +146,6 @@ class ApiService {
     }
   }
 
-  // ▼▼▼ NUEVA FUNCIÓN PARA CONFIRMAR ASISTENCIA ▼▼▼
   static Future<void> confirmarAsistencia({
     required String areaNombre,
     required String decision,
@@ -163,7 +161,7 @@ class ApiService {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': 'Bearer $token', // <-- TOKEN AÑADIDO
+        'Authorization': 'Bearer $token',
       },
       body: jsonEncode({
         'areanombre': areaNombre,
@@ -173,7 +171,7 @@ class ApiService {
     );
 
     if (response.statusCode != 200) {
-      print('Error en confirmarAsistencia: ${response.body}'); // Para depurar
+      print('Error en confirmarAsistencia: ${response.body}');
       throw Exception('Error al guardar confirmación');
     }
   }
@@ -194,4 +192,31 @@ class ApiService {
   static Future<void> marcarLeida(String id) async {
     await http.post(Uri.parse('$baseUrl/api/notificaciones/$id/leer'));
   }
+
+  // ▼▼▼ FUNCIÓN PARA ELIMINAR CUENTA (CAMBIAR A INACTIVO EN DB) ▼▼▼
+  // ▼▼▼ FUNCIÓN PARA ELIMINAR CUENTA ▼▼▼
+  static Future<void> eliminarCuenta() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) throw Exception('Usuario no autenticado');
+
+    // ELIMINAMOS EL /$userId DEL FINAL PARA QUE COINCIDA CON LARAVEL
+    final url = Uri.parse('$baseUrl/api/eliminar-cuenta');
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    // Esto imprimirá en la consola de Xcode pase lo que pase
+    debugPrint('Respuesta Eliminar: ${response.statusCode} - ${response.body}');
+
+    if (response.statusCode != 200) {
+      throw Exception('Error servidor: ${response.body}');
+    }
+  }
+
 }

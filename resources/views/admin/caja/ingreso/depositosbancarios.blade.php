@@ -133,9 +133,17 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="col-md-2 mb-4 d-flex flex-column justify-content-end">
+                                <div class="col-md-1 mb-4">
+                                    <label for="nrorecibos" class="form-label fs-5 fw-semibold">Nro. Recibo</label>
+                                    <input type="text" 
+                                        name="nrorecibos" 
+                                        id="nrorecibos" 
+                                        class="form-control"
+                                        placeholder="Opcional...">
+                                </div>
+                                <div class="col-md-1 mb-4 d-flex flex-column justify-content-end">
                                     <label class="form-label fs-5 fw-semibold invisible">.</label>
-                                    <button type="submit" class="btn btn-secondary" id="guardarRespaldo" disabled>GUARDAR DEPÓSITO</button>
+                                    <button type="submit" class="btn btn-secondary" id="guardarRespaldo" disabled>GUARDAR</button>
                                 </div>
                             </div>
                         </div>
@@ -160,6 +168,7 @@
                                 @php
                                     $depositos = $registro->depositos;
                                     $rowCount = $depositos->count() > 0 ? $depositos->count() : 1;
+                                    $totalDepositado = $depositos->sum('monto');
                                 @endphp
 
                                 @foreach ($depositos->isEmpty() ? [null] : $depositos as $index => $deposito)
@@ -197,9 +206,17 @@
                                         <td class="text-center align-middle">{{ $deposito->bancarizacion ?? 'N/A' }}</td>
                                         <td class="text-center align-middle">{{ $deposito->bancodestino ?? 'N/A' }}</td>
 
-                                        <td class="text-center align-middle">
+                                        {{-- <td class="text-center align-middle">
                                             @if ((!$deposito || !$deposito->documentorespaldo) && (!$deposito || !$deposito->documentofactura))
                                                 <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox">
+                                            @endif
+                                        </td> --}}
+                                        <td class="text-center align-middle">
+                                            @if (round(floatval($registro->total), 2) != round(floatval($totalDepositado), 2))
+                                                <input type="checkbox" 
+                                                    name="registro_ids[]" 
+                                                    value="{{ $registro->id }}" 
+                                                    class="registro-checkbox">
                                             @endif
                                         </td>
                                     </tr>

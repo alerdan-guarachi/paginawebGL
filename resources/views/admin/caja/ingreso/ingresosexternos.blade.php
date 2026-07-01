@@ -230,7 +230,7 @@
                     <div class="form-group">
                         <label>Tipo de Transacción</label>
                         <div>
-                            <select class="form-control form-control-sm" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
+                            <select class="form-control form-control-sm" id="tipoTransaccion1" name="tipotransaccion" required onchange="validarTipoTransaccion()">
                                 <option disabled selected></option>
                                 <option value="ATC">ATC</option>
                                 <option value="CHEQUE">CHEQUE</option>

@@ -132,7 +132,7 @@ class ProveedoresserviciosController extends Controller
             
         }
         if ($prefijo) {
-            $ultimoRegistro = PortafolioProveedores::where('tipoinventario', $request->tipo_inventario)
+            $ultimoRegistro = Inventario::where('tipoinventario', $request->tipo_inventario)
                                                     ->where('seccion', $request->seccion)
                                                     ->orderBy('created_at', 'desc')
                                                     ->first();

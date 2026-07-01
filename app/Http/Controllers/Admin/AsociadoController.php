@@ -12160,16 +12160,17 @@ class AsociadoController extends Controller
                 
                 if (!$registroExistente) {
                     $nroSesion = $accion->nrosesion;
-        
+                    $requiereInforme = $request->input('requiereinforme') === 'NO' ? 'NO' : null;
                     Estadoprogramacionsubcliente::create(
-                        $request->except('accionid') + [
+                        $request->except('accionid', 'requiereinforme') + [
                             'accionnombre' => $accionNombre,
                             'fechabateria' => $fechaBateria,
                             'programacionid' => $accion->id,
                             'nrosesion' => $nroSesion,
                             'clienteid' => $clientecomunid,
                             'clientenombre' => $nombrecliente,
-                            'tipocliente' => 'COMUN'
+                            'tipocliente' => 'COMUN',
+                            'requiereinforme' => $requiereInforme,
                         ]
                     );
                     break;

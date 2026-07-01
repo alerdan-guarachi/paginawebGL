@@ -8855,7 +8855,7 @@
                                     $documento46 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'COBRO DE PENSIÓN')->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')->first();
                                     $documento47 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTA DE RECHAZO DE TRÁMITE')->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')->first();
 
-                                    $accedepensiondictamen = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'RENUNCIA A REVISIÓN DE DICTAMEN')->where('accesopension', 'SI')->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')->first();
+                                    $accedepensiondictamen = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('accesopension', 'SI')->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')->first();
                                     $noaccedepensiondictamene6 = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('accesopension', 'NO')->where('motivonopension', 'EXCESO DE 6 MESES')->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')->first();
                                     $noaccedepensiondictamenfc = $cliente->tramites()->where('nivelprocedimiento', 'DICTAMEN')->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')->where('accesopension', 'NO')->where('motivonopension', 'FALTA DE COBERTURA')->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')->first();
                                     

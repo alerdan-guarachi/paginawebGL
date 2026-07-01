@@ -3130,14 +3130,8 @@
                                                 <th style="width: 5%;">ID</th>
                                                 <th style="width: 5%;">NRO.</th>
                                                 <th style="width: 10%;">SUB_PROCEDIMIENTO</th>
-                                                <th style="width: 5%;">FECHA_CITE_NOTIF.</th>
-                                                <th style="width: 5%;">CITE_NOTIFICACIÓN</th>
                                                 <th style="width: 5%;">FECHA_RECOJO</th>
                                                 <th style="width: 5%;">NRO_CONTRATO</th>
-                                                <th style="width: 10%;">RIESGO_ACEPTACIÓN/RECHAZO</th>
-                                                <th style="width: 10%;">PORCENTAJE_RIESGO</th>
-                                                <th style="width: 10%;">TIPO_RIESGO_CONTRATO</th>
-                                                <th style="width: 5%;">¿ACCEDE_PENSIÓN?</th>
                                                 <th style="width: 5%;">MONTO_DEFINIDO</th>
                                                 <th style="width: 5%;">APROB_CLIENTE</th>
                                                 <th style="width: 5%;">FECHA_REGISTRO</th>
@@ -3157,33 +3151,10 @@
                                                         <p class="mb-0">NOTIFICACIÓN DE CONTRATO</p>
                                                     </td>
                                                     <td class="align-middle text-center">
-                                                        <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechacitenotificacion)->format('d-m-Y') }}</p>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <p class="mb-0">{{ $documento->citenotificacion }}</p>
-                                                    </td>
-                                                    <td class="align-middle text-center">
                                                         <p class="mb-0">{{ \Carbon\Carbon::parse($documento->fechacitanota)->format('d-m-Y') }} - {{ $documento->corsolicitud }}</p>
                                                     </td>
                                                     <td class="align-middle text-center">
                                                         <p class="mb-0">{{ $documento->nrodictamen }}</p>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <p class="mb-0">{{ $documento->riesgodictamen }}</p>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <p class="mb-0">{{ $documento->porcentajeriesgodictamen }}</p>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <p class="mb-0">{{ $documento->tiporiesgodictamen }}</p>
-                                                    </td>
-                                                    <td class="align-middle text-center">
-                                                        <p class="mb-0">
-                                                            {{ $documento->accesopension }}
-                                                            @if(!empty($documento->motivonopension))
-                                                                - {{ $documento->motivonopension }}
-                                                            @endif
-                                                        </p>
                                                     </td>
                                                     <td class="align-middle text-center">
                                                         <p class="mb-0">{{ $documento->montocontrato ?? 'NO DEFINIDO' }}</p>
@@ -3223,12 +3194,6 @@
                                                     <input type="hidden" name="subprocedimiento[]" value="NOTIFICACIÓN DE CONTRATO">
                                                 </td>
                                                 <td class="align-middle text-center">
-                                                    <input type="date" class="form-control text-center" name="fechacitenotificacion[]" value="{{ \Carbon\Carbon::now()->toDateString() }}">
-                                                </td>
-                                                <td class="align-middle text-center">
-                                                    <input type="text" class="form-control text-center" name="citenotificacion[]">
-                                                </td>
-                                                <td class="align-middle text-center">
                                                     <input type="date" class="form-control text-center" name="fechacitenota[]" value="{{ \Carbon\Carbon::now()->toDateString() }}">
                                                     <select class="form-control" name="corsolicitud[]">
                                                         <option value="" disabled selected>Seleccione una opción...</option>
@@ -3240,98 +3205,6 @@
                                                 <td class="align-middle text-center">
                                                     <input type="text" class="form-control text-center" name="nrodictamen[]">
                                                 </td>
-                                                <td class="align-middle text-center">
-                                                    <select class="form-control riesgo" name="riesgodictamen[]">
-                                                        <option value="" disabled selected>Seleccione una opción...</option>
-                                                        <option value="RIESGO COMÚN">RIESGO COMÚN</option>
-                                                        <option value="RIESGO LABORAL">RIESGO LABORAL</option>
-                                                        <option value="RIESGO PROFESIONAL">RIESGO PROFESIONAL</option>
-                                                    </select>
-                                                </td>
-                                                <td class="align-middle text-center">
-                                                    <div class="input-group">
-                                                        <input type="number" class="form-control text-center porcentaje" name="porcentajeriesgodictamen[]" min="0" max="100">
-                                                        <div class="input-group-append">
-                                                            <span class="input-group-text">%</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="align-middle text-center">
-                                                    <select class="form-control tipo" name="tiporiesgodictamen_disabled[]" disabled>
-                                                        <option value="" disabled selected>Seleccione una opción...</option>
-                                                        <option value="NO CALIFICA">NO CALIFICA</option>
-                                                        <option value="PAGO GLOBAL">PAGO GLOBAL</option>
-                                                        <option value="PAGO MENSUAL">PAGO MENSUAL</option>
-                                                        <option value="GRAN MASA HEREDITARIA">GRAN MASA HEREDITARIA</option>
-                                                    </select>
-                                                    <input type="hidden" class="tipo-hidden" name="tiporiesgodictamen[]">
-                                                </td>
-                                                <script>
-                                                    document.addEventListener('input', function(e) {
-                                                        if (e.target.classList.contains('porcentaje') || e.target.classList.contains('riesgo')) {
-                                                            const row = e.target.closest('tr');
-                                                            const riesgo = row.querySelector('.riesgo').value;
-                                                            const porcentajeInput = row.querySelector('.porcentaje');
-                                                            const porcentaje = parseInt(porcentajeInput.value);
-                                                            const tipoSelect = row.querySelector('.tipo');
-                                                            const tipoHidden = row.querySelector('.tipo-hidden');
-
-                                                            if (porcentaje < 0) {
-                                                                porcentajeInput.value = 0;
-                                                                return;
-                                                            } else if (porcentaje > 100) {
-                                                                porcentajeInput.value = 100;
-                                                                return;
-                                                            }
-
-                                                            if (!riesgo || isNaN(porcentaje)) return;
-
-                                                            let tipo = '';
-
-                                                            if (riesgo === 'RIESGO PROFESIONAL') {
-                                                                if (porcentaje <= 9) tipo = 'NO CALIFICA';
-                                                                else if (porcentaje <= 25) tipo = 'PAGO GLOBAL';
-                                                                else if (porcentaje <= 59) tipo = 'PAGO MENSUAL';
-                                                                else tipo = 'GRAN MASA HEREDITARIA';
-                                                            } else if (riesgo === 'RIESGO COMÚN' || riesgo === 'RIESGO LABORAL') {
-                                                                if (porcentaje <= 49) tipo = 'NO CALIFICA';
-                                                                else if (porcentaje <= 79) tipo = 'PAGO MENSUAL';
-                                                                else tipo = 'GRAN MASA HEREDITARIA';
-                                                            }
-                                                            if (tipo) {
-                                                                tipoSelect.value = tipo;
-                                                                tipoHidden.value = tipo;
-                                                            }
-                                                        }
-                                                    });
-                                                </script>
-                                                <td class="align-middle text-center">
-                                                    <select class="form-control accesopension" name="accesopension[]">
-                                                        <option value="" disabled selected>Seleccione una opción...</option>
-                                                        <option value="SI">SI</option>
-                                                        <option value="NO">NO</option>
-                                                    </select>
-
-                                                    <select class="form-control motivonopension" name="motivonopension[]" style="display:none;">
-                                                        <option value="" disabled selected>Seleccione una opción...</option>
-                                                        <option value="EXCESO DE 6 MESES">EXCESO DE 6 MESES</option>
-                                                        <option value="FALTA DE COBERTURA">FALTA DE COBERTURA</option>
-                                                    </select>
-                                                </td>
-                                                <script>
-                                                    document.querySelectorAll('.accesopension').forEach(function(select) {
-                                                        select.addEventListener('change', function() {
-                                                            let motivoSelect = this.closest('td').querySelector('.motivonopension');
-                                                            if (this.value === 'NO') {
-                                                                motivoSelect.style.display = 'block';
-                                                            } else {
-                                                                motivoSelect.style.display = 'none';
-                                                                motivoSelect.value = '';
-                                                            }
-                                                        });
-                                                    });
-                                                </script>
-
                                                 <td class="align-middle text-center">
                                                     <input type="text" class="form-control text-center" name="montocontrato[]">
                                                 </td>
@@ -3386,54 +3259,6 @@
                     </div>
                     <button type="submit" class="btn btn-sm btn-subirarchivos d-block mx-auto">GUARDAR</button>
                 </form>
-
-                {{-- @php
-                    $dictamennotificacionexiste = $cliente->tramites()
-                        ->where('nivelprocedimiento', 'CONTRATO')
-                        ->where('subprocedimiento', 'NOTIFICACIÓN DE CONTRATO')
-                        ->where('tramite', 'MASA HEREDITARIA')
-                    ->first();
-                @endphp
-                @if (!$dictamennotificacionexiste)
-                    <div class="d-flex justify-content-center" style="margin-top: 20px;">
-                        <button type="button" class="btn btn-sm btn-subirarchivos" id="btnGuardarTodo" onclick="guardarAmbos()">GUARDAR CONTRATO</button>
-                    </div>
-                @endif
-                <script>
-                    function guardarAmbos() {
-                        let btn = document.getElementById('btnGuardarTodo');
-                        btn.disabled = true;
-                        btn.innerText = 'Guardando...';
-
-                        let form1 = document.getElementById('formTramite');
-                        let form2 = document.getElementById('formCriterios');
-
-                        let data1 = new FormData(form1);
-                        let data2 = new FormData(form2);
-
-                        fetch(form1.action, {
-                            method: 'POST',
-                            body: data1,
-                            headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
-                        })
-                        .then(() => {
-                            return fetch(form2.action, {
-                                method: 'POST',
-                                body: data2,
-                                headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'}
-                            });
-                        })
-                        .then(() => {
-                            alert('¡CONTRATO GUARDADO EXITOSAMENTE!');
-                            location.reload();
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            btn.disabled = false;
-                            btn.innerText = 'GUARDAR TODO';
-                        });
-                    }
-                </script> --}}
             </div>
         </div>
     </div>

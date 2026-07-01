@@ -179,6 +179,31 @@ class FacturasEgresoController extends Controller
     {
         [$anio, $mes] = explode('-', $request->mes_anio);
 
+
+        $fechaSeleccionada = Carbon::createFromDate($anio, $mes, 1);
+        $mesAnterior = $fechaSeleccionada->copy()->subMonth();
+
+        $facturasPendientesMesAnterior = DB::table('facturasegreso')
+            ->whereYear('fechafacturaduidim', $mesAnterior->year)
+            ->whereMonth('fechafacturaduidim', $mesAnterior->month)
+            ->whereNull('idfactura')
+            ->where('estado', 'VALIDO')
+            ->whereNull('deleted_at')
+            ->exists();
+
+        if ($facturasPendientesMesAnterior) {
+
+            Carbon::setLocale('es');
+
+            $nombreMes = ucfirst($mesAnterior->translatedFormat('F'));
+
+            return back()->with(
+                'error',
+                "No puede cerrar este mes porque falta realizar el cierre de {$nombreMes}."
+            );
+        }
+
+
         DB::transaction(function () use ($mes, $anio) {
 
             $ultimoIdFactura = DB::table('facturasegreso')

@@ -23,7 +23,7 @@
             <a class="dropdown-item" data-toggle="modal" data-target="#modalcomunicaciones">
                 <i class="fas fa-envelope mr-2 text-orange"></i> COMUNICACIONES
             </a>
-            <a class="dropdown-item" href="{{ route('admin.tramites.cartasprocretiroaportestotal', $cliente->id) }}">
+            <a class="dropdown-item" href="{{ route('admin.tramites.cartasprocpensionderivretiro', $cliente->id) }}">
                 <i class="fas fa-plus-circle mr-2 text-orange"></i> NUEVA MISIVA
             </a>
             <a class="dropdown-item" data-toggle="modal" data-target="#modalsolicitudes">

@@ -50,7 +50,11 @@
             <strong>{{ $numeropoder }}</strong>, {{ $afiliadoTexto }} <strong>{{ $cliente->nombrecompleto }}</strong> con <strong>CUA N.º {{ $cliente->nuacua }}</strong>, 
             con <strong>C.I. {{ $cliente->ci }} {{ $cliente->ciexp }}</strong>
         </div>
-        @if ($nombretramite !== 'APELACIÓN')
+        @php
+            use Illuminate\Support\Str;
+        @endphp
+
+        @if (!Str::startsWith($nombretramite, 'APELACIÓN'))
             <div class="tipo6">
                 Me permito dirigirme a su Institución con el fin de solicitar información actualizada sobre el estado del trámite de
                     @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
@@ -126,7 +130,7 @@
                     @endif
             </div>
         @endif
-        @if ($nombretramite === 'APELACIÓN')
+        @if ($nombretramite === 'APELACIÓN' || Str::startsWith($nombretramite, 'APELACIÓN'))
             <div class="tipo6">
                 Me permito dirigirme a su Institución con el fin de solicitar información actualizada sobre el estado del trámite de
                 @if ($tramite === 'RECALIFICACIÓN' || $tramite === 'APELACIÓN DE RECALIFICACIÓN' || $tramite === 'RECALIFICACIÓN SEGUNDA SOLICITUD' || $tramite === 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
@@ -137,7 +141,7 @@
                     <strong>{{ $nombretramite }}</strong>
                 @endif
                 En fecha <strong>{!! $fechasolrevdictamen ?? '<span class="textoedita">FECHA SOL. REV. DICTAMEN</span>' !!}</strong>
-                @if ($subProcedimiento === 'VALIDACIÓN DE TRÁMITE' || $subProcedimiento === 'SOLICITUD DE REVISIÓN DE DICTAMEN' || $subProcedimiento === 'AUTO DE ADMISIÓN' || $subProcedimiento === 'AUTO DE RECHAZO')
+                @if ($subProcedimiento === 'VALIDACIÓN DE TRÁMITE' || $subProcedimiento === 'SOLICITUD DE REVISIÓN DE DICTAMEN' || $subProcedimiento === 'AUTO DE RECHAZO')
                     se Solicitó la 
                 @else
                     se nos notificó con el Auto de Admisión emitido por la APS, con referencia a la 

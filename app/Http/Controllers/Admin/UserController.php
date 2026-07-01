@@ -40,7 +40,26 @@ class UserController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
+    // En app/Http/Controllers/UserController.php (o el nombre que tenga tu controlador)
 
+
+    public function eliminarCuenta($id)
+    {
+        // 1. Busca al usuario
+        $user = User::find($id);
+
+        if ($user) {
+            // 2. Cambia el valor (asegúrate que la columna se llame 'estado')
+            $user->estado = 'INACTIVO'; 
+            
+            // 3. ¡ESTA LÍNEA ES LA QUE GUARDA EN LA DB!
+            $user->save(); 
+
+            return response()->json(['message' => 'Eliminado'], 200);
+        }
+
+        return response()->json(['message' => 'Usuario no encontrado'], 404);
+    }
 
     /**
      * Show the form for creating a new resource.

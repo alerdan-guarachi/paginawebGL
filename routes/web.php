@@ -47,6 +47,10 @@ use App\Http\Controllers\Admin\PartnersController;
 use App\Http\Controllers\Admin\AssistancesController;
 use App\Http\Controllers\Admin\AsesoramientoController;
 use App\Http\Controllers\Admin\AtMedicasController;
+use App\Http\Controllers\Admin\ArchivosController;
+
+//IA
+use App\Http\Controllers\Admin\ConsultaController;
 
 //APP MOVIL
 use App\Http\Controllers\Api\AuthController;
@@ -59,6 +63,8 @@ Route::get('/medicina', [App\Http\Controllers\PaginawebController::class, 'medic
 Route::get('/sobrenosotros', [App\Http\Controllers\PaginawebController::class, 'sobrenosotros'])->name('sobrenosotros');
 Route::get('/politicas-privacidad', function () {return view('politicas');});
 Route::get('/terminos-condiciones-servicio', function () {return view('terminos');});
+Route::get('/privacy-policy', function () {return view('privacycontigomed');});
+Route::get('/terms-and-conditions', function () {return view('termscontigomed');});
 Route::get('/digital-card', function () {return view('digitalcard');});
 //HORARIOS ASESORAMIENTO
     Route::resource('asesoramiento', AsesoramientoController::class)->names('admin.asesoramiento');
@@ -113,6 +119,11 @@ Route::resource('caja', MovimientosCajaController::class)->middleware('can:admin
 Route::resource('inventario', InventarioController::class)->middleware('can:admin.inventario.index')->names('admin.inventario');
 Route::resource('banco', BancoController::class)->middleware('can:admin.banco.index')->names('admin.banco');
 Route::resource('facturasegreso', FacturasEgresoController::class)/* ->middleware('can:admin.banco.index') */->names('admin.facturasegreso');
+Route::resource('archivos', ArchivosController::class)->names('admin.archivos');
+
+//IA
+Route::resource('consultas', ConsultaController::class)->names('admin.consultas');
+
 Route::post('/saldocreditofiscal/guardar', [FacturasEgresoController::class, 'guardarsaldocreditofiscal'])->name('saldocreditofiscal.guardar');
 Route::post('/registro-impuestos/doble', [FacturasEgresoController::class, 'guardarAmbosFormularios'])->name('registro-impuestos.doble');
 
@@ -128,6 +139,10 @@ Route::post('/compras/actualizar-estado', [FacturasEgresoController::class, 'act
 
 //NUEVO 190126
 Route::post('/facturasegreso/cerrar-mes', [FacturasEgresoController::class, 'cerrarMes'])->name('facturasegreso.cerrarMes');
+
+Route::get('archivos-explorador/{ruta?}', [ArchivosController::class, 'explorador'])
+    ->where('ruta', '.*')
+    ->name('admin.archivos.explorador');
 
 //HORARIOS ATENCION MEDICA
     Route::resource('atmedicas', AtMedicasController::class)->names('admin.atmedicas');
@@ -212,6 +227,13 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::get('montototalbancos', [BancoController::class, 'montototalbancos'])->name('admin.banco.montototalbancos');
     Route::get('consolidadoegresos', [BancoController::class, 'consolidadoegresos'])->name('admin.banco.consolidadoegresos');
     Route::get('detallemovimientos', [BancoController::class, 'detallemovimientos'])->name('admin.banco.detallemovimientos');
+//
+
+
+//IA
+    Route::get('/consultas/create', [ConsultaController::class, 'create']);
+    Route::post('/consultas/evaluar', [ConsultaController::class, 'evaluar']);
+    Route::get('/sintomas/buscar', [ConsultaController::class, 'buscarSintomas']);
 //
 
 //ASESORAMIENTO
@@ -894,6 +916,9 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
 
         Route::get('asociados/anulaciones/anularcuentacobrar/', [AsociadoController::class, 'anularcuentacobrar'])->name('admin.asociados.anulaciones.anularcuentacobrar');
         Route::post('/anular-regitro-cuentacobrar', [AsociadoController::class, 'anularregitrocuentacobrar'])->name('anularregitrocuentacobrar');
+
+        Route::get('caja/modificaciones/modifregprogcaja/', [MovimientosCajaController::class, 'modifregprogcaja'])->name('admin.caja.modificaciones.modifregprogcaja');
+        Route::post('/admin/caja/modificaciones/modifregprogcaja/actualizar', [MovimientosCajaController::class, 'actualizarProgramacionDetalleRecibo'])->name('admin.caja.modificaciones.modifregprogcaja.actualizar');
 
     //DICTAMEN
         Route::post('asociados/guardardictamenita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardardictamenita')->name('admin.asociados.guardardictamenita');

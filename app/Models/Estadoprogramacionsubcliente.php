@@ -37,6 +37,7 @@ class Estadoprogramacionsubcliente extends Model
         'nrosesion' => '',
         'idsubproc' => '',
         'clientebanconombre' => '',
+        'requiereinforme' => '',
     ]; 
 
     protected $fillable = [
@@ -64,6 +65,7 @@ class Estadoprogramacionsubcliente extends Model
         'nrosesion',
         'idsubproc',
         'clientebanconombre',
+        'requiereinforme',
     ];
     
 }

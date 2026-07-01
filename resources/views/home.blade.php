@@ -280,74 +280,160 @@
     <div class="card-body">
         @endcan
         @can('admin.asociados.listadoclienteita')
-        <div class="titulo">CLIENTES GOOD LIFE</div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-lg-4 col-md-6 col-sm-6 col-12">
-                    <a href="{{ route('admin.asociados.listadoclienteita',6) }}" style="text-decoration: none; color: inherit;">
-                        <div class="card card-stats bg-color-3 zoom-card-ita">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-5 col-md-4">
-                                        <div class="icon-big text-center icon-warning">
-                                            <i class="fas fa-user-tag fa-5x" style="color: #ce7100;"></i>
+            <div class="titulo">CLIENTES GOOD LIFE</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12">
+                        <a href="{{ route('admin.asociados.listadoclienteita',6) }}" style="text-decoration: none; color: inherit;">
+                            <div class="card card-stats bg-color-3 zoom-card-ita">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-5 col-md-4">
+                                            <div class="icon-big text-center icon-warning">
+                                                <i class="fas fa-user-tag fa-5x" style="color: #ce7100;"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-7 col-md-8">
+                                            <div class="numbers">
+                                                <h3>CLIENTES<br>ITA</h3>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-7 col-md-8">
-                                        <div class="numbers">
-                                            <h3>CLIENTES<br>ITA</h3>
-                                        </div>
-                                    </div>
+                                    <h4 class="total-bottom-right">Total: {{ $clientesITACount }}</h4>
                                 </div>
-                                <h4 class="total-bottom-right">Total: {{ $clientesITACount }}</h4>
                             </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-lg-4 col-md-6 col-sm-6 col-12">
-                    <a href="{{ route('admin.asociados.listadoclienteauditoria',3) }}" style="text-decoration: none; color: inherit;">
-                        <div class="card card-stats bg-color-4 zoom-card-ita">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-5 col-md-4">
-                                        <div class="icon-big text-center icon-warning">
-                                            <i class="fas fa-user-shield fa-5x" style="color: #01b822;"></i>
+                        </a>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12">
+                        <a href="{{ route('admin.asociados.listadoclienteauditoria',3) }}" style="text-decoration: none; color: inherit;">
+                            <div class="card card-stats bg-color-4 zoom-card-ita">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-5 col-md-4">
+                                            <div class="icon-big text-center icon-warning">
+                                                <i class="fas fa-user-shield fa-5x" style="color: #01b822;"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-7 col-md-8">
+                                            <div class="numbers">
+                                                <h3>CLIENTES<br>AUDITORIA</h3>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-7 col-md-8">
-                                        <div class="numbers">
-                                            <h3>CLIENTES<br>AUDITORIA</h3>
-                                        </div>
-                                    </div>
+                                    <h4 class="total-bottom-right">Total: {{ $clientesAuditoriasCount }}</h4>
                                 </div>
-                                <h4 class="total-bottom-right">Total: {{ $clientesAuditoriasCount }}</h4>
                             </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-lg-4 col-md-6 col-sm-6 col-12">
-                    <a href="{{ route('admin.asociados.listadoclientecomun',3) }}" style="text-decoration: none; color: inherit;">
-                        <div class="card card-stats bg-color-1 zoom-card-ita">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-5 col-md-4">
-                                        <div class="icon-big text-center icon-warning">
-                                            <i class="fas fa-user-cog fa-5x" style="color: #0264c0;"></i>
+                        </a>
+                    </div>
+                    <div class="col-lg-4 col-md-6 col-sm-6 col-12">
+                        <a href="{{ route('admin.asociados.listadoclientecomun',3) }}" style="text-decoration: none; color: inherit;">
+                            <div class="card card-stats bg-color-1 zoom-card-ita">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-5 col-md-4">
+                                            <div class="icon-big text-center icon-warning">
+                                                <i class="fas fa-user-cog fa-5x" style="color: #0264c0;"></i>
+                                            </div>
+                                        </div>
+                                        <div class="col-7 col-md-8">
+                                            <div class="numbers">
+                                                <h3>CLIENTES<br>COMUNES</h3>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-7 col-md-8">
-                                        <div class="numbers">
-                                            <h3>CLIENTES<br>COMUNES</h3>
-                                        </div>
-                                    </div>
+                                    <h4 class="total-bottom-right">Total: {{ $clientesComunesCount }}</h4>
                                 </div>
-                                <h4 class="total-bottom-right">Total: {{ $clientesComunesCount }}</h4>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <div class="titulo">USUARIOS GOOD LIFE APP</div>
+            <div class="card-body">
+                <div class="row text-center">
+
+                    <!-- SANTA CRUZ -->
+                    <div class="col-md-4 col-4">
+                        <div style="border-right: 1px solid #e9ecef; background: #f8f9fa; padding: 10px 0; border-radius: 6px;">
+                            <div class="text-muted" style="font-size: 12px;">
+                                SANTA CRUZ
+                            </div>
+                            <div class="count-up text-dark font-weight-bold" style="font-size: 26px;"
+                                data-count="{{ $santaCruzCount }}">
+                                0
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COCHABAMBA -->
+                    <div class="col-md-4 col-4">
+                        <div style="border-right: 1px solid #e9ecef; background: #f8f9fa; padding: 10px 0; border-radius: 6px;">
+                            <div class="text-muted" style="font-size: 12px;">
+                                COCHABAMBA
+                            </div>
+                            <div class="count-up text-dark font-weight-bold" style="font-size: 26px;"
+                                data-count="{{ $cochabambaCount }}">
+                                0
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TOTAL -->
+                    <div class="col-md-4 col-4">
+                        <div style="border-right: 1px solid #e9ecef; background: #f8f9fa; padding: 10px 0; border-radius: 6px;">
+                            <div class="text-muted" style="font-size: 12px;">
+                                TOTAL
+                            </div>
+                            <div class="count-up text-orange font-weight-bold" style="font-size: 28px;"
+                                data-count="{{ $totalUsers }}">
+                                0
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+
+                    const counters = document.querySelectorAll('.count-up');
+
+                    const animate = (el) => {
+                        const target = parseInt(el.getAttribute('data-count')) || 0;
+                        let start = 0;
+                        const duration = 800; // tiempo total en ms
+                        const stepTime = 10;
+
+                        const increment = target / (duration / stepTime);
+
+                        const timer = setInterval(() => {
+                            start += increment;
+
+                            if (start >= target) {
+                                el.innerText = target;
+                                clearInterval(timer);
+                            } else {
+                                el.innerText = Math.floor(start);
+                            }
+                        }, stepTime);
+                    };
+
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                animate(entry.target);
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, {
+                        threshold: 0.4
+                    });
+
+                    counters.forEach(el => observer.observe(el));
+
+                });
+            </script>
         @endcan
 
         @php

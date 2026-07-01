@@ -46,7 +46,7 @@
                         <div class="col-md-2">
                             <label for="fecha">Fecha de Registro:</label>
                             <input type="date" name="fecha" id="fecha" class="form-control" value="{{ $fecha }}"
-                                @if (!in_array($rolUsuario, ['ADMINISTRADOR', 'MAESTRO', 'ASISTENTE ADMINISTRATIVO'])) 
+                                @if (!in_array($rolUsuario, ['ADMINISTRADOR', 'MAESTRO', 'ASISTENTE ADMINISTRATIVO', 'CONTABLE'])) 
                                     min="{{ \Carbon\Carbon::now()->subDays(2)->toDateString() }}" 
                                 @endif >
                         </div>
@@ -78,11 +78,13 @@
                                     <th>ID</th>
                                     <th>Proveedor</th>
                                     <th>Área</th>
+                                    <th>Transac.</th>
                                     <th>Subtotal</th>
                                     <th>Desc.</th>
-                                    <th>Monto Total</th>
+                                    <th>Total</th>
                                     <th>Saldo</th>
-                                    <th>Estado Pago</th>
+                                    <th>Estado_Pago</th>
+                                    <th>N.Banc.</th>
                                     <th>Recibo</th>
                                     <th>Factura</th>
                                     <th>Comp.</th>
@@ -95,11 +97,19 @@
                                         <td>{{ $registro->id }}</td>
                                         <td>{{ $registro->proveedornombre }}</td>
                                         <td>{{ $registro->area }}</td>
+                                        <td>{{ $registro->tipotransaccion }}</td>
                                         <td>{{ number_format($registro->subtotal, 2) }}</td>
                                         <td>{{ number_format($registro->descuento, 2) }}</td>
                                         <td>{{ number_format($registro->montototal, 2) }}</td>
                                         <td>{{ number_format($registro->saldo, 2) }}</td>
                                         <td>{{ $registro->estado }}</td>
+                                        <td>
+                                            @if (empty($registro->nrobancarizaciontransferencia) && empty($registro->nrobancarizacioncheque))
+                                                VACÍO
+                                            @else
+                                                {{ $registro->nrobancarizaciontransferencia }}{{ $registro->nrobancarizacioncheque }}
+                                            @endif
+                                        </td>
                                         <td>{{ $registro->nrorecibo }}
                                             @if ($registro->docrespaldoegreso)
                                                 <a href="{{ asset('documentacioncaja/egresos/' . $registro->usuarioregistroid . '/' . $registro->docrespaldoegreso) }}" class="btn btn-sm btn-verregistros" target="_blank" title="VER RECIBO"><i class="fas fa-eye"></i></a>
@@ -232,12 +242,20 @@
                                         </div>
 
                                         <!-- Comprobante -->
-                                        <div class="d-flex align-items-center" style="margin-left: 20px;">
+                                        <div class="d-flex align-items-center" style="margin-left: 10px;">
                                             <label for="archivo3" class="form-label fs-6 fw-semibold me-2 mb-0">Comprobante:</label>
                                             <input type="file" name="archivo3" id="archivo3" class="form-control me-2" accept=".pdf,.jpg,.png" onchange="validateInputs()" style="width: 350px;">
                                             <button type="button" class="btn btn-sm btn-outline-secondary" onclick="previewFile3()">
                                                 <i class="fas fa-eye"></i>
                                             </button>
+                                        </div>
+
+                                        <!-- Bancarizacion -->
+                                        <div class="d-flex align-items-center" style="margin-left: 10px;">
+                                            <input type="text"
+                                                name="nrobancarizacion_general"
+                                                class="form-control"
+                                                placeholder="Ingrese Nro. Bancarización">
                                         </div>
                                     </div>
 
@@ -250,7 +268,7 @@
                                             </button>
                                         @endcan --}}
                                         <button type="submit" class="btn btn-secondary btn-sm" style="margin-left: 10px;">
-                                            GUARDAR RESPALDO
+                                            GUARDAR
                                         </button>
                                     </div>
                                 </div>

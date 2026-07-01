@@ -2685,7 +2685,6 @@
                                 $cuentas = $cuentasPorProveedor->get($proveedor, collect());
                                 $baterias = $bateriasPorProveedor->get($proveedor, collect());
 
-                                /* $hayPendienteCuentas = $cuentas->contains(fn($item) => $item->estado !== 'PAGO PROCESADO' && $item->estadoaprobacion !== 'RECHAZADO'); */
                                 $hayPendienteCuentas = $cuentas->contains(fn($item) => $item->estado !== 'PAGO PROCESADO' && $item->estado !== 'FINALIZADO');
                                 $hayPendienteBaterias = $baterias->contains(fn($item) => $item->prioridad === 'CUENTA POR PAGAR' && $item->estadoaprobacion !== 'RECHAZADO');
                                 $tieneFechaPasada = $cuentas->concat($baterias)->contains(function ($item) use ($hoy) {
@@ -3037,7 +3036,7 @@
                                                 @endphp
                                                 
                                                 @if ($accion['accion'] !== 'INFORME FINAL')
-                                                    @if (
+                                                    {{-- @if (
                                                         (
                                                             (
                                                                 in_array($accion['accion'], ['PSICOLOGIA', 'MEDICINA LABORAL'])
@@ -3050,7 +3049,14 @@
                                                         )
                                                         && !in_array($accion['pagoservicioinforme'], ['PROCESADO', 'PAGO PROCESADO']) 
                                                         && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $accion['pagoservicioinforme'] ?? '')
-                                                    )
+                                                    ) --}}
+                                                    @if (
+                                                            (
+                                                                (!is_null($accion['requiereinfo']) ) || (!is_null($accion['informedocumentacion']) && !is_null($accion['fechaprogramacion']))
+                                                            )
+                                                            && !in_array($accion['pagoservicioinforme'], ['PROCESADO', 'PAGO PROCESADO']) 
+                                                            && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $accion['pagoservicioinforme'] ?? '')
+                                                        )
                                                     <tr>
                                                         <td>{{ $accion['id'] }}</td>
                                                         <td title="{{ $accion['accion'] }}" class="truncar">{{ $accion['accion'] }}</td>
@@ -3081,9 +3087,16 @@
                                                             @endif
                                                         </td>
                                                         <td>
-                                                            @if ($accion['accion'] === 'PSICOLOGIA' && $accion['clientecomunid'] !== null)
+                                                            {{-- @if ($accion['accion'] === 'PSICOLOGIA' && $accion['clientecomunid'] !== null)
                                                                 {{ $accion['fechaprogramacion'] ?? 'PENDIENTE' }}
                                                             @elseif ($accion['accion'] === 'MEDICINA LABORAL' && $accion['clientecomunid'] !== null)
+                                                                {{ $accion['fechaprogramacion'] ?? 'PENDIENTE' }}
+                                                            @elseif ($accion['informedocumentacion'])
+                                                                {{ $accion['informedocumentacion'] }}
+                                                            @else
+                                                                <div class="badge badge-danger">PENDIENTE</div>
+                                                            @endif --}}
+                                                            @if ($accion['requiereinfo'] !== null)
                                                                 {{ $accion['fechaprogramacion'] ?? 'PENDIENTE' }}
                                                             @elseif ($accion['informedocumentacion'])
                                                                 {{ $accion['informedocumentacion'] }}
@@ -3385,7 +3398,7 @@
                                                 @endif
 
                                                 @if ($accion['accion'] !== 'INFORME FINAL')
-                                                    @if (is_null($accion['informedocumentacion']) && !is_null($accion['fechaatencionprogramacion']) ) 
+                                                    @if (is_null($accion['informedocumentacion']) && !is_null($accion['fechaatencionprogramacion'])  && is_null($accion['requiereinfo']) ) 
                                                         <tr>
                                                             <td>{{ $accion['id'] }}</td>
                                                             <td title="{{ $accion['accion'] }}" class="truncar">{{ $accion['accion'] }}</td>

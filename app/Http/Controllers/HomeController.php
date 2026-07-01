@@ -185,15 +185,27 @@ class HomeController extends Controller
         $licencias = DB::table('licenciaspagos')
         ->where('plazo', '!=', 'PERMANENTE')
         ->whereNull('deleted_at')
-        ->whereBetween(DB::raw('DATEDIFF(proximopago, CURDATE())'), [0, 30])
+        ->whereBetween(DB::raw('DATEDIFF(proximopago, CURDATE())'), [0, 7])
         ->get();
+
+        $santaCruzCount = User::where('estado', 'ACTIVO')
+            ->whereNotNull('clienteid')
+            ->where('sucursal', 'SANTA CRUZ')
+            ->count();
+
+        $cochabambaCount = User::where('estado', 'ACTIVO')
+            ->whereNotNull('clienteid')
+            ->where('sucursal', 'COCHABAMBA')
+            ->count();
+
+        $totalUsers = $santaCruzCount + $cochabambaCount;
 
         return view('home', compact('userRole','mensajesPrincipales','mensajes','programacionclientebancos','programacionclienteitas','programacionclientecomunes', 'programacionclienteauditorias','clientesComunesCount', 'clientesBancosCount', 'clientesITACount', 'clientesAuditoriasCount', 
         'accionesPorAreasAuditoria', 'accionesPorAreaAuditoria', 'accionesDisponiblesAuditoria', 'clienteauditoria', 'idAuditoria', 'accionesClienteAuditoria', 'estadoRegistradosAuditoria',
         'accionesPorAreasComun', 'accionesPorAreaComun', 'accionesDisponiblesComun', 'clientecomun', 'idComun', 'accionesClienteComun', 'estadoRegistradosComun',
         'accionesPorAreasIta', 'accionesPorAreaIta', 'accionesDisponiblesIta', 'cliente', 'idIta', 'accionesClienteIta', 'estadoRegistradosIta',
         'accionesPorAreasBanco', 'accionesPorAreaBanco', 'accionesDisponiblesBanco', 'clientebanco', 'idBanco', 'accionesClienteBanco', 'estadoRegistradosBanco',
-        'progauditoria','progcomun','progita','licencias'));
+        'progauditoria','progcomun','progita','licencias','santaCruzCount','cochabambaCount','totalUsers'));
     }
 
     public function marcarPagado($id)

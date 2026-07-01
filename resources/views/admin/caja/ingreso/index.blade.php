@@ -90,7 +90,7 @@
         </div>
         <a class="btn btn-outline-warning btn-sm" id="btnVerCreditos" 
             data-toggle="modal" data-target="#modalCreditos" 
-            style="display: {{ $tieneCredito->isEmpty() ? 'none' : 'block' }}; margin-right: 10px;">
+            style="display: {{ $tieneCredito->isEmpty() ? 'none' : 'block' }}; margin-right: 10px; margin-top: -10px;">
             VER CRÉDITOS
         </a>
         <style>
@@ -689,7 +689,7 @@
                     <div class="form-group">
                         <label>Tipo de Transacción</label>
                         <div>
-                            <select class="form-control form-control-sm" id="tipoTransaccion1" name="tipotransaccion" onchange="validarTipoTransaccion()">
+                            <select class="form-control form-control-sm" id="tipoTransaccion1" name="tipotransaccion" required onchange="validarTipoTransaccion()">
                                 <option disabled selected></option>
                                 <option value="ATC">ATC</option>
                                 <option value="CHEQUE">CHEQUE</option>

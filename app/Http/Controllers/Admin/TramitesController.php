@@ -210,7 +210,7 @@ class TramitesController extends Controller
             })
             ->where('pt.apoderado', auth()->user()->name)
             ->where(function($q){
-                $q->whereRaw('pt.fecharetorno < NOW()')
+                $q->whereDate('pt.fecharetorno', '<', now()->toDateString())
                 ->orWhereRaw('DATEDIFF(pt.fecharetorno, NOW()) BETWEEN 0 AND 5');
             })
             ->select(
@@ -230,20 +230,19 @@ class TramitesController extends Controller
         $tramitesporvencer = $query->get();
 
         $tramitesporvencer = $tramitesporvencer->map(function ($item) {
-            $fechaRetorno = Carbon::parse($item->fecharetorno);
-            $ahora = Carbon::now();
+            $fechaRetorno = Carbon::parse($item->fecharetorno)->startOfDay();
+            $hoy = Carbon::today();
 
-            if ($fechaRetorno->isFuture()) {
-                $diff = $ahora->diff($fechaRetorno);
+            if ($fechaRetorno->greaterThanOrEqualTo($hoy)) {
                 $item->estado_tiempo = 'FALTAN';
+                $diff = $hoy->diff($fechaRetorno);
                 $item->dias = $diff->days;
-                $item->horas = $diff->h;
-
+                $item->horas = 0;
             } else {
-                $diff = $fechaRetorno->diff($ahora);
                 $item->estado_tiempo = 'VENCIDO';
+                $diff = $fechaRetorno->diff($hoy);
                 $item->dias = $diff->days;
-                $item->horas = $diff->h;
+                $item->horas = 0;
             }
 
             return $item;
@@ -422,7 +421,7 @@ class TramitesController extends Controller
             })
             ->where('pt.apoderado', auth()->user()->name)
             ->where(function($q){
-                $q->whereRaw('pt.fecharetorno < NOW()')
+                $q->whereDate('pt.fecharetorno', '<', now()->toDateString())
                 ->orWhereRaw('DATEDIFF(pt.fecharetorno, NOW()) BETWEEN 0 AND 5');
             })
             ->select(
