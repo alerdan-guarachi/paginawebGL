@@ -1898,6 +1898,8 @@
                                                     'BOLETAS DE PAGO' => 'BOLETAS DE PAGO',
                                                     'CERTIFICADO DE TRABAJO' => 'CERTIFICADO DE TRABAJO',
                                                     'DENUNCIA DE ACCIDENTE' => 'DENUNCIA DE ACCIDENTE',
+                                                    'CARNET DE ASEGURADO EGS' => 'CARNET DE ASEGURADO EGS',
+                                                    'FORMULARIO DE AFILIACIÓN 04' => 'FORMULARIO DE AFILIACIÓN 04',
                                                 ], null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                             </div>
                                             <div class="form-group col-lg-4" id="fechaadjdoc" style="display: none;">

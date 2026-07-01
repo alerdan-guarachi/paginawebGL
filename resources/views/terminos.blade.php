@@ -12,7 +12,7 @@
         <div class="card-body">
 
             <p class="text-muted text-right">
-                Última actualización: {{ date('d/m/Y') }}
+                Última actualización: 10/04/2026
             </p>
 
             <hr>

@@ -114,16 +114,16 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
-
+            SizedBox(height: 10),
             ListTile(
               dense: true,
               leading: Icon(Icons.medical_services, color: verde),
-              title: Text('Atención Médicos', style: TextStyle(fontSize: 15)),
+              title: Text('Listado de Especialistas', style: TextStyle(fontSize: 15)),
               onTap: () {
                 showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
-                    title: Text('Atención Médicos'),
+                    title: Text('Listado de Especialistas'),
                     content: Text('¿Deseas ver Estudios o Especialidades?'),
                     actions: [
                       TextButton(
@@ -265,6 +265,15 @@ class _HomePageState extends State<HomePage> {
               title: const Text('Política de Privacidad', style: TextStyle(fontSize: 15)),
               onTap: () => _abrirUrl('https://goodlife.com.bo/politicas-privacidad'),
             ),
+
+            ListTile(
+              dense: true,
+              leading: Icon(Icons.share_outlined, color: verde),
+              title: const Text('Referir Good Life', style: TextStyle(fontSize: 15)),
+              onTap: () => _abrirUrl('https://goodlife.com.bo/digital-card'),
+            ),
+
+            const Divider(),
 
             ListTile(
               dense: true,

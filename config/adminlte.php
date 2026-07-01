@@ -909,6 +909,12 @@ return [
                     'can'  => 'admin.inventario.index',
                 ],
                 [
+                    'text' => 'Traspaso de Inventario',
+                    'route'  => 'admin.inventario.traspasoinventario',
+                    'icon' => 'fas fa-share',
+                    'can'  => 'admin.inventario.traspasoinventario',
+                ],
+                [
                     'text' => 'Solicitud de Inventario',
                     'route'  => 'admin.inventario.solicitarproducto',
                     'icon' => 'fas fa-file-signature',
@@ -1009,16 +1015,22 @@ return [
             'can'  => 'admin.soporte.index',
             'submenu' => [
                 [
-                    'text' => 'Registro Solicitudes',
+                    'text' => 'Solicitud Soporte',
                     'route'  => 'admin.soporte.index',
-                    'icon' => 'fas fa-tasks',
+                    'icon' => 'fas fa-user-shield',
                     'can'  => 'admin.soporte.index',
                 ],
                 [
-                    'text' => 'Revisión Solicitudes',
+                    'text' => 'Listado Solicitudes Soporte',
                     'route'  => 'admin.soporte.review',
-                    'icon' => 'fas fa-check-circle',
+                    'icon' => 'fas fa-tasks',
                     'can'  => 'admin.soporte.review',
+                ],
+                [
+                    'text' => 'Solicitud de Códigos',
+                    'route'  => 'admin.soporte.solicitudcodigo',
+                    'icon' => 'fas fa-key',
+                    'can'  => 'admin.soporte.solicitudcodigo',
                 ],
             ],
         ],

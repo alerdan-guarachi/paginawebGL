@@ -117,15 +117,47 @@
                         <div class="card-tutorial h-100 mx-auto">
                             <div class="card-body text-center">
                                 <h5>SOLICITUD DE PRODUCTOS</h5>
-                                <p class="card-text">Registro de solicitud de productos de inventario.</p>
+                                <p class="card-text">Registro de solicitudes de productos de inventario en sistema web.</p>
                                 <a href="https://drive.google.com/file/d/1k1GDjYPmFiypLZ2pXywAR0748JHPrOL1/view?usp=drive_link" target="_blank" class="btn btn-crear btn-sm w-100">VER VIDEO TUTORIAL</a>
                                 <small class="text-muted mt-2 d-block" style="font-style: italic;">Actualizado el 03-05-2025</small>
                             </div>
                         </div>
                     </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card-tutorial h-100 mx-auto">
+                            <div class="card-body text-center">
+                                <h5>USO DE APLICACIÓN MÓVIL</h5>
+                                <p class="card-text">Explicación de descarga y secciones de la aplicación.</p>
+                                <a href="https://drive.google.com/file/d/1DKg40JMRrA3aynxBjoRjbBkKp1MW0IzG/view?usp=drive_link" target="_blank" class="btn btn-crear btn-sm w-100">VER VIDEO TUTORIAL</a>
+                                <small class="text-muted mt-2 d-block" style="font-style: italic;">Actualizado el 30-04-2026</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card-tutorial h-100 mx-auto">
+                            <div class="card-body text-center">
+                                <h5>GENERAR CREDENCIALES PARA LA APP</h5>
+                                <p class="card-text">Explicación de como generar credenciales de inicio de sesión en la app.</p>
+                                <a href="https://drive.google.com/file/d/1cfwyiI2xUwW7KEsctoKsq4dEgS1RRw9N/view?usp=drive_link" target="_blank" class="btn btn-crear btn-sm w-100">VER VIDEO TUTORIAL</a>
+                                <small class="text-muted mt-2 d-block" style="font-style: italic;">Actualizado el 29-04-2026</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row justify-content-center g-3 mt-4">
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="card-tutorial h-100 mx-auto">
+                            <div class="card-body text-center">
+                                <h5>SOLICITUD DE CÓDIGOS Y SOPORTE</h5>
+                                <p class="card-text">Explicación de como solicitar códigos y soporte en el sistema web.</p>
+                                <a href="https://drive.google.com/file/d/1IeRj8-OPS7iHxHprRpD7_BYLiAoFXavI/view?usp=drive_link" target="_blank" class="btn btn-crear btn-sm w-100">VER VIDEO TUTORIAL</a>
+                                <small class="text-muted mt-2 d-block" style="font-style: italic;">Actualizado el 20-05-2026</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
         </div>
     </div>
 </div>

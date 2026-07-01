@@ -59,6 +59,7 @@ Route::get('/medicina', [App\Http\Controllers\PaginawebController::class, 'medic
 Route::get('/sobrenosotros', [App\Http\Controllers\PaginawebController::class, 'sobrenosotros'])->name('sobrenosotros');
 Route::get('/politicas-privacidad', function () {return view('politicas');});
 Route::get('/terminos-condiciones-servicio', function () {return view('terminos');});
+Route::get('/digital-card', function () {return view('digitalcard');});
 //HORARIOS ASESORAMIENTO
     Route::resource('asesoramiento', AsesoramientoController::class)->names('admin.asesoramiento');
     Route::get('/agendarasesoria', [AsesoramientoController::class, 'programarasesoria'])->name('programarasesoria');
@@ -200,6 +201,8 @@ Route::post('/permisoscodigo/cajaegresos', [MovimientosCajaController::class, 'c
 Route::post('/permisoscodigo/cambiarstock', [InventarioController::class, 'permisoscodigocambiarstock'])->name('permisoscodigo.cambiarstock');
 Route::put('/inventario/actualizarStockcodigo/{codigo}', [InventarioController::class, 'actualizarStockcodigo'])->name('inventario.actualizarStockcodigo');
 
+Route::post('/validar-codigo', [TramitesController::class, 'validarCodigo'])->name('validar.codigo');
+
 //APP MOVIL
 Route::post('/flutter/login', [AuthController::class, 'login']);
 
@@ -233,8 +236,11 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::post('/unificar-preordenes', [InventarioController::class, 'unificarPreordenes'])->name('unificar.preordenes');
 
     Route::post('/solicitudinventario/{id}/espera', [InventarioController::class, 'pasarAEspera'])->name('solicitudinventario.espera');
-
-
+    
+    Route::get('traspasoinventario', [InventarioController::class, 'traspasoinventario'])->name('admin.inventario.traspasoinventario');
+    Route::get('/buscar-productos', [InventarioController::class, 'buscarProductos'])->name('admin.inventario.buscarProductos');
+    Route::post('/realizar-traspaso', [InventarioController::class, 'realizarTraspaso'])->name('admin.inventario.realizarTraspaso');
+    
     Route::post('/inventario/actualizar-stock', [InventarioController::class, 'actualizarStockinventario'])->name('inventario.actualizarStock');
     Route::post('/inventario/registrarProducto', [InventarioController::class, 'registrarProducto'])->name('inventario.registrarProducto');
     Route::get('/portfolio-proveedor/{codigo}', [InventarioController::class, 'getByCodigo'])->name('portfolioProveedores.getByCodigo');
@@ -308,6 +314,8 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
 
     Route::post('/verificar-codigo-adelantovacaciones', [ProveedoresserviciosController::class, 'verificarCodigoAdelantovacaciones'])->name('verificar.codigo.adelantovacaciones'); 
 //
+
+Route::post('/licencias/{id}/pagar',  [App\Http\Controllers\HomeController::class, 'marcarPagado'])->name('licencias.pagar');
 
 //CARTAS POLIZAS
     Route::post('/admin/cartaspolizas/descargarsolicitudpolizas', [CartasPolizasController::class, 'descargarsolicitudpolizas'])->name('admin.cartaspolizas.descargarsolicitudpolizas');
@@ -510,15 +518,17 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
 //
 
 //TRAMITES
+    Route::get('/bloqueado', function () {return view('bloqueado');})->name('bloqueado');
+
     Route::get('tramites/derivacionapoderados/1', [TramitesController::class, 'derivacionapoderados'])->name('admin.tramites.derivacionapoderados');
-    Route::get('tramites/procmasahereditaria/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procmasahereditaria')->name('admin.tramites.procmasahereditaria');
-    Route::get('tramites/procjubilacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procjubilacion')->name('admin.tramites.procjubilacion');
-    Route::get('tramites/procretiroaportestotal/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procretiroaportestotal')->name('admin.tramites.procretiroaportestotal');
-    Route::get('tramites/procretiroaportesparcial/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procretiroaportesparcial')->name('admin.tramites.procretiroaportesparcial');
-    Route::get('tramites/procpensionmuerte/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procpensionmuerte')->name('admin.tramites.procpensionmuerte');
-    Route::get('tramites/procsegundasolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procsegundasolicitud')->name('admin.tramites.procsegundasolicitud');
-    Route::get('tramites/proctercerasolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@proctercerasolicitud')->name('admin.tramites.proctercerasolicitud');
-    Route::get('tramites/procinvalidez/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procinvalidez')->name('admin.tramites.procinvalidez');
+    Route::get('tramites/procmasahereditaria/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procmasahereditaria')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procmasahereditaria');
+    Route::get('tramites/procjubilacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procjubilacion')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procjubilacion');
+    Route::get('tramites/procretiroaportestotal/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procretiroaportestotal')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procretiroaportestotal');
+    Route::get('tramites/procretiroaportesparcial/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procretiroaportesparcial')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procretiroaportesparcial');
+    Route::get('tramites/procpensionmuerte/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procpensionmuerte')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procpensionmuerte');
+    Route::get('tramites/procsegundasolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procsegundasolicitud')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procsegundasolicitud');
+    Route::get('tramites/proctercerasolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@proctercerasolicitud')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.proctercerasolicitud');
+    Route::get('tramites/procinvalidez/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procinvalidez')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procinvalidez');
     Route::get('tramites/cartasprocinvalidez/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocinvalidez')->name('admin.tramites.cartasprocinvalidez');
     Route::get('tramites/cartasprocapelacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocapelacion')->name('admin.tramites.cartasprocapelacion');
     Route::get('tramites/cartasprocsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocsegsolicitud')->name('admin.tramites.cartasprocsegsolicitud');
@@ -528,25 +538,31 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::get('tramites/cartasprocretiroaportesparcial/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocretiroaportesparcial')->name('admin.tramites.cartasprocretiroaportesparcial');
     Route::get('tramites/cartasprocpensionmuerte/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocpensionmuerte')->name('admin.tramites.cartasprocpensionmuerte');
     Route::get('tramites/cartasprocmasahereditaria/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocmasahereditaria')->name('admin.tramites.cartasprocmasahereditaria');
-    Route::get('tramites/procapelacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapelacion')->name('admin.tramites.procapelacion');
-    Route::get('tramites/proccompensacionsenasir/{cliente}', 'App\Http\Controllers\Admin\TramitesController@proccompensacionsenasir')->name('admin.tramites.proccompensacionsenasir');
+    Route::get('tramites/procapelacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapelacion')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procapelacion');
+    Route::get('tramites/proccompensacionsenasir/{cliente}', 'App\Http\Controllers\Admin\TramitesController@proccompensacionsenasir')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.proccompensacionsenasir');
+
+    Route::get('tramitesfinalizados', [TramitesController::class, 'tramitesfinalizados'])->name('admin.tramites.tramitesfinalizados');
 
     //NUEVO TRAMITE
     Route::get('tramites/cartasproccompensacionsenasir/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasproccompensacionsenasir')->name('admin.tramites.cartasproccompensacionsenasir');
-    Route::get('tramites/procrecalificacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procrecalificacion')->name('admin.tramites.procrecalificacion');
+    Route::get('tramites/procrecalificacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procrecalificacion')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procrecalificacion');
     Route::get('tramites/cartasprocrecalificacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocrecalificacion')->name('admin.tramites.cartasprocrecalificacion');
-    Route::get('tramites/procapelsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapelsegsolicitud')->name('admin.tramites.procapelsegsolicitud');
+    Route::get('tramites/procapelsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapelsegsolicitud')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procapelsegsolicitud');
     Route::get('tramites/cartasprocapelsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocapelsegsolicitud')->name('admin.tramites.cartasprocapelsegsolicitud');
-    Route::get('tramites/procapeltercersolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapeltercersolicitud')->name('admin.tramites.procapeltercersolicitud');
+    Route::get('tramites/procapeltercersolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapeltercersolicitud')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procapeltercersolicitud');
     Route::get('tramites/cartasprocapeltercersolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocapeltercersolicitud')->name('admin.tramites.cartasprocapeltercersolicitud');
-    Route::get('tramites/procapelrecalificacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapelrecalificacion')->name('admin.tramites.procapelrecalificacion');
+    Route::get('tramites/procapelrecalificacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapelrecalificacion')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procapelrecalificacion');
     Route::get('tramites/cartasprocapelrecalificacion/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocapelrecalificacion')->name('admin.tramites.cartasprocapelrecalificacion');
 
     //NUEVO 241025
-    Route::get('tramites/procrecalsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procrecalsegsolicitud')->name('admin.tramites.procrecalsegsolicitud');
+    Route::get('tramites/procrecalsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procrecalsegsolicitud')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procrecalsegsolicitud');
     Route::get('tramites/cartasprocrecalsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocrecalsegsolicitud')->name('admin.tramites.cartasprocrecalsegsolicitud');
-    Route::get('tramites/procapelrecalsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapelrecalsegsolicitud')->name('admin.tramites.procapelrecalsegsolicitud');
+    Route::get('tramites/procapelrecalsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procapelrecalsegsolicitud')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procapelrecalsegsolicitud');
     Route::get('tramites/cartasprocapelrecalsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocapelrecalsegsolicitud')->name('admin.tramites.cartasprocapelrecalsegsolicitud');
+
+    /* NUEVO 150526 */
+    Route::get('tramites/procpensionderivretiro/{cliente}', 'App\Http\Controllers\Admin\TramitesController@procpensionderivretiro')->middleware(['auth', 'bloqueo.prestaciones'])->name('admin.tramites.procpensionderivretiro');
+    Route::get('tramites/cartasprocpensionderivretiro/{cliente}', 'App\Http\Controllers\Admin\TramitesController@cartasprocpensionderivretiro')->name('admin.tramites.cartasprocpensionderivretiro');
 
     Route::post('tramites/guardartramitesclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardartramitesclienteita')->name('admin.tramites.guardartramitesclienteita');
     Route::post('tramites/guardarseguimientoclienteita/{cliente}', 'App\Http\Controllers\Admin\TramitesController@guardarseguimientoclienteita')->name('admin.tramites.guardarseguimientoclienteita');
@@ -844,6 +860,11 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
         Route::get('asociados/subirdocrequisitosapelrecalsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@subirdocrequisitosapelrecalsegsolicitud')->name('admin.asociados.subirdocrequisitosapelrecalsegsolicitud');
         Route::put('asociados/guardardocrequisitosapelrecalsegsolicitud/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardardocrequisitosapelrecalsegsolicitud')->name('admin.asociados.guardardocrequisitosapelrecalsegsolicitud');
 
+        //PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES
+        Route::get('asociados/generarchecklistclienteitapensionderivretiro/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@generarchecklistclienteitapensionderivretiro')->name('admin.asociados.generarchecklistclienteitapensionderivretiro');
+        Route::get('asociados/subirdocrequisitospensionderivretiro/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@subirdocrequisitospensionderivretiro')->name('admin.asociados.subirdocrequisitospensionderivretiro');
+        Route::put('asociados/guardardocrequisitospensionderivretiro/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@guardardocrequisitospensionderivretiro')->name('admin.asociados.guardardocrequisitospensionderivretiro');
+
         Route::post('/generar-pdf-dermedlab', [AsociadoController::class, 'generarPDFconsentimiento'])->name('generar.pdf.consentimiento');
         Route::post('/generar-pdf-dermedlab2', [AsociadoController::class, 'generarsoloPDFconsentimiento'])->name('generar.pdf.soloconsentimiento');
         Route::post('/generar-pdf-guardardocumentoconsentimiento', [AsociadoController::class, 'generarPDFguardarconsentimiento'])->name('guardar.pdf.consentimiento');
@@ -852,6 +873,8 @@ Route::get('asociados/buscarprogramacionpendientecomun/{asociado}', 'App\Http\Co
         Route::post('/aprobarinformefinaldirecto', [AsociadoController::class, 'aprobarinformefinaldirecto'])->name('aprobarinformefinaldirecto');
 
         Route::post('asociados/descargarchecklistclienteita2/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@descargarchecklistclienteita2')->name('admin.asociados.descargarchecklistclienteita2');
+
+        Route::post('asociados/descargarchecklistclienteitapensionderivretiro/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@descargarchecklistclienteitapensionderivretiro')->name('admin.asociados.descargarchecklistclienteitapensionderivretiro');
 
     //CONTACTOS CLIENTES ITA
         Route::get('asociados/vercontactoclienteita/{cliente}', 'App\Http\Controllers\Admin\AsociadoController@vercontactoclienteita')->name('admin.asociados.vercontactoclienteita');
@@ -1139,6 +1162,9 @@ Route::post('soporte', [SoporteController::class, 'store'])->name('admin.soporte
 /* Route::get('soporte/historial', [SoporteController::class, 'historial'])->name('admin.soporte.historial'); */
 Route::get('soporte/revision', [SoporteController::class, 'review'])->name('admin.soporte.review');
 Route::post('soporte/atender/{id}', [SoporteController::class, 'atender'])->name('admin.soporte.atender');
+
+Route::get('soporte/solicitudcodigo', [SoporteController::class, 'solicitudcodigo'])->name('admin.soporte.solicitudcodigo');
+Route::post('soporte/guardarsolicitudcodigo', [SoporteController::class, 'guardarsolicitudcodigo'])->name('admin.soporte.guardarsolicitudcodigo');
 //
 
 //CONTABILIDAD

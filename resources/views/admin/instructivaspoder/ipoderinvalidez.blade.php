@@ -58,29 +58,32 @@
                 y/o al Sr/a. {{ $persona->razonsocial }} con C.I. {{ $persona->ci }}{{ $persona->ciexp }}, mayor de edad, con domicilio en la ciudad de {{ $persona->ciudad }} y hábil por derecho{{ !$loop->last ? ';' : '.' }}
             @endforeach
             <br>
-            <strong>OBJETO:</strong> Para que en nombre y representación de su persona acciones y derechos, uno Indistintamente de 
-            otro, con facultades de Apersonamiento de manera individual y/o colectiva, ante las oficinas de la Gestora Pública de 
-            la Seguridad Social de Largo Plazo para Inicio, Continuidad, Seguimiento y Conclusión de 
-            <strong>TRÁMITE DE PENSIÓN POR INVALIDEZ</strong> Solicitar y Firmar el formulario de actualización de datos, 
-            Iniciar Tramite de pensión por invalidez firmando la solicitud correspondiente, solicitar estado de ahorro 
-            previsional, Solicitar Revisar y Conciliar el estado de ahorro previsional, Notificarse con requerimientos del 
-            Tribunal Medico Calificador TMC, desistir de la solicitud antes de la emisión del dictamen correspondiente, recibir 
-            notificaciones del dictamen de invalidez, solicitar revisión del dictamen de invalidez, recibir la notificación de 
-            la declaración de pensión o la notificación del rechazo según corresponda, solicitar la recalificación del dictamen 
-            de invalidez, presentar una segunda solicitud, en suma solicitar, recibir, entregar y firmar todo tipo de documentos 
-            inherentes al trámite de pensión por invalidez hasta su culminación, Solicitud de copias legalizadas y simples de 
-            cualquier ámbito con relación a dicho trámite, sin que por falta de cláusula expresa alguna, deje de surtir sus 
-            efectos, ni se alegue falta de personería en los apoderados. Más Poder, para recabar el estado de Cuentas, firmar 
-            el formulario de Solicitud de pensión por invalidez, formulario de historia ocupacional, firmar formulario de 
-            declaración de derechohabientes, firmar formulario de actualización de datos y estado, asistir a reuniones con 
-            facultades de decisión, memoriales, cartas notariales, inscripciones, autorizaciones y cualquier otro documento que 
-            sea necesario, hasta la culminación del trámite de pensión por invalidez en Gestora Pública de la Seguridad Social 
-            de Largo Plazo. Más Poder para sustituir total o individual el presente poder, y en caso de ser necesario otorgar 
-            poder a favor de terceros u otras personas para la continuación y conclusión del presente trámite, todo con el fin 
-            de solicitar la pensión por invalidez del poder conferente, sin que por no estar expresamente consignado en el 
-            presente, sea dado por insuficiente, aclarándose que todas las facultades de este poder son enunciativas y no 
-            limitativas, facultando a los apoderados a otorgar poder en favor de terceros o ser sustituidos total y/o 
-            parcialmente del presente mandato, en caso de viaje, enfermedad, ausencia o dejación de cargo.
+            <strong>OBJETO:</strong> Para que en representación de su persona acciones y derechos, uno indistintamente de otro, con facultades de 
+            Apersonamiento, ante las oficinas de la GESTORA PÚBLICA DE LA SEGURIDAD SOCIAL DE LARGO PLAZO para Inicio, Continuidad, Seguimiento y 
+            Conclusión de <strong>TRÁMITE DE PENSIÓN POR INVALIDEZ,</strong> Solicitar, Suscribir , Firmar el formulario de actualización de datos, 
+            Iniciar Tramite de Pensión por Invalidez firmando la solicitud correspondiente, Solicitar el Estado de Ahorro Previsional, Revisar, Verificar, 
+            Solicitar regularización de Aportes si en caso corresponde y Firmar el Certificado de Verificación del Estado de Ahorro Previsional, así como, 
+            el Formulario de conformidad de aportes si corresponde, Notificarse con requerimientos del Tribunal Medico Calificador TMC, desistir de la 
+            solicitud antes de la emisión del Dictamen correspondiente, recibir notificaciones del Dictamen de Invalidez, Solicitar Revisión del Dictamen 
+            de Invalidez, recibir la notificación de la Declaración de Pensión o la notificación del rechazo según corresponda, Solicitar la Recalificación 
+            del Dictamen, presentar una segunda solicitud, en suma solicitar, recibir, entregar y firmar todo tipo de documentos inherentes al Trámite de 
+            Pensión por Invalidez hasta su culminación, Solicitud de copias legalizadas y simples de cualquier ámbito con relación a dicho trámite, sin que 
+            por falta de cláusula expresa alguna, deje de surtir sus efectos, ni se alegue falta de personería en los apoderados. Más Poder, para recabar el 
+            estado de Cuentas, firmar el formulario de Solicitud de pensión por invalidez, formulario de historia ocupacional, firmar formulario de 
+            declaración de derechohabientes, firmar formulario de actualización de datos y estado, asistir a reuniones con facultades de decisión, memoriales, 
+            cartas notariales, inscripciones, autorizaciones y cualquier otro documento que sea necesario, hasta la culminación del Trámite de Pensión por 
+            Invalidez en Gestora Pública de la Seguridad Social de Largo Plazo. Asimismo, y en caso de corresponder conforme al porcentaje de Invalidez 
+            determinado solicitar, consultar, verificar y gestionar la habilitación de pago de la Pensión por Invalidez. Más Poder para apersonamiento ante 
+            las oficinas de la Autoridad de Fiscalización y Control de Pensiones y Seguros APS para realizar toda clase de gestiones relacionadas con el 
+            Trámite de Pensión por Invalidez, pudiendo solicitar información verbal y escrita, Facultad para llenar, suscribir y presentar formularios 
+            físicos o digitales, incluidos aquellos correspondientes al Buzón de Reclamos y Sugerencias, presentar cartas de reclamo, memoriales, solicitudes, 
+            peticiones, reclamos administrativos y cualquier otra actuación necesaria, realizar seguimiento a reclamos y solicitudes, notificarse y recoger 
+            respuestas, informes, resoluciones administrativas, notas y cualquier otra documentación relacionada con el Trámite. Mas Poder para sustituir 
+            total o individual el presente poder, y en caso de ser necesario otorgar poder a favor de terceros u otras personas para la continuación y 
+            conclusión del presente trámite, todo con el fin de solicitar la pensión por invalidez, del poder conferente, sin que por no estar expresamente 
+            consignado en el presente, sea dado por insuficiente, aclarándose que todas las facultades de este poder son enunciativas y no limitativas, 
+            facultando a los apoderados a otorgar poder en favor de terceros o ser sustituidos total y/o parcialmente del presente mandato, en caso de viaje, 
+            enfermedad, ausencia o dejación de cargo.
             </h3>
             <br>
             <h3 style="text-align: center;">{{ $cliente->sucursal }} - {{ $fechaactual }}</h3>

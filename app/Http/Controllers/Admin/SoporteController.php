@@ -8,6 +8,12 @@ use App\Models\SoporteTecnico;
 use App\Notifications\SoportetecnicoNotification;
 use App\Notifications\SoportetecnicorespuestaNotification;
 use App\Models\User;
+use App\Models\PermisoCodigo;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+
 class SoporteController extends Controller
 {
     /**
@@ -173,5 +179,175 @@ class SoporteController extends Controller
         }
 
         return redirect()->route('admin.soporte.review')->with('success', 'Solicitud atendida correctamente.');
+    }
+
+    public function solicitudcodigo()
+    {
+        $nombreusuario = auth()->user()->name;
+        $registroscodigos = PermisoCodigo::where('usuarioSolicitante', $nombreusuario)
+                          ->orderBy('created_at','desc')
+                          ->simplePaginate(5);
+
+        $permisos = PermisoCodigo::all();
+
+        $usuarios = User::where('estado', 'ACTIVO')
+        ->whereHas('roles', function ($query) {
+            $query->whereIn('name', [
+                'ADMINISTRADOR',
+                'OPERATIVO',
+                'CONTABLE',
+                'PASANTE',
+                'ASISTENTE ADMINISTRATIVO',
+                'SUPERVISOR PRESTACIONES',
+                'EJECUTIVO PRESTACIONES'
+            ]);
+        })
+        ->orderBy('name')
+        ->pluck('name', 'id');
+
+        $user = auth()->user();
+        $roles = $user->roles->pluck('name')->toArray();
+   
+        if (in_array('ADMINISTRADOR', $roles) || in_array('MAESTRO', $roles)) {
+            $permisosFiltrados = [
+                'admin.asociados.crearbateriaclienteita',
+                'admin.ingreso.index',
+                'admin.asociados.crearbateriaclienteauditoria',
+                'admin.caja.ingresos.concederdescuentosingresos',
+                'admin.caja.ingresos.cambiarfecharegistro',
+                'admin.caja.egresos.cambiarfecharegistro',
+                'admin.inventario.cambiarstockinventario',
+                'admin.tramites.cambiarfechaprestaciones',
+                'admin.tramites.editararchivoprestaciones',
+                'admin.tramites.continuidadtramiteprestaciones',
+                'admin.facturasegreso.cambiarrazonsocial',
+                'admin.tramites.index'
+            ];
+        } elseif (in_array('EJECUTIVO PRESTACIONES', $roles)) {
+            $permisosFiltrados = [
+                'admin.tramites.cambiarfechaprestaciones',
+                'admin.tramites.editararchivoprestaciones',
+                'admin.tramites.continuidadtramiteprestaciones',
+                'admin.tramites.index'
+            ];
+        } elseif (in_array('CONTABLE', $roles)) {
+            $permisosFiltrados = [
+                'admin.asociados.crearbateriaclienteita',
+                'admin.asociados.crearbateriaclienteauditoria',
+                'admin.caja.ingresos.concederdescuentosingresos',
+                'admin.caja.ingresos.cambiarfecharegistro',
+                'admin.caja.egresos.cambiarfecharegistro',
+                'admin.ingreso.index',
+                'admin.facturasegreso.cambiarrazonsocial',
+                'admin.inventario.cambiarstockinventario'
+            ];
+
+        } else {
+            $permisosFiltrados = [];
+        }
+
+        $permisosSolicitados = Permission::whereIn('name', $permisosFiltrados)
+            ->get()
+            ->mapWithKeys(function ($permiso) {
+                $nombresPersonalizados = [
+                    'admin.asociados.crearbateriaclienteita' => 'CREAR BATERIA CLIENTE ITA',
+                    'admin.asociados.crearbateriaclienteauditoria' => 'CREAR BATERIA CLIENTE AUDITORIA',
+                    'admin.caja.ingresos.concederdescuentosingresos' => 'CONCEDER DESCUENTO INGRESO',
+                    'admin.caja.ingresos.cambiarfecharegistro' => 'CAMBIAR FECHA DE CAJA INGRESO',
+                    'admin.caja.egresos.cambiarfecharegistro' => 'CAMBIAR FECHA DE CAJA EGRESO',
+                    'admin.ingreso.index' => 'DESBLOQUEAR CAJA',
+                    'admin.inventario.cambiarstockinventario' => 'CAMBIAR STOCK DE INVENTARIO',
+                    'admin.tramites.cambiarfechaprestaciones' => 'MODIFICAR FECHA DE PROCEDIMIENTO TRAMITE',
+                    'admin.tramites.editararchivoprestaciones' => 'EDITAR ARCHIVO DE PROCEDIMIENTO TRAMITE',
+                    'admin.tramites.continuidadtramiteprestaciones' => 'DAR CONTINUIDAD DE PROCEDIMIENTO TRAMITE',
+                    'admin.facturasegreso.cambiarrazonsocial' => 'MODIFICAR RAZON SOCIAL DE FACTURAS IMPUESTOS',
+                    'admin.tramites.index' => 'DESBLOQUEAR SECCIÓN DE PRESTACIONES'
+                ];
+
+            return [$permiso->name => $nombresPersonalizados[$permiso->name] ?? $permiso->name];
+        });
+
+        $descripcionesPermisos = [
+            'admin.asociados.crearbateriaclienteita' => 'CREAR BATERIA CLIENTE ITA',
+            'admin.asociados.crearbateriaclienteauditoria' => 'CREAR BATERIA CLIENTE AUDITORIA',
+            'admin.caja.ingresos.concederdescuentosingresos' => 'CONCEDER DESCUENTO INGRESO',
+            'admin.caja.ingresos.cambiarfecharegistro' => 'CAMBIAR FECHA DE CAJA INGRESO',
+            'admin.caja.egresos.cambiarfecharegistro' => 'CAMBIAR FECHA DE CAJA EGRESO',
+            'admin.ingreso.index' => 'DESBLOQUEAR CAJA',
+            'admin.inventario.cambiarstockinventario' => 'CAMBIAR STOCK DE INVENTARIO',
+            'admin.tramites.cambiarfechaprestaciones' => 'MODIFICAR FECHA DE PROCEDIMIENTO TRAMITE',
+            'admin.tramites.editararchivoprestaciones' => 'EDITAR ARCHIVO DE PROCEDIMIENTO TRAMITE',
+            'admin.tramites.continuidadtramiteprestaciones' => 'DAR CONTINUIDAD DE PROCEDIMIENTO TRAMITE',
+            'admin.facturasegreso.cambiarrazonsocial' => 'MODIFICAR RAZON SOCIAL DE FACTURAS IMPUESTOS',
+            'admin.tramites.index' => 'DESBLOQUEAR SECCIÓN DE PRESTACIONES'
+        ];
+
+        $codigoGenerado = strtoupper(Str::random(7));
+
+        return view('admin.soporte.solicitudcodigo', compact('registroscodigos','permisos', 'usuarios', 'permisosSolicitados', 'codigoGenerado', 'descripcionesPermisos'));
+    }
+
+    public function guardarsolicitudcodigo(Request $request)
+    {
+        $request->validate([
+            'permisoSolicitado' => 'required',
+            'permisoSolicitadoNombre'=> 'required',
+            'fechaSolicitada' => 'required|date',
+            'motivo' => 'required',
+        ]);
+
+        $user = auth()->user();
+
+        $permiso = new PermisoCodigo();
+        $permiso->usuarioSolicitante = $user->name;
+        $permiso->usuarioAutorizador = null;
+        $permiso->codigo = null;
+        $permiso->fechaSolicitada = $request->fechaSolicitada;
+        $permiso->tiempoLimite = $request->tiempoLimiteMinutos ?? 1;
+        $permiso->permisoSolicitado = $request->permisoSolicitadoNombre;
+        $permiso->motivo = $request->motivo;
+        $permiso->clienteid = $request->clienteid ?? 0;
+        $permiso->horaActivacion = null;
+        $permiso->estado = 'solicitado';
+        $permiso->save();
+
+        $nombresPersonalizados = [
+            'admin.asociados.crearbateriaclienteita' => 'CREAR BATERIA CLIENTE ITA',
+            'admin.asociados.crearbateriaclienteauditoria' => 'CREAR BATERIA CLIENTE AUDITORIA',
+            'admin.caja.ingresos.concederdescuentosingresos' => 'CONCEDER DESCUENTO INGRESO',
+            'admin.caja.ingresos.cambiarfecharegistro' => 'CAMBIAR FECHA DE CAJA INGRESO',
+            'admin.caja.egresos.cambiarfecharegistro' => 'CAMBIAR FECHA DE CAJA EGRESO',
+            'admin.ingreso.index' => 'DESBLOQUEAR CAJA',
+            'admin.inventario.cambiarstockinventario' => 'CAMBIAR STOCK DE INVENTARIO',
+            'admin.tramites.cambiarfechaprestaciones' => 'MODIFICAR FECHA DE PROCEDIMIENTO TRAMITE',
+            'admin.tramites.editararchivoprestaciones' => 'EDITAR ARCHIVO DE PROCEDIMIENTO TRAMITE',
+            'admin.tramites.continuidadtramiteprestaciones' => 'DAR CONTINUIDAD DE PROCEDIMIENTO TRAMITE',
+            'admin.facturasegreso.cambiarrazonsocial' => 'MODIFICAR RAZON SOCIAL DE FACTURAS IMPUESTOS',
+            'admin.tramites.index' => 'DESBLOQUEAR SECCIÓN DE PRESTACIONES'
+        ];
+
+        $permisoTexto = $nombresPersonalizados[$request->permisoSolicitado] ?? $request->permisoSolicitado;
+
+        $BOT_TOKEN = '8756856989:AAFwayjLmfVPFu0poFX0G1pnTnifmSSVYQY';
+        $CHAT_ID = '-1003947071401';
+
+        $fecha = Carbon::parse($request->fecha);
+        $diaSemana = ucfirst($fecha->translatedFormat('l'));
+        $fechaFormateada = $fecha->translatedFormat('d F Y');
+
+        $mensaje = "*📍 SOLICITUD DE CÓDIGO*\n\n"
+            . "*ID Solicitud:* {$permiso->id}\n"
+            . "*Solicitante:* {$user->name}\n"
+            . "*Fecha:* {$request->fechaSolicitada}\n"
+            . "*Permiso:* {$permisoTexto}\n"
+            . "*Motivo:* {$request->motivo}";
+
+        Http::post("https://api.telegram.org/bot{$BOT_TOKEN}/sendMessage", [
+            'chat_id' => $CHAT_ID,
+            'text' => $mensaje,
+            'parse_mode' => 'Markdown'
+        ]);
+
+        return redirect()->back()->with('info', 'Solicitud enviada correctamente');
     }
 }

@@ -1371,7 +1371,7 @@
                                 </button>
                                 <br>
                                 @php
-                                    $documento3 = $cliente->tramites()->where('tramite', 'APELACIÓN')->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->whereNotNull('capturacomunicacion');});})->where('estadocomunicado', 'COMUNICADO')->whereIn('subprocedimiento', ['VALIDACIÓN DE PODER', 'VALIDACIÓN DE DOCUMENTOS EXTRANJEROS'])->first();
+                                    $documento3 = $cliente->tramites()->whereIn('tramite', ['APELACIÓN', 'INVALIDEZ'])->where(function ($query) {$query->whereNotNull('capturacomunicacion')->where(function ($subQuery) {$subQuery->whereNotNull('capturacomunicacion');});})->where('estadocomunicado', 'COMUNICADO')->whereIn('subprocedimiento', ['VALIDACIÓN DE PODER', 'VALIDACIÓN DE DOCUMENTOS EXTRANJEROS'])->first();
                                 @endphp
                                 <div class="text-center">
                                     @if (!$documento3)
@@ -1467,7 +1467,7 @@
                                     <div class="container">
                                         @php
                                             $documento4 = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE PODER')->where('tramite', 'APELACIÓN')->first();
-                                            $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE PODER')->where('tramite', 'APELACIÓN')->first();
+                                            $documento3 = $cliente->tramites()->where('subprocedimiento', 'VALIDACIÓN DE PODER')->whereIn('tramite', ['APELACIÓN', 'INVALIDEZ'])->first();
                                             $documentoformval = $cliente->tramites()->where('subprocedimiento', 'FORMULARIO DE VALIDACIÓN DE PODER')->where('tramite', 'APELACIÓN')->first();
                                             $correccionpoder = $cliente->tramites()->where('subprocedimiento', 'CORRECCIÓN DE PODER')->where('tramite', 'APELACIÓN')->first();
                                             $rechazodocext = $cliente->tramites()->where('subprocedimiento', 'RECHAZO DE DOCUMENTOS EXTRANJEROS')->where('tramite', 'APELACIÓN')->first();
@@ -9534,7 +9534,7 @@
                                                         @endif
                                                     </td>
                                                     <td>
-                                                        @if ($solicitud->document3)
+                                                        {{-- @if ($solicitud->document3)
                                                             <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN/SOLICITUDES/{$solicitud->document3}") }}"
                                                             class="btn btn-sm btn-verdocumento"
                                                             title="VER RESPUESTA" target="_blank"><i class="fas fa-eye"></i></a>
@@ -9551,8 +9551,34 @@
                                                                     </button>
                                                                 </div>
                                                             </div>
+                                                        @endif --}}
+                                                        @if (!empty($solicitud->document3))
+                                                            <a href="{{ url("/tramitesclientesita/{$cliente->id}/APELACIÓN/SOLICITUDES/{$solicitud->document3}") }}"
+                                                                class="btn btn-sm btn-verdocumento"
+                                                                target="_blank">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            @if (empty($solicitud->fechainclusion))
+                                                                <button type="submit" class="btn btn-guardarnuevo guardar-btn1">
+                                                                    <i class="fas fa-print"></i>
+                                                                </button>
+                                                            @endif
+                                                        @else
+                                                            <div class="row gx-2">
+                                                                <div class="col">
+                                                                    <input type="file" name="document3solicitud" 
+                                                                        class="form-control form-control-sm archivo-input1" 
+                                                                        accept="application/pdf">
+                                                                </div>
+                                                                <div class="col-auto">
+                                                                    <button type="submit" class="btn btn-guardarnuevo guardar-btn1">
+                                                                        <i class="fas fa-print"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
                                                         @endif
                                                     </td>
+                                                    
                                                     <script>
                                                         document.addEventListener('DOMContentLoaded', function() {
                                                             const inputs = document.querySelectorAll('.archivo-input1');

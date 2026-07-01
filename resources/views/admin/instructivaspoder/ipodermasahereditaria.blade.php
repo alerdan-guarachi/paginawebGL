@@ -81,7 +81,8 @@
                 @endif
                 {!! $nombrefallecido ?? '<span class="textoedita">Nombre Fallecido</span>' !!} 
                 CON C.I. N° {!! $cifallecido ?? '<span class="textoedita">CI Fallecido</span>' !!},
-            </strong>en el marco de la Ley 065, Solicitar Entregar documentos de acreditación de los herederos para su revisión, Solicitar el Estado de Ahorro 
+            </strong>
+            en el marco de la Ley 065, Solicitar Entregar documentos de acreditación de los herederos para su revisión, Solicitar el Estado de Ahorro 
             Previsional (EAP), Revisar, verificar, solicitar regularización de aportes (si corresponde) y firmar el certificado de verificación del EAP, 
             así como, el formulario de conformidad de aportes (si corresponde), Iniciar Tramite de Masa Hereditaria firmando la solicitud correspondiente, 
             firmar la liquidación y acta de entrega de Masa Hereditaria (pensiones no cobradas), firmar contrato de entrega de masa hereditaria 
@@ -93,11 +94,17 @@
             fallecido, Autorización para la actualización de datos de los herederos (cuando corresponda), Desistir de la solicitud antes del contrato, 
             Facultad para la firma del formulario de Habilitación/Reposición de Pagos Suspendidos y/o Revertidos, así mismo, poder para firmar contratos y 
             actas, recojo de cheques en representación del afiliado titular o el derechohabiente en oficinas de la Gestora Publica de la Seguridad Social de 
-            Largo Plazo. Más Poder.- para transferir o sustituir el presente poder, y en caso de ser necesario otorgar poder a favor de terceros u otras 
-            personas para la continuación y conclusión del presente trámite, todo con el fin de solicitar <strong>TRAMITE DE MASA HEREDITARIA,</strong> 
-            del poder conferente, sin que por no estar expresamente consignado en el presente, sea dado por insuficiente, aclarándose que todas las cláusulas 
-            de este poder son enunciativas y no limitativas, facultando a los apoderados a otorgar poder en favor de terceros o ser sustituidos total y/o 
-            parcialmente del presente mandato, en caso de viaje, enfermedad, ausencia o dejación de cargo.
+            Largo Plazo. Asimismo, solicitar, consultar, verificar y gestionar la Habilitación de Pago y realizar gestiones y seguimiento del mismo. Más 
+            Poder para apersonamiento ante oficinas de la Autoridad de Fiscalización y Control de Pensiones y Seguros APS para realizar toda clase de 
+            gestiones relacionadas con el trámite de Tramite de Masa Hereditaria, pudiendo solicitar información verbal y escrita, Facultad para llenar, 
+            suscribir y presentar formularios físicos o digitales, incluidos aquellos correspondientes al Buzón de Reclamos y Sugerencias, presentar cartas 
+            de reclamo, memoriales, solicitudes, peticiones, reclamos administrativos y cualquier otra actuación necesaria, realizar seguimiento a reclamos 
+            y solicitudes, notificarse y recoger respuestas, informes, notas y cualquier otra documentación relacionada con el trámite. Más Poder.- para 
+            transferir o sustituir el presente poder, y en caso de ser necesario otorgar poder a favor de terceros u otras personas para la continuación y 
+            conclusión del presente trámite, todo con el fin de solicitar <strong>TRAMITE DE MASA HEREDITARIA</strong>, del poder conferente, sin que por no estar expresamente 
+            consignado en el presente, sea dado por insuficiente, aclarándose que todas las cláusulas de este poder son enunciativas y no limitativas, 
+            facultando a los apoderados a otorgar poder en favor de terceros o ser sustituidos total y/o parcialmente del presente mandato, en caso de viaje, 
+            enfermedad, ausencia o dejación de cargo.
             </h3>
             <br>
             <h3 style="text-align: center;">{{ $cliente->sucursal }} - {{ $fechaactual }}</h3>

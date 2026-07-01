@@ -23,17 +23,17 @@
     <table cellpadding="10" cellspacing="0">
         <tr>
             <td>
-                <a href="https://play.google.com/store/apps/details?id=com.duolingo" target="_blank"
+                <a href="https://play.google.com/store/apps/details?id=com.goodlife.app" target="_blank"
                 style="display:inline-block;padding:10px 15px;background:#94c93b;color:#ffffff;text-decoration:none;border-radius:5px;">
                     DESCARGAR PARA ANDROID
                 </a>
             </td>
-            <td>
+            {{-- <td>
                 <a href="https://www.whatsapp.com/download/ios" target="_blank"
                 style="display:inline-block;padding:10px 15px;background:#faa625;color:#ffffff;text-decoration:none;border-radius:5px;">
                     DESCARGAR PARA IOS
                 </a>
-            </td>
+            </td> --}}
         </tr>
     </table>
 

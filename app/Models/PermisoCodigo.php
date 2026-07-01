@@ -26,6 +26,7 @@ class PermisoCodigo extends Model
         'fechaSolicitada',
         'tiempoLimite',
         'permisoSolicitado',
+        'motivo',
         'clienteid',
         'horaActivacion',
         'estado',

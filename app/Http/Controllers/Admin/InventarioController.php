@@ -3169,6 +3169,7 @@ class InventarioController extends Controller
         $usuariosSinSucursal = [
             'CARLOS ALEJANDRO GUARACHI SANDOVAL',
             'JHOSELINE EVA VELASQUEZ ESCOBAR',
+            'ADRIAN DAVID POMA CUELLAR',
         ];
 
         if ($esUsuarioTotal) {
@@ -3241,6 +3242,191 @@ class InventarioController extends Controller
         return view('admin.inventario.solicitarproducto', compact('sucursalUsuario','nombreUsuario','rolusuario','solicitudinventarios', 'coincidencias', 'productoDetalles','clientesITA',
         'clientesAuditoria', 'clientesComun', 'proveedoresMedicos','personal','rolesUsuario','productos','solicitudesanuladas'));
     }
+
+    public function traspasoinventario(Request $request)  
+    {
+        $historial = DB::table('entradasalidainventario')
+        ->where('tipo', 'TRASPASO')
+        ->orderBy('created_at', 'desc')
+        ->limit(10)
+        ->get();
+
+        return view('admin.inventario.traspasoinventario', compact('historial'));
+    }
+        public function buscarProductos(Request $request)
+    {
+        $buscar = $request->buscar;
+
+        $productos = DB::table('inventario')
+            ->where('nombreproducto', 'LIKE', "%$buscar%")
+            ->get();
+
+        return response()->json($productos);
+    }
+    /* public function realizarTraspaso(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $productoOrigen = DB::table('inventario')
+                ->where('codigo', $request->codigo_origen)
+                ->first();
+
+            if ($productoOrigen->stockactual < $request->cantidad) {
+                return response()->json(['error' => 'Stock insuficiente'], 400);
+            }
+
+            // RESTAR
+            DB::table('inventario')
+                ->where('codigo', $request->codigo_origen)
+                ->update([
+                    'stockactual' => DB::raw("stockactual - {$request->cantidad}")
+                ]);
+
+            // SUMAR
+            DB::table('inventario')
+                ->where('codigo', $request->codigo_destino)
+                ->update([
+                    'stockactual' => DB::raw("stockactual + {$request->cantidad}")
+                ]);
+
+            // REGISTRO
+            DB::table('entradasalidainventario')->insert([
+                'codigoproducto' => $request->codigo_origen,
+                'codprodtraspaso' => $request->codigo_destino,
+                'tipo' => 'TRASPASO',
+                'cantidad' => $request->cantidad,
+                'fechamovimiento' => now(),
+                'usuarioregistroid' => auth()->id(),
+                'usuarioregistronombre' => auth()->user()->name,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            DB::commit();
+
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['error' => 'Error en el proceso'], 500);
+        }
+    } */
+    public function realizarTraspaso(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $productoOrigen = DB::table('inventario')
+                ->where('codigo', $request->codigo_origen)
+                ->first();
+
+            if ($productoOrigen->stockactual < $request->cantidad) {
+                return response()->json(['error' => 'Stock insuficiente'], 400);
+            }
+
+            // 🔹 RESTAR SIEMPRE DEL ORIGEN
+            DB::table('inventario')
+                ->where('codigo', $request->codigo_origen)
+                ->update([
+                    'stockactual' => DB::raw("stockactual - {$request->cantidad}")
+                ]);
+
+            // 🔹 SI ES ITEM EXISTENTE
+            if ($request->tipo === 'existente') {
+
+                DB::table('inventario')
+                    ->where('codigo', $request->codigo_destino)
+                    ->update([
+                        'stockactual' => DB::raw("stockactual + {$request->cantidad}")
+                    ]);
+
+                $codigoDestinoFinal = $request->codigo_destino;
+
+            } else {
+
+                // 🔥 CREAR NUEVO ITEM
+
+                // separar prefijo (ej: DUAF-36 → DUAF)
+                $partes = explode('-', $productoOrigen->codigo);
+                $prefijo = $partes[0];
+
+                // buscar último código con ese prefijo
+                $ultimo = DB::table('inventario')
+                    ->where('codigo', 'like', $prefijo . '-%')
+                    ->orderByRaw("CAST(SUBSTRING_INDEX(codigo, '-', -1) AS UNSIGNED) DESC")
+                    ->first();
+
+                $nuevoNumero = 1;
+
+                if ($ultimo) {
+                    $num = intval(explode('-', $ultimo->codigo)[1]);
+                    $nuevoNumero = $num + 1;
+                }
+
+                $nuevoCodigo = $prefijo . '-' . $nuevoNumero;
+
+                // insertar nuevo producto
+                DB::table('inventario')->insert([
+                    
+                    'tipoinventario' => $productoOrigen->tipoinventario,
+                    'codigo' => $nuevoCodigo,
+                    'nombreproducto' => $productoOrigen->nombreproducto,
+                    'materiaprima' => $productoOrigen->materiaprima,
+                    'especificacionmedida' => $productoOrigen->especificacionmedida,
+                    'color' => $productoOrigen->color,
+                    'marca' => $productoOrigen->marca,
+                    'unidadmedida' => $productoOrigen->unidadmedida,
+                    'presentacion' => $productoOrigen->presentacion,
+                    'unidades' => $productoOrigen->unidades,
+                    'minimocantidad' => $productoOrigen->minimocantidad,
+                    'inventario' => $productoOrigen->inventario,
+                    'seccion' => $productoOrigen->seccion,
+                    'stockinicial' => $request->cantidad,
+                    'stockactual' => $request->cantidad,
+                    'precio' => $productoOrigen->precio,
+                    'cantidad' => $productoOrigen->cantidad,
+                    'deposito' => $productoOrigen->deposito,
+                    'ciudad' => $request->sucursal,
+                    'modelo' => $productoOrigen->modelo,
+                    'serie' => $productoOrigen->serie,
+                    'usuarioregistroid' => auth()->id(),
+                    'usuarioregistronombre' => auth()->user()->name,
+                    'proveedorid' => $productoOrigen->proveedorid,
+                    'proveedornombre' => $productoOrigen->proveedornombre,
+                    'preciounitario' => $productoOrigen->preciounitario,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                $codigoDestinoFinal = $nuevoCodigo;
+            }
+
+            // 🔹 REGISTRO
+            DB::table('entradasalidainventario')->insert([
+                'codigoproducto' => $request->codigo_origen,
+                'codprodtraspaso' => $codigoDestinoFinal,
+                'tipo' => 'TRASPASO',
+                'cantidad' => $request->cantidad,
+                'fechamovimiento' => now(),
+                'usuarioregistroid' => auth()->id(),
+                'usuarioregistronombre' => auth()->user()->name,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+
+            DB::commit();
+
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['error' => 'Error en el proceso'], 500);
+        }
+    }
+
     public function anularSeleccionadosinventario(Request $request)
     {
         $request->validate([
@@ -3296,7 +3482,7 @@ class InventarioController extends Controller
         ]);
 
         $usuariosNotificar = User::role(['ADMINISTRADOR', 'CONTABLE', 'MAESTRO'])
-            ->where('sucursal', auth()->user()->sucursal)
+            /* ->where('sucursal', auth()->user()->sucursal) */
             ->get();
 
         foreach ($usuariosNotificar as $usuarioDestino) {

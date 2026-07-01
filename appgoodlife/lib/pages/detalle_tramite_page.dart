@@ -67,9 +67,26 @@ class _DetalleTramitePageState extends State<DetalleTramitePage> {
     final clienteId = p["clienteid"] ?? "";
     final tramite = p["tramite"] ?? "";
     final sub = p["nivelprocedimiento"] ?? "";
+    final tipo = p["tipo"] ?? "";
     final documento = p["document"] ?? "";
 
-    final urlString = "https://api.goodlife.com.bo/tramitesclientesita/$clienteId/$tramite/$sub/$documento";
+    // Lógica de carpetas mapeada según el tipo
+    String carpeta;
+    if (tipo == 'PROCEDIMIENTO') {
+      carpeta = sub;
+    } else if (tipo == 'SOLICITUD') {
+      carpeta = 'SOLICITUDES';
+    } else if (tipo == 'CARTA / RECLAMO') {
+      carpeta = 'CARTAS Y RECLAMOS';
+    } else if (tipo == 'ADJUNTO / RESPUESTA') {
+      carpeta = 'ADJUNTOS Y RESPUESTAS';
+    } else if (tipo == 'MISIVA LIBRE') {
+      carpeta = 'MISIVAS LIBRES';
+    } else {
+      carpeta = tipo;
+    }
+
+    String urlString = "https://api.goodlife.com.bo/tramitesclientesita/$clienteId/$tramite/$carpeta/$documento";
 
     final String label = "Documento";
     final bool isPdf = documento.toLowerCase().endsWith('.pdf');

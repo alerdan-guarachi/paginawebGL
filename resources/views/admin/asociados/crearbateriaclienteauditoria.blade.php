@@ -370,7 +370,7 @@
                         @if($rolusuario !== 'proveedor')
                             <div class="form-group">
                                 {!! Form::label('orden', 'Orden:', ['style' => 'margin-bottom: -20px']) !!}
-                                {!! Form::file('orden', ['id' => 'orden', 'class' => 'form-control', 'required']) !!}
+                                {!! Form::file('orden', ['id' => 'orden', 'class' => 'form-control']) !!}
                             </div>
                         @endif
                         <div class="form-group">

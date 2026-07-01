@@ -194,6 +194,17 @@
                     <a class="nav-link active" id="tab-1" data-toggle="tab" href="#tab-content-1" role="tab" aria-controls="tab-content-1" aria-selected="true">INICIO DE TRÁMITE</a>
                 </li>
                 @php
+                    $documento3 = $cliente->tramites()->where('subprocedimiento', 'FIRMA EAP')
+                        ->where('tramite', 'INVALIDEZ')
+                        ->where('estadocomunicado', 'COMUNICADO')
+                        ->where(function ($query) {
+                            $query->whereNotNull('capturacomunicacion')
+                                ->where(function ($subQuery) {
+                                    $subQuery->whereNotNull('capturacomunicacion');
+                                });
+                        })
+                    ->first();
+
                     $documento5 = $cliente->tramites()->where('tramite', 'INVALIDEZ')
                         ->where('nivelprocedimiento', 'FIRMA EAP')
                         ->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')
@@ -205,30 +216,26 @@
                                 });
                         })
                     ->first();
-                    $documento3 = $cliente->tramites()->where('subprocedimiento', 'FIRMA EAP')
-                        ->where('tramite', 'INVALIDEZ')
-                        ->where('estadocomunicado', 'COMUNICADO')
-                        ->where(function ($query) {
-                            $query->whereNotNull('capturacomunicacion')
-                                ->where(function ($subQuery) {
-                                    $subQuery->whereNotNull('capturacomunicacion');
-                                });
-                        })
-                    ->first();
+                    
                     $estadotramite = $cliente->tramites()->where('nivelprocedimiento', 'INGRESO DE TRÁMITE')
                         ->where('subprocedimiento', 'INCLUSIÓN DE PODER')
                         ->where('tramite', 'INVALIDEZ')
                         ->whereIn('estadotramite', ['INGRESO DE TRÁMITE', 'FIRMA EAP'])
                     ->first();
+
+                    $continuidadtramite = $cliente->tramites()->where('nivelprocedimiento', 'CONTINUIDAD DE TRÁMITE')
+                        ->where('subprocedimiento', 'CONTINUIDAD DE TRÁMITE')
+                        ->where('tramite', 'INVALIDEZ')
+                    ->first();
                 @endphp
-                @if (!$documento5 /* && !$documento3 */ && $estadotramite)
+                @if (!$documento5 && $estadotramite && !$continuidadtramite)
                     <li class="nav-item">
                         <a class="nav-link disabled" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="false">PROCESO EN CURSO</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link disabled" id="tab-3" data-toggle="tab" href="#tab-content-3" role="tab" aria-controls="tab-content-3" aria-selected="false">RESULTADO DEL PROCESO</a>
                     </li>
-                    @else
+                @else
                     <li class="nav-item">
                         <a class="nav-link" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="false">PROCESO EN CURSO</a>
                     </li>

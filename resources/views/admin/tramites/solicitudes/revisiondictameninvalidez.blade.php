@@ -27,7 +27,9 @@
         @endif
         <div class="tipo3"><strong>Gestora Pública de la Seguridad Social de Largo Plazo</strong></div>
         <div class="tipo9">Presente. -</div>
-        <div class="tipo5"><strong>REF.- SOLICITUD DE REVISIÓN DE DICTAMEN DE INVALIDEZ</strong></div>
+        <div class="tipo5"><strong>REF.- SOLICITUD DE REVISIÓN DE DICTAMEN DE INVALIDEZ @if(!empty($nrodictamen))
+            N.º {{ $nrodictamen }}
+        @endif</strong></div>
 
         <div class="tipo2">De mi mayor consideración:</div>
         <div class="tipo6">
@@ -50,9 +52,11 @@
         <div class="tipo6">
             {!! $txtcomple1 ?? '<span class="textoedita">TEXTO COMPLEMENTARIO 1</span>' !!}
         </div>
-        <div class="tipo6">
-            <strong>{!! $tituloop1 ?? '<span class="textoedita">TITULO OPCIONES 1</span>' !!}</strong>
-        </div>
+        @if(!empty($tituloop1))
+            <div class="tipo6">
+                <strong>{!! $tituloop1 !!}</strong>
+            </div>
+        @endif
         <table class="tablesinborde" style="margin-top: -5px;">
             <tbody>
                 @if(count($opcionesuno) > 0)
@@ -69,47 +73,78 @@
                 @endif
             </tbody>
         </table>
-        <div class="tipo6">
-            <strong>{!! $tituloop2 ?? '<span class="textoedita">TITULO OPCIONES 2</span>' !!}</strong>
-        </div>
-        <table class="tablesinborde" style="margin-top: -5px;">
-            <tbody>
-                @if(count($opcionesdos) > 0)
+        @if(!empty($tituloop1))
+            <div class="tipo6">
+                <strong>{!! $tituloop2 !!}</strong>
+            </div>
+        @endif
+        @if(!empty($opcionesdos) && count($opcionesdos) > 0)
+            <table class="tablesinborde" style="margin-top: -5px;">
+                <tbody>
                     @foreach ($opcionesdos as $opciondos)
                         <tr>
                             <td class="bullet"></td>
                             <td>{{ $opciondos['opciondos'] }}</td>
                         </tr>
                     @endforeach
-                @else
+                </tbody>
+            </table>
+        @endif
+        <div class="tipo6">
+            Por todo lo expuesto, se evidencia que @if ($sexo === 'masculino')el afiliado @elseif ($sexo === 'femenino')la afiliada @endif 
+            presenta múltiples patologías crónicas, degenerativas y progresivas, las cuales generan un 
+            deterioro significativo tanto en el ámbito físico como emocional, afectando su movilidad, su capacidad funcional y, en consecuencia, su 
+            capacidad de generar ingresos mediante actividad laboral. En ese sentido, manifiesto mi desacuerdo con el Dictamen emitido por el Tribunal 
+            Médico Calificador, el cual establece una pérdida de capacidad laboral del <strong>{{$dicporcentajereg}}</strong> de<strong>
+                @switch($dicorigenreg)
+                    @case('RIESGO COMÚN')
+                        Origen Común por Enfermedad,
+                        @break
+
+                    @case('RIESGO LABORAL')
+                        Origen Laboral por Enfermedad,
+                        @break
+
+                    @case('RIESGO PROFESIONAL')
+                        Riesgo Profesional por Accidente,
+                        @break
+
+                    @default
+                        <span class="textoedita">RIESGO FALTANTE</span>
+                @endswitch
+            </strong>
+            porcentaje que no refleja adecuadamente la totalidad de las afecciones médicas ni el impacto real en la capacidad laboral  
+            @if ($sexo === 'masculino')del asegurado.@elseif ($sexo === 'femenino')de la asegurada.@endif Asimismo, corresponde considerar 
+            lo establecido en la Ley de Pensiones N° 065, <strong>Artículo 70 (Calificación)</strong>, que dispone que la calificación del grado, origen y causa de la 
+            invalidez debe realizarse de forma integral, conforme al Manual Único de Calificación compuesto por el Manual de Normas de Evaluación y 
+            Calificación del Grado de Invalidez y la Lista de Enfermedades Profesionales. En consecuencia, solicito respetuosamente que el caso sea 
+            revisado, realizando una evaluación integral y exhaustiva del expediente médico, considerando la totalidad de los diagnósticos y antecedentes 
+            clínicos presentados, a fin de que la calificación del grado de invalidez refleje de manera justa y objetiva la real condición de salud del 
+            afiliado.
+        </div>
+        <div class="tipo6">
+            <strong>POR TANTO</strong>, solicito se admita la presente solicitud y se disponga la Revisión del Dictamen 
+            N° {!! $nrodictamen ?? '<span class="textoedita">NRO. DICTAMEN</span>' !!}, conforme a la normativa vigente.
+        </div>
+        @if(!empty($txtcomple2))
+            <div class="tipo6">
+                {!! $txtcomple2 !!}
+            </div>
+        @endif
+        @if(!empty($especialistas) && count($especialistas) > 0)
+            <div class="tipo6">
+                <strong>Documentación Adjunta:</strong>
+            </div>
+
+            <table class="table">
+                <thead>
                     <tr>
-                        <td colspan="2" class="textoedita">NO HAY REGISTROS AGREGADOS</td>
+                        <th class="tipo10">ESPECIALIDAD</th>
+                        <th class="tipo10">DETALLE</th>
+                        <th class="tipo10">CANTIDAD</th>
                     </tr>
-                @endif
-            </tbody>
-        </table>
-        <div class="tipo6">
-            Conforme al <strong>artículo 70 de la Ley de Pensiones N.º 065</strong> establece que la calificación del grado, origen, 
-            causa y fecha de invalidez debe ser realizada por profesionales médicos habilitados por el Organismo de 
-            Fiscalización, y dicha evaluación <strong>debe ser integral</strong>, conforme al <strong>Manual Único de Calificación</strong>, 
-            el cual comprende el Manual de Normas de Evaluación y la Lista de Enfermedades Profesionales.
-        </div>
-        <div class="tipo6">
-            {!! $txtcomple2 ?? '<span class="textoedita">TEXTO COMPLEMENTARIO 2</span>' !!}
-        </div>
-        <div class="tipo6">
-            <strong>Documentación Adjunta:</strong>
-        </div>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="tipo10">ESPECIALIDAD</th>
-                    <th class="tipo10">DETALLE</th>
-                    <th class="tipo10">CANTIDAD</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if(count($especialistas) > 0)
+                </thead>
+                <tbody>
                     @foreach ($especialistas as $especialista)
                         <tr>
                             <td>{{ $especialista['especialista'] }}</td>
@@ -117,18 +152,16 @@
                             <td class="tipo10">{{ $especialista['cantidad'] }} Pag.</td>
                         </tr>
                     @endforeach
-                @else
-                    <tr>
-                        <td colspan="3" class="textoedita">NINGUNA ESPECIALIDAD AGREGADA</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        @endif
+        @if(!empty($txtcomple3))
+            <div class="tipo6">
+                {!! $txtcomple3 !!}
+            </div>
+        @endif
         <div class="tipo6">
-            {!! $txtcomple3 ?? '<span class="textoedita">TEXTO COMPLEMENTARIO 3</span>' !!}
-        </div>
-        <div class="tipo6">
-        Agradezco de antemano su atención y colaboración, y quedo a la espera de una respuesta favorable.
+        Sin otro particular, agradezco de antemano la atención brindada y quedo a la espera de una respuesta favorable.
         </div>
         <div class="tipo6">
         Atte.

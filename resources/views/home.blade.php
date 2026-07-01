@@ -349,6 +349,141 @@
             </div>
         </div>
         @endcan
+
+        @php
+            $roles = auth()->user()->roles->pluck('name')
+                        ->map(fn($r) => strtoupper(trim($r)))
+                        ->toArray();
+
+            $puedeVer = count(array_intersect($roles, ['MAESTRO', 'ADMINISTRADOR', 'CONTABLE'])) > 0;
+        @endphp
+
+        @if($puedeVer)
+            @if(count($licencias) > 0)
+                <div class="col-lg-12 col-md-12 col-sm-12 col-12">
+                    <div class="card card-stats bg-color-5">
+                        <div class="card-body">
+                            <div class="novedadtitulo titulo-alerta">ALERTA DE VENCIMIENTO DE LICENCIAS</div>
+
+                            <table class="table table-bordered table-sm tabla-licencias">
+                                <thead>
+                                    <tr>
+                                        <th style="color: orange; background-color: white">Servicio</th>
+                                        <th style="color: orange; background-color: white">Proveedor</th>
+                                        <th style="color: orange; background-color: white">Detalle</th>
+                                        <th style="color: orange; background-color: white">Vencimiento</th>
+                                        <th style="color: orange; background-color: white">Días Restantes</th>
+                                        <th style="color: orange; background-color: white">Costo</th>
+                                        <th style="color: orange; background-color: white">Confimar Pago</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($licencias as $l)
+                                        @php
+                                            $fechaPago = \Carbon\Carbon::parse($l->proximopago);
+                                            $ahora = now();
+
+                                            $diferencia = $ahora->diff($fechaPago);
+
+                                            $dias = $diferencia->days;
+                                            $horas = $diferencia->h;
+
+                                            // Opcional: detectar si ya venció
+                                            $vencido = $fechaPago->isPast();
+                                        @endphp
+
+                                        <tr style="background-color: #f8d7da;">
+                                            <td>{{ $l->servicio }}</td>
+                                            <td>{{ $l->proveedor }}</td>
+                                            <td>{{ $l->detalle }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($l->proximopago)->format('d-m-Y') }}</td>
+                                            <td>
+                                                @if($vencido)
+                                                    Vencido hace {{ $dias }} días y {{ $horas }} horas
+                                                @else
+                                                    {{ $dias }} días y {{ $horas }} horas
+                                                @endif
+                                            </td>
+                                            <td>{{ $l->costo ?? 'VACIO' }}</td>
+                                            @php
+                                                $roles = auth()->user()->roles->pluck('name')->toArray();
+                                                $puedePagar = in_array('MAESTRO', $roles) || in_array('ADMINISTRADOR', $roles);
+                                            @endphp
+                                            <td>
+                                                <form action="{{ route('licencias.pagar', $l->id) }}" method="POST">
+                                                    @csrf
+                                                    <button 
+                                                        type="submit" 
+                                                        class="btn btn-sm btn-marcar"
+                                                        {{ !$puedePagar ? 'disabled' : '' }}
+                                                        title="{{ !$puedePagar ? 'No tienes permisos para realizar esta acción' : '' }}"
+                                                    >
+                                                        CONFIRMAR
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <style>
+                                .btn-marcar {
+                                    background-color:  #ffffff;
+                                    color: #94c93b;
+                                    border-color: #94c93b;
+                                    border-radius: 5px;
+                                    padding: 1px 2px;
+                                    }
+                                .btn-marcar:hover {
+                                    background-color: #94c93b;
+                                    color: #ffffff;
+                                    }
+                                .tabla-licencias td,
+                                .tabla-licencias th {
+                                    padding: 4px 6px;
+                                    vertical-align: middle;
+                                }
+
+                                .tabla-licencias td form {
+                                    margin: 0;
+                                }
+
+                                .tabla-licencias .btn-marcar {
+                                    padding: 2px 6px;
+                                    font-size: 12px;
+                                    line-height: 1;
+                                }
+
+                                .tabla-licencias td {
+                                    line-height: 1.2;
+                                }
+                                .titulo-alerta {
+                                    animation: palpitar 1.2s infinite;
+                                    transform-origin: left center;
+                                }
+
+                                @keyframes palpitar {
+                                    0% {
+                                        transform: scale(1);
+                                        opacity: 1;
+                                    }
+                                    50% {
+                                        transform: scale(1.03);
+                                        opacity: 0.7;
+                                    }
+                                    100% {
+                                        transform: scale(1);
+                                        opacity: 1;
+                                    }
+                                }
+                            </style>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        @endif
+
+
         @can('admin.mensajes.index')
         @if($mensajes->isNotEmpty())
         {{-- <div class="col-lg-12 col-md-12 col-sm-12 col-12">
@@ -436,11 +571,13 @@
                 </div>
             </div>
         </div> --}}
+
+
         <div class="col-lg-12 col-md-12 col-sm-12 col-12">
             <div class="card card-stats bg-color-5">
                 <div class="card-body">
                     <div class="novedadtitulo">ANUNCIOS</div>
-                    <table class="table">
+                    <table class="table table-bordered table-sm">
                         <thead>
                             <tr>
                                 <th class="novedad">Emisor</th>

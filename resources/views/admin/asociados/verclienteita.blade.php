@@ -7,7 +7,7 @@
 <a class="btn btn-sm float-right btn-acciones" data-toggle="modal" data-target="#ventanaModal">ACCIONES DEL CLIENTE</a>
 @if ($tieneAuditoriaMedica || $tieneApelacion || $tieneSegundasolicitud || $tieneTercerasolicitud || $tieneJubilacion 
     || $tienePensionmuerte || $tieneRetiroaportestotal || $tieneRetiroaportesparcial || $tieneMasahereditaria 
-    || $tieneCompensacioncotsenasir || $tieneApelSegSolicitud || $tieneApelTercerSolicitud || $tieneRecalificacion || $tieneApelRecalificacion)
+    || $tieneCompensacioncotsenasir || $tieneApelSegSolicitud || $tieneApelTercerSolicitud || $tieneRecalificacion || $tieneApelRecalificacion || $tienerequisitospensionderivretiro)
     <a class="btn btn-sm float-right btn-auditoriamedica" data-toggle="modal" data-target="#ventanaModalauditoriamedica">OTROS SERVICIOS</a>
 @endif
 
@@ -1280,6 +1280,36 @@
                                                 <strong>REQUISITOS</strong>
                                             </a>
                                         {{-- @endif --}}
+                                    </div>
+                                </div>
+                            @endcan
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            {{-- PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES --}}
+            @if ($tienePensionDerivRetiro)
+                <div class="modal-body">
+                    <div style="background-color: #e9ffe9;  border-radius: 40px;">
+                        <div style="text-align: center;padding: 1.5px;">
+                            <strong style="color: #409c3e; font-size:20px;">PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES</strong>
+                        </div>
+                        <div class="row text-center">
+                            @can('admin.asociados.generarchecklistclienteita')
+                                <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                    <div class="col-12 mb-3 d-flex justify-content-center align-items-center">
+                                        @if($tienerequisitospensionderivretiro)
+                                            <a href="{{ route('admin.asociados.subirdocrequisitospensionderivretiro', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="SUBIR REQUISITOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('admin.asociados.generarchecklistclienteitapensionderivretiro', $cliente) }}" class="btn btn-bateria btn-icono btn-block" data-toggle="tooltip" data-placement="top" title="GENERAR REQUISITOS">
+                                                <i class="fas fa-tasks"></i>
+                                                <strong>REQUISITOS</strong>
+                                            </a>
+                                        @endif
                                     </div>
                                 </div>
                             @endcan

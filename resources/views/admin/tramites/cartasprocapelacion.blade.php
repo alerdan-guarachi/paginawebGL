@@ -103,6 +103,7 @@
                                                     <div class="form-group col-lg-3">
                                                         {!! Form::label('nivelprocedimiento', 'Nivel Procedimiento:') !!}
                                                         {!! Form::select('nivelprocedimiento', [
+                                                            'INICIO DE APELACIÓN' => 'INICIO DE APELACIÓN',
                                                             'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO' => 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO',
                                                             'COMPRA DE SERVICIOS' => 'COMPRA DE SERVICIOS',
                                                             'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA' => 'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA',
@@ -242,11 +243,25 @@
                                                     </div>
                                                     <div class="form-group col-lg-4" id="nrodictamenContainer" style="display: none;">
                                                         {!! Form::label('nrodictamen', 'Nro. Dictamen:') !!}
-                                                        {!! Form::text('nrodictamen', null, ['class' => 'form-control', 'placeholder' => '']) !!}
+                                                        {!! Form::text('nrodictamen', $numeropoderreg ?? null, [
+                                                            'class' => 'form-control',
+                                                            'placeholder' => ''
+                                                        ]) !!}
                                                     </div>
+                                                    {{-- NUEVO 210526 --}}
+                                                    <div class="form-group col-lg-4" hidden>
+                                                        {!! Form::text('dicporcentajereg', $dicporcentajereg ?? null) !!}
+                                                    </div>
+                                                    <div class="form-group col-lg-4" hidden>
+                                                        {!! Form::text('dicorigenreg', $dicorigenreg ?? null) !!}
+                                                    </div>
+
                                                     <div class="form-group col-lg-4" id="fechacontratoContainer" style="display: none;">
                                                         {!! Form::label('fechacontrato', 'Fecha Documento:') !!}
-                                                        {!! Form::date('fechacontrato', null, ['class' => 'form-control', 'placeholder' => '', 'value' => '{{ \Carbon\Carbon::now()->toDateString() }}']) !!}
+                                                        {!! Form::date('fechacontrato', $fechainicioreg ?? null, [
+                                                            'class' => 'form-control',
+                                                            'placeholder' => ''
+                                                        ]) !!}
                                                     </div>
                                                     <div class="form-group col-lg-4" id="fechainclusionContainer" style="display: none;">
                                                         {!! Form::label('fechainclusion', 'Fecha Inclusión:') !!}
@@ -2040,6 +2055,8 @@
                                                     'BOLETAS DE PAGO' => 'BOLETAS DE PAGO',
                                                     'CERTIFICADO DE TRABAJO' => 'CERTIFICADO DE TRABAJO',
                                                     'DENUNCIA DE ACCIDENTE' => 'DENUNCIA DE ACCIDENTE',
+                                                    'CARNET DE ASEGURADO EGS' => 'CARNET DE ASEGURADO EGS',
+                                                    'FORMULARIO DE AFILIACIÓN 04' => 'FORMULARIO DE AFILIACIÓN 04',
                                                 ], null, ['class' => 'form-control', 'placeholder' => '']) !!}
                                             </div>
                                             <div class="form-group col-lg-4"{{--  id="fechaadjdoc" style="display: none;" --}}>

@@ -81,7 +81,8 @@
                                             'RETIRO DE APORTES PARCIAL',
                                             'MASA HEREDITARIA',
                                             'COMPENSACIÓN DE COTIZACIONES (SENASIR)',
-                                            'INCLUSIÓN CC (GESTORA)'
+                                            'INCLUSIÓN CC (GESTORA)',
+                                            'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES'
                                         ];
                                     @endphp
 
@@ -317,6 +318,14 @@
                                         "MAYOR A 65 AÑOS",
                                         "RETIROS PARCIALES",
                                         "RETIROS TEMPORALES"
+                                    ],
+                                    "PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES": [
+                                        "RECHAZO A PENSIÓN POR MUERTE POR FALTA DE APORTES",
+                                        "RECHAZO A PENSIÓN POR MUERTE POR FALTA DE COBERTURA"
+                                    ],
+                                    "MASA HEREDITARIA": [
+                                        "PENSIONES NO COBRADAS",
+                                        "RETIRO DE SALDO ACUMULADO"
                                     ]
                                 };
 

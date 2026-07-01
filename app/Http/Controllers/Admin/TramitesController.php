@@ -166,8 +166,6 @@ class TramitesController extends Controller
 
     public function index(Cliente $cliente, Request $request, Tramite $tramite)
     {
-        /* $proveedores = Proveedor::orderBy('proveedor')->get(['id', 'proveedor', 'celular']);
-        $aprobaciones = AprobacionInformeFinal::all(); */
         $todosclientes = Cliente::orderBy('nombrecompleto', 'asc')->get();
         $agendamientos = AgendamientoProcedimiento::all();
 
@@ -185,6 +183,82 @@ class TramitesController extends Controller
         $user = Auth::user();
         $userRoles = $user->roles->pluck('name')->toArray();
         $rolesPermitidos = ['MAESTRO', 'ADMINISTRADOR', 'SUPERVISOR PRESTACIONES'];
+
+
+
+        $sub = DB::table('procedimientotramites as pt1')
+            ->select(
+                'pt1.clienteid',
+                'pt1.idtramite',
+                DB::raw('MAX(pt1.fecharetorno) as max_fecha')
+            )
+            ->whereNotNull('pt1.fecharetorno')
+            ->groupBy('pt1.clienteid', 'pt1.idtramite');
+
+        $query = DB::table('procedimientotramites as pt')
+            ->joinSub($sub, 't', function ($join) {
+                $join->on('pt.clienteid', '=', 't.clienteid')
+                    ->on('pt.idtramite', '=', 't.idtramite')
+                    ->on('pt.fecharetorno', '=', 't.max_fecha');
+            })
+            ->whereNotExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('procedimientotramites as pt2')
+                    ->whereColumn('pt2.clienteid', 'pt.clienteid')
+                    ->whereColumn('pt2.idtramite', 'pt.idtramite')
+                    ->whereColumn('pt2.id', '>', 'pt.id');
+            })
+            ->where('pt.apoderado', auth()->user()->name)
+            ->where(function($q){
+                $q->whereRaw('pt.fecharetorno < NOW()')
+                ->orWhereRaw('DATEDIFF(pt.fecharetorno, NOW()) BETWEEN 0 AND 5');
+            })
+            ->select(
+                'pt.clienteid',
+                'pt.clientenombre',
+                'pt.idtramite',
+                'pt.tramite',
+                'pt.apoderado',
+                'pt.tipo',
+                'pt.tipocarta',
+                'pt.nivelprocedimiento',
+                'pt.subprocedimiento',
+                'pt.fecharetorno'
+            )
+        ->orderBy('pt.fecharetorno', 'asc');
+
+        $tramitesporvencer = $query->get();
+
+        $tramitesporvencer = $tramitesporvencer->map(function ($item) {
+            $fechaRetorno = Carbon::parse($item->fecharetorno);
+            $ahora = Carbon::now();
+
+            if ($fechaRetorno->isFuture()) {
+                $diff = $ahora->diff($fechaRetorno);
+                $item->estado_tiempo = 'FALTAN';
+                $item->dias = $diff->days;
+                $item->horas = $diff->h;
+
+            } else {
+                $diff = $fechaRetorno->diff($ahora);
+                $item->estado_tiempo = 'VENCIDO';
+                $item->dias = $diff->days;
+                $item->horas = $diff->h;
+            }
+
+            return $item;
+        });
+        $hayVencidos = $tramitesporvencer->contains(function ($item) {
+            return $item->estado_tiempo === 'VENCIDO';
+        });
+        $tieneCodigoActivo = DB::table('permisos_codigo')
+            ->where('usuarioSolicitante', auth()->user()->name)
+            ->whereIn('estado', ['ACTIVO', 'EXPIRADO'])
+            ->whereDate('fechaSolicitada', now()->toDateString())
+        ->exists();
+        $bloquearSistema = $hayVencidos && !$tieneCodigoActivo;
+
+
 
         $todostramitesnoiniciado = Tramitesubcliente::whereNotIn('tramitessubclientes.tramite', ['AUDITORIA MEDICA', 'AUDITORIA MÉDICA'])
             ->where('tramitessubclientes.estado', 'PENDIENTE')
@@ -222,211 +296,7 @@ class TramitesController extends Controller
         }])
         ->get();
 
-
-        $todostramitesfinalizados = Tramitesubcliente::whereNotIn('tramite', ['AUDITORIA MEDICA', 'AUDITORIA MÉDICA'])->where('estado', 'FINALIZADO');
-        if (empty(array_intersect($userRoles, $rolesPermitidos))) {
-            $todostramitesfinalizados->where('apoderadoasignado', $user->name);
-        } else {
-            $todostramitesfinalizados->whereNotNull('apoderadoasignado');
-        }
-        $todostramitesfinalizados = $todostramitesfinalizados->get();
-
-
-        $todostramitesinterrumpidos = Tramitesubcliente::whereNotIn('tramite', ['AUDITORIA MEDICA', 'AUDITORIA MÉDICA'])->where('estado', 'INTERRUMPIDO')
-            ;
-        if (empty(array_intersect($userRoles, $rolesPermitidos))) {
-            $todostramitesinterrumpidos->where('apoderadoasignado', $user->name);
-        } else {
-            $todostramitesinterrumpidos->whereNotNull('apoderadoasignado');
-        }
-        $todostramitesinterrumpidos = $todostramitesinterrumpidos->get();
-
-        /* $fechas = Programacionsubcliente::pluck('fechabateria')->unique()->sort()->toArray(); */
         $usuarioAutenticado = auth()->user()->name;
-        /* $query = Programacionsubcliente::with([
-            'estadoprogramacionsubcliente',
-            'documentacionsubcliente',
-            'proveedorinformesfinales',
-            'informesfinales',
-            'clienteIta'
-        ])->whereNotNull('clienteitaid');
-
-        if ($request->has('buscarporfecha') && $request->buscarporfecha !== '') {
-            $query->where('fechabateria', $request->buscarporfecha);
-        }
-        if ($request->has('buscarporcliente') && $request->buscarporcliente !== '') {
-            $query->whereHas('clienteita', function ($q) use ($request) {
-                $q->where('clienteitanombre', 'LIKE', '%' . $request->buscarporcliente . '%');
-            });
-        }
-
-        $programacionclientes = $query->get();
-        $grouped = $programacionclientes->groupBy(function($item) {
-            return $item->clienteitanombre . '|' . $item->fechabateria;
-        });
-        $result = [];
-
-        foreach ($grouped as $key => $items) {
-            list($clienteNombre, $fechabateria) = explode('|', $key);
-            $clienteitaid = $items->first()->clienteitaid;
-            
-            $clientes = Tramitesubcliente::where('clienteitanombre', $clienteNombre)
-                ->where('fechabateria', $fechabateria)
-            ->get();
-
-            $tipocliente = $clientes->map(function($clienteObj) {
-                return $clienteObj->tramite;
-            })->unique();
-
-            foreach ($tipocliente as $tipo) {
-                $ultimoTramite = Tramite::where('clienteid', $clienteitaid)
-                    ->where('tramite', $tipo)
-                    ->whereNotIn('nivelprocedimiento', ['CARTAS / RECLAMOS', 'ADJUNTOS Y RESPUESTAS', 'SEGUIMIENTO'])
-                    ->orderBy('created_at', 'desc')
-                ->first();
-
-                $idTramite = Tramitesubcliente::where('clienteitaid', $clienteitaid)
-                    ->where('tramite', $tipo)
-                ->first();
-
-                $ultimacarta = Tramite::where('clienteid', $clienteitaid)
-                    ->where('tramite', $tipo)
-                    ->where('nivelprocedimiento', 'CARTAS / RECLAMOS')
-                    ->orderBy('created_at', 'desc')
-                ->first();
-
-                $ultimosubTramite = Tramite::where('clienteid', $clienteitaid)
-                    ->where('tramite', $tipo)
-                    ->whereNotIn('nivelprocedimiento', ['CARTAS / RECLAMOS', 'ADJUNTOS Y RESPUESTAS', 'SEGUIMIENTO'])
-                    ->orderBy('created_at', 'desc')
-                ->first();
-
-                $iniciotramite = Tramite::where('clienteid', $clienteitaid)
-                    ->where('tramite', $tipo)
-                    ->whereIn('nivelprocedimiento', ['RECEPCIÓN DE TRÁMITE', 'INGRESO DE TRÁMITE'])
-                    ->orderBy('created_at', 'asc')
-                ->first();
-
-                $estadotramite = Tramitesubcliente::where('clienteitaid', $clienteitaid)
-                    ->where('tramite', $tipo)
-                    ->orderBy('created_at', 'desc')
-                ->first();
-
-                $nivelprocedimientotramite = $ultimoTramite ? $ultimoTramite->nivelprocedimiento : 'NO INICIADO';
-                $ultimacartatramite = $ultimacarta ? $ultimacarta->subprocedimiento : 'NINGUNA CARTA';
-                $nivelsubprocedimientotramite = $ultimosubTramite ? $ultimosubTramite->subprocedimiento : 'NO INICIADO';
-                $iniciotramitecliente = $iniciotramite ? $iniciotramite->fechasubida : 'NO INICIADO';
-                $estadotramitecliente = $estadotramite ? $estadotramite->estado : 'NO INICIADO';
-                
-                $proveedorAsignado = ProveedorInformeFinal::where('clienteitaid', $clienteitaid)
-                    ->where('fechabateria', $fechabateria)
-                ->first();
-
-                $documentosubido = Informefinal::where('clienteitaid', $clienteitaid)
-                    ->where('fechabateria', $fechabateria)
-                ->first();
-
-                $ultimoInforme = InformeFinal::withTrashed()
-                    ->where('clienteitaid', $clienteitaid)
-                    ->where('fechabateria', $fechabateria)
-                    ->orderBy('created_at', 'desc')
-                ->first();
-
-                $apoderadoasignado = Tramitesubcliente::withTrashed()
-                    ->where('clienteitaid', $clienteitaid)
-                    ->where('fechabateria', $fechabateria)
-                    ->where('tramite', $tipo)
-                ->value('apoderadoasignado');
-
-                $idtramite = Tramitesubcliente::withTrashed()
-                    ->where('clienteitaid', $clienteitaid)
-                    ->where('fechabateria', $fechabateria)
-                    ->where('tramite', $tipo)
-                ->value('id');
-
-                $mensajeDias = 'N/A';
-                if ($ultimoTramite) {
-                    if ($ultimoTramite->nivelprocedimiento == 'DICTAMEN' && $ultimoTramite->subprocedimiento == 'NOTIFICACIÓN DE DICTAMEN') {
-                        $fechaSubida = \Carbon\Carbon::parse($ultimoTramite->fechasubida);
-                        $diasRestantes = max(0, 30 - $fechaSubida->diffInDays(\Carbon\Carbon::now()));
-                        $mensajeDias = $diasRestantes == 1 ? '1 DÍA RESTANTE' : "$diasRestantes DÍAS RESTANTES";
-                    } elseif (in_array($ultimoTramite->nivelprocedimiento, [
-                        'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO',
-                        'COMPRA DE SERVICIOS',
-                        'SOLICITUD DE INFORMACIÓN COMPLEMENTARIA'
-                    ])) {
-                        $fechaSubida = \Carbon\Carbon::now();
-                        $diasRestantes = max(0, 30 - $fechaSubida->diffInDays($fechaSubida));
-                        $mensajeDias = $diasRestantes == 1 ? '1 DÍA RESTANTE' : "$diasRestantes DÍAS RESTANTES";
-                    } elseif ($ultimoTramite->subprocedimiento == 'RECEPCIÓN DE TRÁMITE') {
-                        $recepcionTramite = Tramite::where('clienteid', $clienteitaid)
-                            ->where('subprocedimiento', 'RECEPCIÓN DE TRÁMITE')
-                            ->orderBy('fechasubida', 'desc')
-                            ->first();
-                        if ($recepcionTramite && $recepcionTramite->fechasubida) {
-                            $fechaSubida = \Carbon\Carbon::parse($recepcionTramite->fechasubida);
-                            $diasRestantes = max(0, 10 - $fechaSubida->diffInDays(\Carbon\Carbon::now()));
-                            $mensajeDias = $diasRestantes == 1 ? '1 DÍA RESTANTE' : "$diasRestantes DÍAS RESTANTES";
-                        }
-                    } elseif ($ultimoTramite->subprocedimiento == 'ESTADO DE AHORRO PREVISIONAL') {
-                        $estadoAhorroPrevisional = Tramite::where('clienteid', $clienteitaid)
-                            ->where('subprocedimiento', 'ESTADO DE AHORRO PREVISIONAL')
-                            ->orderBy('fechasubida', 'desc')
-                            ->first();
-                        if ($estadoAhorroPrevisional && $estadoAhorroPrevisional->fechasubida) {
-                            $fechaSubida = \Carbon\Carbon::parse($estadoAhorroPrevisional->fechasubida);
-                            $diasRestantes = max(0, 30 - $fechaSubida->diffInDays(\Carbon\Carbon::now()));
-                            $mensajeDias = $diasRestantes == 1 ? '1 DÍA RESTANTE' : "$diasRestantes DÍAS RESTANTES";
-                        }
-                    }
-                }
-
-                $accionesConEstado = [];
-                $estado = 'COMPLETO';
-
-                foreach ($items as $item) {
-                    $documentacion = $item->documentacionsubcliente->where('accion', $item->accionnombre)->first();
-                    $accionEstado = $documentacion && $documentacion->created_at !== null ? 'COMPLETO' : 'PENDIENTE';
-
-                    if ($accionEstado === 'PENDIENTE') {
-                        $estado = 'INCOMPLETO';
-                    }
-
-                    $accionesConEstado[] = [
-                        'accion' => $item->accionnombre,
-                        'estado' => $accionEstado,
-                        'document' => $documentacion,
-                        'proveedornombre' => $item->proveedornombre,
-                    ];
-                }
-
-                if ($estado === 'COMPLETO') {
-                    $result[] = [
-                        'idtramite' => $idtramite,
-                        'clienteitanombre' => $clienteNombre,
-                        'tipocliente' => $tipo,
-                        'iniciotramite' => $iniciotramitecliente,
-                        'fechabateria' => $fechabateria,
-                        'apoderadoasignado' => $apoderadoasignado,
-                        'estado' => $estado,
-                        'acciones' => $accionesConEstado,
-                        'clienteitaid' => $clienteitaid,
-                        'proveedornombre' => $proveedorAsignado ? $proveedorAsignado->proveedorasignado : null,
-                        'celularproveedor' => $proveedorAsignado ? $proveedorAsignado->celularproveedor : null,
-                        'document' => $documentosubido ? $documentosubido->document : null,
-                        'idinformefinal' => $documentosubido ? $documentosubido->id : null,
-                        'ultima_observacion' => $ultimoInforme ? $ultimoInforme->observaciones : null,
-                        'estado_informefinal' => $ultimoInforme ? $ultimoInforme->estado : null,
-                        'nivelprocedimientotramite' => $nivelprocedimientotramite,
-                        'nivelsubprocedimientotramite' => $nivelsubprocedimientotramite,
-                        'ultimacartatramite' => $ultimacartatramite,
-                        'tiempo_proximo' => $mensajeDias,
-                        'estadotramite' => $estadotramitecliente,
-                        'idproceso' => $idTramite ? $idTramite->id : null,
-                    ];
-                }
-            }
-        } */
 
         $tipos = [  
             'PROGRAMACIONES SITM ENTE GESTOR DE SALUD',
@@ -503,9 +373,122 @@ class TramitesController extends Controller
             return $item;
         });
 
-        return view('admin.tramites.index', compact('todostramitesinterrumpidos','todostramitesfinalizados','todostramitesiniciado',
+        return view('admin.tramites.index', compact('todostramitesiniciado',
         'agendamientosNoAsistidos','agendamientosAsistidos','todostramitesnoiniciado','todostramites','agendamientos','todosclientes','progcajapetrolera',
-        'usuarioAutenticado'/* ,'proveedores','result' */,'cliente'/* ,'fechas','aprobaciones' */));
+        'usuarioAutenticado','cliente','tramitesporvencer', 'hayVencidos','tieneCodigoActivo','bloquearSistema'));
+    }
+
+    public function tramitesfinalizados(Cliente $cliente, Request $request, Tramite $tramite)
+    {
+        $todosclientes = Cliente::orderBy('nombrecompleto', 'asc')->get();
+        $agendamientos = AgendamientoProcedimiento::all();
+
+        $base = AgendamientoProcedimiento::query();
+
+        if (auth()->user()->hasRole('EJECUTIVO PRESTACIONES')) {
+            $base->where('usuarioregistronombre', auth()->user()->name);
+        }
+
+        $agendamientosNoAsistidos = (clone $base)->where('asistencia', '!=', 'SI')->get();
+        $agendamientosAsistidos   = (clone $base)->where('asistencia', 'SI')->get();
+
+        $todostramites = Tramitesubcliente::whereNotIn('tramite', ['AUDITORIA MEDICA', 'AUDITORIA MÉDICA'])->get();
+
+        $user = Auth::user();
+        $userRoles = $user->roles->pluck('name')->toArray();
+        $rolesPermitidos = ['MAESTRO', 'ADMINISTRADOR', 'SUPERVISOR PRESTACIONES'];
+
+        $sub = DB::table('procedimientotramites as pt1')
+            ->select(
+                'pt1.clienteid',
+                'pt1.idtramite',
+                DB::raw('MAX(pt1.fecharetorno) as max_fecha')
+            )
+            ->whereNotNull('pt1.fecharetorno')
+            ->groupBy('pt1.clienteid', 'pt1.idtramite');
+
+        $query = DB::table('procedimientotramites as pt')
+            ->joinSub($sub, 't', function ($join) {
+                $join->on('pt.clienteid', '=', 't.clienteid')
+                    ->on('pt.idtramite', '=', 't.idtramite')
+                    ->on('pt.fecharetorno', '=', 't.max_fecha');
+            })
+            ->whereNotExists(function ($q) {
+                $q->select(DB::raw(1))
+                    ->from('procedimientotramites as pt2')
+                    ->whereColumn('pt2.clienteid', 'pt.clienteid')
+                    ->whereColumn('pt2.idtramite', 'pt.idtramite')
+                    ->whereColumn('pt2.id', '>', 'pt.id');
+            })
+            ->where('pt.apoderado', auth()->user()->name)
+            ->where(function($q){
+                $q->whereRaw('pt.fecharetorno < NOW()')
+                ->orWhereRaw('DATEDIFF(pt.fecharetorno, NOW()) BETWEEN 0 AND 5');
+            })
+            ->select(
+                'pt.clienteid',
+                'pt.clientenombre',
+                'pt.idtramite',
+                'pt.tramite',
+                'pt.apoderado',
+                'pt.tipo',
+                'pt.tipocarta',
+                'pt.nivelprocedimiento',
+                'pt.subprocedimiento',
+                'pt.fecharetorno'
+            )
+        ->orderBy('pt.fecharetorno', 'asc');
+
+        $todostramitesinterrumpidos = Tramitesubcliente::whereNotIn('tramite', ['AUDITORIA MEDICA', 'AUDITORIA MÉDICA'])->where('estado', 'INTERRUMPIDO')
+            ;
+        if (empty(array_intersect($userRoles, $rolesPermitidos))) {
+            $todostramitesinterrumpidos->where('apoderadoasignado', $user->name);
+        } else {
+            $todostramitesinterrumpidos->whereNotNull('apoderadoasignado');
+        }
+        $todostramitesinterrumpidos = $todostramitesinterrumpidos->get();
+
+
+        $todostramitesfinalizados = Tramitesubcliente::whereNotIn('tramite', ['AUDITORIA MEDICA', 'AUDITORIA MÉDICA'])->where('estado', 'FINALIZADO');
+        if (empty(array_intersect($userRoles, $rolesPermitidos))) {
+            $todostramitesfinalizados->where('apoderadoasignado', $user->name);
+        } else {
+            $todostramitesfinalizados->whereNotNull('apoderadoasignado');
+        }
+        $todostramitesfinalizados = $todostramitesfinalizados->get();
+
+
+        return view('admin.tramites.tramitesfinalizados', compact('todostramitesfinalizados','todostramitesinterrumpidos',
+        'agendamientosNoAsistidos','agendamientosAsistidos','todostramites','agendamientos','todosclientes','cliente'));
+    }
+
+    public function validarCodigo(Request $request)
+    {
+        $codigo = $request->codigo;
+
+        $registro = DB::table('permisos_codigo')
+            ->where('codigo', $codigo)
+            ->where('estado', 'PENDIENTE')
+            ->whereDate('fechaSolicitada', now()->toDateString())
+            ->where('usuarioSolicitante', auth()->user()->name)
+            ->first();
+
+        if ($registro) {
+
+            DB::table('permisos_codigo')
+                ->where('id', $registro->id)
+                ->update([
+                    'estado' => 'ACTIVO'
+                ]);
+
+            return response()->json([
+                'success' => true
+            ]);
+        }
+
+        return response()->json([
+            'success' => false
+        ]);
     }
 
     public function derivacionapoderados(Cliente $cliente, Request $request, Tramite $tramite)
@@ -1826,6 +1809,8 @@ class TramitesController extends Controller
     }
     public function guardartramitesclienteita(StoreTramiteRequest $request, Cliente $cliente)
     {
+        $tramiteCreado = null;
+
         if ($request->has('guardar_estado_dictamen')) {
             $documento = $cliente->tramites()
                 ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
@@ -1869,6 +1854,8 @@ class TramitesController extends Controller
                     return redirect()->route('admin.tramites.procrecalsegsolicitud', $cliente)->with('info', 'El estado del dictamen se actualizó con éxito');
                 }elseif (Str::contains($previousUrl, 'procapelrecalsegsolicitud')) {
                     return redirect()->route('admin.tramites.procapelrecalsegsolicitud', $cliente)->with('info', 'El estado del dictamen se actualizó con éxito');
+                }elseif (Str::contains($previousUrl, 'procpensionderivretiro')) {
+                    return redirect()->route('admin.tramites.procpensionderivretiro', $cliente)->with('info', 'El estado del dictamen se actualizó con éxito');
                 }else {
                     return redirect()->route('admin.tramites.index')->with('info', 'El estado del dictamen se actualizó con éxito');
                 }
@@ -2076,6 +2063,50 @@ class TramitesController extends Controller
                     'tipo' => 'PROCEDIMIENTO',
                     'nro' => $nro,
                 ]);
+
+                // NUEVO 190526
+                if (
+                    ($nivelprocedimiento[$key] ?? null) === 'SOLICITUD DE REVISIÓN DE DICTAMEN' &&
+                    ($subprocedimiento[$key] ?? null) === 'SOLICITUD DE REVISIÓN DE DICTAMEN'
+                ) {
+                    $carpetaSolicitudes = public_path("/tramitesclientesita/{$request->clienteid}/{$tramite[$key]}/SOLICITUDES");
+                    if (!file_exists($carpetaSolicitudes)) {
+                        mkdir($carpetaSolicitudes, 0755, true);
+                    }
+                    if (!empty($archivo_name)) {
+                        $rutaOriginal = $carpetaCliente . '/' . $archivo_name;
+                        $rutaDestino = $carpetaSolicitudes . '/' . $archivo_name;
+
+                        if (file_exists($rutaOriginal)) {
+                            copy($rutaOriginal, $rutaDestino);
+                        }
+                    }
+                    if (!empty($archivo2_name)) {
+                        $rutaOriginal2 = $carpetaCliente . '/' . $archivo2_name;
+                        $rutaDestino2 = $carpetaSolicitudes . '/' . $archivo2_name;
+                        if (file_exists($rutaOriginal2)) {
+                            copy($rutaOriginal2, $rutaDestino2);
+                        }
+                    }
+                    $registrosSolicitud = Tramite::where('clienteid', $request->clienteid)
+                        ->where('tipo', 'SOLICITUD')
+                        ->where('nivelprocedimiento', 'INICIO DE APELACIÓN')
+                        ->where('subprocedimiento', 'REVISIÓN DE DICTAMEN DE INVALIDEZ')
+                        ->where('tramite', $tramite[$key])
+                        ->get();
+                    if ($registrosSolicitud->isNotEmpty()) {
+                        foreach ($registrosSolicitud as $registro) {
+                            if (!empty($archivo_name)) {
+                                $registro->document2 = $archivo_name;
+                            }
+                            if (!empty($archivo2_name)) {
+                                $registro->document3 = $archivo2_name;
+                            }
+                            $registro->save();
+                        }
+                    }
+                }
+
 
                 $departamentocliente = $cliente->sucursal;
 
@@ -2985,6 +3016,8 @@ class TramitesController extends Controller
             return redirect()->route('admin.tramites.procrecalsegsolicitud', $cliente)->with('info', 'El registro se guardó con éxito');
         }elseif (Str::contains($previousUrl, 'procapelrecalsegsolicitud')) {
             return redirect()->route('admin.tramites.procapelrecalsegsolicitud', $cliente)->with('info', 'El registro se guardó con éxito');
+        }elseif (Str::contains($previousUrl, 'procpensionderivretiro')) {
+            return redirect()->route('admin.tramites.procpensionderivretiro', $cliente)->with('info', 'El registro se guardó con éxito');
         }else {
             return redirect()->route('admin.tramites.index')->with('info', 'El registro se guardó con éxito');
         }
@@ -3518,6 +3551,8 @@ class TramitesController extends Controller
             return redirect()->route('admin.tramites.procrecalsegsolicitud', $cliente)->with('info', 'La comunicación se subió con éxito');
         }elseif (Str::contains($previousUrl, 'procapelrecalsegsolicitud')) {
             return redirect()->route('admin.tramites.procapelrecalsegsolicitud', $cliente)->with('info', 'La comunicación se subió con éxito');
+        }elseif (Str::contains($previousUrl, 'procpensionderivretiro')) {
+            return redirect()->route('admin.tramites.procpensionderivretiro', $cliente)->with('info', 'La comunicación se subió con éxito');
         }else {
             return redirect()->route('admin.tramites.index')->with('info', 'La comunicación se subió con éxito');
         }
@@ -4137,6 +4172,28 @@ class TramitesController extends Controller
         $idTramite = Tramitesubcliente::where('clienteitaid', $cliente->id)
             ->where('tramite', 'APELACIÓN')
         ->value('id');
+        
+        /* NUEVO 180526 */
+        $numeropoderreg = Requisitosubcliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'INVALIDEZ')
+        ->value('numeropoder');
+        $fechainicioreg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'INVALIDEZ')
+            ->whereIn('nivelprocedimiento', ['INICIO DE TRÁMITE', 'CONTINUIDAD DE TRÁMITE'])
+        ->value('fechasubida');
+
+        /* NUEVO 210526 */
+        $dicporcentajereg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'INVALIDEZ')
+            ->where('nivelprocedimiento', 'DICTAMEN')
+            ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
+        ->value('porcentajeriesgodictamen');
+        $dicorigenreg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'INVALIDEZ')
+            ->where('nivelprocedimiento', 'DICTAMEN')
+            ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
+        ->value('riesgodictamen');
+
         $aseguradora = Cliente::where('id', $cliente->id)
         ->value('aseguradora');
         $afpgestora = Cliente::where('id', $cliente->id)
@@ -4341,7 +4398,7 @@ class TramitesController extends Controller
         });
 
         return view('admin.tramites.cartasprocapelacion', compact('id','cliente','apoderadoAsignado','idTramite','aseguradora',
-        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados'));
+        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados','numeropoderreg','fechainicioreg','dicporcentajereg','dicorigenreg'));
     }
 
     // TRAMITE SEGUNDA SOLICITUD
@@ -8033,6 +8090,527 @@ class TramitesController extends Controller
         'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados'));
     }
 
+    /* NUEVO 150526 */
+    // TRAMITE PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES
+    public function procpensionderivretiro(Request $request, Cliente $cliente)
+    {
+        $nombrecompleto = $cliente->nombrecompleto;
+        $id = $cliente->id;
+        $personal = Proveedoresservicios::select('id', 'razonsocial', 'ci')
+            ->where('categoria','PROVEEDOR INTERNO')
+        ->get();
+
+        $provintext = Proveedoresservicios::where('estado', 'ACTIVO')
+        ->whereIn('categoria', ['PROVEEDOR INTERNO', 'PROVEEDOR EXTERNO'])
+        ->orderBy('razonsocial', 'asc')
+        ->pluck('razonsocial');
+
+        $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
+        ->pluck('tipocarta', 'id');
+
+        $inicioocontinuidad = Tramite::where('clienteid', $cliente->id)
+            ->whereIn('nivelprocedimiento', ['INICIO DE TRAMITE', 'CONTINUIDAD DE TRAMITE'])
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+        ->exists();
+        $contactos = Contactosubcliente::where('clienteid', $cliente->id)
+        ->where('tipocliente', 'ITA')
+        ->pluck('nombrecontacto');
+
+        $tramiteinicio = Tramite::where('clienteid', $cliente->id)
+            ->where('nivelprocedimiento', 'INICIO DE TRAMITE')
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+        ->exists();
+
+        $tramitecontinuidad = Tramite::where('clienteid', $cliente->id)
+            ->where('nivelprocedimiento', 'CONTINUIDAD DE TRAMITE')
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+        ->exists();
+
+        $mescierreinicio = Tramite::where('clienteid', $cliente->id)
+            ->where('nivelprocedimiento', 'INGRESO DE TRÁMITE')
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+        ->value('mescierre');
+
+        $idTramite = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+        ->value('id');
+
+        $tiporetiroaportestotal = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+        ->value('observaciones');
+
+        $apoderadoAsignado = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+        ->value('apoderadoasignado');
+
+        $aseguradora = Cliente::where('id', $cliente->id)
+        ->value('aseguradora');
+    
+        $afpgestora = Cliente::where('id', $cliente->id)
+        ->value('afp');
+
+        $estadolaboral = Cliente::where('id', $cliente->id)
+        ->value('estadolaboral');
+
+        $matriculacliente = Cliente::where('id', $cliente->id)
+        ->value('matricula');
+
+        $nuacuacliente = Cliente::where('id', $cliente->id)
+        ->value('nuacua');
+
+        $cicliente = Cliente::where('id', $cliente->id)
+        ->value('ci');
+
+        $ciexpcliente = Cliente::where('id', $cliente->id)
+        ->value('ciexp');
+
+        $empresacliente = Cliente::where('id', $cliente->id)
+        ->value('empresa');
+
+        $apoderados = InstructivasPoder::where('clienteid', $cliente->id) 
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->first([
+                'apoderado1', 'apoderado2', 'apoderado3', 'apoderado4', 'apoderado5',
+                'apoderado6', 'apoderado7', 'apoderado8', 'apoderado9', 'apoderado10'
+        ]);
+
+        $apoderadosList = collect($apoderados)->filter()->values();
+        $apoderadosList->push('DENISSE MAUREN LOPEZ FLORES');
+        $apoderadosList->push('FABRICIO ORLANDO PRADO PARRADO');
+        
+        if (!empty($apoderadoAsignado) && !$apoderadosList->contains($apoderadoAsignado)) {
+            $apoderadosList->push($apoderadoAsignado);
+        }
+
+        $nombreclienteita = $cliente->nombrecompleto;
+
+        $procedimientotramites = Tramite::where('clientenombre', $nombreclienteita)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->where('nivelprocedimiento', '!=', 'SEGUIMIENTO')
+            ->where('nivelprocedimiento', '!=', 'ADJUNTOS Y RESPUESTAS')
+            ->where('nivelprocedimiento', '!=', 'CARTAS / RECLAMOS')
+            ->where('nivelprocedimiento', '!=', 'INICIO DE TRAMITE')
+            ->where('nivelprocedimiento', '!=', 'CONTINUIDAD DE TRAMITE')
+        ->simplePaginate(10000);
+        
+        $cartasreclamos = Tramite::where('clientenombre', $nombreclienteita)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->where('nivelprocedimiento', '!=', 'INICIO DE TRÁMITE')
+            ->where('nivelprocedimiento', '!=', 'CONTINUIDAD DE TRÁMITE')
+            ->where('nivelprocedimiento', '!=', 'INGRESO DE TRÁMITE')
+            ->where('nivelprocedimiento', '!=', 'NOTIFICACIÓN DE PODER')
+            ->where('nivelprocedimiento', '!=', 'FIRMA EAP')
+            ->where('nivelprocedimiento', '!=', 'SOLICITUD DE INFORMACIÓN TÉCNICO MÉDICO')
+            ->where('nivelprocedimiento', '!=', 'COMPRA DE SERVICIOS')
+            ->where('nivelprocedimiento', '!=', 'SOCILICITUD DE INFORMACIÓN COMPLEMENTARIA')
+            ->where('nivelprocedimiento', '!=', 'DICTAMEN')
+            ->where('nivelprocedimiento', '!=', 'SEGUIMIENTO')
+            ->where('nivelprocedimiento', '!=', 'ADJUNTOS Y RESPUESTAS')
+        ->simplePaginate(10000);
+        
+        $proveedores = Proveedoresservicios::whereIn('categoria', ['PROVEEDOR INTERNO', 'PROVEEDOR EXTERNO'])
+            ->orderBy('razonsocial')
+        ->get();
+
+        $empresas = Empresa::orderBy('nombreempresa')->get();
+
+        $usuarioAutenticado = auth()->user()->name;
+        $hoy = Carbon::today();
+        $permisos = PermisoCodigo::where('usuarioSolicitante', $usuarioAutenticado)
+            ->whereDate('fechaSolicitada', $hoy->toDateString())
+            ->where('permisoSolicitado', 'admin.tramites.cambiarfechaprestaciones')
+            ->where('estado', 'expirado')
+        ->get();
+
+        $codigosPermitidosFechas = [];
+        foreach ($permisos as $permiso) {
+            $ultimoProcedimiento = Tramite::where('clienteid', $permiso->clienteid)
+                ->orderByDesc('updated_at')
+                ->first();
+
+            if (!$ultimoProcedimiento || $ultimoProcedimiento->updated_at < $permiso->created_at) {
+                $codigosPermitidosFechas[] = $permiso->clienteid;
+            }
+        }
+        $puedeEditarFecha = in_array($cliente->id, $codigosPermitidosFechas);
+
+        $permisosArchivos = PermisoCodigo::where('usuarioSolicitante', $usuarioAutenticado)
+            ->whereDate('fechaSolicitada', $hoy->toDateString())
+            ->where('permisoSolicitado', 'admin.tramites.editararchivoprestaciones')
+            ->where('estado', 'expirado')
+        ->get();
+
+        $codigosPermitidosArchivos = [];
+
+        foreach ($permisosArchivos as $permiso) {
+            $ultimoTramiteCliente = Tramite::where('clienteid', $permiso->clienteid)
+                ->orderByDesc('updated_at')
+                ->first();
+
+            if (!$ultimoTramiteCliente || $ultimoTramiteCliente->updated_at < $permiso->created_at) {
+                $codigosPermitidosArchivos[] = $permiso->clienteid;
+            }
+        }
+
+        $puedeEditarArchivo = in_array($cliente->id, $codigosPermitidosArchivos);
+
+        $programacionesRaw = DB::table('programacionsubclientes as p')
+            ->join('documentacionsubclientes as d', 'p.id', '=', 'd.programacionid')
+            ->select(
+                'p.fechabateria',
+                'p.areanombre',
+                'p.accionnombre',
+                'p.proveedornombre',
+                'd.document',
+                'd.id as doc_id',
+                DB::raw("(SELECT b.tipoarea FROM bateriaproveedores b WHERE b.area = p.areanombre LIMIT 1) as tipoarea"),
+                DB::raw("(SELECT pr.nombreproveedor FROM proveedores pr WHERE pr.proveedor = p.proveedornombre LIMIT 1) as proveedor_real")
+
+            )
+            ->where('d.clienteitaid', $cliente->id)
+            ->orderBy('p.fechabateria')
+        ->get();
+
+        foreach ($programacionesRaw as $doc) {
+            $path = public_path("documentacionclientesita/{$cliente->id}/{$doc->document}");
+
+            if (file_exists($path)) {
+                try {
+                    $content = file_get_contents($path);
+                    preg_match_all("/\/Type\s*\/Page\b/", $content, $matches);
+                    $doc->nro_hojas = count($matches[0]);
+                } catch (\Exception $e) {
+                    $doc->nro_hojas = 'Error';
+                }
+            } else {
+                $doc->nro_hojas = 'No encontrado';
+            }
+        }
+
+        $programaciones = $programacionesRaw->groupBy('fechabateria')->map(function ($grupoPorFecha) {
+            return $grupoPorFecha->sortBy(function ($item) {
+                $tipoarea = $item->tipoarea ?? 'Z';
+                $ordenTipoarea = $tipoarea === 'ESPECIALIDAD' ? 0 : 1;
+                return [$ordenTipoarea, $item->areanombre];
+            });
+        });
+
+        $proveedoresmedicos = Proveedor::orderBy('proveedor')->pluck('proveedor', 'id');
+
+        $numeropodercliente = Requisitosubcliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+        ->first();
+        
+        $numeropoder = $numeropodercliente ? $numeropodercliente->numeropoder : null;
+
+        $permisoContinuidad = PermisoCodigo::where('usuarioSolicitante', $usuarioAutenticado)
+            ->whereDate('fechaSolicitada', $hoy->toDateString())
+            ->where('permisoSolicitado', 'admin.tramites.continuidadtramiteprestaciones')
+            ->where('estado', 'expirado')
+        ->exists();
+
+        $registrosGuardados = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'OBSERVACIONES FIRMA EAP')
+        ->get();
+        $agrupados = [];
+
+        foreach ($registrosGuardados as $registro) {
+            $clave = $registro->razonsocialempleador . '||' . $registro->observacion;
+
+            if (!isset($agrupados[$clave])) {
+                $agrupados[$clave] = [
+                    'razonsocialempleador' => $registro->razonsocialempleador,
+                    'observacion' => $registro->observacion,
+                    'periodos' => [],
+                ];
+            }
+
+            $agrupados[$clave]['periodos'][] = \Carbon\Carbon::parse($registro->periodo)->format('Y-m');
+        }
+
+        $registrosAgrupados = array_values($agrupados);
+
+        $todasareas = DB::table('bateriaproveedores')
+            ->select('area')
+            ->distinct()
+            ->orderBy('area')
+        ->get();
+
+        $registrosGuardadosProgramacion = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'PROGRAMACIONES SITM ENTE GESTOR DE SALUD')
+        ->get();
+        //CUENTA REGRESIVA 10 DIAS SITM ente gestor de salud
+            $todosConAsistencia = $registrosGuardadosProgramacion->every(function ($registro) {
+                return $registro->asistenciaprogramacion == 1;
+            });
+            $diasRestantes = null;
+            if ($todosConAsistencia && $registrosGuardadosProgramacion->count() > 0) {
+                $fechaMasReciente = $registrosGuardadosProgramacion->max(function ($registro) {
+                    return max(
+                        $registro->fechaprogramacion ? Carbon::parse($registro->fechaprogramacion) : null,
+                        $registro->fechareprogramacion ? Carbon::parse($registro->fechareprogramacion) : null
+                    );
+                });
+                if ($fechaMasReciente) {
+                    $fechaFinal = Carbon::parse($fechaMasReciente)->addDays(10);
+                    $diasRestantes = now()->diffInDays($fechaFinal, false);
+                }
+            }
+        //
+
+        $registrosGuardadosProgramacioncom = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'PROGRAMACIONES SIC ENTE GESTOR DE SALUD')
+        ->get();
+        //CUENTA REGRESIVA 10 DIAS SIC ente gestor de salud
+            $todosConAsistenciacom = $registrosGuardadosProgramacioncom->every(function ($registro) {
+                return $registro->asistenciaprogramacion == 1;
+            });
+            $diasRestantescom = null;
+            if ($todosConAsistenciacom && $registrosGuardadosProgramacioncom->count() > 0) {
+                $fechaMasRecientecom = $registrosGuardadosProgramacioncom->max(function ($registro) {
+                    return max(
+                        $registro->fechaprogramacion ? Carbon::parse($registro->fechaprogramacion) : null,
+                        $registro->fechareprogramacion ? Carbon::parse($registro->fechareprogramacion) : null
+                    );
+                });
+                if ($fechaMasRecientecom) {
+                    $fechaFinalcom = Carbon::parse($fechaMasRecientecom)->addDays(10);
+                    $diasRestantescom = now()->diffInDays($fechaFinalcom, false);
+                }
+            }
+        //
+
+        $registrosGuardadosProgSITMtmc = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'PROGRAMACIONES SITM NOTIFICACIÓN TMC')
+        ->get();
+
+        //CUENTA REGRESIVA 10 DIAS SITM notificacion tmc
+            $todosConAsistencia2 = $registrosGuardadosProgSITMtmc->every(function ($registro) {
+                return $registro->asistenciaprogramacion == 1;
+            });
+            $diasRestantes2 = null;
+            if ($todosConAsistencia2 && $registrosGuardadosProgSITMtmc->count() > 0) {
+                $fechaMasReciente2 = $registrosGuardadosProgSITMtmc->max(function ($registro) {
+                    return max(
+                        $registro->fechaprogramacion ? Carbon::parse($registro->fechaprogramacion) : null,
+                        $registro->fechareprogramacion ? Carbon::parse($registro->fechareprogramacion) : null
+                    );
+                });
+                if ($fechaMasReciente2) {
+                    $fechaFinal2 = Carbon::parse($fechaMasReciente2)->addDays(10);
+                    $diasRestantes2 = now()->diffInDays($fechaFinal2, false);
+                }
+            }
+        //
+        
+        $registrosGuardadosProgramacioncom2 = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'PROGRAMACIONES SIC NOTIFICACIÓN TMC')
+        ->get();
+        //CUENTA REGRESIVA 10 DIAS SIC notificacion tmc
+            $todosConAsistenciacom2 = $registrosGuardadosProgramacioncom2->every(function ($registro) {
+                return $registro->asistenciaprogramacion == 1;
+            });
+            $diasRestantescom2 = null;
+            if ($todosConAsistenciacom2 && $registrosGuardadosProgramacioncom2->count() > 0) {
+                $fechaMasRecientecom2 = $registrosGuardadosProgramacioncom2->max(function ($registro) {
+                    return max(
+                        $registro->fechaprogramacion ? Carbon::parse($registro->fechaprogramacion) : null,
+                        $registro->fechareprogramacion ? Carbon::parse($registro->fechareprogramacion) : null
+                    );
+                });
+                if ($fechaMasRecientecom2) {
+                    $fechaFinalcom2 = Carbon::parse($fechaMasRecientecom2)->addDays(10);
+                    $diasRestantescom2 = now()->diffInDays($fechaFinalcom2, false);
+                }
+            }
+        //
+
+        $registrosGuardadosProgramacionSIC = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'PROGRAMACIONES SIC ENTE GESTOR DE SALUD')
+        ->get();
+
+        $registrosGuardadosProgramacioCS = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->where('idtramite', $idTramite)
+            ->where('opcionatencion', 'COMPRA DE SERVICIOS')
+        ->get();
+
+        $estlab = [
+            'ACTIVO' => 'ACTIVO',
+            'INACTIVO' => 'INACTIVO',
+        ];
+        $aseguradoras = Aseguradora::orderBy('aseguradora')->pluck('aseguradora', 'aseguradora');
+        $imagenCliente = null;
+
+        if ($cliente->image) {
+            $imagenCliente = asset('image/' . $cliente->image);
+        }
+
+        $listasolicitudes = Tramite::where('tipo', 'SOLICITUD')->where('clienteid', $cliente->id)->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')->get();
+        $listaadjuntos = Tramite::where('tipo', 'ADJUNTO / RESPUESTA')->where('clienteid', $cliente->id)->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')->get();
+        $listacartas = Tramite::where('tipo', 'CARTA / RECLAMO')->where('clienteid', $cliente->id)->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')->get();
+        /* NUEVO 241125 */
+        $listamisivas = Tramite::where('tipo', 'MISIVA LIBRE')->where('clienteid', $cliente->id)->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')->get();
+        $comseguimientos = Tramite::where('nivelprocedimiento', 'SEGUIMIENTO')->where('clienteid', $cliente->id)->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')->get();
+
+        $nrSITMEG = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'NR - SITM ENTE GESTOR DE SALUD')
+        ->get();
+        $nrSITMTMC = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'NR - SITM NOTIFICACIÓN TMC')
+        ->get();
+        $nrSITMTMR = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'NR - SITM NOTIFICACIÓN TMR')
+        ->get();
+        $nrSICEG = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'NR - SIC ENTE GESTOR DE SALUD')
+        ->get();
+        $nrSICTMC = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'NR - SIC NOTIFICACIÓN TMC')
+        ->get();
+        $nrSICTMR = DB::table('subprocedimientotramites')
+            ->where('clienteid', $cliente->id)
+            ->where('idtramite', $idTramite)
+            ->where('tipo', 'NR - SIC NOTIFICACIÓN TMR')
+        ->get();
+
+        $subtramites = SubTramite::all(); 
+        return view('admin.tramites.procpensionderivretiro', compact('listacartas','listaadjuntos','mescierreinicio','diasRestantescom2',
+        'registrosGuardadosProgramacioncom2','diasRestantescom','registrosGuardadosProgramacioncom','nuacuacliente','cicliente',
+        'ciexpcliente','diasRestantes2','registrosGuardadosProgSITMtmc','diasRestantes','listasolicitudes','matriculacliente',
+        'imagenCliente','aseguradoras','estlab','afpgestora','estadolaboral','registrosGuardadosProgramacioCS',
+        'registrosGuardadosProgramacionSIC','registrosGuardadosProgramacion','todasareas','registrosAgrupados','empresas',
+        'permisoContinuidad','numeropoder','apoderadosList','proveedoresmedicos','aseguradora','apoderadoAsignado',
+        'programaciones','puedeEditarArchivo','puedeEditarFecha','proveedores','idTramite','modelocartasreclamos','tramiteinicio',
+        'tramitecontinuidad','inicioocontinuidad','cartasreclamos','procedimientotramites','id','cliente','nombrecompleto',
+        'personal','tiporetiroaportestotal','subtramites','contactos','listamisivas','comseguimientos','nrSITMEG','nrSITMTMC','nrSITMTMR',
+        'nrSICEG','nrSICTMC','nrSICTMR','provintext','empresacliente'));
+    }
+    public function cartasprocpensionderivretiro(Request $request, Cliente $cliente)
+    {
+        $nombrecompleto = $cliente->nombrecompleto;
+        $id = $cliente->id;
+
+        /* NUEVO 111125 */
+        $apoderadoAsignado = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->value('apoderadoasignado');
+
+        $apoderadosData = InstructivasPoder::where('clienteid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->first([
+                'apoderado1', 'apoderado2', 'apoderado3', 'apoderado4', 'apoderado5',
+                'apoderado6', 'apoderado7', 'apoderado8', 'apoderado9', 'apoderado10'
+            ]);
+        if ($apoderadosData) {
+            $apoderados = collect($apoderadosData->toArray())
+                ->filter(fn($valor) => !is_null($valor) && trim($valor) !== '')
+                ->values()
+                ->all();
+        } else {
+            $apoderados = [];
+        }
+        $apoderadosNorm = array_map(fn($a) => mb_strtolower(trim($a)), $apoderados);
+        $apoderadoAsignadoNorm = $apoderadoAsignado ? mb_strtolower(trim($apoderadoAsignado)) : null;
+        if ($apoderadoAsignadoNorm && !in_array($apoderadoAsignadoNorm, $apoderadosNorm, true)) {
+            $apoderadoAsignado = null;
+        }
+        $apoderadosExtra = ['FABRICIO ORLANDO PRADO PARRADO', 'DENISSE MAUREN LOPEZ FLORES'];
+        $apoderados = array_values(array_unique(array_merge($apoderados, $apoderadosExtra)));
+
+        $idTramite = Tramitesubcliente::where('clienteitaid', $cliente->id)
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+        ->value('id');
+        $aseguradora = Cliente::where('id', $cliente->id)
+        ->value('aseguradora');
+        $afpgestora = Cliente::where('id', $cliente->id)
+        ->value('afp');
+        $matriculacliente = Cliente::where('id', $cliente->id)
+        ->value('matricula');
+
+
+        /* CARTAS Y RECLAMOS */
+        $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
+        ->pluck('tipocarta', 'id');
+
+
+        $programacionesRaw = DB::table('programacionsubclientes as p')
+            ->join('documentacionsubclientes as d', 'p.id', '=', 'd.programacionid')
+            ->select(
+                'p.fechabateria',
+                'p.areanombre',
+                'p.accionnombre',
+                'p.proveedornombre',
+                'd.document',
+                'd.image',
+                'd.image2',
+                'd.id as doc_id',
+                DB::raw("(SELECT b.tipoarea FROM bateriaproveedores b WHERE b.area = p.areanombre LIMIT 1) as tipoarea"),
+                DB::raw("(SELECT pr.nombreproveedor FROM proveedores pr WHERE pr.proveedor = p.proveedornombre LIMIT 1) as proveedor_real")
+
+            )
+            ->where('d.clienteitaid', $cliente->id)
+            ->orderBy('p.fechabateria')
+        ->get();
+
+        foreach ($programacionesRaw as $doc) {
+            $path = public_path("documentacionclientesita/{$cliente->id}/{$doc->document}");
+
+            if (file_exists($path)) {
+                try {
+                    $content = file_get_contents($path);
+                    preg_match_all("/\/Type\s*\/Page\b/", $content, $matches);
+                    $doc->nro_hojas = count($matches[0]);
+                } catch (\Exception $e) {
+                    $doc->nro_hojas = 'Error';
+                }
+            } else {
+                $doc->nro_hojas = 'No encontrado';
+            }
+        }
+
+        $programaciones = $programacionesRaw->groupBy('fechabateria')->map(function ($grupoPorFecha) {
+            return $grupoPorFecha->sortBy(function ($item) {
+                $tipoarea = $item->tipoarea ?? 'Z';
+                $ordenTipoarea = $tipoarea === 'ESPECIALIDAD' ? 0 : 1;
+                return [$ordenTipoarea, $item->areanombre];
+            });
+        });
+
+
+        return view('admin.tramites.cartasprocpensionderivretiro', compact('id','cliente','apoderadoAsignado','idTramite','aseguradora',
+        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados'));
+    }
+
 
     // TRAMITE RETIRO DE APORTES PARCIAL
     public function procretiroaportesparcial(Request $request, Cliente $cliente)
@@ -9906,6 +10484,28 @@ class TramitesController extends Controller
         $idTramite = Tramitesubcliente::where('clienteitaid', $cliente->id)
             ->where('tramite', 'APELACIÓN DE RECALIFICACIÓN')
         ->value('id');
+
+        /* NUEVO 180526 */
+        $numeropoderreg = Requisitosubcliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'RECALIFICACIÓN')
+        ->value('numeropoder');
+        $fechainicioreg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'RECALIFICACIÓN')
+            ->whereIn('nivelprocedimiento', ['INICIO DE TRÁMITE', 'CONTINUIDAD DE TRÁMITE'])
+        ->value('fechasubida');
+
+        /* NUEVO 210526 */
+        $dicporcentajereg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'RECALIFICACIÓN')
+            ->where('nivelprocedimiento', 'DICTAMEN')
+            ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
+        ->value('porcentajeriesgodictamen');
+        $dicorigenreg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'RECALIFICACIÓN')
+            ->where('nivelprocedimiento', 'DICTAMEN')
+            ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
+        ->value('riesgodictamen');
+
         $aseguradora = Cliente::where('id', $cliente->id)
         ->value('aseguradora');
         $afpgestora = Cliente::where('id', $cliente->id)
@@ -9913,11 +10513,9 @@ class TramitesController extends Controller
         $matriculacliente = Cliente::where('id', $cliente->id)
         ->value('matricula');
 
-
         /* CARTAS Y RECLAMOS */
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
-
 
         /* NUEVO 231125 */
         $fechaBateriaApelacion = Tramitesubcliente::where('clienteitaid', $cliente->id)
@@ -10045,7 +10643,7 @@ class TramitesController extends Controller
 
 
         return view('admin.tramites.cartasprocapelrecalificacion', compact('id','cliente','apoderadoAsignado','idTramite','aseguradora',
-        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados'));
+        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados','numeropoderreg','fechainicioreg','dicporcentajereg','dicorigenreg'));
     }
 
     // TRAMITE APELACIÓN SEGUNDA SOLICITUD
@@ -10660,6 +11258,28 @@ class TramitesController extends Controller
         $idTramite = Tramitesubcliente::where('clienteitaid', $cliente->id)
             ->where('tramite', 'APELACIÓN SEGUNDA SOLICITUD')
         ->value('id');
+
+        /* NUEVO 180526 */
+        $numeropoderreg = Requisitosubcliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'SEGUNDA SOLICITUD')
+        ->value('numeropoder');
+        $fechainicioreg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'SEGUNDA SOLICITUD')
+            ->whereIn('nivelprocedimiento', ['INICIO DE TRÁMITE', 'CONTINUIDAD DE TRÁMITE'])
+        ->value('fechasubida');
+
+        /* NUEVO 210526 */
+        $dicporcentajereg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'SEGUNDA SOLICITUD')
+            ->where('nivelprocedimiento', 'DICTAMEN')
+            ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
+        ->value('porcentajeriesgodictamen');
+        $dicorigenreg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'SEGUNDA SOLICITUD')
+            ->where('nivelprocedimiento', 'DICTAMEN')
+            ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
+        ->value('riesgodictamen');
+
         $aseguradora = Cliente::where('id', $cliente->id)
         ->value('aseguradora');
         $afpgestora = Cliente::where('id', $cliente->id)
@@ -10667,11 +11287,9 @@ class TramitesController extends Controller
         $matriculacliente = Cliente::where('id', $cliente->id)
         ->value('matricula');
 
-
         /* CARTAS Y RECLAMOS */
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
-
 
         /* NUEVO 231125 */
         $fechaBateriaApelacion = Tramitesubcliente::where('clienteitaid', $cliente->id)
@@ -10799,7 +11417,7 @@ class TramitesController extends Controller
 
 
         return view('admin.tramites.cartasprocapelsegsolicitud', compact('id','cliente','apoderadoAsignado','idTramite','aseguradora',
-        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados'));
+        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados','numeropoderreg','fechainicioreg','dicporcentajereg','dicorigenreg'));
     }
 
     // TRAMITE APELACIÓN TERCERA SOLICITUD
@@ -11415,6 +12033,28 @@ class TramitesController extends Controller
         $idTramite = Tramitesubcliente::where('clienteitaid', $cliente->id)
             ->where('tramite', 'APELACIÓN TERCERA SOLICITUD')
         ->value('id');
+
+        /* NUEVO 180526 */
+        $numeropoderreg = Requisitosubcliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'TERCERA SOLICITUD')
+        ->value('numeropoder');
+        $fechainicioreg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'TERCERA SOLICITUD')
+            ->whereIn('nivelprocedimiento', ['INICIO DE TRÁMITE', 'CONTINUIDAD DE TRÁMITE'])
+        ->value('fechasubida');
+
+        /* NUEVO 210526 */
+        $dicporcentajereg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'TERCERA SOLICITUD')
+            ->where('nivelprocedimiento', 'DICTAMEN')
+            ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
+        ->value('porcentajeriesgodictamen');
+        $dicorigenreg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'TERCERA SOLICITUD')
+            ->where('nivelprocedimiento', 'DICTAMEN')
+            ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
+        ->value('riesgodictamen');
+
         $aseguradora = Cliente::where('id', $cliente->id)
         ->value('aseguradora');
         $afpgestora = Cliente::where('id', $cliente->id)
@@ -11422,11 +12062,9 @@ class TramitesController extends Controller
         $matriculacliente = Cliente::where('id', $cliente->id)
         ->value('matricula');
 
-
         /* CARTAS Y RECLAMOS */
         $modelocartasreclamos = Modelocartareclamo::where('estado', 'ACTIVO')
         ->pluck('tipocarta', 'id');
-
 
         /* NUEVO 231125 */
         $fechaBateriaApelacion = Tramitesubcliente::where('clienteitaid', $cliente->id)
@@ -11554,7 +12192,7 @@ class TramitesController extends Controller
 
 
         return view('admin.tramites.cartasprocapeltercersolicitud', compact('id','cliente','apoderadoAsignado','idTramite','aseguradora',
-        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados'));
+        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados','numeropoderreg','fechainicioreg','dicporcentajereg','dicorigenreg'));
     }
 
     // TRAMITE RECALIFICACIÓN SEGUNDA SOLICITUD
@@ -12911,6 +13549,28 @@ class TramitesController extends Controller
         $idTramite = Tramitesubcliente::where('clienteitaid', $cliente->id)
             ->where('tramite', 'APELACIÓN DE RECALIFICACIÓN SEGUNDA SOLICITUD')
         ->value('id');
+
+        /* NUEVO 180526 */
+        $numeropoderreg = Requisitosubcliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+        ->value('numeropoder');
+        $fechainicioreg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->whereIn('nivelprocedimiento', ['INICIO DE TRÁMITE', 'CONTINUIDAD DE TRÁMITE'])
+        ->value('fechasubida');
+
+        /* NUEVO 210526 */
+        $dicporcentajereg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->where('nivelprocedimiento', 'DICTAMEN')
+            ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
+        ->value('porcentajeriesgodictamen');
+        $dicorigenreg = Tramite::where('clienteid', $cliente->id)
+            ->where('tramite', 'RECALIFICACIÓN SEGUNDA SOLICITUD')
+            ->where('nivelprocedimiento', 'DICTAMEN')
+            ->where('subprocedimiento', 'NOTIFICACIÓN DE DICTAMEN')
+        ->value('riesgodictamen');
+
         $aseguradora = Cliente::where('id', $cliente->id)
         ->value('aseguradora');
         $afpgestora = Cliente::where('id', $cliente->id)
@@ -13049,7 +13709,7 @@ class TramitesController extends Controller
         });
 
         return view('admin.tramites.cartasprocapelrecalsegsolicitud', compact('id','cliente','apoderadoAsignado','idTramite','aseguradora',
-        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados'));
+        'afpgestora','matriculacliente','modelocartasreclamos','programaciones','apoderados','numeropoderreg','fechainicioreg','dicporcentajereg','dicorigenreg'));
     }
 
     // GENERACION DE MISIVAS
@@ -13485,11 +14145,11 @@ class TramitesController extends Controller
             ->where('nivelprocedimiento', 'NOTIFICACIÓN DE PODER')
             ->where('subprocedimiento', 'VALIDACIÓN DE PODER')
             ->where('tramite', $nombretramite)
-            ->orderBy('fecharetorno', 'desc')
+            ->orderBy('fechasubida', 'desc')
         ->first();
         $fecharetornovalidacion = null;
-        if ($fecharetornovalidacionRegistro && !empty($fecharetornovalidacionRegistro->fecharetorno)) {
-            $fecharetornovalidacion = Carbon::parse($fecharetornovalidacionRegistro->fecharetorno)
+        if ($fecharetornovalidacionRegistro && !empty($fecharetornovalidacionRegistro->fechasubida)) {
+            $fecharetornovalidacion = Carbon::parse($fecharetornovalidacionRegistro->fechasubida)
                 ->locale('es')
                 ->isoFormat('D [de] MMMM [del] YYYY');
         }
@@ -13943,6 +14603,11 @@ class TramitesController extends Controller
         $fechacontrato = Carbon::parse($request->input('fechacontrato'))->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
         $firmadoen = $request->input('firmadoen');
         $nrodictamen = $request->input('nrodictamen');
+
+        /* NUEVO 210526 */
+        $dicporcentajereg = $request->input('dicporcentajereg');
+        $dicorigenreg = $request->input('dicorigenreg');
+
         $fechatramite = Carbon::parse($request->input('fechatramite'))->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
         $notificadoen = $request->input('notificadoen');
         $tipoorigen = $request->input('tipoorigen');
@@ -14319,7 +14984,7 @@ class TramitesController extends Controller
             'nrocua1','nombreafp1','nroci1','nrocua2','nombreafp2','nroci2','nrocuaunificado','nrociunificado',
             'unificacioncuas','cambiounificacioncuas','prestaciones','fechainiciotramite','fechafirmaeap2','fechaformulario',
             'fecharesolucion','nroresolucion','txtcomple1','txtcomple2','txtcomple3','tituloop1','tituloop2',
-            'opcionesuno','opcionesdos','afiliadoTexto','fechainclusion'));
+            'opcionesuno','opcionesdos','afiliadoTexto','fechainclusion', 'dicporcentajereg', 'dicorigenreg'));
 
         $timestamp = now()->format('Ymd_His');
         $pdfName = "{$tipoPdf}_{$cliente->nombrecompleto}_{$timestamp}.pdf";
@@ -14729,6 +15394,11 @@ class TramitesController extends Controller
         $fechacontrato = Carbon::parse($request->input('fechacontrato'))->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
         $firmadoen = $request->input('firmadoen');
         $nrodictamen = $request->input('nrodictamen');
+
+        /* NUEVO 210526 */
+        $dicporcentajereg = $request->input('dicporcentajereg');
+        $dicorigenreg = $request->input('dicorigenreg');
+
         $fechatramite = Carbon::parse($request->input('fechatramite'))->locale('es')->isoFormat('D [de] MMMM [del] YYYY');
         $notificadoen = $request->input('notificadoen');
         $tipoorigen = $request->input('tipoorigen');
@@ -15106,7 +15776,7 @@ class TramitesController extends Controller
             'nrocua1','nombreafp1','nroci1','nrocua2','nombreafp2','nroci2','nrocuaunificado','nrociunificado',
             'unificacioncuas','cambiounificacioncuas','prestaciones','fechainiciotramite','fechafirmaeap2','fechaformulario',
             'fecharesolucion','nroresolucion','txtcomple1','txtcomple2','txtcomple3','tituloop1','tituloop2',
-            'opcionesuno','opcionesdos','afiliadoTexto','fechainclusion'));
+            'opcionesuno','opcionesdos','afiliadoTexto','fechainclusion', 'dicporcentajereg', 'dicorigenreg'));
 
         return $pdf->stream('preview.pdf');
     }
@@ -15545,11 +16215,11 @@ class TramitesController extends Controller
             ->where('nivelprocedimiento', 'NOTIFICACIÓN DE PODER')
             ->where('subprocedimiento', 'VALIDACIÓN DE PODER')
             ->where('tramite', $nombretramite)
-            ->orderBy('fecharetorno', 'desc')
+            ->orderBy('fechasubida', 'desc')
         ->first();
         $fecharetornovalidacion = null;
-        if ($fecharetornovalidacionRegistro && !empty($fecharetornovalidacionRegistro->fecharetorno)) {
-            $fecharetornovalidacion = Carbon::parse($fecharetornovalidacionRegistro->fecharetorno)
+        if ($fecharetornovalidacionRegistro && !empty($fecharetornovalidacionRegistro->fechasubida)) {
+            $fecharetornovalidacion = Carbon::parse($fecharetornovalidacionRegistro->fechasubida)
                 ->locale('es')
                 ->isoFormat('D [de] MMMM [del] YYYY');
         }

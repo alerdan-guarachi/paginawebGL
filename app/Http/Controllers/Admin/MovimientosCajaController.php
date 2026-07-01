@@ -10808,31 +10808,31 @@ class MovimientosCajaController extends Controller
             }
         } */
 
-            // --- Caja Central agrupada por fecha ---
-    $registros = CajaCentral::where('tipomovimiento', 'INGRESO')
-        ->where('tipotransaccion', 'EFECTIVO')
-        ->when($usuarioSeleccionado, fn($q) => $q->where('usuarioregistroid', $usuarioSeleccionado))
-        ->selectRaw('DATE(created_at) as fecha, usuarioregistroid, usuarioRegistroNombre,
-                    SUM(montoTotal - diferenciaContra + diferenciaFavor) as total')
-        ->groupBy('fecha', 'usuarioregistroid', 'usuarioRegistroNombre')
-        ->orderByDesc('fecha')
-        ->get();
+        // Caja Central agrupada por fecha
+        $registros = CajaCentral::where('tipomovimiento', 'INGRESO')
+            ->where('tipotransaccion', 'EFECTIVO')
+            ->when($usuarioSeleccionado, fn($q) => $q->where('usuarioregistroid', $usuarioSeleccionado))
+            ->selectRaw('DATE(created_at) as fecha, usuarioregistroid, usuarioRegistroNombre,
+                        SUM(montoTotal - diferenciaContra + diferenciaFavor) as total')
+            ->groupBy('fecha', 'usuarioregistroid', 'usuarioRegistroNombre')
+            ->orderByDesc('fecha')
+            ->get();
 
-    // --- Depósitos Bancarios relacionados por fecha y usuario ---
-    $depositos = DepositosBancarios::whereIn('fecha', $registros->pluck('fecha'))
-        ->whereIn('usuarioregistroid', $registros->pluck('usuarioregistroid'))
-        ->orderByDesc('fecha')
-        ->get();
+        // Depósitos Bancarios relacionados por fecha y usuario
+        $depositos = DepositosBancarios::whereIn('fecha', $registros->pluck('fecha'))
+            ->whereIn('usuarioregistroid', $registros->pluck('usuarioregistroid'))
+            ->orderByDesc('fecha')
+            ->get();
 
-    // Agrupar depósitos por fecha + usuario
-    $depositosAgrupados = $depositos->groupBy(fn($d) => $d->fecha . '_' . $d->usuarioregistroid);
+        // Agrupar depósitos por fecha + usuario
+        $depositosAgrupados = $depositos->groupBy(fn($d) => $d->fecha . '_' . $d->usuarioregistroid);
 
-    // Vincular depósitos a los registros de caja
-    foreach ($registros as $registro) {
-        $clave = $registro->fecha . '_' . $registro->usuarioregistroid;
-        $registro->depositos = $depositosAgrupados[$clave] ?? collect();
-        $registro->montoDepositos = $registro->depositos->sum('monto');
-    }
+        // Vincular depósitos a los registros de caja
+        foreach ($registros as $registro) {
+            $clave = $registro->fecha . '_' . $registro->usuarioregistroid;
+            $registro->depositos = $depositosAgrupados[$clave] ?? collect();
+            $registro->montoDepositos = $registro->depositos->sum('monto');
+        }
 
         return view('admin.caja.ingreso.depositosbancarios', compact('registros', 'rolUsuario', 'usuarios', 'fecha', 'usuarioSeleccionado', 'cuentas', 'mostrarVista', 'motivoBloqueo'));
     }
@@ -10923,32 +10923,6 @@ class MovimientosCajaController extends Controller
                     'nrobancodestinoefectivo' => $request->bancodestino,
             ]);
 
-        /* $arqueo = ArqueoCaja::where('usuarioarqueoid', $usuarioAutenticadoid)->first();
-        if ($arqueo) {
-            $arqueo->update([
-                'billetecorte200' => 0,
-                'billetecorte100' => 0,
-                'billetecorte50' => 0,
-                'billetecorte20' => 0,
-                'billetecorte10' => 0,
-                'monedacorte5' => 0,
-                'monedacorte2' => 0,
-                'monedacorte1' => 0,
-                'monedacorte050' => 0,
-                'monedacorte020' => 0,
-                'monedacorte010' => 0,
-            ]);
-        }
-
-        $consolidado = Consolidadocaja::where('usuarioconsolidadoid', $usuarioAutenticadoid)->first();
-        if ($consolidado) {
-            $consolidado->update([
-                'consolidadoefectivo' => 0.00,
-                'actualizaciondeposito' => today(),
-            ]);
-        } */
-
-        /* NUEVO 011225 */
         $usuarioId = auth()->user()->id;
         $historial = DB::table('historialarqueocaja')
             ->where('usuarioarqueoid', $usuarioId)

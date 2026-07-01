@@ -124,7 +124,8 @@ class InstructivaPoderController extends Controller
             'RETIRO DE APORTES PARCIAL' => 'RETIRO DE APORTES PARCIAL',
             'RETIRO DE APORTES TOTAL' => 'RETIRO DE APORTES TOTAL',
             'COMPENSACIÓN DE COTIZACIONES (SENASIR)' => 'COMPENSACIÓN DE COTIZACIONES (SENASIR)',
-            'RECALIFICACIÓN' => 'RECALIFICACIÓN',
+            'INCLUSIÓN CC (GESTORA)' => 'INCLUSIÓN CC (GESTORA)',
+            'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES' => 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES',
         ];
 
         // Buscar trámites ya registrados para el cliente
@@ -242,6 +243,7 @@ class InstructivaPoderController extends Controller
     public function generarpdfinstructivaspoder(Request $request, Cliente $cliente)
     {
         $tipoPdf = $request->input('tipo_pdf');
+        $tipoCarta = $request->input('tipo_carta');
         $sucursal = $request->input('sucursal');
         $tipopension = $request->input('tipopension');
         $generofallecido = $request->input('generofallecido');
@@ -390,16 +392,53 @@ class InstructivaPoderController extends Controller
                 'nombre_archivo' => 'InstructivaPoder_MasaHereditaria_',
             ],
             'RETIRO DE APORTES PARCIAL' => [
-                'vista' => 'admin.instructivaspoder.ipoderretiroaportesparcial',
-                'nombre_archivo' => 'InstructivaPoder_RetiroAportesParcial_',
+                'tipo_carta' => [
+                    'MAYOR A 65 AÑOS CON PENSIÓN DE INVALIDEZ' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesmayor65',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroParcial_Mayor65_',
+                    ],
+                    'DERIVADA DE PENSIÓN POR MUERTE' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesderivpension',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroParcial_Derivada_',
+                    ],
+                    'MENOR A 120 APORTES' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesmenor120a',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroParcial_Menor120a_',
+                    ],
+                    'RETIROS TEMPORALES' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportestemporal',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroParcial_Temporales_',
+                    ],
+                ]
             ],
+
             'RETIRO DE APORTES TOTAL' => [
-                'vista' => 'admin.instructivaspoder.ipoderretiroaportestotal',
-                'nombre_archivo' => 'InstructivaPoder_RetiroAportesTotal_',
+                'tipo_carta' => [
+                    'MAYOR A 65 AÑOS CON PENSIÓN DE INVALIDEZ' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesmayor65',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroTotal_Mayor65_',
+                    ],
+                    'DERIVADA DE PENSIÓN POR MUERTE' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesderivpension',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroTotal_Derivada_',
+                    ],
+                    'MENOR A 120 APORTES' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesmenor120a',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroTotal_Menor120a_',
+                    ],
+                    'RETIROS TEMPORALES' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportestemporal',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroTotal_Temporales_',
+                    ],
+                ]
             ],
             'COMPENSACIÓN DE COTIZACIONES (SENASIR)' => [
-                'vista' => 'admin.instructivaspoder.ipoderinvalidez',
+                'vista' => 'admin.instructivaspoder.ipoderccsenasir',
                 'nombre_archivo' => 'InstructivaPoder_CompensaciónCotizacionesSenasir_',
+            ],
+            'INCLUSIÓN CC (GESTORA)' => [
+                'vista' => 'admin.instructivaspoder.ipoderinclusioncc',
+                'nombre_archivo' => 'InstructivaPoder_InclusionCC_',
             ],
             'RECALIFICACIÓN' => [
                 'vista' => 'admin.instructivaspoder.ipoderinvalidez',
@@ -425,13 +464,27 @@ class InstructivaPoderController extends Controller
                 'vista' => 'admin.instructivaspoder.ipoderinvalidez',
                 'nombre_archivo' => 'InstructivaPoder_ApelaciónTerceraSolicitud_',
             ],
+            'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES' => [
+                'vista' => 'admin.instructivaspoder.ipoderpensionderivretiro',
+                'nombre_archivo' => 'InstructivaPoder_PensionDerivRetiro_',
+            ],
         ];
 
         if (!isset($tramitesConfig[$tipoPdf])) {
             return redirect()->back()->with('error', 'Trámite no válido.');
         }
 
-        $config = $tramitesConfig[$tipoPdf];
+        /* $config = $tramitesConfig[$tipoPdf]; */
+        $configBase = $tramitesConfig[$tipoPdf];
+        if (isset($configBase['tipo_carta'])) {
+            if (!$tipoCarta || !isset($configBase['tipo_carta'][$tipoCarta])) {
+                return redirect()->back()->with('error', 'Debe seleccionar un tipo de carta válido.');
+            }
+            $config = $configBase['tipo_carta'][$tipoCarta];
+        } else {
+            $config = $configBase;
+        }
+
 
         $nombreClienteMayuscula = strtoupper($cliente->nombrecompleto);
         $nombreFormateado = str_replace(' ', '-', $nombreClienteMayuscula);
@@ -512,6 +565,7 @@ class InstructivaPoderController extends Controller
     public function previewInstructiva(Request $request, Cliente $cliente)
     {
         $tipoPdf = $request->input('tipo_pdf');
+        $tipoCarta = $request->input('tipo_carta');
         $sucursal = $request->input('sucursal');
         $tipopension = $request->input('tipopension');
         $generofallecido = $request->input('generofallecido');
@@ -665,16 +719,53 @@ class InstructivaPoderController extends Controller
                 'nombre_archivo' => 'InstructivaPoder_MasaHereditaria_',
             ],
             'RETIRO DE APORTES PARCIAL' => [
-                'vista' => 'admin.instructivaspoder.ipoderretiroaportesparcial',
-                'nombre_archivo' => 'InstructivaPoder_RetiroAportesParcial_',
+                'tipo_carta' => [
+                    'MAYOR A 65 AÑOS CON PENSIÓN DE INVALIDEZ' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesmayor65',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroParcial_Mayor65_',
+                    ],
+                    'DERIVADA DE PENSIÓN POR MUERTE' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesderivpension',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroParcial_Derivada_',
+                    ],
+                    'MENOR A 120 APORTES' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesmenor120a',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroParcial_Menor120a_',
+                    ],
+                    'RETIROS TEMPORALES' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportestemporal',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroParcial_Temporales_',
+                    ],
+                ]
             ],
+
             'RETIRO DE APORTES TOTAL' => [
-                'vista' => 'admin.instructivaspoder.ipoderretiroaportestotal',
-                'nombre_archivo' => 'InstructivaPoder_RetiroAportesTotal_',
+                'tipo_carta' => [
+                    'MAYOR A 65 AÑOS CON PENSIÓN DE INVALIDEZ' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesmayor65',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroTotal_Mayor65_',
+                    ],
+                    'DERIVADA DE PENSIÓN POR MUERTE' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesderivpension',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroTotal_Derivada_',
+                    ],
+                    'MENOR A 120 APORTES' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportesmenor120a',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroTotal_Menor120a_',
+                    ],
+                    'RETIROS TEMPORALES' => [
+                        'vista' => 'admin.instructivaspoder.ipoderretiroaportestemporal',
+                        'nombre_archivo' => 'InstructivaPoder_RetiroTotal_Temporales_',
+                    ],
+                ]
             ],
             'COMPENSACIÓN DE COTIZACIONES (SENASIR)' => [
-                'vista' => 'admin.instructivaspoder.ipoderinvalidez',
+                'vista' => 'admin.instructivaspoder.ipoderccsenasir',
                 'nombre_archivo' => 'InstructivaPoder_CompensaciónCotizacionesSenasir_',
+            ],
+            'INCLUSIÓN CC (GESTORA)' => [
+                'vista' => 'admin.instructivaspoder.ipoderinclusioncc',
+                'nombre_archivo' => 'InstructivaPoder_InclusionCC_',
             ],
             'RECALIFICACIÓN' => [
                 'vista' => 'admin.instructivaspoder.ipoderinvalidez',
@@ -700,13 +791,27 @@ class InstructivaPoderController extends Controller
                 'vista' => 'admin.instructivaspoder.ipoderinvalidez',
                 'nombre_archivo' => 'InstructivaPoder_ApelaciónTerceraSolicitud_',
             ],
+            'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES' => [
+                'vista' => 'admin.instructivaspoder.ipoderpensionderivretiro',
+                'nombre_archivo' => 'InstructivaPoder_PensionDerivRetiro_',
+            ],
         ];
 
         if (!isset($tramitesConfig[$tipoPdf])) {
             return redirect()->back()->with('error', 'Trámite no válido.');
         }
 
-        $config = $tramitesConfig[$tipoPdf];
+        /* $config = $tramitesConfig[$tipoPdf]; */
+        $configBase = $tramitesConfig[$tipoPdf];
+        if (isset($configBase['tipo_carta'])) {
+            if (!$tipoCarta || !isset($configBase['tipo_carta'][$tipoCarta])) {
+                return redirect()->back()->with('error', 'Debe seleccionar un tipo de carta válido.');
+            }
+            $config = $configBase['tipo_carta'][$tipoCarta];
+        } else {
+            $config = $configBase;
+        }
+        
 
         $nombreClienteMayuscula = strtoupper($cliente->nombrecompleto);
         $nombreFormateado = str_replace(' ', '-', $nombreClienteMayuscula);

@@ -182,14 +182,43 @@ class HomeController extends Controller
 
         $userRole = auth()->user()->getRoleNames()->first(); 
 
+        $licencias = DB::table('licenciaspagos')
+        ->where('plazo', '!=', 'PERMANENTE')
+        ->whereNull('deleted_at')
+        ->whereBetween(DB::raw('DATEDIFF(proximopago, CURDATE())'), [0, 30])
+        ->get();
+
         return view('home', compact('userRole','mensajesPrincipales','mensajes','programacionclientebancos','programacionclienteitas','programacionclientecomunes', 'programacionclienteauditorias','clientesComunesCount', 'clientesBancosCount', 'clientesITACount', 'clientesAuditoriasCount', 
         'accionesPorAreasAuditoria', 'accionesPorAreaAuditoria', 'accionesDisponiblesAuditoria', 'clienteauditoria', 'idAuditoria', 'accionesClienteAuditoria', 'estadoRegistradosAuditoria',
         'accionesPorAreasComun', 'accionesPorAreaComun', 'accionesDisponiblesComun', 'clientecomun', 'idComun', 'accionesClienteComun', 'estadoRegistradosComun',
         'accionesPorAreasIta', 'accionesPorAreaIta', 'accionesDisponiblesIta', 'cliente', 'idIta', 'accionesClienteIta', 'estadoRegistradosIta',
         'accionesPorAreasBanco', 'accionesPorAreaBanco', 'accionesDisponiblesBanco', 'clientebanco', 'idBanco', 'accionesClienteBanco', 'estadoRegistradosBanco',
-        'progauditoria','progcomun','progita'));
+        'progauditoria','progcomun','progita','licencias'));
     }
 
+    public function marcarPagado($id)
+    {
+        $licencia = DB::table('licenciaspagos')->where('id', $id)->first();
+
+        $fechaBase = Carbon::parse($licencia->proximopago);
+
+        if ($licencia->tipoplazo == 'AÑO') {
+            $nuevoProximoPago = $fechaBase->addYears($licencia->plazo);
+        } elseif ($licencia->tipoplazo == 'MES') {
+            $nuevoProximoPago = $fechaBase->addMonths($licencia->plazo);
+        } elseif ($licencia->tipoplazo == 'DIA') {
+            $nuevoProximoPago = $fechaBase->addDays($licencia->plazo);
+        }
+
+        DB::table('licenciaspagos')
+            ->where('id', $id)
+            ->update([
+                'updated_at' => Carbon::now(),
+                'proximopago' => $nuevoProximoPago
+            ]);
+
+        return back()->with('info', 'Licencia marcada como pagada correctamente');
+    }
     public function store(Request $request)
 {
     // Validar los datos del formulario

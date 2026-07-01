@@ -141,60 +141,6 @@
                         </div>
                     </div>
 
-                    {{-- <table class="table table-bordered table-striped">
-                        <thead class="table-secondary">
-                            <tr>
-                                <th>Fecha Mov.</th>
-                                <th>Usuario Registro</th>
-                                <th>Total Efectivo</th>
-                                <th>Respaldo</th>
-                                <th>Comprob.</th>
-                                <th>Bancarizacion</th>
-                                <th>Banco Destino</th>
-                                <th>Selec.</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($registros as $registro)
-                                <tr>
-                                    <td>{{ $registro->fecha }}</td>
-                                    <td>{{ $registro->usuarioRegistroNombre }}</td>
-                                    <td>{{ number_format($registro->total, 2) }}</td>
-                                    <td>
-                                        @if ($registro->documentorespaldo)
-                                            <a href="{{ asset('documentacioncaja/depositosbancarios/' . $registro->usuarioregistroid . '/' . $registro->documentorespaldo) }}" 
-                                            class="btn btn-sm btn-verregistros" target="_blank" title="VER RESPALDO">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @else
-                                            <span class="badge badge-danger">VACIO</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if ($registro->documentofactura)
-                                            <a href="{{ asset('documentacioncaja/depositosbancarios/' . $registro->usuarioregistroid . '/' . $registro->documentofactura) }}" 
-                                            class="btn btn-sm btn-verregistros" target="_blank" title="VER COMPROBANTE">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        @else
-                                            <span class="badge badge-danger">VACIO</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        {{ $registro->bancarizacion ?? 'N/A' }}
-                                    </td>
-                                    <td>
-                                        {{ $registro->bancodestino ?? 'N/A' }}
-                                    </td>
-                                    <td>
-                                        @if (!$registro->documentorespaldo || !$registro->documentofactura)
-                                            <input type="checkbox" name="registro_ids[]" value="{{ $registro->id }}" class="registro-checkbox">
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table> --}}
                     <table class="table table-bordered table-striped">
                         <thead class="table-secondary text-center align-middle">
                             <tr>
@@ -218,7 +164,6 @@
 
                                 @foreach ($depositos->isEmpty() ? [null] : $depositos as $index => $deposito)
                                     <tr>
-                                        {{-- Celdas que abarcan todos los depósitos --}}
                                         @if ($index === 0)
                                             <td rowspan="{{ $rowCount }}" class="text-center align-middle bg-white">{{ $registro->fecha }}</td>
                                             <td rowspan="{{ $rowCount }}" class="text-center align-middle bg-white">{{ $registro->usuarioRegistroNombre }}</td>
@@ -228,7 +173,6 @@
                                         <td class="text-center align-middle">
                                             {{ isset($deposito->monto) ? number_format($deposito->monto, 2, '.', ',') : 'N/A' }}
                                         </td>
-
 
                                         <td class="text-center align-middle">
                                             @if ($deposito && $deposito->documentorespaldo)
@@ -292,49 +236,45 @@
 @section('js')
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-    const checkboxes = document.querySelectorAll(".registro-checkbox");
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener("change", actualizarValores);
-    });
-
-    function actualizarValores() {
-        let fechas = [];
-        let totalMonto = 0;
-        let usuarios = new Set();
-
+        const checkboxes = document.querySelectorAll(".registro-checkbox");
         checkboxes.forEach(checkbox => {
-            if (checkbox.checked) {
-                let fila = checkbox.closest("tr");
-                let fecha = fila.cells[0].textContent.trim();
-                let usuario = fila.cells[1].textContent.trim();
-                let monto = parseFloat(fila.cells[2].textContent.replace(",", ""));
-
-                fechas.push(fecha);
-                usuarios.add(usuario);
-                totalMonto += isNaN(monto) ? 0 : monto;
-            }
+            checkbox.addEventListener("change", actualizarValores);
         });
 
-        if (fechas.length > 0) {
-            document.getElementById("fechaSeleccionada").value = fechas.sort()[0];
-        } else {
-            document.getElementById("fechaSeleccionada").value = "";
+        function actualizarValores() {
+            let fechas = [];
+            let totalMonto = 0;
+            let usuarios = new Set();
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    let fila = checkbox.closest("tr");
+                    let fecha = fila.cells[0].textContent.trim();
+                    let usuario = fila.cells[1].textContent.trim();
+                    let monto = parseFloat(fila.cells[2].textContent.replace(",", ""));
+
+                    fechas.push(fecha);
+                    usuarios.add(usuario);
+                    totalMonto += isNaN(monto) ? 0 : monto;
+                }
+            });
+
+            if (fechas.length > 0) {
+                document.getElementById("fechaSeleccionada").value = fechas.sort()[0];
+            } else {
+                document.getElementById("fechaSeleccionada").value = "";
+            }
+            document.getElementById("montoSeleccionado").value = totalMonto.toFixed(2);
+
+            document.getElementById("usuarioregistro").value = usuarios.size === 1 ? [...usuarios][0] : "";
         }
-        document.getElementById("montoSeleccionado").value = totalMonto.toFixed(2);
-
-        document.getElementById("usuarioregistro").value = usuarios.size === 1 ? [...usuarios][0] : "";
-    }
-});
-
+    });
 </script>
 <script>
     let selectedFile;
-
     function enablePreviewButton() {
         const fileInput = document.getElementById('archivo');
         const previewButton = document.getElementById('verVistaPrevia');
-        
-        // Habilitar el botón si hay un archivo seleccionado
         previewButton.disabled = !fileInput.files.length;
     }
 
@@ -465,5 +405,5 @@
             alert('Error en la solicitud.');
         });
     }
-    </script>
+</script>
 @stop

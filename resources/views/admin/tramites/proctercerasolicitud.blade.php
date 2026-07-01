@@ -325,8 +325,12 @@
                         ->where('tramite', 'TERCERA SOLICITUD')
                         ->whereIn('estadotramite', ['INGRESO DE TRÁMITE', 'FIRMA EAP'])
                     ->first();
+                    $continuidadtramite = $cliente->tramites()->where('nivelprocedimiento', 'CONTINUIDAD DE TRÁMITE')
+                        ->where('subprocedimiento', 'CONTINUIDAD DE TRÁMITE')
+                        ->where('tramite', 'TERCERA SOLICITUD')
+                    ->first();
                 @endphp
-                @if (!$documento5 /* && !$documento3 */ && $estadotramite)
+                @if (!$documento5 /* && !$documento3 */ && $estadotramite && !$continuidadtramite)
                     <li class="nav-item">
                         <a class="nav-link disabled" id="tab-2" data-toggle="tab" href="#tab-content-2" role="tab" aria-controls="tab-content-2" aria-selected="false">PROCESO EN CURSO</a>
                     </li>

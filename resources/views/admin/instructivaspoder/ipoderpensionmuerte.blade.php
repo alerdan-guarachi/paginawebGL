@@ -88,26 +88,34 @@
                 @endif
                 {!! $nombrefallecido ?? '<span class="textoedita">Nombre Fallecido</span>' !!} 
                 CON C.I. N° {!! $cifallecido ?? '<span class="textoedita">CI Fallecido</span>' !!},
-            </strong>en el marco de la Ley 065 Solicitar Iniciar tramite de Pensión por Muerte firmando la solicitud correspondiente, solicitar el estado de ahorro 
-            previsional, consolidar el estado de ahorro previsional, recibir requerimientos del Tribunal Medico Calificador TMC, recibir las notificaciones 
-            del dictamen de muerte, solicitar revisión del dictamen de muerte, recibir la notificación de la declaración de pensión o la notificación del 
-            rechazo según corresponda, en suma solicitar, recibir, entregar, y firmar todo tipo de documentos inherentes al trámite de pensión por muerte 
-            hasta su culminación. Sin que por falta de cláusula expresa alguna, deje de surtir sus efectos, ni se alegue falta de personería en los apoderados. 
-            Iniciar con el TRAMITE DE MASA HEREDITARIA, en el marco de la Ley 065 Solicitar Entregar documentos de acreditación de los herederos para su 
-            revisión, solicitar el estado de ahorro previsional, consolidar el estado de ahorro previsional, Iniciar tramite de masa hereditaria firmando 
-            la solicitud correspondiente, firmar la liquidación y acta de entrega de masa hereditaria (pensiones no cobradas), firmar contrato de entrega de 
-            masa hereditaria (cuenta Individual), en suma solicitar, recibir, entregar, y firmar todo tipo de documentos inherentes al trámite de masa 
-            hereditaria hasta su culminación. Sin que por falta de cláusula expresa alguna, deje de surtir sus efectos, ni se alegue falta de personería en los 
-            apoderados. Más Poder, para recabar Estado de Cuentas, firmar el formulario de Solicitud, solicitar y firmar el formulario de actualización de datos 
-            del Afiliado Titular y Derechohabiente, firmar formulario de declaración de derechohabientes, asistir a reuniones con facultades de decisión, 
-            memoriales, cartas notariales, inscripciones, autorizaciones y cualquier otro documento que sea necesario, hasta la culminación del trámite en las 
-            oficinas de la Gestora Publica de la Seguridad Social de Largo Plazo. Más Poder.- para solicitar copias legalizadas y simples de cualquier ámbito 
-            con relación a dicho trámite y para transferir o sustituir el presente poder, y en caso de ser necesario otorgar poder a favor de terceros u otras 
-            personas para la continuación y conclusión del presente trámite, todo con el fin de solicitar  
-            <strong>TRAMITE DE PENSION POR MUERTE Y/O TRAMITE DE MASA HEREDITARIA,</strong> del poder conferente, sin que por no estar expresamente consignado 
-            en el presente, sea dado por insuficiente, aclarándose que todas las cláusulas de este poder son enunciativas y no limitativas, facultando a los 
-            apoderados a otorgar poder en favor de terceros o ser sustituidos total y/o parcialmente del presente mandato, en caso de viaje, enfermedad, 
-            ausencia o dejación de cargo.
+            </strong> 
+            en el marco de la Ley 065 Solicitar Iniciar tramite de Pensión por Muerte firmando la solicitud correspondiente, Solicitar el Estado de Ahorro 
+            Previsional, Revisar, Verificar, Solicitar regularización de Aportes si en caso corresponde y Firmar el Certificado de Verificación del Estado 
+            de Ahorro Previsional, así como, el Formulario de conformidad de aportes si corresponde, recibir requerimientos del Tribunal Medico Calificador 
+            TMC, recibir las notificaciones del Dictamen de Muerte, Solicitar Revisión del Dictamen de Muerte, recibir la notificación de la Declaración de 
+            Pensión o la notificación del rechazo según corresponda, en suma solicitar, recibir, entregar, y firmar todo tipo de documentos inherentes al 
+            Trámite de Pensión por Muerte hasta su culminación. Sin que por falta de cláusula expresa alguna, deje de surtir sus efectos, ni se alegue falta 
+            de personería en los apoderados. Iniciar con el TRAMITE DE MASA HEREDITARIA, en el marco de la Ley 065 Solicitar Entregar documentos de 
+            acreditación de los herederos para su revisión, solicitar el estado de ahorro previsional, consolidar el estado de ahorro previsional, 
+            Iniciar tramite de masa hereditaria firmando la solicitud correspondiente, firmar la liquidación y acta de entrega de masa hereditaria 
+            (pensiones no cobradas), firmar contrato de entrega de masa hereditaria (cuenta Individual), en suma solicitar, recibir, entregar, y firmar 
+            todo tipo de documentos inherentes al trámite de masa hereditaria hasta su culminación. Sin que por falta de cláusula expresa alguna, deje de 
+            surtir sus efectos, ni se alegue falta de personería en los apoderados. Más Poder, para recabar Estado de Cuentas, firmar el formulario de 
+            Solicitud, solicitar y firmar el formulario de actualización de datos del Afiliado Titular y Derechohabiente, firmar formulario de declaración 
+            de derechohabientes, asistir a reuniones con facultades de decisión, memoriales, cartas notariales, inscripciones, autorizaciones y cualquier 
+            otro documento que sea necesario, hasta la culminación del Trámite en las oficinas de la Gestora Publica de la Seguridad Social de Largo Plazo. 
+            Asimismo, solicitar, consultar, verificar y gestionar la habilitación de pago y realizar gestiones y seguimiento del mismo. Más Poder para 
+            apersonamiento ante las oficinas de la Autoridad de Fiscalización y Control de Pensiones y Seguros APS para realizar toda clase de gestiones 
+            relacionadas con el Trámite de Pensión por Muerte y/o Tramite de Masa Hereditaria, pudiendo solicitar información verbal y escrita, Facultad 
+            para llenar, suscribir y presentar formularios físicos o digitales, incluidos aquellos correspondientes al Buzón de Reclamos y Sugerencias, 
+            presentar cartas de reclamo, memoriales, solicitudes, peticiones, reclamos administrativos y cualquier otra actuación necesaria, realizar 
+            seguimiento a reclamos y solicitudes, notificarse y recoger respuestas, informes, notas y cualquier otra documentación relacionada con el 
+            trámite. Más Poder.- para solicitar copias legalizadas y simples de cualquier ámbito con relación a dicho trámite y para transferir o sustituir 
+            el presente poder, y en caso de ser necesario otorgar poder a favor de terceros u otras personas para la continuación y conclusión del presente 
+            trámite, todo con el fin de solicitar <strong>TRAMITE DE PENSION POR MUERTE Y/O TRAMITE DE MASA HEREDITARIA</strong>, del poder conferente, sin que por no estar 
+            expresamente consignado en el presente, sea dado por insuficiente, aclarándose que todas las cláusulas de este poder son enunciativas y no 
+            limitativas, facultando a los apoderados a otorgar poder en favor de terceros o ser sustituidos total y/o parcialmente del presente mandato, 
+            en caso de viaje, enfermedad, ausencia o dejación de cargo.
             </h3>
             <br>
             <h3 style="text-align: center;">{{ $cliente->sucursal }} - {{ $fechaactual }}</h3>

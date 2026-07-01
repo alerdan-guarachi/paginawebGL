@@ -33,7 +33,7 @@
     </div>
 </div>
 <script>
-    const url = "https://goodlife.com.bo/agendarasesoria";
+    const url = "https://play.google.com/store/apps/details?id=com.goodlife.app";
     const qr = new QRCode(document.getElementById("qrGoodLife"), {
         text: url,
         width: 180,

@@ -90,6 +90,7 @@ Route::get('/areas', function(Request $request) {
         ->where('sucursal', $sucursal)
         ->where('estado', 'ACTIVO')
         ->where('asociado', 'CLIENTES ITA')
+        ->where('proveedor', '!=', 'PROVEEDOR AJENO')
         ->distinct()
         ->get();
 });
@@ -114,7 +115,18 @@ Route::get('/proveedores', function(Request $request) {
     $sucursal = $request->query('sucursal');
 
     $query = DB::table('bateriaproveedores')
-        ->select('proveedor', 'horarioinicial', 'horariofinal', 'tiempoatencion', 'precio')
+        /* ->select('proveedor', 'horarioinicial', 'horariofinal', 'tiempoatencion', 'precio') */
+        ->select(DB::raw("
+            CASE 
+                WHEN TRIM(UPPER(proveedor)) = 'MARIA ANGELA LOZANO FLORES'
+                    THEN 'PROVEEDOR MEDICO'
+                ELSE proveedor
+            END as proveedor,
+            horarioinicial,
+            horariofinal,
+            tiempoatencion,
+            precio
+        "))
         ->where('area', $area)
         ->where('sucursal', $sucursal)
         ->where('estado', 'ACTIVO')
@@ -155,9 +167,11 @@ Route::get('/documentos/{userId}', function($userId) {
 
     // Obtener documentos relacionados
     $documentos = DB::table('documentacionsubclientes')
-        ->where('clienteitaid', $clienteId)
-        ->where('accion', '!=', 'DIAGNÓSTICO MÉDICO')
-        ->get();
+    ->where('clienteitaid', $clienteId)
+    ->whereNotIn('accion', ['DIAGNÓSTICO MÉDICO', 'MEDICINA LABORAL', 'HISTORIA MÉDICA'])
+    ->orderBy('accion', 'asc') // o 'desc'
+    ->whereNull('deleted_at')
+    ->get();
 
     return response()->json($documentos);
 });

@@ -412,7 +412,7 @@ public function index(Request $request)
     }
     
     $query->where('cajacentral.estado', '<>', 'ANULADO');
-
+    $query->orderBy('detallerecibos.id', 'asc');
     $detalles = $query->simplePaginate(500);
     /* $totalMontototal = $detalles->sum('montototal'); */
     $totalMontototal = $detalles->sum(function ($detalle) {

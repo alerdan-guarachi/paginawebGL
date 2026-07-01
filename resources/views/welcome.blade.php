@@ -448,7 +448,6 @@
             });
         });
     </script>
-
     <style>
         .custom-carousel-card {
         width: 350px; /* Tamaño del card */
@@ -484,7 +483,6 @@
         }
         }
     </style>
-    <!-- Script para activar el carrusel -->
     <script>
         $(document).ready(function(){
         $('#custom-carousel1, #custom-carousel2').carousel({
@@ -493,6 +491,91 @@
         });
     </script>
 
+
+    @if($anuncios->isNotEmpty())
+        <section class="container py-5" style="margin-top: -100px;">
+            <div class="row justify-content-center text-center">
+                <div class="col-12 mb-4">
+                    <h1 class="txt3">⧻ Anuncios ⧻</h1>
+                </div>
+                @if($anuncios->isNotEmpty())
+                    <div class="col-12 d-flex justify-content-center">
+                        <div class="anuncios-wrapper">
+                            @foreach($anuncios->take(3) as $anuncio)
+                                <div class="anuncio-item shadow rounded">
+                                    @if($anuncio->link)
+                                        <a href="{{ $anuncio->link }}" target="_blank" style="display:block; width:100%; height:100%;">
+                                            <img src="{{ asset('anuncios/'.$anuncio->imagen) }}"
+                                                class="anuncio-img">
+                                        </a>
+                                    @else
+                                        <img src="{{ asset('anuncios/'.$anuncio->imagen) }}"
+                                            class="anuncio-img">
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+            <style>
+                .anuncios-wrapper {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 25px;
+                    flex-wrap: wrap;
+                }
+                .anuncio-item {
+                    position: relative;
+                    width: 400px;
+                    height: 400px;
+                    border-radius: 20px;
+                    overflow: hidden;
+                    background: #ffffff;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    transition: all 0.4s ease;
+                }
+                .anuncio-img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    display: block;
+                    transition: transform 0.5s ease;
+                }
+                .anuncio-item::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(to top, rgba(0,0,0,0.35), transparent);
+                    opacity: 0;
+                    transition: opacity 0.4s ease;
+                }
+                .anuncio-item:hover {
+                    transform: translateY(-8px) scale(1.02);
+                    box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+                }
+                .anuncio-item:hover .anuncio-img {
+                    transform: scale(1.08);
+                }
+                .anuncio-item:hover::before {
+                    opacity: 1;
+                }
+                .anuncio-item a {
+                    display: block;
+                    width: 100%;
+                    height: 100%;
+                }
+                @media (max-width: 768px) {
+                    .anuncio-item {
+                        width: 100%;
+                        height: 300px;
+                    }
+                }
+            </style>
+        </section>
+    @endif
+    
     @include('piepagina')
 
     <script src="assets/js/jquery-1.11.0.min.js"></script>

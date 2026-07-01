@@ -17,6 +17,7 @@ use App\Notifications\CodigoPermisoArchivoPres;
 use App\Notifications\CodigoPermisoContinuidadPres;
 use App\Notifications\CodigoPermisoAdelantoVacacion;
 use App\Notifications\CodigoPermisoFacturaRazonSocial;
+use App\Notifications\CodigoPermisoDesbloqueoPrestaciones;
 
 class CodigoController extends Controller
 {
@@ -30,21 +31,29 @@ class CodigoController extends Controller
         $nombreusuario = auth()->user()->name;
         $registroscodigos = PermisoCodigo::where('usuarioAutorizador', $nombreusuario)
                           ->orderBy('created_at','desc')
-                          ->simplePaginate(5);
+                          ->simplePaginate(10);
+
+        $solicitudcodigos = PermisoCodigo::where('estado', 'solicitado')
+                          ->orderBy('created_at','desc')
+                          ->simplePaginate(10);
 
         $permisos = PermisoCodigo::all();
-        /* $usuarios = User::where('estado', 'ACTIVO')->pluck('name', 'id'); */
         $usuarios = User::where('estado', 'ACTIVO')
-            ->whereDoesntHave('roles', function ($query) {
-                $query->whereIn('name', ['PROVEEDOR', 'PROVEEDOR IF']);
-            })
-            ->orderBy('name')
-            ->pluck('name', 'id');
-
-        // Usamos mapWithKeys para que el select solo reciba el id y la descripción
-        /* $permisosSolicitados = Permission::where('name', 'admin.asociados.crearbateriaclienteita')->orwhere('name', 'admin.ingreso.index')->orwhere('name', 'admin.asociados.crearbateriaclienteauditoria')->orwhere('name', 'admin.caja.ingresos.concederdescuentosingresos')->orwhere('name', 'admin.caja.ingresos.cambiarfecharegistro')->get()->mapWithKeys(function ($permiso) {
-            return [$permiso->id => $permiso->description];
-        });  */    
+        ->whereHas('roles', function ($query) {
+            $query->whereIn('name', [
+                'MAESTRO',
+                'ADMINISTRADOR',
+                'OPERATIVO',
+                'CONTABLE',
+                'PASANTE',
+                'ASISTENTE ADMINISTRATIVO',
+                'SUPERVISOR PRESTACIONES',
+                'EJECUTIVO PRESTACIONES'
+            ]);
+        })
+        ->orderBy('name')
+        ->pluck('name', 'id');
+  
         $permisosSolicitados = Permission::whereIn('name', [
             'admin.asociados.crearbateriaclienteita',
             'admin.ingreso.index',
@@ -57,7 +66,8 @@ class CodigoController extends Controller
             'admin.tramites.editararchivoprestaciones',
             'admin.tramites.continuidadtramiteprestaciones',
             'admin.proveedoresservicios.adelantovacaciones',
-            'admin.facturasegreso.cambiarrazonsocial'
+            'admin.facturasegreso.cambiarrazonsocial',
+            'admin.tramites.index'
         ])->get()->mapWithKeys(function ($permiso) {
             $nombresPersonalizados = [
                 'admin.asociados.crearbateriaclienteita' => 'CREAR BATERIA CLIENTE ITA',
@@ -71,7 +81,8 @@ class CodigoController extends Controller
                 'admin.tramites.editararchivoprestaciones' => 'EDITAR ARCHIVO DE PROCEDIMIENTO TRAMITE',
                 'admin.tramites.continuidadtramiteprestaciones' => 'DAR CONTINUIDAD DE PROCEDIMIENTO TRAMITE',
                 'admin.proveedoresservicios.adelantovacaciones' => 'ADELANTO DE VACACIONES',
-                'admin.facturasegreso.cambiarrazonsocial' => 'MODIFICAR RAZON SOCIAL DE FACTURAS IMPUESTOS'
+                'admin.facturasegreso.cambiarrazonsocial' => 'MODIFICAR RAZON SOCIAL DE FACTURAS IMPUESTOS',
+                'admin.tramites.index' => 'DESBLOQUEAR SECCIÓN DE PRESTACIONES'
             ];
 
             return [$permiso->id => $nombresPersonalizados[$permiso->name] ?? $permiso->name];
@@ -89,30 +100,29 @@ class CodigoController extends Controller
             'admin.tramites.editararchivoprestaciones' => 'EDITAR ARCHIVO DE PROCEDIMIENTO TRAMITE',
             'admin.tramites.continuidadtramiteprestaciones' => 'DAR CONTINUIDAD DE PROCEDIMIENTO TRAMITE',
             'admin.proveedoresservicios.adelantovacaciones' => 'ADELANTO DE VACACIONES',
-            'admin.facturasegreso.cambiarrazonsocial' => 'MODIFICAR RAZON SOCIAL DE FACTURAS IMPUESTOS'
+            'admin.facturasegreso.cambiarrazonsocial' => 'MODIFICAR RAZON SOCIAL DE FACTURAS IMPUESTOS',
+            'admin.tramites.index' => 'DESBLOQUEAR SECCIÓN DE PRESTACIONES'
         ];
 
-
-        // Generar el código una vez en el controlador
         $codigoGenerado = strtoupper(Str::random(7));
 
-        return view('admin.codigo.index', compact('registroscodigos','permisos', 'usuarios', 'permisosSolicitados', 'codigoGenerado', 'descripcionesPermisos'));
+        return view('admin.codigo.index', compact('solicitudcodigos','registroscodigos','permisos', 'usuarios', 'permisosSolicitados', 'codigoGenerado', 'descripcionesPermisos'));
     }
 
     public function store(Request $request)
     {
-        // Validar los campos requeridos
+        
         $request->validate([
-            'usuarioSolicitante' => 'required|exists:users,id',
-            'tiempoLimiteMinutos' => 'required|integer|min:1',
-            'permisoSolicitado' => 'required|exists:permissions,id',
+            'usuarioSolicitante' => 'required',
+            'tiempoLimiteMinutos' => '',
+            'permisoSolicitado' => 'required',
             'clienteid' => '',
         ]);
 
         $permisoSolicitado = Permission::find($request->permisoSolicitado);
         $usuarioSolicitante = User::find($request->usuarioSolicitante);
 
-        $permisoCodigo = new PermisoCodigo([
+        /* $permisoCodigo = new PermisoCodigo([
             'usuarioSolicitante' => $usuarioSolicitante->name,
             'usuarioAutorizador' => auth()->user()->name,
             'codigo' => strtoupper(Str::random(7)),
@@ -122,7 +132,35 @@ class CodigoController extends Controller
             'clienteid' => $request->clienteid,
         ]);
 
-        $permisoCodigo->save();
+        $permisoCodigo->save(); */
+
+        $permisoCodigo = null;
+
+        if ($request->solicitud_id) {
+            $permisoCodigo = PermisoCodigo::find($request->solicitud_id);
+        }
+
+        if ($permisoCodigo) {
+            $permisoCodigo->usuarioAutorizador = auth()->user()->name;
+            $permisoCodigo->codigo = strtoupper(Str::random(7));
+            $permisoCodigo->estado = 'pendiente';
+            $permisoCodigo->save();
+
+        } else {
+            $permisoCodigo = new PermisoCodigo([
+                'usuarioSolicitante' => $usuarioSolicitante->name,
+                'usuarioAutorizador' => auth()->user()->name,
+                'codigo' => strtoupper(Str::random(7)),
+                'fechaSolicitada' => Carbon::parse($request->fechaSolicitada)->format('Y-m-d'),
+                'tiempoLimite' => $request->tiempoLimiteMinutos,
+                'permisoSolicitado' => $permisoSolicitado->name,
+                'clienteid' => $request->clienteid,
+                'motivo' => $request->motivo,
+                'estado' => 'activo',
+            ]);
+            $permisoCodigo->save();
+        }
+
 
         if (in_array($permisoSolicitado->name, [
             'admin.asociados.crearbateriaclienteita',
@@ -189,6 +227,14 @@ class CodigoController extends Controller
         ])) {
             if ($usuarioSolicitante) {
                 $usuarioSolicitante->notify(new CodigoPermisoFacturaRazonSocial($permisoCodigo));
+            }
+        }
+
+        if (in_array($permisoSolicitado->name, [
+            'admin.tramites.index',
+        ])) {
+            if ($usuarioSolicitante) {
+                $usuarioSolicitante->notify(new CodigoPermisoDesbloqueoPrestaciones($permisoCodigo));
             }
         }
 

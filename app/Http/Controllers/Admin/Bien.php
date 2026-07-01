@@ -24,6 +24,272 @@ class ProveedorController extends Controller
         $this->middleware('can:admin.users.index')->only('index');
     } */
 
+        //REQUISITOS CLIENTE ITA PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES
+    public function subirdocrequisitospensionderivretiro(Cliente $cliente)
+    {
+        $clienteitaid = $cliente->id; 
+        $userRole = auth()->user()->getRoleNames()->first(); 
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $genero = strtolower($cliente->genero);
+        $ocupacion = strtolower($cliente->ocupacion);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+        ->firstOrFail();
+
+        $requisitosCliente = RequisitoSubCliente::where('clienteitaid', $clienteitaid)
+            ->where('servicio', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->first();
+
+        $campos = [
+            'poder' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'avcci' => 'AVC/CARNET ASEGURADO',
+            'cnacasegurado' => 'CERTIFICADO NACIMIENTO ASEGURADO',
+            'ciasegurado' => 'CARNET IDENTIDAD ASEGURADO',
+            'cmatrimonio' => 'CERTIFICADO DE MATRIMONIO',
+            'cnacconyuge' => 'CERTIFICADO NACIMIENTO CONYUGE',
+            'ciconyuge' => 'CARNET IDENTIDAD CONYUGE',
+            'cunionlibre' => 'CERTIFICADO DE UNIÓN LIBRE',
+            'cnacimientounionlibre' => 'CERTIFICADO DE NAC. DE UNIÓN LIBRE',
+            'ciunionlibre' => 'CARNET IDENTIDAD DE UNIÓN LIBRE',
+            'cdivorcio' => 'CERTIFICADO DE DIVORCIO',
+            'cdefuncion' => 'CERTIFICADO DE DEFUNCIÓN',
+            'cnacjihos' => 'CERTIFICADO NACIMIENTO HIJOS < 25',
+            'cihijos' => 'CARNET IDENTIDAD HIJOS < 25',
+            'denfaccidente' => 'DENUNCIA ENFERMEDAD ACCIDENTE',
+            'crodomicilio' => 'CROQUIS DE DOMICILIO',
+            'contrato' => 'CONTRATO',
+            'ctrabajo' => 'CERTIFICADO DE TRABAJO',
+            'boletapago' => 'BOLETA DE PAGO',
+            'egestora' => 'EXTRACTO DE GESTORA',
+            'actdatos' => 'ACTUALIZACIÓN DE DATOS',
+            'resolinvhijos' => 'RESOLUCIÓN INVALIDEZ DE HIJOS < 25',
+            'recordservicios' => 'RECORD SERVICIOS',
+            'infomedicasalud' => 'INFORMACIÓN MÉDICA',
+            'dictamencalentenc' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA',
+            'anteriordictamen' => 'ANTERIOR DICTAMEN O RESOLUCIÓN',
+            'ccompcotsenasir' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR',
+            'cnactreshijos' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS',
+            'ctrabajoinsalubre' => 'CERTIFICADO TRABAJO INSALUBRE',
+            'poderciapoderado' => 'PODER Y CARNET IDENTIDAD APODERADO',
+            'cmeddifuncion' => 'CERTIFICADO MÉDICO DIFUNCIÓN',
+            'cnactitular' => 'CERTIFICADO NACIMIENTO TITULAR',
+            'cititular' => 'CARNET IDENTIDAD TITULAR',
+            'cestudioshijos' => 'CERTIFICADO ESTUDIOS HIJOS < 25',
+            'tdeclaherederos' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS',
+            'cnacherederos' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS',
+            'cideclaherederos' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS',
+            'compenzacioncotizacion' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES',
+            'contratopensionderivretiro' => 'CONTRATO DE PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES',
+            'csalarioaportes' => 'CERTIFICADO DE SALARIOS Y APORTES',
+            'fotofrojoasegurado' => 'ASEGURADO FOTO 4X4 FONDO ROJO',
+            'fotofrojoapoderadocroquis' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO',
+            'csalarioaporteslegalizada' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)',
+            'finiquito' => 'FINIQUITO',
+        ];
+
+        $requisitos = [];
+
+        foreach ($campos as $campo => $label) {
+            $valor = $requisitosCliente ? $requisitosCliente->$campo : null;
+            $requisitos[] = [
+                'campo'    => $campo,
+                'label'    => $label,
+                'pendiente'=> $valor === 'PENDIENTE',
+                'subido'   => $valor && str_ends_with($valor, '.pdf'),
+            ];
+        }
+
+        $campos2 = [
+            'poder' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO', 'extra' => 'numeropoder'],
+            'avcci' => ['label' => 'AVC/CARNET ASEGURADO'],
+            'cnacasegurado' => ['label' => 'CERTIFICADO NACIMIENTO ASEGURADO'],
+            'ciasegurado' => ['label' => 'CARNET IDENTIDAD ASEGURADO'],
+            'cmatrimonio' => ['label' => 'CERTIFICADO DE MATRIMONIO'],
+            'cnacconyuge' => ['label' => 'CERTIFICADO NACIMIENTO CONYUGE'],
+            'ciconyuge' => ['label' => 'CARNET IDENTIDAD CONYUGE'],
+            'cunionlibre' => ['label' => 'CERTIFICADO DE UNIÓN LIBRE'],
+            'cnacimientounionlibre' => ['label' => 'CERTIFICADO DE NACIMIENTO DE UNIÓN LIBRE'],
+            'ciunionlibre' => ['label' => 'CARNET IDENTIDAD DE UNIÓN LIBRE'],
+            'cdivorcio' => ['label' => 'CERTIFICADO DE DIVORCIO'],
+            'cdefuncion' => ['label' => 'CERTIFICADO DE DEFUNCIÓN'],
+            'cnacjihos' => ['label' => 'CERTIFICADO NACIMIENTO HIJOS < 25'],
+            'cihijos' => ['label' => 'CARNET IDENTIDAD HIJOS < 25'],
+            'denfaccidente' => ['label' => 'DENUNCIA ENFERMEDAD ACCIDENTE'],
+            'crodomicilio' => ['label' => 'CROQUIS DE DOMICILIO'],
+            'contrato' => ['label' => 'CONTRATO', 'restricted' => true],
+            'recordservicios' => ['label' => 'RECORD SERVICIOS'],
+            'infomedicasalud' =>  ['label' => 'INFORMACIÓN MÉDICA'],
+            'ctrabajo' => ['label' => 'CERTIFICADO DE TRABAJO'],
+            'boletapago' => ['label' => 'BOLETA DE PAGO'],
+            'egestora' => ['label' => 'EXTRACTO DE GESTORA'],
+            'actdatos' => ['label' => 'ACTUALIZACIÓN DE DATOS'],
+            'resolinvhijos' => ['label' => 'RESOL. INVAL. HIJOS < 25'],
+            'dictamencalentenc' => ['label' => 'DICTAMEN CALIFICACIÓN ENTIDAD ENCARGADA'],
+            'anteriordictamen' => ['label' => 'ANTERIOR DICTAMEN O RESOLUCIÓN'],
+            'ccompcotsenasir' => ['label' => 'CERTIFICADO COMPENZACIÓN COTIZACIONES SENASIR'],
+            'cnactreshijos' => ['label' => 'CERTIFICADO NACIMIENTO DE 3 HIJOS'],
+            'ctrabajoinsalubre' => ['label' => 'CERTIFICADO TRABAJO INSALUBRE'],
+            'poderciapoderado' => ['label' => 'PODER Y CARNET IDENTIDAD APODERADO'],
+            'cmeddifuncion' => ['label' => 'CERTIFICADO MÉDICO DIFUNCIÓN'],
+            'cnactitular' => ['label' => 'CERTIFICADO NACIMIENTO TITULAR'],
+            'cititular' => ['label' => 'CARNET IDENTIDAD TITULAR'],
+            'cestudioshijos' => ['label' => 'CERTIFICADO ESTUDIOS HIJOS < 25'],
+            'tdeclaherederos' => ['label' => 'TESTIMONIO DE DECLARATORIA DE HEREDEROS'],
+            'cnacherederos' => ['label' => 'CERTIFICADO NACIMIENTO DECLARADOS HEREDEROS'],
+            'cideclaherederos' => ['label' => 'CARNET IDENTIDAD DECLARADOS HEREDEROS'],
+            'compenzacioncotizacion' => ['label' => 'CERTIFICADO DE COMPENZACIÓN DE COTIZACIONES'],
+            'contratopensionderivretiro' => ['label' => 'CONTRATO DE PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES'],
+            'csalarioaportes' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES'],
+            'fotofrojoasegurado' => ['label' => 'ASEGURADO FOTO 4X4 FONDO ROJO'],
+            'fotofrojoapoderadocroquis' => ['label' => 'APODERADO FOTO 4X4 FONDO ROJO + CROQUIS DOMICILIO'],
+            'csalarioaporteslegalizada' => ['label' => 'CERTIFICADO DE SALARIOS Y APORTES (PLANILLA LEGALIZADA)'],
+            'finiquito' => ['label' => 'FINIQUITO'],
+        ];
+
+        $requisitosList = [];
+
+        foreach ($campos2 as $campo => $cfg) {
+            $valor = $requisito->$campo ?? null;
+
+            $item = [
+                'label' => $cfg['label'],
+                'file' => $valor,
+                'uploaded' => $valor && str_ends_with($valor, '.pdf'),
+            ];
+
+            if (isset($cfg['extra'])) {
+                $item['extra'] = $requisito->{$cfg['extra']};
+            }
+            if (isset($cfg['restricted'])) {
+                $item['restricted'] = $cfg['restricted'];
+            }
+
+            $requisitosList[] = $item;
+        }
+
+        $hayPendientes = collect($requisitos)->contains('pendiente', true);
+
+        return view('admin.asociados.subirdocrequisitospensionderivretiro', compact('cliente','requisito','userRole','estadoLaboral',
+                    'numHijosMenores','estadoCivil','genero','ocupacion','rolusuario','requisitos','requisitosList','hayPendientes'));
+    }
+    public function generarchecklistclienteitapensionderivretiro(Cliente $cliente) 
+    {
+        $tieneRequisitos = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+            ->where('servicio', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')->exists();
+        $estadoLaboral = strtolower($cliente->estadolaboral);
+        $numHijosMenores = $cliente->numhijosmenores;
+        $estadoCivil = strtolower($cliente->estadocivil);
+        $servicio1 = strtolower($cliente->tipocliente);
+        $rolusuario = auth()->user()->getRoleNames()->first();
+        $genero = strtolower($cliente->genero);
+
+        $registroExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'CARTA DE CONSENTIMIENTO INFORMADO PARA EVALUACIÓN Y DERIVACIÓN A ESPECIALISTAS')
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->first();
+        $registroaprobadoExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INICIAR A CREAR BATERIA')
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->first();
+        $registroaprobadoinformefinalExistente = Estadocotizacionsubcliente::where('clienteitaid', $cliente->id)
+            ->where('detalle', 'APROBADO PARA INFORME FINAL DIRECTO')
+            ->where('tramite', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')
+            ->first();
+        $userSucursal = Auth::user()->sucursal;
+
+        $proveedores = Bateriaproveedor::where('accion', 'MEDICINA LABORAL')
+            ->where('estado', 'ACTIVO')
+            ->when($userSucursal === 'SANTA CRUZ', function ($query) {
+                return $query->where('sucursal', 'SANTA CRUZ');
+            })
+            ->distinct()
+            ->pluck('proveedor');
+
+        return view('admin.asociados.generarchecklistclienteitapensionderivretiro', compact('cliente','tieneRequisitos','estadoLaboral',
+                    'numHijosMenores','estadoCivil','registroExistente','rolusuario','registroaprobadoExistente','proveedores',
+                    'registroaprobadoinformefinalExistente','servicio1','genero'
+        ));
+    }
+    public function guardardocrequisitospensionderivretiro(Request $request, Cliente $cliente)
+    {
+        $requisito = RequisitoSubCliente::where('clienteitaid', $cliente->id)
+        ->where('servicio', 'PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES')->firstOrFail();
+
+        $request->validate([
+            'poder' => 'nullable|mimes:pdf',
+            'numeropoder' => 'nullable|max:45',
+            'avcci' => 'nullable|mimes:pdf',
+            'cnacasegurado' => 'nullable|mimes:pdf',
+            'ciasegurado' => 'nullable|mimes:pdf',
+            'cmatrimonio' => 'nullable|mimes:pdf',
+            'cnacconyuge' => 'nullable|mimes:pdf',
+            'ciconyuge' => 'nullable|mimes:pdf',
+            'cnacjihos' => 'nullable|mimes:pdf',
+            'cihijos' => 'nullable|mimes:pdf',
+            'denfaccidente' => 'nullable|mimes:pdf',
+            'crodomicilio' => 'nullable|mimes:pdf',
+            'contrato' => 'nullable|mimes:pdf',
+            'ctrabajo' => 'nullable|mimes:pdf',
+            'boletapago' => 'nullable|mimes:pdf',
+            'egestora' => 'nullable|mimes:pdf',
+            'actdatos' => 'nullable|mimes:pdf',
+            'resolinvhijos' => 'nullable|mimes:pdf',
+            'cunionlibre' => 'nullable|mimes:pdf',
+            'cnacimientounionlibre' => 'nullable|mimes:pdf',
+            'ciunionlibre' => 'nullable|mimes:pdf',
+            'cdivorcio' => 'nullable|mimes:pdf',
+            'cdefuncion' => 'nullable|mimes:pdf',
+            'recordservicios' => 'nullable|mimes:pdf',
+            'infomedicasalud' =>  'nullable|mimes:pdf',
+            'dictamencalentenc' => 'nullable|mimes:pdf',
+            'anteriordictamen' => 'nullable|mimes:pdf',
+            'ccompcotsenasir' => 'nullable|mimes:pdf',
+            'cnactreshijos' => 'nullable|mimes:pdf',
+            'ctrabajoinsalubre' => 'nullable|mimes:pdf',
+            'poderciapoderado' => 'nullable|mimes:pdf',
+            'cmeddifuncion' => 'nullable|mimes:pdf',
+            'cnactitular' => 'nullable|mimes:pdf',
+            'cititular' => 'nullable|mimes:pdf',
+            'cestudioshijos' => 'nullable|mimes:pdf',
+            'tdeclaherederos' => 'nullable|mimes:pdf',
+            'cnacherederos' => 'nullable|mimes:pdf',
+            'cideclaherederos' => 'nullable|mimes:pdf',
+            'compenzacioncotizacion' => 'nullable|mimes:pdf',
+            'contratopensionderivretiro' => 'nullable|mimes:pdf',
+            'csalarioaportes' => 'nullable|mimes:pdf',
+            'fotofrojoasegurado' => 'nullable|mimes:pdf',
+            'fotofrojoapoderadocroquis' => 'nullable|mimes:pdf',
+            'csalarioaporteslegalizada' => 'nullable|mimes:pdf',
+            'finiquito' => 'nullable|mimes:pdf',
+        ]);
+
+        $camposArchivos = [
+            'poder','avcci','cnacasegurado','ciasegurado','cmatrimonio','cnacconyuge','ciconyuge','cnacjihos','cihijos',
+            'denfaccidente','crodomicilio','contrato','ctrabajo','boletapago','egestora','actdatos','resolinvhijos',
+            'cunionlibre','cnacimientounionlibre','ciunionlibre','cdivorcio','cdefuncion','recordservicios','dictamencalentenc',
+            'anteriordictamen','ccompcotsenasir','cnactreshijos','ctrabajoinsalubre','poderciapoderado','cmeddifuncion',
+            'cnactitular','cititular','cestudioshijos','tdeclaherederos','cnacherederos','cideclaherederos','compenzacioncotizacion',
+            'contratopensionderivretiro','csalarioaportes','fotofrojoasegurado','fotofrojoapoderadocroquis','csalarioaporteslegalizada',
+            'finiquito','infomedicasalud'
+        ];
+
+        foreach ($camposArchivos as $campo) {
+            $this->manejarArchivo($request, $campo, $requisito, $cliente->id);
+        }
+
+        if ($request->filled('numeropoder')) {
+            $requisito->update(['numeropoder' => $request->input('numeropoder')]);
+        }
+
+        return redirect()->route('admin.asociados.subirdocrequisitospensionderivretiro', $cliente)
+                            ->with('info', 'El documento se subió con éxito');
+    }
+//
+
     public function index(Request $request)
     {
         $nombreproveedor = $request->get('buscarpor');

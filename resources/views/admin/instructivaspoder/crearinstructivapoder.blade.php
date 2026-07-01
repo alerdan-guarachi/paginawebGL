@@ -40,6 +40,34 @@
                                         {!! Form::label('tipo_pdf', 'Trámite:') !!}
                                         {!! Form::select('tipo_pdf', $tramitesFiltrados, null, ['class' => 'form-control', 'placeholder' => 'Selecciona una opción', 'id' => 'tipoPdfSelect']) !!}
                                     </div>
+                                    <div class="form-group col-lg-4" id="tipoCartaContainer" style="display: none;">
+                                        {!! Form::label('tipo_carta', 'Tipo de Carta:') !!}
+                                        {!! Form::select('tipo_carta', [
+                                            'MAYOR A 65 AÑOS CON PENSIÓN DE INVALIDEZ' => 'MAYOR A 65 AÑOS CON PENSIÓN DE INVALIDEZ',
+                                            'DERIVADA DE PENSIÓN POR MUERTE' => 'DERIVADA DE PENSIÓN POR MUERTE',
+                                            'MENOR A 120 APORTES' => 'MENOR A 120 APORTES',
+                                            'RETIROS TEMPORALES' => 'RETIROS TEMPORALES'
+                                        ], null, ['class' => 'form-control', 'placeholder' => 'Selecciona tipo de carta', 'id' => 'tipoPdfSelect2']) !!}
+                                    </div>
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            const select = document.getElementById('tipoPdfSelect');
+                                            const container = document.getElementById('tipoCartaContainer');
+                                            function toggleTipoCarta() {
+                                                const valor = select.options[select.selectedIndex].text;
+                                                if (
+                                                    valor === 'RETIRO DE APORTES PARCIAL' ||
+                                                    valor === 'RETIRO DE APORTES TOTAL'
+                                                ) {
+                                                    container.style.display = 'block';
+                                                } else {
+                                                    container.style.display = 'none';
+                                                }
+                                            }
+                                            select.addEventListener('change', toggleTipoCarta);
+                                            toggleTipoCarta();
+                                        });
+                                    </script>
                                     <div class="form-group col-lg-2">
                                         {!! Form::label('fechaemitido3', 'Fecha Reg.:') !!}
                                         <input type="date" class="form-control" id="fechaactual" name="fechaactual" value="{{ \Carbon\Carbon::now()->toDateString() }}">
@@ -61,7 +89,7 @@
                                     </div>
                                     <div class="form-group col-lg-3" id="campoTipopension" style="display: none;">
                                         {!! Form::label('tipopension', 'Tipo Pensión:') !!}
-                                        <select name="tipopension" class="form-control form-control-sm">
+                                        <select name="tipopension" class="form-control">
                                             <option value="">Selecciona una opción</option>
                                             <option value="DERIVADA DE VEJEZ">DERIVADA DE VEJEZ</option>
                                             <option value="DERIVADA DE INVALIDEZ">DERIVADA DE INVALIDEZ</option>
@@ -69,30 +97,32 @@
                                     </div>
                                     <div class="form-group col-lg-3" id="campoGenerofallecido" style="display: none;">
                                         {!! Form::label('generofallecido', 'Género (Fallecido):') !!}
-                                        <select name="generofallecido" class="form-control form-control-sm">
+                                        <select name="generofallecido" class="form-control">
                                             <option value="">Selecciona una opción</option>
                                             <option value="MASCULINO">MASCULINO</option>
                                             <option value="FEMENINO">FEMENINO</option>
                                         </select>
                                     </div>
-                                    <div class="form-group col-lg-4" id="campoNombrefallecido" style="display: none;">
+                                    <div class="form-group col-lg-3" id="campoNombrefallecido" style="display: none;">
                                         {!! Form::label('nombrefallecido', 'Nombre (Fallecido):') !!}
-                                        <input type="text" class="form-control form-control-sm" id="nombrefallecido" name="nombrefallecido">
+                                        <input type="text" class="form-control" id="nombrefallecido" name="nombrefallecido">
                                     </div>
                                     <div class="form-group col-lg-2" id="campoCifallecido" style="display: none;">
                                         {!! Form::label('cifallecido', 'CI (Fallecido):') !!}
-                                        <input type="text" class="form-control form-control-sm" id="cifallecido" name="cifallecido">
+                                        <input type="text" class="form-control" id="cifallecido" name="cifallecido">
                                     </div>
 
                                     <script>
                                         document.addEventListener("DOMContentLoaded", function () {
                                             const tipoPdfSelect = document.getElementById("tipoPdfSelect");
+                                            const tipoCartaSelect = document.getElementById("tipoPdfSelect2");
+
                                             const campoTipopension = document.getElementById("campoTipopension");
                                             const campoGenerofallecido = document.getElementById("campoGenerofallecido");
                                             const campoNombrefallecido = document.getElementById("campoNombrefallecido");
                                             const campoCifallecido = document.getElementById("campoCifallecido");
 
-                                            function toggleTipopension() {
+                                            /* function toggleTipopension() {
 
                                                 if (tipoPdfSelect.value === "PENSIÓN POR MUERTE") {
 
@@ -108,16 +138,80 @@
                                                     campoNombrefallecido.style.display = "block";
                                                     campoCifallecido.style.display = "block";
 
-                                                } else {
+                                                }
+                                                // 🔥 NUEVA CONDICIÓN (RETIROS + DERIVADA)
+                                                else if (
+                                                    (tipoPdf === "RETIRO DE APORTES PARCIAL" || tipoPdf === "RETIRO DE APORTES TOTAL") &&
+                                                    tipoCarta === "DERIVADA DE PENSIÓN POR MUERTE"
+                                                ) {
+
+                                                    campoNombrefallecido.style.display = "block";
+                                                    campoCifallecido.style.display = "block";
+
+                                                } 
+                                                else {
 
                                                     campoTipopension.style.display = "none";
                                                     campoGenerofallecido.style.display = "none";
                                                     campoNombrefallecido.style.display = "none";
                                                     campoCifallecido.style.display = "none";
                                                 }
+                                            } */
+
+                                            function toggleTipopension() {
+
+                                                const tipoPdf = tipoPdfSelect.value;
+                                                const tipoCarta = tipoCartaSelect.value;
+
+                                                // 🔴 RESET
+                                                campoTipopension.style.display = "none";
+                                                campoGenerofallecido.style.display = "none";
+                                                campoNombrefallecido.style.display = "none";
+                                                campoCifallecido.style.display = "none";
+
+                                                // ✅ PENSIÓN POR MUERTE
+                                                if (tipoPdf === "PENSIÓN POR MUERTE") {
+
+                                                    campoTipopension.style.display = "block";
+                                                    campoGenerofallecido.style.display = "block";
+                                                    campoNombrefallecido.style.display = "block";
+                                                    campoCifallecido.style.display = "block";
+
+                                                }
+                                                // ✅ MASA HEREDITARIA
+                                                else if (tipoPdf === "MASA HEREDITARIA") {
+
+                                                    campoGenerofallecido.style.display = "block";
+                                                    campoNombrefallecido.style.display = "block";
+                                                    campoCifallecido.style.display = "block";
+
+                                                }
+                                                // 🔥 RETIRO + DERIVADA (LO QUE QUIERES)
+                                                else if (
+                                                    (tipoPdf === "RETIRO DE APORTES PARCIAL" || tipoPdf === "RETIRO DE APORTES TOTAL") &&
+                                                    tipoCarta === "DERIVADA DE PENSIÓN POR MUERTE"
+                                                ) {
+
+                                                    campoGenerofallecido.style.display = "block";
+                                                    campoNombrefallecido.style.display = "block";
+                                                    campoCifallecido.style.display = "block";
+
+                                                }
+                                                else if (
+                                                    tipoPdf === "PENSIÓN POR MUERTE CON DERIVACIÓN A RETIRO DE APORTES"
+                                                ) {
+
+                                                    campoGenerofallecido.style.display = "block";
+                                                    campoNombrefallecido.style.display = "block";
+                                                    campoCifallecido.style.display = "block";
+
+                                                }
                                             }
 
+                                            // 🔥 ESCUCHAR AMBOS SELECTS
                                             tipoPdfSelect.addEventListener("change", toggleTipopension);
+                                            tipoCartaSelect.addEventListener("change", toggleTipopension);
+
                                             toggleTipopension();
                                         });
                                     </script>
@@ -152,8 +246,8 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="mb-0" style="font-weight: 700;">VISTA PREVIA DE INSTRUCTIVA DE PODER</h5>
-                                    <a id="btnActualizarVistaCarta" class="btn btn-sm btn-verdocumento">
-                                        <i class="fas fa-sync-alt"></i> ACTUALIZAR
+                                    <a id="btnActualizarVistaCarta" class="btn btn-sm btn-verdocumento" title="ACTUALIZAR INSTRUCTIVA">
+                                        <i class="fas fa-sync-alt"></i>
                                     </a>
                                 </div>
                                 <iframe id="pdfPreview3" style="width:100%; height:500px; border:1px solid #ddd;"></iframe>
@@ -162,7 +256,7 @@
                     </div>
                     <script>
                         $(document).ready(function() {
-                            function updatePDFPreview3() {
+                            /* function updatePDFPreview3() {
                                 let formData3 = $('#formCarta').serialize();
                                 let fontSize = $('#fontsize').val() || '15px';
                                 formData3 += '&fontsize3=' + encodeURIComponent(fontSize);
@@ -175,10 +269,40 @@
                                     return;
                                 }
                                 $('#pdfPreview3').attr('src', '{{ url("/preview-instructiva") }}/' + clienteId3 + '?' + formData3);
+                            } */
+                            function updatePDFPreview3() {
+                                let tipoPdf3 = $('[name="tipo_pdf"]').val(); // 👈 mejor usar value
+                                let tipoCarta = $('[name="tipo_carta"]').val();
+                                if (!tipoPdf3 && !tipoCarta) {
+                                    $('#pdfPreview3').attr('src', '');
+                                    return;
+                                }
+                                let formData3 = $('#formCarta').serialize();
+                                let fontSize = $('#fontsize').val() || '15px';
+                                formData3 += '&fontsize3=' + encodeURIComponent(fontSize);
+                                let marginSize = $('#marginSize').val() || '1.5cm 3cm 1.5cm 3cm';
+                                formData3 += '&marginsize3=' + encodeURIComponent(marginSize);
+                                let clienteId3 = "{{ $cliente->id }}";
+                                if (!tipoPdf3) {
+                                    $('#pdfPreview3').attr('src', '');
+                                    return;
+                                }
+                                if (
+                                    tipoPdf3 === 'RETIRO DE APORTES PARCIAL' ||
+                                    tipoPdf3 === 'RETIRO DE APORTES TOTAL'
+                                ) {
+                                    if (!tipoCarta) {
+                                        $('#pdfPreview3').attr('src', '');
+                                        return;
+                                    }
+                                }
+                                $('#pdfPreview3').attr(
+                                    'src',
+                                    '{{ url("/preview-instructiva") }}/' + clienteId3 + '?' + formData3
+                                );
                             }
-
                             $(document).ready(function() {
-                                $('[name="tipo_pdf"], #fontsize, #marginSize').on('change', function() {
+                                $('[name="tipo_pdf"], [name="tipo_carta"], #fontsize, #marginSize').on('change', function() {
                                     updatePDFPreview3();
                                 });
                                 $('#btnActualizarVistaCarta').on('click', function(e) {
