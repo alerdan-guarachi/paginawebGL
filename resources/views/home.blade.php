@@ -349,6 +349,9 @@
                 </div>
             </div>
 
+            @php
+                $esMaestro = auth()->user()->getRoleNames()->contains('MAESTRO');
+            @endphp
             <div class="titulo">USUARIOS GOOD LIFE APP</div>
             <div class="card-body">
                 <div class="row text-center">
@@ -358,6 +361,11 @@
                         <div style="border-right: 1px solid #e9ecef; background: #f8f9fa; padding: 10px 0; border-radius: 6px;">
                             <div class="text-muted" style="font-size: 12px;">
                                 SANTA CRUZ
+                                @if($esMaestro)
+                                    <a class="btn btn-xs btn-outline-secondary ml-2" onclick="abrirModal('SANTA CRUZ')">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                @endif
                             </div>
                             <div class="count-up text-dark font-weight-bold" style="font-size: 26px;"
                                 data-count="{{ $santaCruzCount }}">
@@ -371,6 +379,11 @@
                         <div style="border-right: 1px solid #e9ecef; background: #f8f9fa; padding: 10px 0; border-radius: 6px;">
                             <div class="text-muted" style="font-size: 12px;">
                                 COCHABAMBA
+                                @if($esMaestro)
+                                    <a class="btn btn-xs btn-outline-secondary ml-2" onclick="abrirModal('COCHABAMBA')">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                @endif
                             </div>
                             <div class="count-up text-dark font-weight-bold" style="font-size: 26px;"
                                 data-count="{{ $cochabambaCount }}">
@@ -391,9 +404,85 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
+            <div class="modal fade" id="modalUsuarios" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="tituloModalUsuarios">USUARIOS DE</h5>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="text" id="buscarUsuario" class="form-control mb-3" placeholder="Buscar usuario...">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Usuario</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tablaUsuarios">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                let sucursalActual = '';
+
+                function abrirModal(sucursal) {
+                    sucursalActual = sucursal;
+
+                    // 🔥 CAMBIAR TÍTULO DINÁMICAMENTE
+                    document.getElementById('tituloModalUsuarios').innerText = `USUARIOS DE ${sucursal}`;
+
+                    // limpiar buscador
+                    document.getElementById('buscarUsuario').value = '';
+
+                    $('#modalUsuarios').modal('show');
+                    cargarUsuarios();
+                }
+
+                function cargarUsuarios(buscar = '') {
+
+                    let url = `{{ route('usuarios.sucursal') }}?sucursal=${encodeURIComponent(sucursalActual)}&buscar=${encodeURIComponent(buscar)}`;
+
+                    fetch(url)
+                        .then(res => res.json())
+                        .then(data => {
+
+                            let html = '';
+
+                            if (!Array.isArray(data) || data.length === 0) {
+                                html = `<tr>
+                                            <td colspan="2" class="text-center text-muted">Sin resultados</td>
+                                        </tr>`;
+                            } else {
+                                data.forEach((nombre, index) => {
+                                    html += `<tr>
+                                                <td>${index + 1}</td>
+                                                <td>${nombre}</td>
+                                            </tr>`;
+                                });
+                            }
+
+                            document.getElementById('tablaUsuarios').innerHTML = html;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                }
+
+                // BUSCADOR EN TIEMPO REAL
+                document.getElementById('buscarUsuario').addEventListener('keyup', function () {
+                    let texto = this.value;
+                    cargarUsuarios(texto);
+                });
+            </script>
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
 

@@ -235,7 +235,7 @@ Route::post('/uploadexcel', [BancoController::class, 'uploadexcel'])->name('uplo
     Route::post('/consultas/evaluar', [ConsultaController::class, 'evaluar']);
     Route::get('/sintomas/buscar', [ConsultaController::class, 'buscarSintomas']);
 //
-
+    Route::get('/usuarios-por-sucursal', [App\Http\Controllers\HomeController::class, 'usuariosPorSucursal'])->name('usuarios.sucursal');
 //ASESORAMIENTO
     
 //
@@ -527,6 +527,10 @@ Route::post('/licencias/{id}/pagar',  [App\Http\Controllers\HomeController::clas
     Route::get('informesfinales/informesfinalesauditoria/6', 'App\Http\Controllers\Admin\InformeFinalController@informesfinalesauditoria')->name('admin.informesfinales.informesfinalesauditoria');
     Route::get('admprogramaciones/controlregistros/7', 'App\Http\Controllers\Admin\AdministrarProgramacionController@controlregistros')->name('admin.admprogramaciones.controlregistros');
     Route::get('informesfinales/reservasmedicas/8', 'App\Http\Controllers\Admin\InformeFinalController@reservasmedicas')->name('admin.informesfinales.reservasmedicas');
+
+    Route::get('informesfinales/historialreservasmedicas/8', 'App\Http\Controllers\Admin\InformeFinalController@historialreservasmedicas')->name('admin.informesfinales.historialreservasmedicas');
+    Route::get('/buscarhistorialreservamedicas', 'App\Http\Controllers\Admin\InformeFinalController@buscarhistorialreservamedicas')->name('buscarhistorialreservamedicas');
+
     Route::get('informesfinales/consiliacionesclientesbanco/10', 'App\Http\Controllers\Admin\InformeFinalController@consiliacionesclientesbanco')->name('admin.informesfinales.consiliacionesclientesbanco');
 
     Route::get('/buscarresultadosmedicosclientesauditoria', 'App\Http\Controllers\Admin\InformeFinalController@buscarresultadosmedicosclientesauditoria')->name('buscarresultadosmedicosclientesauditoria');

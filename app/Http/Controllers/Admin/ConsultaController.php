@@ -4,289 +4,285 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Sintoma;
-use App\Models\IaRegla;
-use App\Models\Consulta;
+use App\Models\Symptom;
+use App\Models\AiRule;
 
 class ConsultaController extends Controller
 {
     public function create()
     {
-        $sintomas = Sintoma::where('estado', 1)->get();
+        $sintomas = Symptom::where('state', 1)->get();
 
         return view('admin.consultas.create', compact('sintomas'));
     }
 
     public function evaluar(Request $request)
-    {
-        $request->validate([
-            'sintomas' => 'required|array|min:1',
-            'sintomas.*' => 'exists:sintomas,id',
-            'edad' => 'nullable|integer|min:0|max:120',
-            'sexo' => 'nullable|in:todos,masculino,femenino',
-            'embarazada' => 'nullable|in:0,1',
-        ]);
+{
+    $request->validate([
+        'sintomas' => 'required|array|min:1',
+        'sintomas.*' => 'exists:symptoms,id',
+        'edad' => 'nullable|integer|min:0|max:120',
+        'sexo' => 'nullable|in:todos,masculino,femenino',
+        'embarazada' => 'nullable|in:0,1',
+    ]);
 
-        $sintomasIds = collect($request->sintomas)
-            ->map(fn($id) => (int) $id)
-            ->toArray();
+    $sintomasIds = collect($request->sintomas)->map(fn($id) => (int)$id)->toArray();
 
-        $edad = $request->edad !== null && $request->edad !== '' ? (int) $request->edad : null;
-        $sexo = $request->sexo ?: 'todos';
-        $embarazada = $request->embarazada !== null && $request->embarazada !== '' ? (int) $request->embarazada : null;
+    $edad = $request->edad !== null && $request->edad !== '' ? (int)$request->edad : null;
+    $sexo = $request->sexo ?: 'todos';
+    $embarazada = $request->embarazada !== null && $request->embarazada !== '' ? (int)$request->embarazada : null;
 
-        $reglas = IaRegla::where('estado', 1)
-            ->with(['sintomas', 'estudios', 'especialidades'])
-            ->get();
+    $reglas = AiRule::where('state', 1)
+        ->with(['symptoms', 'studies', 'specialties'])
+        ->get();
 
-        $resultados = [];
+    $resultados = [];
 
-        foreach ($reglas as $regla) {
+    foreach ($reglas as $regla) {
 
-            $sintomasRegla = $regla->sintomas;
-            $totalSintomasRegla = $sintomasRegla->count();
+        $sintomasRegla = $regla->symptoms;
 
-            if ($totalSintomasRegla == 0) {
-                continue;
-            }
+        if ($sintomasRegla->isEmpty()) {
+            continue;
+        }
 
-            $coincidencias = 0;
-            $pesoSintomas = 0;
-            $sintomasCriticos = [];
+        $coincidencias = 0;
+        $pesoTotal = 0;
+        $scoreSintomas = 0;
+        $penalizacion = 0;
+        $sintomasCriticos = [];
 
-            foreach ($sintomasRegla as $sintoma) {
+        foreach ($sintomasRegla as $sintoma) {
 
-                if (!in_array($sintoma->id, $sintomasIds)) {
-                    continue;
-                }
+            $peso = ((int)($sintoma->pivot->weight ?? 1)) * ((int)($sintoma->base_severity ?? 1));
+            $pesoTotal += $peso;
+
+            if (in_array($sintoma->id, $sintomasIds)) {
 
                 $coincidencias++;
+                $scoreSintomas += $peso;
 
-                $pesoSintomas += ((int)($sintoma->pivot->peso ?? 1)) * ((int)($sintoma->severidad_base ?? 1));
+                // 🔥 Bonus por crítico
+                if ((int)$sintoma->is_critical === 1) {
+                    $scoreSintomas += $peso * 0.5;
 
-                if ((int)$sintoma->es_critico === 1) {
                     $sintomasCriticos[] = [
                         'id' => $sintoma->id,
-                        'nombre' => $sintoma->nombre,
-                        'categoria' => $sintoma->categoria,
-                        'severidad_base' => $sintoma->severidad_base,
+                        'nombre' => $sintoma->name,
+                        'category' => $sintoma->category,
+                        'base_severity' => $sintoma->base_severity,
                     ];
                 }
-            }
 
-            if ($coincidencias == 0) {
-                continue;
-            }
+            } else {
 
-            $porcentaje = round(($coincidencias / $totalSintomasRegla) * 100);
-
-            $factorEdad = 1;
-
-            if ($edad !== null) {
-                if ($regla->edad_min !== null && $edad < $regla->edad_min) {
-                    $factorEdad = 0.60;
-                }
-
-                if ($regla->edad_max !== null && $edad > $regla->edad_max) {
-                    $factorEdad = 0.60;
+                // 🔥 Penalización si falta síntoma importante
+                if ($peso >= 3) {
+                    $penalizacion += $peso * 0.7;
                 }
             }
+        }
 
-            $factorSexo = 1;
+        $minimoRequerido = (int)($regla->min_symptom ?? 1);
+        if ($coincidencias < $minimoRequerido) {
+            continue;
+        }
 
-            if ($regla->sexo_aplica !== null && $regla->sexo_aplica !== 'todos') {
-                $factorSexo = ($sexo === $regla->sexo_aplica) ? 1.15 : 0.35;
+        // 🎯 Score normalizado real
+        $scoreBase = $pesoTotal > 0
+            ? ($scoreSintomas - $penalizacion) / $pesoTotal
+            : 0;
+
+        $score = $scoreBase * 100;
+
+        // 🔥 BONUS si hay síntomas críticos
+        if (count($sintomasCriticos) > 0) {
+            $score *= 1.3;
+        }
+
+        // 🧠 FACTORES SUAVES
+
+        $factorEdad = 1;
+        if ($edad !== null) {
+            if ($regla->age_min !== null && $edad < $regla->age_min) {
+                $factorEdad = 0.8;
             }
-
-            $factorEmbarazo = 1;
-
-            if ($regla->aplica_embarazo !== null) {
-                if ($embarazada === null) {
-                    $factorEmbarazo = 0.70;
-                } else {
-                    $factorEmbarazo = ((int)$regla->aplica_embarazo === $embarazada) ? 1.20 : 0.25;
-                }
+            if ($regla->age_max !== null && $edad > $regla->age_max) {
+                $factorEdad = 0.8;
             }
+        }
 
-            $pesoRegla = (int)($regla->peso ?? 1);
-            $prioridadRegla = (int)($regla->prioridad ?? 1);
+        $factorSexo = 1;
+        if ($regla->sex_applies !== null && $regla->sex_applies !== 'todos') {
+            $factorSexo = ($sexo === $regla->sex_applies) ? 1.1 : 0.8;
+        }
 
-            $scoreBase = ($pesoSintomas * $pesoRegla) + $prioridadRegla;
-
-            $score = round($scoreBase * $factorEdad * $factorSexo * $factorEmbarazo, 2);
-
-            if ($score <= 0) {
-                continue;
+        $factorEmbarazo = 1;
+        if ($regla->applies_pregnancy !== null) {
+            if ($embarazada === null) {
+                $factorEmbarazo = 0.9;
+            } else {
+                $factorEmbarazo = ((int)$regla->applies_pregnancy === $embarazada) ? 1.1 : 0.7;
             }
+        }
 
-            $estudiosRegla = [];
+        $score = round($score * $factorEdad * $factorSexo * $factorEmbarazo, 2);
 
-            foreach ($regla->estudios as $estudio) {
+        // ❌ Eliminar ruido
+        if ($score < 20) {
+            continue;
+        }
 
-                if ((int)$estudio->estado !== 1) {
-                    continue;
-                }
+        $porcentaje = round(($coincidencias / $sintomasRegla->count()) * 100);
 
-                $estudiosRegla[] = [
-                    'id' => $estudio->id,
-                    'nombre' => $estudio->nombre,
-                    'tipo' => $estudio->tipo,
-                    'descripcion' => $estudio->descripcion,
-                    'preparacion' => $estudio->preparacion,
-                    'costo_referencial' => $estudio->costo_referencial,
-                    'codigo' => $estudio->codigo,
-                    'requiere_ayuno' => $estudio->requiere_ayuno,
-                    'requiere_orden_medica' => $estudio->requiere_orden_medica,
-                    'prioridad' => $estudio->pivot->prioridad,
-                    'recomendado' => $estudio->pivot->recomendado,
-                    'motivo' => $estudio->pivot->motivo,
-                    'score_origen' => $score,
-                ];
-            }
+        // =====================
+        // 🧪 ESTUDIOS
+        // =====================
+        $estudiosRegla = [];
 
-            $especialidadesRegla = [];
+        foreach ($regla->studies as $estudio) {
 
-            foreach ($regla->especialidades as $especialidad) {
+            if ((int)$estudio->state !== 1) continue;
 
-                if ((int)$especialidad->estado !== 1) {
-                    continue;
-                }
+            $prioridadFinal = ($estudio->pivot->priority ?? 1) * $score;
 
-                $especialidadesRegla[] = [
-                    'id' => $especialidad->id,
-                    'nombre' => $especialidad->nombre,
-                    'descripcion' => $especialidad->descripcion,
-                    'codigo' => $especialidad->codigo,
-                    'prioridad' => $especialidad->pivot->prioridad,
-                    'score_origen' => $score,
-                ];
-            }
-
-            $resultados[] = [
-                'id' => $regla->id,
-                'regla' => $regla->nombre,
-                'descripcion' => $regla->descripcion,
-                'prioridad' => $regla->prioridad,
-                'peso' => $regla->peso,
-                'min_sintomas' => $regla->min_sintomas,
-                'urgencia' => $regla->nivel_urgencia,
-                'edad_min' => $regla->edad_min,
-                'edad_max' => $regla->edad_max,
-                'aplica_embarazo' => $regla->aplica_embarazo,
-                'sexo_aplica' => $regla->sexo_aplica,
-                'mensaje_alerta' => $regla->mensaje_alerta,
-                'recomendacion' => $regla->recomendacion,
-                'score' => $score,
-                'porcentaje' => $porcentaje,
-                'coincidencias' => $coincidencias,
-                'total_sintomas' => $totalSintomasRegla,
-                'sintomas_criticos' => $sintomasCriticos,
-                'estudios' => $estudiosRegla,
-                'especialidades' => $especialidadesRegla,
+            $estudiosRegla[] = [
+                'id' => $estudio->id,
+                'name' => $estudio->name,
+                'type' => $estudio->type,
+                'description' => $estudio->description,
+                'preparation' => $estudio->preparation,
+                'code' => $estudio->code,
+                'requires_fasting' => $estudio->requires_fasting,
+                'requires_medical_order' => $estudio->requires_medical_order,
+                'priority' => $prioridadFinal,
+                'motive' => $estudio->pivot->motive,
+                'score_origen' => $score,
             ];
         }
 
-        usort($resultados, fn($a, $b) => $b['score'] <=> $a['score']);
+        // =====================
+        // 👨‍⚕️ ESPECIALIDADES
+        // =====================
+        $especialidadesRegla = [];
 
-        $fuertes = collect($resultados)
-            ->filter(fn($r) => $r['porcentaje'] >= 50 || $r['coincidencias'] >= 2)
-            ->sortByDesc('score')
-            ->take(5)
-            ->values()
-            ->toArray();
+        foreach ($regla->specialties as $especialidad) {
 
-        if (count($fuertes) > 0) {
-            $resultadosFinales = $fuertes;
-        } else {
-            $resultadosFinales = collect($resultados)
-                ->sortByDesc('score')
-                ->take(3)
-                ->values()
-                ->toArray();
+            if ((int)$especialidad->state !== 1) continue;
+
+            $prioridadFinal = ($especialidad->pivot->priority ?? 1) * $score;
+
+            $especialidadesRegla[] = [
+                'id' => $especialidad->id,
+                'name' => $especialidad->name,
+                'description' => $especialidad->description,
+                'code' => $especialidad->code,
+                'priority' => $prioridadFinal,
+                'score_origen' => $score,
+            ];
         }
 
-        $estudios = [];
-        $especialidades = [];
-
-        foreach ($resultadosFinales as $r) {
-
-            foreach ($r['estudios'] as $e) {
-                if (!isset($estudios[$e['id']]) || $e['score_origen'] > $estudios[$e['id']]['score_origen']) {
-                    $estudios[$e['id']] = $e;
-                }
-            }
-
-            foreach ($r['especialidades'] as $e) {
-                if (!isset($especialidades[$e['id']]) || $e['score_origen'] > $especialidades[$e['id']]['score_origen']) {
-                    $especialidades[$e['id']] = $e;
-                }
-            }
-        }
-
-        usort($estudios, fn($a, $b) =>
-            ($b['score_origen'] <=> $a['score_origen'])
-            ?: (($a['prioridad'] ?? 99) <=> ($b['prioridad'] ?? 99))
-        );
-
-        usort($especialidades, fn($a, $b) =>
-            ($b['score_origen'] <=> $a['score_origen'])
-            ?: (($a['prioridad'] ?? 99) <=> ($b['prioridad'] ?? 99))
-        );
-
-        $alertas = collect($resultadosFinales)
-            ->pluck('mensaje_alerta')
-            ->filter(fn($a) => $a && $a !== 'NULL' && $a !== 'Sin alerta crítica')
-            ->unique()
-            ->values()
-            ->toArray();
-
-        $recomendaciones = collect($resultadosFinales)
-            ->pluck('recomendacion')
-            ->filter(fn($r) => $r && $r !== 'NULL')
-            ->unique()
-            ->values()
-            ->toArray();
-
-        $diagnosticoPrincipal = $resultadosFinales[0] ?? null;
-
-        $diagnosticosSecundarios = collect($resultadosFinales)
-            ->skip(1)
-            ->take(2)
-            ->values();
-
-        return response()->json([
-            'principal' => $diagnosticoPrincipal,
-            'diferenciales' => $diagnosticosSecundarios,
-            'diagnosticos' => $resultadosFinales,
-            'estudios' => array_slice(array_values($estudios), 0, 4),
-            'especialidades' => array_slice(array_values($especialidades), 0, 3),
-            'alertas' => $alertas,
-            'recomendaciones' => $recomendaciones,
-        ]);
+        $resultados[] = [
+            'id' => $regla->id,
+            'regla' => $regla->name,
+            'description' => $regla->description,
+            'urgency_level' => $regla->urgency_level,
+            'score' => $score,
+            'percentage' => $porcentaje,
+            'matches' => $coincidencias,
+            'total_symptoms' => $sintomasRegla->count(),
+            'critical_symptoms' => $sintomasCriticos,
+            'alert_message' => $regla->alert_message,
+            'recommendation' => $regla->recommendation,
+            'studies' => $estudiosRegla,
+            'specialties' => $especialidadesRegla,
+        ];
     }
+
+    // =====================
+    // 🔥 ORDEN FINAL
+    // =====================
+    usort($resultados, fn($a, $b) => $b['score'] <=> $a['score']);
+
+    $resultadosFinales = collect($resultados)
+        ->take(5)
+        ->values()
+        ->toArray();
+
+    // =====================
+    // 🧪 UNIFICAR ESTUDIOS
+    // =====================
+    $estudios = [];
+    $especialidades = [];
+
+    foreach ($resultadosFinales as $r) {
+
+        foreach ($r['studies'] as $e) {
+            if (!isset($estudios[$e['id']]) || $e['priority'] > $estudios[$e['id']]['priority']) {
+                $estudios[$e['id']] = $e;
+            }
+        }
+
+        foreach ($r['specialties'] as $e) {
+            if (!isset($especialidades[$e['id']]) || $e['priority'] > $especialidades[$e['id']]['priority']) {
+                $especialidades[$e['id']] = $e;
+            }
+        }
+    }
+
+    usort($estudios, fn($a, $b) => $b['priority'] <=> $a['priority']);
+    usort($especialidades, fn($a, $b) => $b['priority'] <=> $a['priority']);
+
+    // =====================
+    // 🚨 ALERTAS Y RECOMENDACIONES
+    // =====================
+    $alertas = collect($resultadosFinales)
+        ->pluck('alert_message')
+        ->filter(fn($a) => $a && $a !== 'NULL')
+        ->unique()
+        ->values()
+        ->toArray();
+
+    $recomendaciones = collect($resultadosFinales)
+        ->pluck('recommendation')
+        ->filter(fn($r) => $r && $r !== 'NULL')
+        ->unique()
+        ->values()
+        ->toArray();
+
+    return response()->json([
+        'principal' => $resultadosFinales[0] ?? null,
+        'diferenciales' => collect($resultadosFinales)->skip(1)->take(2)->values(),
+        'diagnosticos' => $resultadosFinales,
+        'estudios' => array_slice(array_values($estudios), 0, 4),
+        'especialidades' => array_slice(array_values($especialidades), 0, 3),
+        'alertas' => $alertas,
+        'recomendaciones' => $recomendaciones,
+    ]);
+}
 
     public function buscarSintomas(Request $request)
     {
         $q = $request->get('q');
 
-        $data = Sintoma::where('estado', 1)
+        $data = Symptom::where('state', 1)
             ->where(function ($query) use ($q) {
-                $query->where('nombre', 'like', '%' . $q . '%')
-                    ->orWhere('descripcion', 'like', '%' . $q . '%')
-                    ->orWhere('sinonimos', 'like', '%' . $q . '%');
+                $query->where('name', 'like', '%' . $q . '%')
+                    ->orWhere('description', 'like', '%' . $q . '%')
+                    ->orWhere('synonyms', 'like', '%' . $q . '%');
             })
             ->select(
                 'id',
-                'nombre',
-                'descripcion',
-                'categoria',
-                'es_critico',
-                'severidad_base',
-                'sinonimos',
-                'estado'
+                'name',
+                'description',
+                'category',
+                'is_critical',
+                'base_severity',
+                'synonyms',
+                'state'
             )
-            ->orderByDesc('es_critico')
-            ->orderByDesc('severidad_base')
+            ->orderByDesc('is_critical')
+            ->orderByDesc('base_severity')
             ->limit(20)
             ->get();
 

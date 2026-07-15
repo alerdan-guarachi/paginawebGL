@@ -2169,7 +2169,7 @@ class InventarioController extends Controller
 
         return redirect()->back()->with('info', 'Orden rechazada exitosamente');
     }
-    public function listaordenes(Request $request) 
+    /* public function listaordenes(Request $request) 
     {
         $nombreproducto = $request->get('buscarpor');
         $ordenesaprobadas = Ordenes::where('tipoorden', 'ORDEN DE COMPRA')
@@ -2200,10 +2200,10 @@ class InventarioController extends Controller
             ->get()
             ->groupBy('preordenid')
             ->sortBy(function ($grupo) {
-            $orden = $grupo->first(); // tomamos el primer elemento del grupo
+            $orden = $grupo->first();
             return [
-                $orden->prioridad === 'PRIORITARIO' ? 0 : 1, // PRIORITARIO primero
-                $orden->fechapagar ?? now()->addYears(10)    // luego por fecha de pago
+                $orden->prioridad === 'PRIORITARIO' ? 0 : 1,
+                $orden->fechapagar ?? now()->addYears(10)
             ];
         });
 
@@ -2243,10 +2243,10 @@ class InventarioController extends Controller
             ->get()
             ->groupBy('preordenid')
             ->sortBy(function ($grupo) {
-            $orden = $grupo->first(); // tomamos el primer elemento del grupo
+            $orden = $grupo->first();
             return [
-                $orden->prioridad === 'PRIORITARIO' ? 0 : 1, // PRIORITARIO primero
-                $orden->fechapagar ?? now()->addYears(10)    // luego por fecha de pago
+                $orden->prioridad === 'PRIORITARIO' ? 0 : 1,
+                $orden->fechapagar ?? now()->addYears(10)
             ];
         });
 
@@ -2286,10 +2286,10 @@ class InventarioController extends Controller
             ->get()
             ->groupBy('preordenid')
             ->sortBy(function ($grupo) {
-            $orden = $grupo->first(); // tomamos el primer elemento del grupo
+            $orden = $grupo->first();
             return [
-                $orden->prioridad === 'PRIORITARIO' ? 0 : 1, // PRIORITARIO primero
-                $orden->fechapagar ?? now()->addYears(10)    // luego por fecha de pago
+                $orden->prioridad === 'PRIORITARIO' ? 0 : 1,
+                $orden->fechapagar ?? now()->addYears(10)
             ];
         });
 
@@ -2301,7 +2301,6 @@ class InventarioController extends Controller
         $descuentoTotalpersonal = 0;
         $montoTotalpersonal = 0;
 
-        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 3000189269 */
         $totalCuenta1Ingreso = DB::table('cajacentral')
             ->where(function ($query) {
                 $query->where('nrocuentadestinotransferencia', '3000189269')
@@ -2342,7 +2341,6 @@ class InventarioController extends Controller
             ->where('estado', '!=', 'ANULADO')
         ->sum('montototal');
 
-        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 2505314878 */
         $totalCuenta2Ingreso = DB::table('cajacentral')
             ->where(function ($query) {
                 $query->where('nrocuentadestinotransferencia', '2505314878')
@@ -2383,7 +2381,6 @@ class InventarioController extends Controller
             ->where('estado', '!=', 'ANULADO')
         ->sum('montototal');
 
-        /* TOTAL DE CAJA INGRESOS Y EGRESOS DE 4011113557 */
         $totalCuenta3Ingreso = DB::table('cajacentral')
             ->where(function ($query) {
                 $query->where('nrocuentadestinotransferencia', '4011113557')
@@ -2778,7 +2775,87 @@ class InventarioController extends Controller
                                                             , 'totalCuenta1Ingreso', 'totalCuenta1Egreso', 'totalCuenta2Ingreso', 'totalCuenta2Egreso', 'totalCuenta3Ingreso', 'totalCuenta3Egreso', 'cuentas' , 'cuentasConSaldo'
                                                             , 'cuentaporpagar1', 'cuentaporpagar2', 'cuentaporpagar3', 'saldoanteriorcuenta1', 'saldoanteriorcuenta2', 'saldoanteriorcuenta3'
                                                             , 'programacioncuentaporpagar1', 'programacioncuentaporpagar2', 'programacioncuentaporpagar3', 'result'));
+    } */
+
+    public function listaordenes(Request $request) 
+    {
+        $ordenesaprobadas = Ordenes::where('tipoorden', 'ORDEN DE COMPRA')
+        ->whereNull('deleted_at')
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('detallerecibos')
+                    ->whereColumn('detallerecibos.ordenid', 'ordenes.id')
+                    ->whereNull('detallerecibos.deleted_at')
+                    ->groupBy('detallerecibos.ordenid')
+                    ->havingRaw('SUM(CASE WHEN estado != "PAGO PROCESADO" THEN 1 ELSE 0 END) = 0');
+            })
+            ->orderBy('created_at', 'asc')
+        ->get();
+
+        $ordenesaprobadasprocesadas = Ordenes::where('tipoorden', 'ORDEN DE COMPRA')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('detallerecibos')
+                    ->whereColumn('detallerecibos.ordenid', 'ordenes.id');
+            })
+            ->with('detallesrecibos')
+            ->orderBy('created_at', 'asc')
+        ->get();
+
+
+        $ordenesaprobadasservicio = Ordenes::where('tipoorden', 'ORDEN DE SERVICIO')
+        ->whereNull('deleted_at')
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('detallerecibos')
+                    ->whereColumn('detallerecibos.ordenid', 'ordenes.id')
+                    ->whereNull('detallerecibos.deleted_at')
+                    ->groupBy('detallerecibos.ordenid')
+                    ->havingRaw('SUM(CASE WHEN estado != "PAGO PROCESADO" THEN 1 ELSE 0 END) = 0');
+            })
+            ->orderBy('created_at', 'asc')
+        ->get();
+
+        $ordenesaprobadasprocesadasservicio = Ordenes::where('tipoorden', 'ORDEN DE SERVICIO')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('detallerecibos')
+                    ->whereColumn('detallerecibos.ordenid', 'ordenes.id');
+            })
+            ->with('detallesrecibos')
+            ->orderBy('created_at', 'asc')
+        ->get();
+
+
+        $ordenesaprobadaspersonal = Ordenes::where('tipoorden', 'ORDEN DE PERSONAL')
+        ->whereNull('deleted_at')
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('detallerecibos')
+                    ->whereColumn('detallerecibos.ordenid', 'ordenes.id')
+                    ->whereNull('detallerecibos.deleted_at')
+                    ->groupBy('detallerecibos.ordenid')
+                    ->havingRaw('SUM(CASE WHEN estado != "PAGO PROCESADO" THEN 1 ELSE 0 END) = 0');
+            })
+            ->orderBy('created_at', 'asc')
+        ->get();
+
+        $ordenesaprobadasprocesadaspersonal = Ordenes::where('tipoorden', 'ORDEN DE PERSONAL')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('detallerecibos')
+                    ->whereColumn('detallerecibos.ordenid', 'ordenes.id');
+            })
+            ->with('detallesrecibos')
+            ->orderBy('created_at', 'asc')
+        ->get();
+
+        return view('admin.inventario.listaordenes', compact('ordenesaprobadasprocesadas','ordenesaprobadas',
+        'ordenesaprobadasprocesadasservicio','ordenesaprobadasservicio',
+        'ordenesaprobadasprocesadaspersonal','ordenesaprobadaspersonal'));
     }
+
+    
     /* public function unificarPreordenes(Request $request)
     {
         $request->validate([

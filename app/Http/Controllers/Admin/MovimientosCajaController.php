@@ -48,6 +48,8 @@ use App\Notifications\ComprobanteNotification;
 use App\Models\User;
 use App\Models\CCyCPdetalles;
 use App\Models\PreOrdenes;
+use App\Models\Ordenes;
+
 /* NUEVO 011225 */
 use App\Models\HistorialArqueocaja;
 
@@ -5084,7 +5086,7 @@ class MovimientosCajaController extends Controller
                         null)
                 );
 
-                if ($clienteId) {
+                /* if ($clienteId) {
                     $cliente = Cliente::find($clienteId);
                     if (!$cliente) {
                         $cliente = ClienteAuditoria::find($clienteId);
@@ -5092,6 +5094,31 @@ class MovimientosCajaController extends Controller
                     if (!$cliente) {
                         $cliente = ClienteComun::find($clienteId);
                     }
+
+                    if ($cliente) {
+                        $sucursalGasto = $cliente->sucursal ?? null;
+                    }
+                } */
+                if ($clienteId) {
+
+                    $cliente = null;
+
+                    // Cliente común
+                    if (str_ends_with($clienteId, 'C')) {
+
+                        $cliente = ClienteComun::find($clienteId);
+
+                    // Cliente auditoría
+                    } elseif (str_ends_with($clienteId, 'A')) {
+
+                        $cliente = ClienteAuditoria::find($clienteId);
+
+                    // Cliente normal
+                    } else {
+
+                        $cliente = Cliente::find($clienteId);
+                    }
+
 
                     if ($cliente) {
                         $sucursalGasto = $cliente->sucursal ?? null;
@@ -5902,7 +5929,7 @@ class MovimientosCajaController extends Controller
                         null)
                 );
 
-                if ($clienteId) {
+                /* if ($clienteId) {
                     $cliente = Cliente::find($clienteId);
                     if (!$cliente) {
                         $cliente = ClienteAuditoria::find($clienteId);
@@ -5910,6 +5937,31 @@ class MovimientosCajaController extends Controller
                     if (!$cliente) {
                         $cliente = ClienteComun::find($clienteId);
                     }
+
+                    if ($cliente) {
+                        $sucursalGasto = $cliente->sucursal ?? null;
+                    }
+                } */
+                if ($clienteId) {
+
+                    $cliente = null;
+
+                    // Cliente común
+                    if (str_ends_with($clienteId, 'C')) {
+
+                        $cliente = ClienteComun::find($clienteId);
+
+                    // Cliente auditoría
+                    } elseif (str_ends_with($clienteId, 'A')) {
+
+                        $cliente = ClienteAuditoria::find($clienteId);
+
+                    // Cliente normal
+                    } else {
+
+                        $cliente = Cliente::find($clienteId);
+                    }
+
 
                     if ($cliente) {
                         $sucursalGasto = $cliente->sucursal ?? null;
@@ -8464,6 +8516,17 @@ class MovimientosCajaController extends Controller
                 $cuenta->fechaasignada = $fechapago;
                 $cuenta->estadoaprobacion = 'PENDIENTE';
                 $cuenta->save();
+
+                // 🔥 NUEVA LÓGICA
+                if ($cuenta->ordenid !== '1SQL' && !empty($cuenta->ordenid)) {
+
+                    $orden = Ordenes::where('id', $cuenta->ordenid)->first();
+
+                    if ($orden) {
+                        $orden->fechapagar = $fechapago;
+                        $orden->save();
+                    }
+                }
             }
         }
 

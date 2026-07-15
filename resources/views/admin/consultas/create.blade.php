@@ -83,7 +83,7 @@
 
                             <div class="col-md-6">
                                 <div class="mini-box border-left-success">
-                                    <h6>👨‍⚕️ Especialidades</h6>
+                                    <h6>👨‍⚕️ Especialidades sugeridas</h6>
                                     <div id="listaEspecialidades"></div>
                                 </div>
                             </div>
@@ -193,7 +193,7 @@ $(document).ready(function () {
         minimumInputLength: 1,
         width: '100%',
         ajax: {
-            url: '{{ url("/sintomas/buscar") }}',
+            url: '{{ url("/sintomas/buscar") }}', 
             dataType: 'json',
             delay: 250,
             data: function (params) {
@@ -205,9 +205,9 @@ $(document).ready(function () {
                         return {
                             id: item.id,
                             text:
-                                (item.es_critico == 1 ? '🚨 ' : '') +
-                                item.nombre +
-                                ' (' + (item.categoria ?? 'Sin categoría') + ')'
+                                (item.is_critical == 1 ? '🚨 ' : '') + 
+                                item.name + 
+                                ' (' + (item.category ?? 'Sin categoría') + ')' 
                         };
                     })
                 };
@@ -257,9 +257,11 @@ $(document).ready(function () {
                 let principal = res.principal;
                 let badge = 'success';
 
-                if (principal.urgencia === 'medio') badge = 'warning';
-                else if (principal.urgencia === 'alto') badge = 'danger';
-                else if (principal.urgencia === 'emergencia') badge = 'dark';
+                // Corregido: urgency_level
+                let urgencia = principal.urgency_level ? principal.urgency_level.toLowerCase() : 'bajo';
+                if (urgencia === 'medio') badge = 'warning';
+                else if (urgencia === 'alto') badge = 'danger';
+                else if (urgencia === 'emergencia') badge = 'dark';
 
                 if (res.alertas && res.alertas.length > 0) {
 
@@ -293,78 +295,91 @@ $(document).ready(function () {
                     $('#alertasMedicas').html(html);
                 }
 
+                // Corregido: total_sintomas -> total_symptoms | matches -> coincidencia
                 $('#diagnosticoPrincipal').append(`
                     <div class="main-diagnosis mb-2">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5>⭐ ${principal.regla}</h5>
-                            <span class="badge badge-${badge}">${principal.urgencia}</span>
+                            <span class="badge badge-${badge}">${urgencia.toUpperCase()}</span>
                         </div>
 
                         <small>
-                            Probabilidad: ${principal.porcentaje}% • 
-                            Coincidencias: ${principal.coincidencias}/${principal.total_sintomas} • 
+                            Probabilidad: ${principal.percentage}% • 
+                            Coincidencias: ${principal.matches}/${principal.total_symptoms} • 
                             Score: ${principal.score}
                         </small>
 
                         <div class="mt-2">
                             <strong>Recomendación:</strong><br>
                             <small>
-                                ${principal.recomendacion && principal.recomendacion !== 'NULL'
-                                    ? principal.recomendacion
+                                ${principal.recommendation && principal.recommendation !== 'NULL'
+                                    ? principal.recommendation
                                     : 'Sin recomendación registrada'}
                             </small>
                         </div>
                     </div>
                 `);
 
-                if (principal.urgencia === 'emergencia') {
+                if (urgencia === 'emergencia') {
                     $('#resultadoHeader').css('background', '#8B0000');
-                } else if (principal.urgencia === 'alto') {
+                } else if (urgencia === 'alto') {
                     $('#resultadoHeader').css('background', '#dc3545');
                 } else {
                     $('#resultadoHeader').css('background', '#343a40');
                 }
 
                 res.estudios.forEach(function (e, index) {
+                    let necesitaAyuno = (e.requires_fasting == 1 || e.requires_fasting === true);
+                    let necesitaOrden = (e.requires_medical_order == 1 || e.requires_medical_order === true);
+
+                    let badgeAyuno = necesitaAyuno ? '<span class="badge badge-warning text-dark mr-1"><i class="fas fa-utensils"></i> Requiere Ayuno</span>' : '';
+                    let badgeOrden = necesitaOrden ? '<span class="badge badge-info"><i class="fas fa-file-medical"></i> Requiere Orden</span>' : '';
+
                     $('#listaEstudios').append(`
-                        <div class="result-card">
-                            <strong>${index + 1}. 🧪 ${e.nombre}</strong><br>
-                            <small>
-                                ${e.motivo && e.motivo !== 'NULL' ? e.motivo : 'Estudio complementario'}<br>
-                                ${e.requiere_ayuno ? '⚠ Ayuno • ' : ''}
-                                ${e.requiere_orden_medica ? '📄 Orden médica • ' : ''}
-                                Bs. ${e.costo_referencial ?? '0.00'}
+                        <div class="result-card mb-2 p-2 border-bottom">
+                            <strong>${index + 1}. 🧪 ${e.name}</strong><br>
+                            <small class="text-muted">
+                                ${e.motive && e.motive !== 'NULL' ? e.motive : 'Estudio complementario'}
                             </small>
+                            <div class="mt-1">
+                                <small>
+                                    ${badgeAyuno}
+                                    ${badgeOrden}
+                                </small>
+                            </div>
                         </div>
                     `);
                 });
 
+                // Corregido: nombre -> name
                 res.especialidades.forEach(function (e, index) {
                     $('#listaEspecialidades').append(`
                         <div class="result-card">
-                            <strong>${index + 1}. 👨‍⚕️ ${e.nombre}</strong><br>
-                            <small>${e.descripcion ?? ''}</small>
+                            <strong>${index + 1}. 👨‍⚕️ ${e.name}</strong><br>
+                            <small>${e.description ?? ''}</small>
                         </div>
                     `);
                 });
 
+                // Corregido: d.urgencia -> d.urgency_level
                 if (res.diferenciales && res.diferenciales.length > 0) {
                     res.diferenciales.forEach(function (d) {
                         let b = 'success';
+                        let urg = d.urgency_level ? d.urgency_level.toLowerCase() : 'bajo';
 
-                        if (d.urgencia === 'medio') b = 'warning';
-                        else if (d.urgencia === 'alto') b = 'danger';
-                        else if (d.urgencia === 'emergencia') b = 'dark';
+                        if (urg === 'medio') b = 'warning';
+                        else if (urg === 'alto') b = 'danger';
+                        else if (urg === 'emergencia') b = 'dark';
 
                         $('#listaDiagnosticos').append(`
                             <div class="result-card">
                                 <div class="d-flex justify-content-between">
                                     <strong>${d.regla}</strong>
-                                    <span class="badge badge-${b}">${d.urgencia}</span>
+                                    <span class="badge badge-${b}">${urg.toUpperCase()}</span>
                                 </div>
                                 <small>
-                                    Probabilidad: ${d.porcentaje}% • 
-                                    Coincidencias: ${d.coincidencias}/${d.total_sintomas}
+                                    Probabilidad: ${d.percentage}% • 
+                                    Coincidencias: ${d.matches}/${d.total_symptoms}
                                 </small>
                             </div>
                         `);
@@ -383,34 +398,26 @@ $(document).ready(function () {
 
     function actualizarEmbarazo() {
 
-    const sexo = $('#sexoPaciente').val();
+        const sexo = $('#sexoPaciente').val();
 
-    if (sexo === 'femenino') {
+        if (sexo === 'femenino') {
+            $('#embarazadaPaciente').prop('disabled', false);
 
-        // Habilitar el selector
-        $('#embarazadaPaciente').prop('disabled', false);
-
-        // Si estaba en "No aplica", cambiar automáticamente a "No"
-        if ($('#embarazadaPaciente').val() === '') {
-            $('#embarazadaPaciente').val('0');
+            if ($('#embarazadaPaciente').val() === '') {
+                $('#embarazadaPaciente').val('0');
+            }
+        } else {
+            $('#embarazadaPaciente')
+                .val('')
+                .prop('disabled', true);
         }
-
-    } else {
-
-        // Masculino o No especificado
-        $('#embarazadaPaciente')
-            .val('')
-            .prop('disabled', true);
     }
-}
 
-// Ejecutar al cargar la página
-actualizarEmbarazo();
-
-// Ejecutar cuando cambie el sexo
-$('#sexoPaciente').on('change', function () {
     actualizarEmbarazo();
-});
+
+    $('#sexoPaciente').on('change', function () {
+        actualizarEmbarazo();
+    });
 
 });
 </script>

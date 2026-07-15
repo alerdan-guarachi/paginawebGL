@@ -132,19 +132,35 @@ class ProveedoresserviciosController extends Controller
             
         }
         if ($prefijo) {
-            $ultimoRegistro = Inventario::where('tipoinventario', $request->tipo_inventario)
-                                                    ->where('seccion', $request->seccion)
-                                                    ->orderBy('created_at', 'desc')
-                                                    ->first();
-            if ($ultimoRegistro) {
-                $ultimoNumero = (int) substr($ultimoRegistro->id, strlen($prefijo));
-                $nuevoNumero = $ultimoNumero + 1;
-            } else {
-                $nuevoNumero = 1;
-            }
+
+            $longitudPrefijo = strlen($prefijo) + 1;
+
+            // MAX en INVENTARIO
+            $maxInventario = Inventario::where('codigo', 'like', $prefijo . '%')
+                ->selectRaw("
+                    MAX(
+                        CAST(SUBSTRING(codigo, $longitudPrefijo) AS UNSIGNED)
+                    ) as max_num
+                ")
+                ->value('max_num');
+
+            // MAX en PORTAFOLIOPROVEEDORES
+            $maxPortafolio = PortafolioProveedores::where('id', 'like', $prefijo . '%')
+                ->selectRaw("
+                    MAX(
+                        CAST(SUBSTRING(id, $longitudPrefijo) AS UNSIGNED)
+                    ) as max_num
+                ")
+                ->value('max_num');
+
+            // Tomar el mayor de ambos
+            $maxNumero = max($maxInventario ?? 0, $maxPortafolio ?? 0);
+
+            // Generar siguiente número
+            $nuevoNumero = $maxNumero + 1;
             $nuevoID = $prefijo . $nuevoNumero;
-            $request->merge(['id' => $nuevoID]);
         }
+
         if (!$nuevoID) {
             $nuevoID = 'DEFAULT-ID';
         }

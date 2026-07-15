@@ -191,6 +191,7 @@ class HomeController extends Controller
         $santaCruzCount = User::where('estado', 'ACTIVO')
             ->whereNotNull('clienteid')
             ->where('sucursal', 'SANTA CRUZ')
+            ->whereNotIn('name', ['DEMO USER'])
             ->count();
 
         $cochabambaCount = User::where('estado', 'ACTIVO')
@@ -206,6 +207,24 @@ class HomeController extends Controller
         'accionesPorAreasIta', 'accionesPorAreaIta', 'accionesDisponiblesIta', 'cliente', 'idIta', 'accionesClienteIta', 'estadoRegistradosIta',
         'accionesPorAreasBanco', 'accionesPorAreaBanco', 'accionesDisponiblesBanco', 'clientebanco', 'idBanco', 'accionesClienteBanco', 'estadoRegistradosBanco',
         'progauditoria','progcomun','progita','licencias','santaCruzCount','cochabambaCount','totalUsers'));
+    }
+
+    public function usuariosPorSucursal(Request $request)
+    {
+        $sucursal = $request->sucursal;
+        $buscar = $request->buscar;
+
+        $users = User::where('estado', 'ACTIVO')
+            ->whereNotNull('clienteid')
+            ->whereNotIn('name', ['DEMO USER'])
+            ->where('sucursal', $sucursal)
+            ->when($buscar, function ($q) use ($buscar) {
+                $q->where('name', 'LIKE', "%$buscar%");
+            })
+            ->orderBy('name', 'ASC')
+            ->pluck('name');
+
+        return response()->json($users);
     }
 
     public function marcarPagado($id)
