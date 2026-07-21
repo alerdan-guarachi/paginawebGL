@@ -2,7 +2,7 @@ name: appgoodlife
 description: "Aplicación Oficial de GOOD LIFE S.R.L. para gestión de informes médicos y trámites."
 publish_to: 'none'
 
-version: 1.0.1+6
+version: 1.0.1+7
 
 environment:
   sdk: ^3.10.1

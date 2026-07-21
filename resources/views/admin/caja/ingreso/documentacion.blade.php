@@ -122,8 +122,16 @@
                                                     class="form-control" 
                                                     placeholder="Ingrese Nro. Bancarización">
                                             @endif
+                                        @elseif ($registro->tipotransaccion === 'CHEQUE')
+                                            @if (!empty($registro->nrobancarizacioncheque))
+                                                <span>{{ $registro->nrobancarizacioncheque }}</span>
+                                            @else
+                                                <input type="text" name="nrobancarizacion[{{ $registro->id }}]" 
+                                                    class="form-control" 
+                                                    placeholder="Ingrese Nro. Bancarización">
+                                            @endif
                                         @else
-                                        {{ $registro->nrobancarizaciontransferencia }} {{ $registro->nrobancarizaciondeposito }} {{ $registro->nrobancarizacionefectivo }}
+                                            {{ $registro->nrobancarizaciontransferencia }} {{ $registro->nrobancarizaciondeposito }} {{ $registro->nrobancarizacionefectivo }}
                                         @endif
                                     </td>
                                     <td>

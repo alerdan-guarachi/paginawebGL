@@ -1520,6 +1520,13 @@ class MovimientosCajaController extends Controller
                     }
                 }
             }
+            if ($registro->tipotransaccion === 'CHEQUE') {
+                $nuevoNroBancarizacioncheque = $request->nrobancarizacion[$registro->id] ?? null;
+                
+                if (empty($registro->nrobancarizacioncheque) && $nuevoNroBancarizacioncheque) {
+                    $registro->nrobancarizacioncheque = $nuevoNroBancarizacioncheque;
+                }
+            }
             
             /* $registro->estadorevisioncierre = 'RESPALDADO'; */
             if ($registro->estadorevisioncierre !== 'FINALIZADO') {

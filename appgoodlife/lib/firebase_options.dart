@@ -52,7 +52,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBg5bc2Wlhm9ExxysUYKKusqtdhq2gFj6k',
-    appId: '1:195138054780:android:05f57c10908744c44b77f9',
+    appId: '1:195138054780:android:17e052aa9b4341614b77f9',
     messagingSenderId: '195138054780',
     projectId: 'appgoodlife-31425',
     storageBucket: 'appgoodlife-31425.firebasestorage.app',

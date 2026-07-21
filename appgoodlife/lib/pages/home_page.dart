@@ -321,13 +321,6 @@ class _HomePageState extends State<HomePage> {
 
             ListTile(
               dense: true,
-              leading: const Icon(Icons.no_accounts_outlined, color: Colors.grey),
-              title: const Text('Eliminar mi cuenta', style: TextStyle(fontSize: 15, color: Colors.grey)),
-              onTap: _confirmarEliminacionCuenta,
-            ),
-
-            ListTile(
-              dense: true,
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Cerrar sesión', style: TextStyle(fontSize: 15)),
               onTap: () {
@@ -353,6 +346,13 @@ class _HomePageState extends State<HomePage> {
                   ),
                 );
               },
+            ),
+
+            ListTile(
+              dense: true,
+              leading: const Icon(Icons.no_accounts_outlined, color: Colors.grey),
+              title: const Text('Eliminar mi cuenta', style: TextStyle(fontSize: 15, color: Colors.grey)),
+              onTap: _confirmarEliminacionCuenta,
             ),
           ],
         ),

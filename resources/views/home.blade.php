@@ -419,8 +419,9 @@
                                 <table class="table table-sm table-striped table-bordered">
                                     <thead>
                                         <tr>
-                                            <th>#</th>
-                                            <th>Usuario</th>
+                                            <th>Cliente ID</th>
+                                            <th>Cliente Nombre</th>
+                                            <th>Fecha Creación</th>
                                         </tr>
                                     </thead>
                                     <tbody id="tablaUsuarios">
@@ -437,36 +438,50 @@
                 function abrirModal(sucursal) {
                     sucursalActual = sucursal;
 
-                    // 🔥 CAMBIAR TÍTULO DINÁMICAMENTE
-                    document.getElementById('tituloModalUsuarios').innerText = `USUARIOS DE ${sucursal}`;
+                    document.getElementById('tituloModalUsuarios').innerText =
+                        `USUARIOS DE ${sucursal}`;
 
-                    // limpiar buscador
                     document.getElementById('buscarUsuario').value = '';
 
                     $('#modalUsuarios').modal('show');
+
                     cargarUsuarios();
                 }
 
                 function cargarUsuarios(buscar = '') {
-
-                    let url = `{{ route('usuarios.sucursal') }}?sucursal=${encodeURIComponent(sucursalActual)}&buscar=${encodeURIComponent(buscar)}`;
+                    const url =
+                        `{{ route('usuarios.sucursal') }}` +
+                        `?sucursal=${encodeURIComponent(sucursalActual)}` +
+                        `&buscar=${encodeURIComponent(buscar)}`;
 
                     fetch(url)
-                        .then(res => res.json())
-                        .then(data => {
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('No se pudieron obtener los usuarios');
+                            }
 
+                            return response.json();
+                        })
+                        .then(data => {
                             let html = '';
 
                             if (!Array.isArray(data) || data.length === 0) {
-                                html = `<tr>
-                                            <td colspan="2" class="text-center text-muted">Sin resultados</td>
-                                        </tr>`;
+                                html = `
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">
+                                            Sin resultados
+                                        </td>
+                                    </tr>
+                                `;
                             } else {
-                                data.forEach((nombre, index) => {
-                                    html += `<tr>
-                                                <td>${index + 1}</td>
-                                                <td>${nombre}</td>
-                                            </tr>`;
+                                data.forEach(usuario => {
+                                    html += `
+                                        <tr>
+                                            <td>${usuario.clienteid ?? ''}</td>
+                                            <td>${usuario.name ?? ''}</td>
+                                            <td>${usuario.created_at ?? ''}</td>
+                                        </tr>
+                                    `;
                                 });
                             }
 
@@ -474,14 +489,21 @@
                         })
                         .catch(error => {
                             console.error('Error:', error);
+
+                            document.getElementById('tablaUsuarios').innerHTML = `
+                                <tr>
+                                    <td colspan="3" class="text-center text-danger">
+                                        Error al cargar los usuarios
+                                    </td>
+                                </tr>
+                            `;
                         });
                 }
 
-                // BUSCADOR EN TIEMPO REAL
-                document.getElementById('buscarUsuario').addEventListener('keyup', function () {
-                    let texto = this.value;
-                    cargarUsuarios(texto);
-                });
+                document.getElementById('buscarUsuario')
+                    .addEventListener('keyup', function () {
+                        cargarUsuarios(this.value);
+                    });
             </script>
             <script>
                 document.addEventListener("DOMContentLoaded", function () {

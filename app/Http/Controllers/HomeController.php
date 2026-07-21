@@ -218,11 +218,27 @@ class HomeController extends Controller
             ->whereNotNull('clienteid')
             ->whereNotIn('name', ['DEMO USER'])
             ->where('sucursal', $sucursal)
-            ->when($buscar, function ($q) use ($buscar) {
-                $q->where('name', 'LIKE', "%$buscar%");
+            ->when($buscar, function ($query) use ($buscar) {
+                $query->where(function ($q) use ($buscar) {
+                    $q->where('name', 'LIKE', "%{$buscar}%")
+                        ->orWhere('clienteid', 'LIKE', "%{$buscar}%");
+                });
             })
-            ->orderBy('name', 'ASC')
-            ->pluck('name');
+            ->orderBy('created_at', 'DESC')
+            ->get([
+                'clienteid',
+                'name',
+                'created_at',
+            ])
+            ->map(function ($user) {
+                return [
+                    'clienteid' => $user->clienteid,
+                    'name' => $user->name,
+                    'created_at' => $user->created_at
+                        ? $user->created_at->format('d-m-Y')
+                        : '',
+                ];
+            });
 
         return response()->json($users);
     }
